@@ -2,11 +2,11 @@
 # Author has to know the difference among '?=', '=', '+=' and ':='
 #
 CROSS_COMPILE		?= arm-linux-gnueabihf-
-ARCH				?= arm
+ARCH				?= armv7
 CPU					?= cortex-a15
 
 DEBUG_FLAG			= -g
-CPPFLAGS			= -mcpu=$(CPU) -m$(ARCH) $(DEBUG_FLAGS)
+CPPFLAGS			= -mcpu=$(CPU) -marm $(DEBUG_FLAGS)
 
 MACH				?= rtsm
 PROJECT				?= khypervisor
