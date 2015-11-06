@@ -2,7 +2,7 @@ include config.mk
 
 SRC_DIR		= .
 OBJDIR		= .
-ASM_FILES 	= head.S vector.S
+ASM_FILES 	= $(ARCH)/head.S $(ARCH)/vector.S
 C_FILES 	= $(wildcard $(SRC_DIR)/*.c)
 OBJS 		:= $(addprefix $(OBJDIR)/,$(notdir $(ASM_FILES:.S=.o))) $(addprefix $(OBJDIR)/,$(notdir $(C_FILES:.c=.o)))
 
@@ -33,7 +33,7 @@ $(OUTPUT): $(TARGET).lds $(OBJS)
 $(BIN): $(OUTPUT)
 	$(OBJCOPY) -O binary $(OUTPUT) $(BIN)
 
-$(OBJ_DIR)%.o: $(SRC_DIR)/%.S
+$(OBJ_DIR)%.o: $(ARCH)/%.S
 	$(CC) $(CPPFLAGS) -I. -c -o $@ $<
 
 $(OBJ_DIR)%.o: $(SRC_DIR)/%.c
