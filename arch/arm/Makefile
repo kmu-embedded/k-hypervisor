@@ -1,3 +1,5 @@
+	#$(LD) -o $@ $(OBJS) --script=$(TARGET).lds -L /usr/local/DS-5/sw/gcc/lib/gcc/arm-linux-gnueabihf/4.7.3 -lgcc
+	#$(LD)  -o $@ $(OBJS) --script=$(TARGET).lds -L /usr/local/DS-5/sw/gcc/arm-linux-gnueabihf/lib/arm-linux-gnueabi -lgcc
 include config.mk
 
 SRC_DIR		= .
@@ -15,7 +17,7 @@ CC			= $(CROSS_COMPILE)gcc
 LD			= $(CROSS_COMPILE)ld
 NM			= $(CROSS_COMPILE)nm
 OBJCOPY		= $(CROSS_COMPILE)objcopy
-INCLUDES    = -I .
+INCLUDES    = -I . -I ./sys -I ./machine
 CPPFLAGS	+= $(CONFIG_FLAGS) $(INCLUDES)
 
 all: $(OBJS) $(OUTPUT) $(MAP)
@@ -28,7 +30,8 @@ clean:
 	$(TARGET).lds $(OBJS)
 
 $(OUTPUT): $(TARGET).lds $(OBJS)
-	$(LD) -o $@ $(OBJS) --script=$(TARGET).lds
+	$(CC)  -ffreestanding -nostdlib --verbose -e __start -T $(TARGET).lds -o $@ $(OBJS)
+
 
 $(BIN): $(OUTPUT)
 	$(OBJCOPY) -O binary $(OUTPUT) $(BIN)
@@ -37,7 +40,7 @@ $(OBJ_DIR)%.o: $(ARCH)/%.S
 	$(CC) $(CPPFLAGS) -I. -c -o $@ $<
 
 $(OBJ_DIR)%.o: $(SRC_DIR)/%.c
-	$(CC) $(CPPFLAGS) -I. -c -o $@ $<
+	$(CC) $(CPPFLAGS) -static -I. -c -o $@ $<
 
 $(TARGET).lds: $(LD_SCRIPT) Makefile
 	$(CC) $(CPPFLAGS) -E -P -C -o $@ $<

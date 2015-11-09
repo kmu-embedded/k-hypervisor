@@ -7,12 +7,7 @@ ENTRY(__start)
 
 SECTIONS
 {
- . = CFG_MEMMAP_PHYS_START;
- . = CFG_MEMMAP_PHYS_START + 0x8000 - 0x40;
- . = CFG_MEMMAP_PHYS_START + 0x00d00000;
-
- . = CFG_MEMMAP_MON_OFFSET;
-
+. = CFG_MEMMAP_PHYS_START;
  .text : {
     *(.text);
  }
@@ -21,16 +16,18 @@ SECTIONS
  .rodata : {
     *(.rodata)
  }
+
  .= ALIGN(4);
  .data : {
     *(.data)
  }
+
  .= ALIGN(4);
- begin_bss = .;
+ PROVIDE(__begin_bss = .);
  .bss : {
     *(.bss)
  }
- end_bss = .;
+ PROVIDE(__end_bss = .);
 
  .stack : {
      __start_stack__ = .;

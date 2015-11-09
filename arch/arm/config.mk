@@ -2,6 +2,7 @@
 # Author has to know the difference among '?=', '=', '+=' and ':='
 #
 CROSS_COMPILE		?= arm-linux-gnueabihf-
+#CROSS_COMPILE		?= arm-none-eabi-
 ARCH				?= armv7
 CPU					?= cortex-a15
 
