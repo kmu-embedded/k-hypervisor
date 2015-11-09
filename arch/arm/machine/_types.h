@@ -71,7 +71,11 @@ typedef	__int32_t	__critical_t;
 typedef	double		__double_t;
 typedef	float		__float_t;
 typedef	__int32_t	__intfptr_t;
-typedef	__int64_t	__intmax_t;
+typedef	__int32_t	__intmax_t;
+//TODO(wonseok): need to solve undefined reference to `__aeabi_uldivmod'
+//http://ergodicthoughts.blogspot.kr/2014/09/solution-unknown-symbol-aeabildivmod.html
+//https://android.googlesource.com/platform/art/+/324e190%5E!/
+//typedef	__int64_t	__intmax_t;
 typedef	__int32_t	__intptr_t;
 typedef	__int32_t	__int_fast8_t;
 typedef	__int32_t	__int_fast16_t;
@@ -88,7 +92,8 @@ typedef	__uint32_t	__size_t;		/* sizeof() */
 typedef	__int32_t	__ssize_t;		/* byte count or error */
 typedef	__int64_t	__time_t;		/* time()... */
 typedef	__uint32_t	__uintfptr_t;
-typedef	__uint64_t	__uintmax_t;
+//typedef	__uint64_t	__uintmax_t;
+typedef	__uint32_t	__uintmax_t;
 typedef	__uint32_t	__uintptr_t;
 typedef	__uint32_t	__uint_fast8_t;
 typedef	__uint32_t	__uint_fast16_t;
