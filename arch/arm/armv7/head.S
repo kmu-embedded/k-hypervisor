@@ -103,8 +103,8 @@ __start:
     str	r1, [r0, #0x30]
 
     /* Initialize bss section */
-    ldr  r2, =_begin_bss
-    ldr  r3, =_end_bss
+    ldr  r2, =__begin_bss
+    ldr  r3, =__end_bss
 
     mov  r0, #0
 1:  str  r0, [r2], #4    @ clear bss
@@ -135,7 +135,9 @@ __error:
     wfe
     b __error
 
+    /*
 _begin_bss:
     .word   __begin_bss
 _end_bss:
     .word   __end_bss
+    */
