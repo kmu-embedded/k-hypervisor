@@ -162,7 +162,7 @@ ksprintn(char *nbuf, uintmax_t num, int base, int *lenp, int upper)
 
 	p = nbuf;
 	*p = '\0';
-#if 0
+#if 1
 	do {
 		c = hex2ascii(num % base);
 		*++p = upper ? toupper(c) : c;
