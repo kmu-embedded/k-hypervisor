@@ -1,7 +1,7 @@
 #include <vcpu.h>
 
 int __get_vcpuid();
-struct vcpu* __vcpu_create();                                                                 
+struct vcpu* __vcpu_create();
 hvmm_state_t __vcpu_delete(unsigned int vcpuid);
 struct vcpu* __vcpu_get(unsigned int vcpuid);
 unsigned int __vcpu_available_vcpus();
@@ -9,18 +9,14 @@ unsigned int __vcpu_available_vcpus();
 static struct vcpu vcpu_pool[MAX_VCPU_SIZE];
 static bool vcpu_pool_state[MAX_VCPU_SIZE] = {FALSE, };
 
-struct vcpu *vcpu_create(unsigned int vmid)
+struct vcpu *vcpu_create()
 {
     struct vcpu *vcpu = NULL;
 
     if((vcpu = __vcpu_create()) == NULL){
        //Exception Handling
-
        return NULL;
     }
-
-    vcpu->vmid = vmid;
-        
     return vcpu;
 }
 
@@ -39,7 +35,7 @@ hvmm_state_t vcpu_init(unsigned int vcpuid)
     regs = &(vcpu_regs->regs);
     if(vcpu_hw_init(vcpu_regs, regs) != HVMM_STATE_SUCCESS){
         //Exception Handling
-        
+
         return HVMM_STATE_FAIL;
     }
     // TODO(casionwoo) : Register vcpu id to scheduler
@@ -62,7 +58,7 @@ hvmm_state_t vcpu_start(unsigned int vcpuid)
 }
 
 hvmm_state_t vcpu_delete(unsigned int vcpuid)
-{ 
+{
     //TODO(casionwoo) : Signal scheduler to stop the vcpu, Unregister vcpu id from scheduler
 
     if(__vcpu_delete(vcpuid) == HVMM_STATE_FAIL){
@@ -85,16 +81,16 @@ hvmm_state_t vcpu_suspend(unsigned int vcpuid)
 hvmm_state_t vcpu_save(unsigned int vcpuid, struct arch_regs *current_regs)
 {
     struct vcpu *vcpu = NULL;
-    
+
     if((vcpu = __vcpu_get(vcpuid)) == NULL){
         //Exception Handling
-        
+
         return HVMM_STATE_FAIL;
     }
 
     if(vcpu_hw_save(&(vcpu->vcpu_regs), current_regs) != HVMM_STATE_SUCCESS){
         //Exception Handling
-        
+
         return HVMM_STATE_FAIL;
     }
 
@@ -107,7 +103,7 @@ hvmm_state_t vcpu_restore(unsigned int vcpuid, struct arch_regs *current_regs)
 
     if((vcpu = __vcpu_get(vcpuid)) == NULL){
         //Exception Handling
-        
+
         return HVMM_STATE_FAIL;
     }
 
@@ -143,10 +139,19 @@ bool vcpu_same_vmid(unsigned int first_vcpuid, unsigned int second_vcpuid)
     return FALSE;
 }
 
+bool vcpu_is_available(unsigned int num_vcpu) {
+    unsigned int available_vcpus = 0;
+
+    available_vcpus = __vcpu_available_vcpus();
+    if((available_vcpus >= num_vcpu) || (num_vcpu > 0))
+        return TRUE;
+    return FALSE;
+}
+
 bool vcpu_is_available_create(unsigned int num_vcpu)
 {
     unsigned int available_vcpus = 0;
-   
+
     available_vcpus = __vcpu_available_vcpus();
     if((available_vcpus >= num_vcpu) || (num_vcpu > 0))
         return TRUE;

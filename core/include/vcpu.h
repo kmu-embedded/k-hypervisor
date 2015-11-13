@@ -24,7 +24,7 @@ struct vcpu {
     unsigned long long actual_running_time;
 };
 
-struct vcpu* vcpu_create(unsigned int vmid);
+struct vcpu* vcpu_create();
 hvmm_state_t vcpu_init(unsigned int vcpuid);
 hvmm_state_t vcpu_start(unsigned int vcpuid);
 hvmm_state_t vcpu_delete(unsigned int vcpuid);
@@ -35,5 +35,6 @@ hvmm_state_t vcpu_restore(unsigned int vcpuid, struct arch_regs *current_regs);
 
 bool vcpu_same_vmid(unsigned int first_vcpuid, unsigned int second_vcpuid);
 bool vcpu_is_available_create(unsigned int num_of_vcpu);
+bool vcpu_is_available(unsigned int num_vcpu);
 
 #endif // __VCPU_H__

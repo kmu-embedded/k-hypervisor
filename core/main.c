@@ -3,20 +3,21 @@
 
 #define NUM_OF_VM 10
 
+#define VM_NUM      10
+#define VCPU_NUM    1
+
 int main()
 {
     int i = 0;
-    int vm[NUM_OF_VM] = {-1,};
+    int vmid;
 
-    for(i = 0; i < NUM_OF_VM; i++){
-        if((vm[i] = vm_create(1)) < HVMM_STATE_SUCCESS)
+    for(i = 0; i < VM_NUM; i++) {
+        if((vmid = vm_create(VCPU_NUM)) < HVMM_STATE_SUCCESS)
         {
             printf("VM CREATE FIALED\n");
             continue;
         }
-        
-        printf("i : %d , vmid : %d\n", i, vm[i]);
+        printf("i : %d , vmid : %d\n", i, vmid);
     }
-    
     return 0;
 }

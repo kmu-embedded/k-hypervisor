@@ -9,11 +9,11 @@ typedef enum {
 }bool;
 
 typedef enum vmcb_state{
-    VMCB_UNDEFINED   = 0,
-    VMCB_DEFINED     = 1,
-    VMCB_HALTED      = 2,
-    VMCB_RUNNING     = 3,
-    VMCB_SUSPENDED   = 4
+    VMCB_UNDEFINED   = -1,
+    VMCB_DEFINED     = 0,
+    VMCB_HALTED      = 1,
+    VMCB_RUNNING     = 2,
+    VMCB_SUSPENDED   = 3
 }vmcb_state_t;
 
 //Scheduler will control vcpu_state

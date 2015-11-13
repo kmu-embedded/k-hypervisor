@@ -19,10 +19,10 @@ struct vmcb {
 
     // TODO(casionwoo) : define virq
 
-    vmcb_state_t vm_state;
+    vmcb_state_t state;
 };
 
-unsigned int vm_create(unsigned int num_of_vcpu);
+int vm_create(unsigned int num_of_vcpu);
 hvmm_state_t vm_init(unsigned int vmid);
 hvmm_state_t vm_start(unsigned int vmid);
 hvmm_state_t vm_delete(unsigned int vmid);
