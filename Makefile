@@ -1,10 +1,8 @@
 include config.mk
 
-OBJDIR		= .
 ASM_FILES	= $(wildcard $(ARCH_VERSION)/*.S)
 C_FILES 	= $(wildcard $(ARCH)/*.c) $(wildcard $(DRIVER)/*.c) $(wildcard $(LIB)/*.c)
 OBJS 		:= $(ASM_FILES:.S=.o) $(C_FILES:.c=.o)
-#OBJS 		:= $(ASM_FILES:.S=.o) $(addprefix $(OBJDIR)/,$(notdir $(C_FILES:.c=.o)))
 
 BIN			= $(BUILD_DIR)/$(TARGET).bin
 LD_SCRIPT	= $(PROJECT).lds.S
@@ -17,6 +15,7 @@ NM			= $(CROSS_COMPILE)nm
 OBJCOPY		= $(CROSS_COMPILE)objcopy
 INCLUDES    = -I ./include
 CPPFLAGS	= $(CONFIG_FLAG) $(INCLUDES) -ffreestanding -nostdlib $(DEBUG_FLAG)
+CPPFLAGS	+= -Wall -Werror
 
 all: $(OBJS) $(OUTPUT) $(MAP)
 
