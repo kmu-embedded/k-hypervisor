@@ -1,8 +1,9 @@
+#include <lib/print.h>
+
 // TODO(wonseok): This C entry point will be moved into core directory.
 int init_khypervisor(void)
 {
     int num;
-    //long long base;
     long base;
     num = 10;
     base = 2;
@@ -10,7 +11,7 @@ int init_khypervisor(void)
     num = num % base;
 
     init_print();
-    printH("test\n");
+    printf("test %d\n", num);
 
     return 0;
 }

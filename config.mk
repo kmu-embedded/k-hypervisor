@@ -10,8 +10,8 @@ MACH				?= rtsm
 PROJECT				?= khypervisor
 TARGET				?= khypervisor-$(MACH)
 
-CURDIR				?= $(PWD)
-ARCH				?= $(CURDIR)/arch/arm
+PROJECT_DIR			?= .
+ARCH				?= $(PROJECT_DIR)/arch/arm
 ARCH_VERSION		?= $(ARCH)/v7
-LIB					?= $(CURDIR)/lib
-DRIVER				?= $(CURDIR)/drivers
+LIB					?= $(PROJECT_DIR)/lib
+DRIVER				?= $(PROJECT_DIR)/drivers

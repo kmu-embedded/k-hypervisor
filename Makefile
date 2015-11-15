@@ -34,10 +34,10 @@ $(OUTPUT): $(TARGET).lds $(OBJS)
 $(BIN): $(OUTPUT)
 	$(OBJCOPY) -O binary $(OUTPUT) $(BIN)
 
-$(OBJ_DIR)%.o: $(ARCH)/%.S
+$(OBJ_DIR)%.o: $(ARCH)%.S
 	$(CC) $(CPPFLAGS) -I. -c -o $@ $<
 
-$(OBJ_DIR)%.o: $(SRC_DIR)/%.c
+$(OBJ_DIR)%.o: $(SRC_DIR)%.c
 	$(CC) $(CPPFLAGS) -I. -c -o $@ $<
 
 $(TARGET).lds: $(LD_SCRIPT) Makefile
