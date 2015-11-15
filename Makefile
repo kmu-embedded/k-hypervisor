@@ -1,10 +1,10 @@
 include config.mk
 
-SRC_DIR		= .
 OBJDIR		= .
-ASM_FILES 	= $(wildcard $(ARCH)/*.S)
-C_FILES 	= $(wildcard $(SRC_DIR)/*.c)
-OBJS 		:= $(ASM_FILES:.S=.o) $(addprefix $(OBJDIR)/,$(notdir $(C_FILES:.c=.o)))
+ASM_FILES	= $(wildcard $(ARCH_VERSION)/*.S)
+C_FILES 	= $(wildcard $(ARCH)/*.c) $(wildcard $(DRIVER)/*.c) $(wildcard $(LIB)/*.c)
+OBJS 		:= $(ASM_FILES:.S=.o) $(C_FILES:.c=.o)
+#OBJS 		:= $(ASM_FILES:.S=.o) $(addprefix $(OBJDIR)/,$(notdir $(C_FILES:.c=.o)))
 
 BIN			= $(BUILD_DIR)/$(TARGET).bin
 LD_SCRIPT	= $(PROJECT).lds.S
@@ -15,7 +15,7 @@ CC			= $(CROSS_COMPILE)gcc
 LD			= $(CROSS_COMPILE)ld
 NM			= $(CROSS_COMPILE)nm
 OBJCOPY		= $(CROSS_COMPILE)objcopy
-INCLUDES    = -I . -I ./sys -I ./machine
+INCLUDES    = -I ./include
 CPPFLAGS	+= $(CONFIG_FLAGS) $(INCLUDES) -ffreestanding -nostdlib
 
 all: $(OBJS) $(OUTPUT) $(MAP)

@@ -2,13 +2,17 @@
 # Author has to know the difference among '?=', '=', '+=' and ':='
 #
 CROSS_COMPILE		?= arm-linux-gnueabihf-
-#CROSS_COMPILE		?= arm-none-eabi-
-ARCH				?= armv7
-CPU					?= cortex-a15
+PROCESSOR			?= cortex-a15
 
 DEBUG_FLAG			= -g
-CPPFLAGS			= -mcpu=$(CPU) -marm $(DEBUG_FLAGS)
+CPPFLAGS			= -mcpu=$(PROCESSOR) -marm $(DEBUG_FLAGS)
 
 MACH				?= rtsm
 PROJECT				?= khypervisor
 TARGET				?= khypervisor-$(MACH)
+
+CURDIR				?= $(PWD)
+ARCH				?= $(CURDIR)/arch/arm
+ARCH_VERSION		?= $(ARCH)/v7
+LIB					?= $(CURDIR)/lib
+DRIVER				?= $(CURDIR)/drivers

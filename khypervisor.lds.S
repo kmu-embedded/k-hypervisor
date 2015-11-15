@@ -3,7 +3,7 @@ OUTPUT_ARCH(arm)
 TARGET(binary)
 ENTRY(__start)
 
-#include <rtsm-config.h>
+#include <arch/arm/rtsm-config.h>
 
 SECTIONS
 {

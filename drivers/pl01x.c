@@ -1,4 +1,4 @@
-#include <rtsm-config.h>
+#include <arch/arm/rtsm-config.h>
 
 
 #define UART0_BASE       0x1C090000
@@ -45,8 +45,10 @@ void uart_print_hex32(unsigned int v)
     }
 }
 
+// warning: right shift count >= width of type [enabled by default]
+// void uart_print_hex64(unsigned long long v)
 void uart_print_hex64(unsigned long v)
 {
-    uart_print_hex32(v >> 32);
+    uart_print_hex32(v);
     uart_print_hex32((unsigned int)(v & 0xFFFFFFFF));
 }
