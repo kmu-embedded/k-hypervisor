@@ -1,6 +1,7 @@
+// TODO(wonseok): This C entry point will be moved into core directory.
 int init_khypervisor(void)
 {
-    int num; 
+    int num;
     //long long base;
     long base;
     num = 10;

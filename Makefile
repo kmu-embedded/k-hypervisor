@@ -16,7 +16,7 @@ LD			= $(CROSS_COMPILE)ld
 NM			= $(CROSS_COMPILE)nm
 OBJCOPY		= $(CROSS_COMPILE)objcopy
 INCLUDES    = -I ./include
-CPPFLAGS	+= $(CONFIG_FLAGS) $(INCLUDES) -ffreestanding -nostdlib
+CPPFLAGS	= $(CONFIG_FLAG) $(INCLUDES) -ffreestanding -nostdlib $(DEBUG_FLAG)
 
 all: $(OBJS) $(OUTPUT) $(MAP)
 

@@ -1,4 +1,4 @@
-#include <rtsm-config.h>
+#include <arch/arm/rtsm-config.h>
 
     .syntax	unified
     .arch_extension sec
@@ -29,8 +29,8 @@ __start:
     mrc	p15, 0, r4, c0, c0, 5		@ MPIDR (ARMv7 only)
     and	r4, r4, #15			@ CPU number
 
-    /* 
-     * We assume that the CPU mode is SVC in secure world at this point. 
+    /*
+     * We assume that the CPU mode is SVC in secure world at this point.
      */
 
     // Set all interrupts to be non-secure
@@ -65,7 +65,7 @@ __start:
     bfc r0, #24, #8
     cmp r0, #0              @ primary CPU?
     beq 2f
-    b __error  
+    b __error
 
 2:
     // UART initialisation (38400 8N1)
@@ -112,11 +112,11 @@ __start:
     blo  1b
 
 // TODO(elsdy): We will be added Secondary CPU initialization, here. Because the above procedure
-// do not need to execute for every core. 
+// do not need to execute for every core.
 
-    /* Initialize vector for monitor mode to enter NSHyp mode */ 
+    /* Initialize vector for monitor mode to enter NSHyp mode */
     ldr r1, = __mon_vector
-    mcr p15, 0, r1, c12, c0, 1      @ Set the vector for monitor mode 
+    mcr p15, 0, r1, c12, c0, 1      @ Set the vector for monitor mode
 
     smc #0  @ -> trap_smc
     hvc #0  @ -> trap_hyp_entry
@@ -124,7 +124,7 @@ __start:
     /* Replace the NSHyp vector table for khypervisor*/
     ldr r0, = __hvc_vector
     mcr p15, 4, r0, c12, c0, 0
-    bl init_khypervisor 
+    bl init_khypervisor
 
 	@ Never reached
     b __error
