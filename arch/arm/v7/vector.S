@@ -1,4 +1,4 @@
-#include <rtsm-config.h>
+#include <arch/arm/rtsm-config.h>
 
     .syntax unified
     .arch_extension sec
@@ -18,7 +18,7 @@ __mon_vector:
     nop                             /* fiq */
 
 smc_handler:
-    // Configure SCR 
+    // Configure SCR
     mrc p15, 0, r10, c1, c1, 0  @ SCR -> r10
     @ SCR.NS=1, IRQ,FIQ,EA=0, FW,AW=1, nET=0, SCD=1, HCE=1
     bic r10, r10, #0x07f
@@ -35,7 +35,7 @@ smc_handler:
 
 one_time_hvc_handler:
     /* Setup stack for Hyp for the first time */
-    ldr sp, = __end_stack 
+    ldr sp, = __end_stack
     mrs lr, elr_hyp
     mov pc, lr
 
