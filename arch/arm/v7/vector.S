@@ -60,7 +60,7 @@ hvc_trap_handler:
 
     @ service other argument values -> _hyp_hvc_service(sp)
     mov    r0, sp
-    @bl    _hyp_hvc    @ r0: HSR
+    bl    _hyp_hvc    @ r0: HSR
 
     @ r0 = return
     tst    r0, #1
@@ -96,7 +96,7 @@ hvc_dabt_handler:
 
     @ service other argument values -> _hyp_trap_dabort(sp)
     mov    r0, sp
-    @bl    _hyp_dabort    @ r0: HSR
+    bl    _hyp_dabort    @ r0: HSR
 
     @ if (return == 0) execute a conditional code
     @ tst    r0, #1
@@ -118,7 +118,7 @@ hvc_irq_handler:
 
     @ service other argument values -> _hvc_irq_handler(sp)
     mov    r0, sp
-    @bl    _hyp_irq    @ r0: HSR
+    bl    _hyp_irq    @ r0: HSR
 
     @ Pop registers
     pop     {r0-r1, lr}

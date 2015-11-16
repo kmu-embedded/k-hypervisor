@@ -134,10 +134,3 @@ __error_ge:
 __error:
     wfe
     b __error
-
-    /*
-_begin_bss:
-    .word   __begin_bss
-_end_bss:
-    .word   __end_bss
-    */
