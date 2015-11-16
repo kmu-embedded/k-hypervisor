@@ -1,7 +1,14 @@
 include config.mk
 
 ASM_FILES	= $(wildcard $(ARCH_VERSION)/*.S)
-C_FILES 	= $(wildcard $(ARCH)/*.c) $(wildcard $(DRIVER)/*.c) $(wildcard $(LIB)/*.c)
+C_FILES 	= $(wildcard $(CORE)/*.c) 				\
+			  $(wildcard $(CORE)/libhw/*.c) 		\
+			  $(wildcard $(CORE)/vdev/*.c) 			\
+			  $(wildcard tests/*.c) 				\
+			  $(wildcard $(ARCH)/*.c) 				\
+			  $(wildcard $(DRIVER)/*.c) 			\
+			  $(wildcard $(LIB)/*.c)
+
 OBJS 		:= $(ASM_FILES:.S=.o) $(C_FILES:.c=.o)
 
 BIN			= $(BUILD_DIR)/$(TARGET).bin
@@ -13,7 +20,7 @@ CC			= $(CROSS_COMPILE)gcc
 LD			= $(CROSS_COMPILE)ld
 NM			= $(CROSS_COMPILE)nm
 OBJCOPY		= $(CROSS_COMPILE)objcopy
-INCLUDES    = -I ./include
+INCLUDES    = -I ./include -I $(CORE)/libhw -I tests -I $(CORE) -I $(CORE)/include
 CPPFLAGS	= $(CONFIG_FLAG) $(INCLUDES) -ffreestanding -nostdlib $(DEBUG_FLAG)
 CPPFLAGS	+= -Wall -Werror
 

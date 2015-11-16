@@ -1,4 +1,5 @@
 #include <lib/print.h>
+#include <vm_main.h>
 
 // TODO(wonseok): This C entry point will be moved into core directory.
 int init_khypervisor(void)
@@ -12,6 +13,7 @@ int init_khypervisor(void)
 
     init_print();
     printf("test %d\n", num);
+    vm_main();
 
     return 0;
 }
