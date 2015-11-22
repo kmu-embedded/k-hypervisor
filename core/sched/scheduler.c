@@ -69,7 +69,7 @@ int sched_vcpu_unregister()
 }
 
 /**
- * Attach a vcpu from scheduler runqueue
+ * Attach a vcpu to scheduler runqueue
  *
  * You have to register the vcpu first
  *
