@@ -2,6 +2,8 @@
  * This main function is just for experiment.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <scheduler.h>
 
 int main() {
