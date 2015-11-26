@@ -7,6 +7,7 @@ ENTRY(__start)
 
 INPUT(../guestimages/guest0.bin)
 GUEST0_STACK     = CFG_MEMMAP_GUEST0_OFFSET + GUEST_SIZE_MAX;
+HEAP_SIZE   = 0x00100000;
 
 SECTIONS
 {
@@ -50,6 +51,14 @@ SECTIONS
     *(.bss)
  }
  PROVIDE(__end_bss = .);
+
+ . = ALIGN(4);
+ PROVIDE(__begin_heap = .);
+ .heap : {
+    *(.heap)
+     . = . + HEAP_SIZE;
+ }
+ PROVIDE(__end_heap = .);
 
  .stack : {
      __start_stack__ = .;

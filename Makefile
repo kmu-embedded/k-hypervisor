@@ -5,6 +5,7 @@ C_FILES 	= $(wildcard $(CORE)/*.c) 				\
 			  $(wildcard $(CORE)/libhw/*.c) 		\
 			  $(wildcard $(CORE)/vdev/*.c) 			\
 			  $(wildcard tests/*.c) 				\
+			  $(wildcard tests/libs/*.c) 				\
 			  $(wildcard $(ARCH)/*.c) 				\
 			  $(wildcard $(DRIVER)/*.c) 			\
 			  $(wildcard $(LIB)/*.c)
@@ -20,8 +21,9 @@ CC			= $(CROSS_COMPILE)gcc
 LD			= $(CROSS_COMPILE)ld
 NM			= $(CROSS_COMPILE)nm
 OBJCOPY		= $(CROSS_COMPILE)objcopy
-INCLUDES    = -I ./include -I $(CORE)/libhw -I tests -I $(CORE) -I $(CORE)/include
-CPPFLAGS	= $(CONFIG_FLAG) $(INCLUDES) -ffreestanding -nostdlib $(DEBUG_FLAG)
+INCLUDES    = -I ./include -I $(CORE)/libhw -I tests -I $(CORE) -I $(CORE)/include -I include/lib -I ./lib -I ./include/core
+INCLUDES	+= -I tests/libs
+CPPFLAGS	= $(CONFIG_FLAG) $(INCLUDES) -ffreestanding -nostdlib -nodefaultlibs -nostartfiles $(DEBUG_FLAG)
 CPPFLAGS	+= -Wall -Werror
 
 all: $(OBJS) $(OUTPUT) $(MAP)
