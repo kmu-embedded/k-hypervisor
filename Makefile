@@ -15,7 +15,7 @@ OBJS 		:= $(ASM_FILES:.S=.o) $(C_FILES:.c=.o)
 BIN			= $(BUILD_DIR)/$(TARGET).bin
 LD_SCRIPT	= $(PROJECT).lds.S
 OUTPUT 		= $(TARGET).axf
-MAP			= $(TARGET).map
+MAP			= $(PROJECT).map
 
 CC			= $(CROSS_COMPILE)gcc
 LD			= $(CROSS_COMPILE)ld
@@ -33,10 +33,10 @@ $(MAP): $(OUTPUT)
 
 clean:
 	rm -f $(MAP) $(OUTPUT) $(BIN) \
-	$(TARGET).lds $(OBJS)
+	$(MACHINE).lds $(OBJS)
 
-$(OUTPUT): $(TARGET).lds $(OBJS)
-	$(CC) $(CPPFLAGS) -e __start -T $(TARGET).lds -o $@ $(OBJS)
+$(OUTPUT): $(MACHINE).lds $(OBJS)
+	$(CC) $(CPPFLAGS) -e __start -T $(MACHINE).lds -o $@ $(OBJS)
 
 
 $(BIN): $(OUTPUT)
@@ -48,7 +48,7 @@ $(OBJ_DIR)%.o: $(ARCH)%.S
 $(OBJ_DIR)%.o: $(SRC_DIR)%.c
 	$(CC) $(CPPFLAGS) -I. -c -o $@ $<
 
-$(TARGET).lds: $(LD_SCRIPT) Makefile
+$(MACHINE).lds: $(LD_SCRIPT) Makefile
 	$(CC) $(CPPFLAGS) -E -P -C -o $@ $<
 
 %: force

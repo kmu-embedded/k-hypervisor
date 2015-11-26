@@ -6,9 +6,9 @@ PROCESSOR			?= cortex-a15
 DEBUG_FLAG			= -g
 CONFIG_FLAG			= -mcpu=$(PROCESSOR) -marm
 
-MACH				?= rtsm
+MACHINE				?= rtsm
 PROJECT				?= khypervisor
-TARGET				?= khypervisor-$(MACH)
+TARGET				?= khypervisor-$(MACHINE)
 
 # Desciption of directory structure
 PROJECT_DIR			?= .
