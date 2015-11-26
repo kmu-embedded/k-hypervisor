@@ -4,3 +4,4 @@
 *.axf
 *.map
 tags
+*.lds
