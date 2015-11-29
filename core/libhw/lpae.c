@@ -1,6 +1,5 @@
+#include <stdio.h>
 #include <lpae.h>
-
-#include <lib/print.h>
 #include <drivers/pl01x.h>
 
 /**

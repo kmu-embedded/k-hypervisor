@@ -275,7 +275,6 @@ uint8_t secondary_smp_pen;
 
 int main_cpu_init()
 {
-    init_print();
     printf("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
 
     /* Initialize Memory Management */

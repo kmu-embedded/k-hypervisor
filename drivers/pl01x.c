@@ -9,6 +9,7 @@ void uart_print(const char *str)
         *pUART = *str++;
 }
 
+#if 0
 void putchar(const char c)
 {
     /* Wait until there is space in the FIFO */
@@ -18,6 +19,7 @@ void putchar(const char c)
     volatile char *pUART = (char *) UART0_BASE;
     *pUART = c;
 }
+#endif
 
 void uart_putc(const char c)
 {

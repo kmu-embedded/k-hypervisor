@@ -4,8 +4,6 @@
 /** @brief Writes a character to the uart.
  *  @param v Character for print.
  */
-void putchar(const char c);
-
 void uart_putc(const char c);
 
 /** @brief Writes the C string pointed by str to the uart.

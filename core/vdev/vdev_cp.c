@@ -1,5 +1,5 @@
 #define DEBUG
-#include <lib/print.h>
+#include <stdio.h>
 #include <guest.h>
 #include <trap.h>
 #include <vdev.h>

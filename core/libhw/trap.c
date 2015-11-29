@@ -7,7 +7,7 @@
 #include <smp.h>
 
 #define DEBUG
-#include <lib/print.h>
+#include <stdio.h>
 #include <interrupt.h>
 /**\defgroup ARM
  * <pre> ARM registers.

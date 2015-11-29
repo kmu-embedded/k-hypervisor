@@ -1,23 +1,32 @@
+#include <stdio.h>
+#include <string.h>
 #include <test_malloc.h>
-#include <lib/print.h>
 #include <vm_main.h>
 #include <lib/malloc.h>
 
 // TODO(wonseok): This C entry point will be moved into core directory.
 int init_khypervisor(void)
 {
-    int num;
-    long base;
-    num = 10;
-    base = 2;
-    num = num / base;
-    num = num % base;
+    int i;
+    int *arr;
 
-    init_print();
-    printf("test %d\n", num);
-
-    init_heap();
+    __malloc_init();
     test_malloc();
+
+    arr = malloc(10 * sizeof(int));
+    for(i = 0; i < 10; i++) {
+        arr[i] = 10 * i;
+    }
+    for(i = 0; i < 10; i++) {
+        printf("%08d\n", arr[i]);
+    }
+    memset(arr, 0, sizeof(int) * 10);
+    for(i = 0; i < 10; i++) {
+        printf("%04d\n", arr[i]);
+    }
+
+    printf("%p\n", arr);
+    printf("0x%08x\n", arr);
 #if 0
     vm_main();
 #endif

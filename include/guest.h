@@ -1,9 +1,9 @@
 #ifndef _GUEST_H__
 #define _GUEST_H__
 
+#include <stdio.h>
 #include "armv7_p15.h"
 #include "timer.h"
-#include <lib/print.h>
 #include <hvmm_types.h>
 #include <vgic.h>
 #include <guest_hw.h>

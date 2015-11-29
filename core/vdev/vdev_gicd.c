@@ -4,7 +4,7 @@
 #include <asm-arm_inline.h>
 
 #define DEBUG
-#include <lib/print.h>
+#include <stdio.h>
 
 /* return the bit position of the first bit set from msb
  * for example, firstbit32(0x7F = 111 1111) returns 7

@@ -1,6 +1,6 @@
 #include <vdev.h>
 #define DEBUG
-#include <lib/print.h>
+#include <stdio.h>
 #include <asm-arm_inline.h>
 
 static int32_t vdev_hvc_ping_write(struct arch_vdev_trigger_info *info,

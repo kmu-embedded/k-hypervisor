@@ -1,9 +1,9 @@
+#include <stdio.h>
 #include <armv7_p15.h>
 #include <arch_types.h>
 #include <hvmm_trace.h>
 #include <lpae.h>
 #include <memory.h>
-#include <lib/print.h>
 #include <drivers/pl01x.h>
 #include <guest.h>
 #include <smp.h>
