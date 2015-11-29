@@ -3,7 +3,7 @@
 #include <gic_regs.h>
 #include <asm-arm_inline.h>
 #include <gic.h>
-#include <lib/print.h>
+#include <stdio.h>
 
 #include <arch/arm/rtsm-config.h>
 

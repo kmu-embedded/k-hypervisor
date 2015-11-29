@@ -1,6 +1,6 @@
 #include <vdev.h>
 #define DEBUG
-#include <lib/print.h>
+#include <stdio.h>
 #include <timer.h>
 #include <interrupt.h>
 #include <smp.h>

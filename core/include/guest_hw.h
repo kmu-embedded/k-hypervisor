@@ -4,7 +4,6 @@
 #include <arch/arm/rtsm-config.h>
 //#include <tools/tests_hypervisor/tests.h>
 #include <version.h>
-#include <lib/print.h>
 #include <hvmm_trace.h>
 #include <vgic.h>
 

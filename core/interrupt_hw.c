@@ -1,7 +1,7 @@
+#include <stdio.h>
 #include <interrupt.h>
 #include <gic.h>
 #include <vgic.h>
-#include <lib/print.h>
 #include <drivers/pl01x.h>
 
 static struct vgic_status _vgic_status[NUM_GUESTS_STATIC];

@@ -6,7 +6,7 @@
 #include <guest.h>
 #include <asm-arm_inline.h>
 
-#include <lib/print.h>
+#include <stdio.h>
 #include <drivers/pl01x.h>
 #include <arch/arm/rtsm-config.h>
 

@@ -1,7 +1,7 @@
 #include <vdev.h>
 #include <hvmm_trace.h>
 #define DEBUG
-#include <lib/print.h>
+#include <stdio.h>
 #include <smp.h>
 
 #define MAX_VDEV    256

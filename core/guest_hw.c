@@ -1,4 +1,4 @@
-#include <lib/print.h>
+#include <stdio.h>
 #include <drivers/pl01x.h>
 #include <hvmm_trace.h>
 #include <guest.h>
