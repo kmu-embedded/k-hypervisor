@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <gic.h>
 #include <armv7_p15.h>
 #include <a15_cp15_sysregs.h>
@@ -6,7 +7,6 @@
 #include <hvmm_trace.h>
 #include <gic_regs.h>
 #include <hvmm_types.h>
-#include <lib/print.h>
 #include <drivers/pl01x.h>
 
 #include <arch/arm/rtsm-config.h>

@@ -1,8 +1,7 @@
 #ifndef __HVMM_TRACE_H__
 #define __HVMM_TRACE_H__
 
-//#include <lib/printf.h>
-#include <lib/print.h>
+#include <stdio.h>
 
 #ifdef DEBUG
 #define HVMM_TRACE_ENTER()              \

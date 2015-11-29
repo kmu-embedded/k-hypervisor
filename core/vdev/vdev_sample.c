@@ -1,6 +1,6 @@
 #include <vdev.h>
 #define DEBUG
-#include <lib/print.h>
+#include <stdio.h>
 
 #define SAMPLE_BASE_ADDR 0x3FFFF000
 

@@ -1,6 +1,6 @@
 #include <vdev.h>
 #define DEBUG
-#include <lib/print.h>
+#include <stdio.h>
 
 static int32_t vdev_hvc_yield_write(struct arch_vdev_trigger_info *info,
                         struct arch_regs *regs)

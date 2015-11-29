@@ -6,7 +6,7 @@
 #include "timer.h"
 #include "guest.h"
 #include <arch/arm/rtsm-config.h>
-#include <lib/print.h>
+#include <stdio.h>
 #include <drivers/pl01x.h>
 #include <interrupt.h>
 
