@@ -2,6 +2,10 @@ SRC_DIR		= .
 OBJDIR		= .
 C_FILES 	= $(wildcard $(SRC_DIR)/*.c)
 OBJS 		:= $(addprefix $(OBJDIR)/,$(notdir $(ASM_FILES:.S=.o))) $(addprefix $(OBJDIR)/,$(notdir $(C_FILES:.c=.o)))
+INC			= ../../include
+LIB			= lib
+CORE		= ..
+DRV			= drivers
 
 TARGET		= outer
 BIN			= $(BUILD_DIR)/$(TARGET).bin
@@ -12,7 +16,10 @@ CC			= $(CROSS_COMPILE)gcc
 LD			= $(CROSS_COMPILE)ld
 NM			= $(CROSS_COMPILE)nm
 OBJCOPY		= $(CROSS_COMPILE)objcopy
-INCLUDES    = -I ../include -I ../../include/lib/
+
+INCLUDES	= -I $(INC)/$(LIB)/bsd
+INCLUDES    += -I ../include -I ../../include/lib/
+
 CONFIG_FLAGS= -g
 CPPFLAGS	+= $(CONFIG_FLAGS) $(INCLUDES) -Werror
 
