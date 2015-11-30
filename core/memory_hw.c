@@ -4,7 +4,6 @@
 #include <hvmm_trace.h>
 #include <lpae.h>
 #include <memory.h>
-#include <drivers/pl01x.h>
 #include <guest.h>
 #include <smp.h>
 #include <arch/arm/rtsm-config.h>
@@ -849,9 +848,8 @@ static void guest_memory_init_mmu(void)
     uint32_t vtcr, vttbr;
     HVMM_TRACE_ENTER();
     vtcr = read_vtcr();
-    uart_print("vtcr:");
-    uart_print_hex32(vtcr);
-    uart_print("\n\r");
+    printf("vtcr: 0x%08x\n", vtcr);
+    printf("\n\r");
     /* start lookup at level 1 table */
     vtcr &= ~VTCR_SL0_MASK;
     vtcr |= (0x01 << VTCR_SL0_SHIFT) & VTCR_SL0_MASK;
@@ -861,22 +859,16 @@ static void guest_memory_init_mmu(void)
     vtcr |= (0x3 << VTCR_IRGN0_SHIFT) & VTCR_IRGN0_MASK;
     write_vtcr(vtcr);
     vtcr = read_vtcr();
-    uart_print("vtcr:");
-    uart_print_hex32(vtcr);
-    uart_print("\n\r");
+    printf("vtcr: 0x%08x\n", vtcr);
     {
         uint32_t sl0 = (vtcr & VTCR_SL0_MASK) >> VTCR_SL0_SHIFT;
         uint32_t t0sz = vtcr & 0xF;
         uint32_t baddr_x = (sl0 == 0 ? 14 - t0sz : 5 - t0sz);
-        uart_print("vttbr.baddr.x:");
-        uart_print_hex32(baddr_x);
-        uart_print("\n\r");
+        printf("vttbr.baddr.x: 0x%08x\n", baddr_x);
     }
     /* VTTBR */
     vttbr = read_vttbr();
-    uart_print("vttbr:");
-    uart_print_hex64(vttbr);
-    uart_print("\n\r");
+    printf("vttbr: %llu\n", vttbr);
     HVMM_TRACE_EXIT();
 }
 
@@ -895,7 +887,7 @@ static void guest_memory_stage2_enable(int enable)
 {
     uint32_t hcr;
     /* HCR.VM[0] = enable */
-    /* uart_print( "hcr:"); uart_print_hex32(hcr); uart_print("\n\r"); */
+    /* printf( "hcr:"); printf_hex32(hcr); printf("\n\r"); */
     hcr = read_hcr();
     if (enable)
         hcr |= (0x1);
@@ -926,9 +918,9 @@ static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, union lpaed *ttbl)
      */
     vttbr = read_vttbr();
 #if 0 /* ignore message due to flood log message */
-    uart_print("current vttbr:");
-    uart_print_hex64(vttbr);
-    uart_print("\n\r");
+    printf("current vttbr:");
+    printf_hex64(vttbr);
+    printf("\n\r");
 #endif
     vttbr &= ~(VTTBR_VMID_MASK);
     vttbr |= ((uint64_t)vmid << VTTBR_VMID_SHIFT) & VTTBR_VMID_MASK;
@@ -937,9 +929,9 @@ static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, union lpaed *ttbl)
     write_vttbr(vttbr);
     vttbr = read_vttbr();
 #if 0 /* ignore message due to flood log message */
-    uart_print("changed vttbr:");
-    uart_print_hex64(vttbr);
-    uart_print("\n\r");
+    printf("changed vttbr:");
+    printf_hex64(vttbr);
+    printf("\n\r");
 #endif
     return HVMM_STATUS_SUCCESS;
 }
@@ -958,23 +950,15 @@ static int memory_enable(void)
     uint64_t httbr;
 
     /* MAIR/HMAIR */
-    uart_print(" --- MAIR ----\n\r");
+    printf(" --- MAIR ----\n\r");
     mair = read_mair0();
-    uart_print("mair0:");
-    uart_print_hex32(mair);
-    uart_print("\n\r");
+    printf("mair0: 0x%08x\n", mair);
     mair = read_mair1();
-    uart_print("mair1:");
-    uart_print_hex32(mair);
-    uart_print("\n\r");
+    printf("mair1: 0x%08x\n", mair);
     mair = read_hmair0();
-    uart_print("hmair0:");
-    uart_print_hex32(mair);
-    uart_print("\n\r");
+    printf("hmair0: 0x%08x\n", mair);
     mair = read_hmair1();
-    uart_print("hmair1:");
-    uart_print_hex32(mair);
-    uart_print("\n\r");
+    printf("hmair1: 0x%08x\n", mair);
 
     write_mair0(INITIAL_MAIR0VAL);
     write_mair1(INITIAL_MAIR1VAL);
@@ -982,54 +966,36 @@ static int memory_enable(void)
     write_hmair1(INITIAL_MAIR1VAL);
 
     mair = read_mair0();
-    uart_print("mair0:");
-    uart_print_hex32(mair);
-    uart_print("\n\r");
+    mair = read_mair0();
+    printf("mair0: 0x%08x\n", mair);
     mair = read_mair1();
-    uart_print("mair1:");
-    uart_print_hex32(mair);
-    uart_print("\n\r");
+    printf("mair1: 0x%08x\n", mair);
     mair = read_hmair0();
-    uart_print("hmair0:");
-    uart_print_hex32(mair);
-    uart_print("\n\r");
+    printf("hmair0: 0x%08x\n", mair);
     mair = read_hmair1();
-    uart_print("hmair1:");
-    uart_print_hex32(mair);
-    uart_print("\n\r");
+    printf("hmair1: 0x%08x\n", mair);
 
     /* HTCR */
-    uart_print(" --- HTCR ----\n\r");
+    printf(" --- HTCR ----\n\r");
     htcr = read_htcr();
-    uart_print("htcr:");
-    uart_print_hex32(htcr);
-    uart_print("\n\r");
+    printf("htcr: 0x%08x\n", htcr);
     write_htcr(0x80002500);
     htcr = read_htcr();
-    uart_print("htcr:");
-    uart_print_hex32(htcr);
-    uart_print("\n\r");
+    printf("htcr: 0x%08x\n", htcr);
 
     /* HSCTLR */
     /* i-Cache and Alignment Checking Enabled */
     /* MMU, D-cache, Write-implies-XN, Low-latency IRQs Disabled */
     hsctlr = read_hsctlr();
-    uart_print("hsctlr:");
-    uart_print_hex32(hsctlr);
-    uart_print("\n\r");
+    printf("hsctlr: 0x%08x\n", hsctlr);
     hsctlr = HSCTLR_BASE | SCTLR_A;
     write_hsctlr(hsctlr);
     hsctlr = read_hsctlr();
-    uart_print("hsctlr:");
-    uart_print_hex32(hsctlr);
-    uart_print("\n\r");
-
+    printf("hsctlr: 0x%08x\n", hsctlr);
 
     /* HCR */
     hcr = read_hcr();
-    uart_print("hcr:");
-    uart_print_hex32(hcr);
-    uart_print("\n\r");
+    printf("hcr: 0x%08x\n", hcr);
 
     /* HTCR */
     /*
@@ -1042,9 +1008,9 @@ static int memory_enable(void)
     /* Untested code commented */
 /*
     htcr = read_htcr();
-    uart_print("htcr:");
-    uart_print_hex32(htcr);
-    uart_print("\n\r");
+    printf("htcr:");
+    printf_hex32(htcr);
+    printf("\n\r");
     htcr &= ~HTCR_SH0_MASK;
     htcr |= (0x0 << HTCR_SH0_SHIFT) & HTCR_SH0_MASK;
     htcr &= ~HTCR_ORGN0_MASK;
@@ -1055,34 +1021,26 @@ static int memory_enable(void)
     htcr |= (0x0 << HTCR_T0SZ_SHIFT) & HTCR_T0SZ_MASK;
     write_htcr(htcr);
     htcr = read_htcr();
-    uart_print("htcr:");
-    uart_print_hex32(htcr);
-    uart_print("\n\r");
+    printf("htcr:");
+    printf_hex32(htcr);
+    printf("\n\r");
 */
 
     /* HTTBR = &__hmm_pgtable */
     httbr = read_httbr();
-    uart_print("httbr:");
-    uart_print_hex64(httbr);
-    uart_print("\n\r");
+    printf("httbr: %llu\n", httbr);
     httbr &= 0xFFFFFFFF00000000ULL;
     httbr |= (uint32_t) &_hmm_pgtable;
     httbr &= HTTBR_BADDR_MASK;
-    uart_print("writing httbr:");
-    uart_print_hex64(httbr);
-    uart_print("\n\r");
+    printf("writing httbr: %llu\n", httbr);
     write_httbr(httbr);
     httbr = read_httbr();
-    uart_print("read back httbr:");
-    uart_print_hex64(httbr);
-    uart_print("\n\r");
+    printf("read back httbr: %llu\n", httbr);
 
     /* Enable PL2 Stage 1 MMU */
 
     hsctlr = read_hsctlr();
-    uart_print("hsctlr:");
-    uart_print_hex32(hsctlr);
-    uart_print("\n\r");
+    printf("hsctlr: 0x%08x\n", hsctlr);
 
     /* HSCTLR Enable MMU and D-cache */
     hsctlr |= (SCTLR_M | SCTLR_C);
@@ -1096,9 +1054,7 @@ static int memory_enable(void)
     asm("isb");
 
     hsctlr = read_hsctlr();
-    uart_print("hsctlr:");
-    uart_print_hex32(hsctlr);
-    uart_print("\n\r");
+    printf("hsctlr: 0x%08x\n", hsctlr);
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -1130,36 +1086,22 @@ static void host_memory_init(void)
 
     _hmm_pgtable[0] = lpaed_host_l1_block(pa, ATTR_IDX_DEV_SHARED);
     pa += 0x40000000;
-    uart_print("&_hmm_pgtable[0]:");
-    uart_print_hex32((uint32_t) &_hmm_pgtable[0]);
-    uart_print("\n\r");
-    uart_print("lpaed:");
-    uart_print_hex64(_hmm_pgtable[0].bits);
-    uart_print("\n\r");
     _hmm_pgtable[1] = lpaed_host_l1_block(pa, ATTR_IDX_WRITEALLOC);
     pa += 0x40000000;
-    uart_print("&_hmm_pgtable[1]:");
-    uart_print_hex32((uint32_t) &_hmm_pgtable[1]);
-    uart_print("\n\r");
-    uart_print("lpaed:");
-    uart_print_hex64(_hmm_pgtable[1].bits);
-    uart_print("\n\r");
     _hmm_pgtable[2] = lpaed_host_l1_block(pa, ATTR_IDX_WRITEALLOC);
     pa += 0x40000000;
-    uart_print("&_hmm_pgtable[2]:");
-    uart_print_hex32((uint32_t) &_hmm_pgtable[2]);
-    uart_print("\n\r");
-    uart_print("lpaed:");
-    uart_print_hex64(_hmm_pgtable[2].bits);
-    uart_print("\n\r");
     /* _hmm_pgtable[3] refers Lv2 page table address. */
     _hmm_pgtable[3] = lpaed_host_l1_table((uint32_t) _hmm_pgtable_l2);
-    uart_print("&_hmm_pgtable[3]:");
-    uart_print_hex32((uint32_t) &_hmm_pgtable[3]);
-    uart_print("\n\r");
-    uart_print("lpaed:");
-    uart_print_hex64(_hmm_pgtable[3].bits);
-    uart_print("\n\r");
+
+    printf("&_hmm_pgtable[0]: 0x%08x\n", (uint32_t) &_hmm_pgtable[0]);
+    printf("lpaed: %llu\n", _hmm_pgtable[0].bits);
+    printf("&_hmm_pgtable[1]: 0x%08x\n", (uint32_t) &_hmm_pgtable[1]);
+    printf("lpaed: %llu\n", _hmm_pgtable[1].bits);
+    printf("&_hmm_pgtable[2]: 0x%08x\n", (uint32_t) &_hmm_pgtable[2]);
+    printf("lpaed: %llu\n", _hmm_pgtable[2].bits);
+    printf("&_hmm_pgtable[3]: 0x%08x\n", (uint32_t) &_hmm_pgtable[3]);
+    printf("lpaed: %llu\n", _hmm_pgtable[3].bits);
+
     for (i = 0; i < HMM_L2_PTE_NUM; i++) {
         /*
          * _hvmm_pgtable_lv2[i] refers Lv3 page table address.
@@ -1252,7 +1194,7 @@ static int memory_hw_init(struct memmap_desc **guest0,
             struct memmap_desc **guest1)
 {
     uint32_t cpu = smp_processor_id();
-    uart_print("[memory] memory_init: enter\n\r");
+    printf("[memory] memory_init: enter\n\r");
 
     guest_memory_init(guest0, guest1);
 
@@ -1263,9 +1205,9 @@ static int memory_hw_init(struct memmap_desc **guest0,
 
     memory_enable();
 
-    uart_print("[memory] memory_init: exit\n\r");
+    printf("[memory] memory_init: exit\n\r");
     if (!cpu) {
-        uart_print("[memory] host_memory_heap_init\n\r");
+        printf("[memory] host_memory_heap_init\n\r");
         host_memory_heap_init();
     }
 

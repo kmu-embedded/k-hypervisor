@@ -79,78 +79,14 @@
 
 #include <stdio.h>
 #include <stdint.h>
-
-
-//#define iPAQ	/* FIXME: this is ugly */
-//#undef  XSCALE
-//#define XSCALE
-// #undef  iPAQ
-// #define XSCALE
+#include <drivers/pl01x.h>
 
 extern int __fputc(int c, FILE *stream);
 /* Put character for elf-loader */
 int
 __fputc(int c, FILE *stream)
 {
-
-#if 0
-/* ---------------------------------- iPAQ & PLEB1 (SA-1100)--------------------------- */
-#ifdef MACHINE_IPAQ_H3800 //iPAQ // SA-1100
-	volatile char *base  = (char *)0x80050000;	// base serial interface address
-	/* volatile int *base2 = (int *)0x80030000; // the other serial Arm serial i/f */
-
-/*
-UTSR1 32 @ 0x20:
- tby <0>    # Transmitter busy
- rne <1>    # Refeive FIFO not empty
- tnf <2>    # Transmitter not full
- pre <3>    # Parity error
- fre <4>    # Framing error
- ror <5>    # Receive FIFO overrun
-*/
-
-#define UTDR		0x14		// data register
-#define UTSR1		0x20		// status register 1 offset
-#define UTSR1_TNF	(1 << 2)	// tx FIFO not full (status bit)
-
-	while ( ! (  * ( (volatile long *) (base + UTSR1)) & UTSR1_TNF ))
-		; // busy wait while TX FIFO is full
-	*(volatile unsigned char *) (base + UTDR)  = c;
-	// *base2 = c;
-#endif
-
-/* ---------------------------------- PLEB2 (XSCALE PXA-255) --------------------------- */
-#ifdef MACHINE_PLEB2 //XSCALE /* PXA 255 on PLEB2 */
-
-/* Console port -- taken from kernel/include/platform/pleb2/console.h */
-#define CONSOLE_OFFSET          0x100000
-
-/* IO Base -- taken from kernel/include/arch/arm/xscale/cpu.h */
-#define XSCALE_PXA255_IO_BASE   0x40000000
-
-#define DATAR		0x00000000
-#define STATUSR		0x00000014
-
-/* TX empty bit -- uboot/include/asm/arch/hardware.h */
-#define LSR_TEMT        (1 << 6)        /* Transmitter Empty */
-
-volatile char *base  = (char *) (XSCALE_PXA255_IO_BASE + CONSOLE_OFFSET);
-
-        /* wait for room in the tx FIFO on FFUART */
-	while ( ! (  * ( (volatile long *) (base + STATUSR)) & LSR_TEMT ))
-                ; // busy wait while TX FIFO is full
-        *(volatile unsigned char *) (base + DATAR)  = c;
-
-#endif	/* XSCALE */
-#endif
-
-#define UART0_BASE       0x1C090000
-    /* Wait until there is space in the FIFO */
-    while (*((unsigned int *)(UART0_BASE + 0x18)) & 0x20)
-        ;
-    /* Send the character */
-    volatile char *pUART = (char *) UART0_BASE;
-    *pUART = c;
+    uart_putc(c);
 
 	return(0);
 }

@@ -2,7 +2,6 @@
 #include <arch/arm/rtsm-config.h>
 #include <memory.h>
 #include <arch_types.h>
-#include <drivers/pl01x.h>
 
 static struct memory_ops *_memory_ops;
 

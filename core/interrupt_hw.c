@@ -2,7 +2,6 @@
 #include <interrupt.h>
 #include <gic.h>
 #include <vgic.h>
-#include <drivers/pl01x.h>
 
 static struct vgic_status _vgic_status[NUM_GUESTS_STATIC];
 
@@ -14,15 +13,11 @@ static hvmm_status_t host_interrupt_init(void)
     {
         uint32_t hcr;
         hcr = read_hcr();
-        uart_print("hcr:");
-        uart_print_hex32(hcr);
-        uart_print("\n\r");
+        printf("hcr: 0x%08x\n", hcr);
         hcr |= HCR_IMO | HCR_FMO;
         write_hcr(hcr);
         hcr = read_hcr();
-        uart_print("hcr:");
-        uart_print_hex32(hcr);
-        uart_print("\n\r");
+        printf("hcr: 0x%08x\n", hcr);
     }
 
     /* Physical Interrupt: GIC Distributor & CPU Interface */

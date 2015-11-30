@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "assembly.h"
+#include <arch-arm/assembly.h>
 
 // struct { unsigned quot, unsigned rem}
 //        __aeabi_uidivmod(unsigned numerator, unsigned denominator) {

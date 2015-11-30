@@ -2,7 +2,6 @@
 #include <hvmm_types.h>
 #include <guest.h>
 #include <hvmm_trace.h>
-#include <drivers/pl01x.h>
 #include <interrupt.h>
 #include <smp.h>
 
