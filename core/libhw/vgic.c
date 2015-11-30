@@ -7,7 +7,6 @@
 #include <asm-arm_inline.h>
 
 #include <stdio.h>
-#include <drivers/pl01x.h>
 #include <arch/arm/rtsm-config.h>
 
 /* for test, surpress traces */
@@ -336,16 +335,11 @@ static void _vgic_dump_status(void)
      * Virtual Machine Control
      *  -
      */
-    uart_print("=== VGIC Status ===\n\r");
-    uart_print(" Initialized:");
-    uart_print((VGIC_READY() ? "Yes" : "No"));
-    uart_print("\n\r");
-    uart_print(" Num ListRegs:");
-    uart_print_hex32(_vgic.num_lr);
-    uart_print("\n\r");
-    uart_print(" LR_MASK:");
-    uart_print_hex64(_vgic.valid_lr_mask);
-    uart_print("\n\r");
+    printf("=== VGIC Status ===\n");
+    printf(" Initialized:");
+    printf(" %s\n", (VGIC_READY() ? "Yes" : "No"));
+    printf(" Num ListRegs: 0x%08x\n", _vgic.num_lr);
+    printf(" LR_MASK: 0x%llu\n", _vgic.valid_lr_mask);
 }
 
 /**
@@ -366,40 +360,19 @@ static void _vgic_dump_regs(void)
 #ifndef __VGIC_DISABLE_TRACE__
     int i;
     HVMM_TRACE_ENTER();
-    uart_print("  hcr:");
-    uart_print_hex32(_vgic.base[GICH_HCR]);
-    uart_print("\n\r");
-    uart_print("  vtr:");
-    uart_print_hex32(_vgic.base[GICH_VTR]);
-    uart_print("\n\r");
-    uart_print(" vmcr:");
-    uart_print_hex32(_vgic.base[GICH_VMCR]);
-    uart_print("\n\r");
-    uart_print(" misr:");
-    uart_print_hex32(_vgic.base[GICH_MISR]);
-    uart_print("\n\r");
-    uart_print("eisr0:");
-    uart_print_hex32(_vgic.base[GICH_EISR0]);
-    uart_print("\n\r");
-    uart_print("eisr1:");
-    uart_print_hex32(_vgic.base[GICH_EISR1]);
-    uart_print("\n\r");
-    uart_print("elsr0:");
-    uart_print_hex32(_vgic.base[GICH_ELSR0]);
-    uart_print("\n\r");
-    uart_print("elsr1:");
-    uart_print_hex32(_vgic.base[GICH_ELSR1]);
-    uart_print("\n\r");
-    uart_print("  apr:");
-    uart_print_hex32(_vgic.base[GICH_APR]);
-    uart_print("\n\r");
-    uart_print("   LR:\n\r");
+    printf("  hcr: 0x%08x\n", _vgic.base[GICH_HCR]);
+    printf("  vtr: 0x%08x\n", _vgic.base[GICH_VTR]);
+    printf(" vmcr: 0x%08x\n", _vgic.base[GICH_VMCR]);
+    printf(" misr: 0x%08x\n", _vgic.base[GICH_MISR]);
+    printf("eisr0: 0x%08x\n", _vgic.base[GICH_EISR0]);
+    printf("eisr1: 0x%08x\n", _vgic.base[GICH_EISR1]);
+    printf("elsr0: 0x%08x\n", _vgic.base[GICH_ELSR0]);
+    printf("elsr1: 0x%08x\n", _vgic.base[GICH_ELSR1]);
+    printf("  apr: 0x%08x\n", _vgic.base[GICH_APR]);
+    printf("   LR:\n");
     for (i = 0; i < _vgic.num_lr; i++) {
         if (vgic_is_free_slot(i) != i) {
-            uart_print_hex32(_vgic.base[GICH_LR + i]);
-            uart_print(" - ");
-            uart_print_hex32(i);
-            uart_print("\n\r");
+            printf("0x%08x - %d\n", _vgic.base[GICH_LR + i], i);
         }
     }
     HVMM_TRACE_EXIT();

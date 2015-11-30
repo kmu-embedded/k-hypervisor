@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <lpae.h>
-#include <drivers/pl01x.h>
 
 /**
  * \defgroup LPAE_address_mask
@@ -30,12 +29,8 @@ union lpaed lpaed_host_l1_block(uint64_t pa, uint8_t attr_idx)
     /* lpae.c */
     union lpaed lpaed;
     printf("[mm] hvmm_mm_lpaed_l1_block:\n\r");
-    printf(" pa:");
-    uart_print_hex64(pa);
-    printf("\n\r");
-    printf(" attr_idx:");
-    uart_print_hex32((uint32_t) attr_idx);
-    printf("\n\r");
+    printf(" pa: %llu\n", pa);
+    printf(" attr_idx: 0x%08x\n", (uint32_t) attr_idx);
     /* Valid Block Entry */
     lpaed.pt.valid = 1;
     lpaed.pt.table = 0;

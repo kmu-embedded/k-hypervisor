@@ -13,7 +13,7 @@ ser_out(int c)
 }
 
 static size_t
-l4kdb_write(const void *data, long int position, size_t count, void *handle /*unused*/)
+__io_write(const void *data, long int position, size_t count, void *handle /*unused*/)
 {
 	size_t i;
 	const char *real_data = data;
@@ -39,7 +39,7 @@ struct __file __stdin = {
 struct __file __stdout = {
 	.handle	    = NULL,
 	.read_fn    = NULL,
-	.write_fn   = l4kdb_write,
+	.write_fn   = __io_write,
 	.close_fn   = NULL,
 	.eof_fn	    = NULL,
 	.buffering_mode = _IONBF,
@@ -53,7 +53,7 @@ struct __file __stdout = {
 struct __file __stderr = {
 	.handle	    = NULL,
 	.read_fn    = NULL,
-	.write_fn   = l4kdb_write,
+	.write_fn   = __io_write,
 	.close_fn   = NULL,
 	.eof_fn	    = NULL,
 	.buffering_mode = _IONBF,

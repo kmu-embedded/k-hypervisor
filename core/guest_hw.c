@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <drivers/pl01x.h>
 #include <hvmm_trace.h>
 #include <guest.h>
 #include <guest_hw.h>
@@ -319,22 +318,14 @@ static hvmm_status_t guest_hw_init(struct guest_struct *guest,
 static hvmm_status_t guest_hw_dump(uint8_t verbose, struct arch_regs *regs)
 {
     if (verbose & GUEST_VERBOSE_LEVEL_0) {
-        uart_print("cpsr: ");
-        uart_print_hex32(regs->cpsr);
-        uart_print("\n\r");
-        uart_print("  pc: ");
-        uart_print_hex32(regs->pc);
-        uart_print("\n\r");
-        uart_print("  lr: ");
-        uart_print_hex32(regs->lr);
-        uart_print("\n\r");
+        printf("cpsr: 0x%08x\n", regs->cpsr);
+        printf("  pc: 0x%08x\n", regs->pc);
+        printf("  lr: 0x%08x\n", regs->lr);
         {
             int i;
-            uart_print(" gpr:\n\r");
+            printf(" gpr:\n\r");
             for (i = 0; i < ARCH_REGS_NUM_GPR; i++) {
-                uart_print("     ");
-                uart_print_hex32(regs->gpr[i]);
-                uart_print("\n\r");
+                printf("     0x%08x\n", regs->gpr[i]);
             }
         }
     }
@@ -351,12 +342,8 @@ static hvmm_status_t guest_hw_dump(uint8_t verbose, struct arch_regs *regs)
     if (verbose & GUEST_VERBOSE_LEVEL_2) {
         uint64_t pct = read_cntpct();
         uint32_t tval = read_cnthp_tval();
-        uart_print("cntpct:");
-        uart_print_hex64(pct);
-        uart_print("\n\r");
-        uart_print("cnth_tval:");
-        uart_print_hex32(tval);
-        uart_print("\n\r");
+        printf("cntpct: %llu\n", pct);
+        printf("cnth_tval:0x%08x\n", tval);
     }
     return HVMM_STATUS_SUCCESS;
 }

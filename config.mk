@@ -11,9 +11,10 @@ PROJECT				?= khypervisor
 TARGET				?= khypervisor-$(MACHINE)
 
 # Desciption of directory structure
-PROJECT_DIR			?= .
-ARCH				?= $(PROJECT_DIR)/arch/arm
-ARCH_VERSION		?= $(ARCH)/v7
-CORE				?= $(PROJECT_DIR)/core
-LIB					?= $(PROJECT_DIR)/lib
-DRIVER				?= $(PROJECT_DIR)/drivers
+ROOT				?= .
+ARCH				?= arch/arm
+VERSION				?= v7
+CORE				?= core
+LIB					?= lib
+DRV					?= drivers
+INC					?= include
