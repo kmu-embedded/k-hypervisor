@@ -45,7 +45,7 @@ START_TEST(strcmp_different)
 	fail_unless(strcmp(A, AA) < 0, "strcmp(\"A\", \"AA\")");
 }
 END_TEST
- 
+
 START_TEST(strncmp_equal)
 {
 	int i;
@@ -53,7 +53,7 @@ START_TEST(strncmp_equal)
 	char Hello_World[] = "Hello World";
 	fail_unless(strncmp(Hello_World, Hello_World, 5) == 0, "Start of two string equal");
 	for (i = 0; i < 4; i++)
-		fail_unless(strncmp("", "", i) == 0, 
+		fail_unless(strncmp("", "", i) == 0,
 			    "Empty strings equal (Length given as %d)", i);
 
 	fail_unless(strncmp(Foo_Bar, Foo_Bar, strlen(Foo_Bar)) == 0, "The string equal itself");
@@ -197,9 +197,9 @@ START_TEST(memcmp_equal)
 		}
 	}
 
-	fail_unless(memcmp(s[0], s[1], 10) == 0, 
+	fail_unless(memcmp(s[0], s[1], 10) == 0,
 		    "equal, when two objects have the same content");
-	fail_unless(memcmp(s[2], s[3], 9) == 0, 
+	fail_unless(memcmp(s[2], s[3], 9) == 0,
 		    "equal, when only compare the parts containing the "
 		    "same content of the two objects");
 }
@@ -221,12 +221,12 @@ START_TEST(memcmp_unequal)
 			s[3][i] = 1;
 		}
 	}
-	   
+
 	fail_unless(memcmp(s[0], s[1], 10) != 0,
 		    "unequal, when two memory have completed "
 		    "different content");
 
-	fail_unless(memcmp(s[2], s[3], 10) != 0, 
+	fail_unless(memcmp(s[2], s[3], 10) != 0,
 		    "unequal, when compare the two objects with "
 		    "partly equal content from the start to the end");
 }
@@ -236,13 +236,13 @@ START_TEST(memcpy_nooverlap)
 {
 	int i;
 	char s1[10], s2[10];
-	
+
 	for ( i = 0; i < 10; i++) {
 		s2[i] = i;
 	}
-	
-	fail_unless(memcpy(s1, s2, 10) == s1, "check memcpy return value");  
-	fail_unless(memcmp(s1, s2, 10) == 0, "check memcpy performed correctly");  
+
+	fail_unless(memcpy(s1, s2, 10) == s1, "check memcpy return value");
+	fail_unless(memcmp(s1, s2, 10) == 0, "check memcpy performed correctly");
 }
 END_TEST
 
@@ -256,11 +256,11 @@ START_TEST(memmove_noorwithoverlap)
 		s2[i] = s4[i] = i;
 	}
 
-	fail_unless(memmove(s1, s2, 10) == s1, "memmove non overlap, return value");  
-	fail_unless(memcmp(s1, s2, 10) == 0, "memmove non overlap, data correct");  
+	fail_unless(memmove(s1, s2, 10) == s1, "memmove non overlap, return value");
+	fail_unless(memcmp(s1, s2, 10) == 0, "memmove non overlap, data correct");
 
-	fail_unless(memmove(s3, s2, 10) == s3, "moving between twooverlap objects"); 
-	fail_unless(memcmp(s3, s4, 10) == 0, "moving between twooverlap objects"); 
+	fail_unless(memmove(s3, s2, 10) == s3, "moving between twooverlap objects");
+	fail_unless(memcmp(s3, s4, 10) == 0, "moving between twooverlap objects");
 }
 END_TEST
 
@@ -268,9 +268,9 @@ START_TEST(strcpy_test)
 {
 	char s1[10];
 	char s2[] = "bigger";
-   
-	fail_unless(strcpy(s1, s2) == s1, "copying from small to big, return value");  
-	fail_unless(strcmp(s1, s2) == 0, "copying from small to big, data correct");  
+
+	fail_unless(strcpy(s1, s2) == s1, "copying from small to big, return value");
+	fail_unless(strcmp(s1, s2) == 0, "copying from small to big, data correct");
 }
 END_TEST
 
@@ -292,13 +292,13 @@ START_TEST(memchr_findorno)
 {
 	char s1[10], s2[10];
 	int i;
-	
+
 	for (i = 0; i < 10; i++) {
 	      	s1[i] = s2[i] = i;
 		if (i == 9)
 			s1[i] = 'a';
 	}
-	
+
 	fail_unless(memchr(s1, 'a', 10) == (s1 + 9), "find a character in a memory with this character");
 	fail_unless(memchr(s2, 'a', 10) == NULL, "find a character in a memory without this character");
 	fail_unless(memchr(s1, 'a', 8) == NULL, "find a character in the range without this character ");
@@ -309,7 +309,7 @@ START_TEST(strchr_findorno)
 {
 	char s1[] = "sheep";
 	char s2[] = "ship";
-	
+
 	fail_unless(strchr(s1, 'e') == (s1 + 2), "find a non null character in a string with this character");
 	fail_unless(strchr(s2, 'e') == NULL, "find a non null character in a string without this character");
 	fail_unless(strchr(s2, '\0') == (s2 + strlen(s2)), "find a null character in a string");
@@ -320,7 +320,7 @@ START_TEST(strcat_stickatend)
 {
 	char s1[20] = "ineed";
 	char s2[] = "bread";
-	
+
 	fail_unless(strcat(s1, s2) == s1, "stick s2 on the end of s1, return value");
 	fail_unless(strcmp(s1, "ineedbread") == 0, "stick s2 on the end of s1, data correct");
 }
@@ -349,8 +349,8 @@ START_TEST(strcspn_inornot)
 {
 	char s1[] = "ineedbread";
 	char s2[] = "bread";
-	char s3[] = "cut"; 
-	
+	char s3[] = "cut";
+
 	fail_unless(strcspn(s1, s2) == 2, "there are members of s2 in s1");
 	fail_unless(strcspn(s3, s2) == 3, "there is no member of s2 in s3");
 }
@@ -360,8 +360,8 @@ START_TEST(strpbrk_inornot)
 {
 	char s1[] = "ineedbread";
 	char s2[] = "bread";
-	char s3[] = "cut"; 
-	
+	char s3[] = "cut";
+
 	fail_unless(strpbrk(s1, s2) == (s1 + 2), "there are members of s2 in s1");
 	fail_unless(strpbrk(s3, s2) == NULL, "there is no member of s2 in s3");
 }
@@ -370,10 +370,10 @@ END_TEST
 START_TEST(strrchr_inornot)
 {
 	char s1[] = "ineedbread";
-	
+
 	fail_unless(strrchr(s1, 'e') == (s1 + 7), "there is non-null character 'e' in s1");
 	fail_unless(strrchr(s1, 'c') == NULL, "there is no non-null character 'c' in s3");
-	/* 
+	/*
 	   Guess what, the follow doesn't actually end up testing strrchr, because gcc
 	   wonderfully optomises calls to strrchar(x, '\0') to actually call strchr(x, '\0')
 	*/
@@ -385,7 +385,7 @@ START_TEST(strspn_inornot)
 {
            char s1[] = "ididbread";
 	   char s2[] = "ineed";
-	
+
 	   fail_unless(strspn(s1, s2) == 4, "there are members of s2 in s1");
 	   fail_unless(strspn(s2, s2) == 5, "there is no member of s2 in s3");
 }
@@ -398,16 +398,16 @@ START_TEST(strtok_split)
 	   char test3[] = "--";
 
 	   char delims[] = " .,;:!-";
-	
+
 	   fail_unless((strtok(test1, delims) == test1	      \
 			&& strtok(NULL, delims) == test1 + 5 \
 			&& strtok(NULL, delims) == test1 + 7 \
-			&& strtok(NULL, delims) == NULL), 
+			&& strtok(NULL, delims) == NULL),
 		       "there are members of delims within test1");
 	   fail_unless(strtok(test2, delims) == test2 && \
-		       strtok(NULL, delims) == NULL, 
+		       strtok(NULL, delims) == NULL,
 		       "there is no member of delims in test2");
-	   fail_unless(strtok(test3, delims) == NULL, 
+	   fail_unless(strtok(test3, delims) == NULL,
 		       "there is only member of delims in test3");
 }
 END_TEST
@@ -416,13 +416,13 @@ START_TEST(memset_simple_test)
 {
 	char buf[10];
 	unsigned int i;
-	
-	for(i = 0; i< 10; i++) 
+
+	for(i = 0; i< 10; i++)
 		buf[i] = 0;
-	
+
 	fail_unless(memset(buf, 'I', 9) == buf, "memset: error on simple test");
 	fail_unless(strspn(buf, "I") == 9, "memset: bad data");
-	
+
 }
 END_TEST
 
@@ -430,29 +430,29 @@ START_TEST(memset_wordsize_alignment)
 {
 	char buf1[17], *buf2;
 	unsigned int i, count, align;
-	
-	for(i = 0; i< 17; i++) 
+
+	for(i = 0; i< 17; i++)
 		buf1[i] = 0;
-	
+
 	#if UINTPTR_MAX == UINT32_MAX
 		align = 4;
 	#elif UINTPTR_MAX == UINT64_MAX
-		align = 8; 
+		align = 8;
 	#endif
 	for(i = 1; i < align; i++) {
-	
+
 		buf2 = buf1 + i;
 		count = align - i;
-		
+
 		fail_unless(memset(buf1, 'I', 16) == buf1, "memset: error on aligned case");
 		fail_unless(strspn(buf1, "I") == 16, "memset: bad data or memory corruption by writing to wrong address");
-		
+
 		fail_unless(memset(buf2, 'A', count) == buf2, "memset: error on unaligned start & aligned end");
 		fail_unless(strspn(buf2, "A") == count, "memset: bad data or memory corruption by writing to wrong address");
-		
+
 		fail_unless(memset(buf2, 'B', 8) == buf2, "memset: error on unaligned start & unaligned end");
 		fail_unless(strspn(buf2, "B") == 8, "memset: bad data or memory corruption by writing to wrong address");
-		
+
 		fail_unless(memset(buf1, 'C', 4) == buf1, "memset: error on aligned start & unaligned end");
 		fail_unless(strspn(buf1, "C") == 4, "memset: bad data or memory corruption by writing to wrong address");
 	}
@@ -465,18 +465,18 @@ START_TEST(memset_pagesize_alignment)
 {
 	char *buf1, *buf2;
 	unsigned int i;
-	
+
 	buf1 = (char *)malloc(PAGESIZE+16);
 	fail_unless(buf1 != 0, "not enough memory on malloc");
-	
+
 	for (i = 0; i < PAGESIZE+16; i++)
 		buf1[i] = 0;
 	/*find the page boundary and make buf2 points to a few bytes before this boundary */
-	buf2 = (char *)(((((uintptr_t)buf1 + PAGESIZE) >> PAGEBITS) << PAGEBITS) - 8);		
+	buf2 = (char *)(((((uintptr_t)buf1 + PAGESIZE) >> PAGEBITS) << PAGEBITS) - 8);
 
 	fail_unless(memset(buf2, 'I', 16) == buf2, "memset: error on setting a region cross page boundary");
 	fail_unless(strspn(buf2, "I") == 16, "memset: bad data or memory corruption by writing to wrong address");
-	
+
 	free(buf1);
 }
 END_TEST
@@ -484,7 +484,7 @@ END_TEST
 START_TEST(strlen_length)
 {
 	char s1[] = "aaaaa";
-		   
+
 	fail_unless(strlen(s1) == 5, "returned the length of a string");
 }
 END_TEST
@@ -555,7 +555,7 @@ START_TEST(strtoul_hex)
        char *str = "0x06040000&0xffff0000";
        char *next;
        unsigned long val;
-       
+
        val = strtoul(str, &next, 0);
        fail_unless(val == 0x06040000, "Value not calculated correctly. Guess base.");
 
@@ -569,7 +569,7 @@ START_TEST(strtoul_upper_hex)
 	char *str = "0xaBcDeF";
 	char *next;
 	unsigned long val;
-	
+
 	val = strtoul(str, &next, 0);
 	fail_unless(val == 0xabcdef, "Value not calculated correctly.");
 }
@@ -580,7 +580,7 @@ START_TEST(strtoul_decimal)
        char *str = "6040000&37";
        char *next;
        unsigned long val;
-       
+
        val = strtoul(str, &next, 0);
        fail_unless(val == 6040000, "Value not calculated correctly");
 
@@ -598,50 +598,50 @@ make_test_libs_c_suite(void)
 
 	suite = suite_create("libc tests");
 
-	tc = tcase_create("strcmp"); 
+	tc = tcase_create("strcmp");
 	tcase_add_test(tc, strcmp_equal);
 	tcase_add_test(tc, strcmp_nequal);
 	tcase_add_test(tc, strcmp_different);
 	suite_add_tcase(suite, tc);
 
-	tc = tcase_create("strncmp"); 
+	tc = tcase_create("strncmp");
 	tcase_add_test(tc, strncmp_equal);
 	tcase_add_test(tc, strncmp_partially_equal);
 	tcase_add_test(tc, strncmp_partially_different);
 	suite_add_tcase(suite, tc);
 
-	tc = tcase_create("strstr"); 
+	tc = tcase_create("strstr");
 	tcase_add_test(tc, strstr_exists);
 	tcase_add_test(tc, strstr_empty);
 	tcase_add_test(tc, strstr_nexists);
 	suite_add_tcase(suite, tc);
-	
-	tc = tcase_create("memcmp"); 
+
+	tc = tcase_create("memcmp");
 	tcase_add_test(tc, memcmp_equal);
 	tcase_add_test(tc, memcmp_unequal);
 	suite_add_tcase(suite, tc);
 
-	tc = tcase_create("memcpy"); 
+	tc = tcase_create("memcpy");
 	tcase_add_test(tc, memcpy_nooverlap);
 	suite_add_tcase(suite, tc);
-	
-	tc = tcase_create("memmove"); 
+
+	tc = tcase_create("memmove");
 	tcase_add_test(tc, memmove_noorwithoverlap);
 	suite_add_tcase(suite, tc);
-	
-	tc = tcase_create("strcpy"); 
+
+	tc = tcase_create("strcpy");
 	tcase_add_test(tc, strcpy_test);
 	suite_add_tcase(suite, tc);
-	
-	tc = tcase_create("strncpy"); 
+
+	tc = tcase_create("strncpy");
 	tcase_add_test(tc, strncpy_oversized_destination);
 	suite_add_tcase(suite, tc);
 
-	tc = tcase_create("sprintf"); 
+	tc = tcase_create("sprintf");
 	tcase_add_test(tc, sprintf_test);
 	suite_add_tcase(suite, tc);
 
-	tc = tcase_create("snprintf"); 
+	tc = tcase_create("snprintf");
 	tcase_add_test(tc, snprintf_test);
 	suite_add_tcase(suite, tc);
 
@@ -649,61 +649,61 @@ make_test_libs_c_suite(void)
 	tcase_add_test(tc, format_left_justify);
 	suite_add_tcase(suite, tc);
 
-	tc = tcase_create("stdout"); 
+	tc = tcase_create("stdout");
 	tcase_add_test(tc, stdout_fputs_test);
 	suite_add_tcase(suite, tc);
 
-	tc = tcase_create("stdio"); 
+	tc = tcase_create("stdio");
 	tcase_add_test(tc, ungetc_test);
 	tcase_add_test(tc, ungetc_multiple_test);
 	suite_add_tcase(suite, tc);
-	
-	tc = tcase_create("memchr"); 
+
+	tc = tcase_create("memchr");
 	tcase_add_test(tc, memchr_findorno);
 	suite_add_tcase(suite, tc);
-	
-	tc = tcase_create("strchr"); 
+
+	tc = tcase_create("strchr");
 	tcase_add_test(tc, strchr_findorno);
 	suite_add_tcase(suite, tc);
-	
+
 	tc = tcase_create("strcat");
         tcase_add_test(tc, strcat_stickatend);
         suite_add_tcase(suite, tc);
-	
+
 	tc = tcase_create("strncat");
         tcase_add_test(tc, strncat_stickatend);
         suite_add_tcase(suite, tc);
-	
+
 	tc = tcase_create("strcspn");
 	tcase_add_test(tc, strcspn_inornot);
         suite_add_tcase(suite, tc);
-	
+
 	tc = tcase_create("strpbrk");
 	tcase_add_test(tc, strpbrk_inornot);
         suite_add_tcase(suite, tc);
-	
+
 	tc = tcase_create("strrchr");
 	tcase_add_test(tc, strrchr_inornot);
         suite_add_tcase(suite, tc);
-	
+
 	tc = tcase_create("strspn");
 	tcase_add_test(tc, strspn_inornot);
         suite_add_tcase(suite, tc);
-	
+
 	tc = tcase_create("strtok");
 	tcase_add_test(tc, strtok_split);
         suite_add_tcase(suite, tc);
-	
+
 	tc = tcase_create("memset");
 	tcase_add_test(tc, memset_simple_test);
 	tcase_add_test(tc, memset_wordsize_alignment);
 	tcase_add_test(tc, memset_pagesize_alignment);
         suite_add_tcase(suite, tc);
-	
+
 	tc = tcase_create("strlen");
 	tcase_add_test(tc, strlen_length);
         suite_add_tcase(suite, tc);
-	
+
 	tc = tcase_create("setjmp");
 	tcase_add_test(tc, setjmp_simple);
         suite_add_tcase(suite, tc);

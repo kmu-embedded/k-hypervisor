@@ -1,16 +1,12 @@
 #include "test_malloc.h"
-#include <lib/malloc.h>
 #include <stdio.h>
-#include <drivers/pl01x.h>
-#include <lib/null.h>
+#include <stdlib.h>
+#include <null.h>
 
 void malloc_simple()
 {
     void *mem = malloc(213);
-    printf("mem: ");
-    uart_print_hex32((unsigned int)mem);
-    printf("\n");
-
+    printf("mem: %p\n", mem);
     free(mem);
 }
 

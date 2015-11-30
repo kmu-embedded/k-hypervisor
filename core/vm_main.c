@@ -10,7 +10,6 @@
 #include "vm_main.h"
 
 #include "hvmm_trace.h"
-#include <drivers/pl01x.h>
 
 
 #define PLATFORM_BASIC_TESTS 4

@@ -76,8 +76,7 @@
  * The construction, validity and performance of this licence is governed
  * by the laws in force in New South Wales, Australia.
  */
-//#include <l4/arm/asm.h>
-#include "asm.h"
+#include <arch-arm/asm.h>
 
 #ifdef __thumb__
 #define	ret  bx

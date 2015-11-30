@@ -1,6 +1,6 @@
 include config.mk
 
-ASM_FILES	= $(wildcard $(ARCH_VERSION)/*.S)		\
+ASM_FILES	= $(wildcard $(ARCH)/$(VERSION)/*.S)		\
 			  $(wildcard $(LIB)/c/src/arch-arm/*.S)
 
 C_FILES 	= $(wildcard $(CORE)/*.c) 				\
@@ -9,7 +9,7 @@ C_FILES 	= $(wildcard $(CORE)/*.c) 				\
 			  $(wildcard tests/*.c) 				\
 			  $(wildcard tests/libs/*.c) 				\
 			  $(wildcard $(ARCH)/*.c) 				\
-			  $(wildcard $(DRIVER)/*.c) 			\
+			  $(wildcard $(DRV)/*.c) 			\
 			  $(wildcard $(LIB)/c/src/*.c)				\
 			  $(wildcard $(LIB)/c/src/arch-arm/*.c)		\
 			  $(wildcard $(LIB)/c/src/sys-baremetal/arch-arm/*.c)			\
@@ -26,9 +26,13 @@ CC			= $(CROSS_COMPILE)gcc
 LD			= $(CROSS_COMPILE)ld
 NM			= $(CROSS_COMPILE)nm
 OBJCOPY		= $(CROSS_COMPILE)objcopy
-INCLUDES    = -I ./include -I $(CORE)/libhw -I tests -I $(CORE) -I $(CORE)/include -I include/lib -I ./lib -I ./include/core
+
+
+INCLUDES	= -I $(INC) -I $(INC)/$(LIB)/c -I $(INC)/$(LIB)/bsd -I $(INC)/$(LIB)
+INCLUDES	+= -I $(INC)/$(DRV)
+INCLUDES    += -I $(CORE)/libhw -I tests -I $(CORE) -I $(CORE)/include -I include/lib -I ./lib -I ./include/core
 INCLUDES	+= -I tests/libs
-INCLUDES	+= -I $(LIB)/c/include -I $(LIB)/c/arch_include/arm/
+
 CPPFLAGS	= $(CONFIG_FLAG) $(INCLUDES) -ffreestanding -nostdlib -nodefaultlibs -nostartfiles $(DEBUG_FLAG)
 CPPFLAGS	+= -Wall -Werror
 

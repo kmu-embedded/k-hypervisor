@@ -76,7 +76,7 @@
  * The construction, validity and performance of this licence is governed
  * by the laws in force in New South Wales, Australia.
  */
-#include "../../k_r_malloc.h"
+#include <k_r_malloc.h>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -84,24 +84,17 @@ extern void free(void*);
 extern Header  *_kr_malloc_freep;
 #ifdef MALLOC_LOCKED
 #include <mutex/mutex.h>
-#include <l4/thread.h>
 extern struct mutex malloc_mutex;
 #endif /* MALLOC_LOCKED */
 
-#if 0
-#define MALLOC_AREA_SIZE 0x100000
-char __malloc_area[MALLOC_AREA_SIZE];
-uintptr_t __malloc_bss = (uintptr_t) &__malloc_area;
-uintptr_t __malloc_top = (uintptr_t) &__malloc_area[MALLOC_AREA_SIZE];
-#endif
-uintptr_t __malloc_bss;
-uintptr_t __malloc_top;
+// Defines __xxxx_heap in the linker script.
 extern unsigned int __begin_heap;
 extern unsigned int __end_heap;
 
-void
-//__malloc_init(void *bss_p, void *top_p)
-__malloc_init()
+uintptr_t __malloc_bss;
+uintptr_t __malloc_top;
+
+void __malloc_init()
 {
 	__malloc_bss = (uintptr_t) &__begin_heap;
 	__malloc_top = (uintptr_t) &__end_heap;
@@ -118,8 +111,7 @@ __malloc_init()
 /*
  * sbrk equiv
  */
-Header  *
-morecore(unsigned nu)
+Header  *morecore(unsigned nu)
 {
 	uintptr_t nb;
 	uintptr_t cp;

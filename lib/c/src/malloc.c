@@ -4,7 +4,7 @@
  *
  * System specifc code should implement `more_core'
  */
-#include "k_r_malloc.h"
+#include <k_r_malloc.h>
 #include <stddef.h> /* For NULL */
 #include <stdlib.h>
 #include <string.h> /* For memcpy */

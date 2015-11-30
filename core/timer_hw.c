@@ -1,6 +1,5 @@
 #include <armv7_p15.h>
 #include <timer.h>
-#include <drivers/pl01x.h>
 #include <asm-arm_inline.h>
 #include <hvmm_trace.h>
 #include <interrupt.h>
@@ -66,7 +65,7 @@ static inline void generic_timer_reg_write(int reg, uint32_t val)
         write_cntv_tval(val);
         break;
     default:
-        uart_print("Trying to write invalid generic-timer register\n\r");
+        printf("Trying to write invalid generic-timer register\n\r");
         break;
     }
     isb();
@@ -104,7 +103,7 @@ static inline uint32_t generic_timer_reg_read(int reg)
         val = read_cntv_tval();
         break;
     default:
-        uart_print("Trying to read invalid generic-timer register\n\r");
+        printf("Trying to read invalid generic-timer register\n\r");
         break;
     }
     return val;
@@ -126,7 +125,7 @@ static inline void generic_timer_reg_write64(int reg, uint64_t val)
         write_cntvoff(val);
         break;
     default:
-        uart_print("Trying to write invalid generic-timer register\n\r");
+        printf("Trying to write invalid generic-timer register\n\r");
         break;
     }
     isb();
@@ -149,7 +148,7 @@ static inline uint64_t generic_timer_reg_read64(int reg)
         val = read_cntvoff();
         break;
     default:
-        uart_print("Trying to read invalid generic-timer register\n\r");
+        printf("Trying to read invalid generic-timer register\n\r");
         break;
     }
     return val;

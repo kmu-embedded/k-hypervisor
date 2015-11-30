@@ -4,7 +4,6 @@
 #include <interrupt.h>
 #include <memory.h>
 #include <vdev.h>
-//#include <lib/print.h>
 #include <hvmm_trace.h>
 #include <smp.h>
 #include <stdio.h>
