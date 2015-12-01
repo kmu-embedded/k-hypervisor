@@ -631,7 +631,7 @@ static int32_t vdev_gicd_write(struct arch_vdev_trigger_info *info,
     return vdev_gicd_access_handler(1, offset, info->value, info->sas);
 }
 
-static int32_t vdev_gicd_post(struct arch_vdev_trigger_info *info,
+static hvmm_status_t vdev_gicd_post(struct arch_vdev_trigger_info *info,
         struct arch_regs *regs) {
     uint8_t isize = 4;
 

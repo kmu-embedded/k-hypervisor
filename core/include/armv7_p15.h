@@ -1,6 +1,6 @@
 #ifndef __ARMV7_P15_H__
 #define __ARMV7_P15_H__
-#include "arch_types.h"
+#include "stdint.h"
 
 
 /* Generic ARM Registers */
