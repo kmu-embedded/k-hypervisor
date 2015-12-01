@@ -1,6 +1,6 @@
 #ifndef __VGIC_H__
 #define __VGIC_H__
-#include <arch_types.h>
+#include <stdint.h>
 #include <hvmm_types.h>
 #include "gic.h"
 

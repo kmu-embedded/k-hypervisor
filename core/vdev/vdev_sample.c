@@ -61,7 +61,7 @@ static hvmm_status_t vdev_sample_access_handler(uint32_t write, uint32_t offset,
     return result;
 }
 
-static hvmm_status_t vdev_sample_read(struct arch_vdev_trigger_info *info,
+static int32_t vdev_sample_read(struct arch_vdev_trigger_info *info,
                         struct arch_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_sample_info.base;
@@ -69,7 +69,7 @@ static hvmm_status_t vdev_sample_read(struct arch_vdev_trigger_info *info,
     return vdev_sample_access_handler(0, offset, info->value, info->sas);
 }
 
-static hvmm_status_t vdev_sample_write(struct arch_vdev_trigger_info *info,
+static int32_t vdev_sample_write(struct arch_vdev_trigger_info *info,
                         struct arch_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_sample_info.base;
@@ -77,7 +77,7 @@ static hvmm_status_t vdev_sample_write(struct arch_vdev_trigger_info *info,
     return vdev_sample_access_handler(1, offset, info->value, info->sas);
 }
 
-static int32_t vdev_sample_post(struct arch_vdev_trigger_info *info,
+static hvmm_status_t vdev_sample_post(struct arch_vdev_trigger_info *info,
                         struct arch_regs *regs)
 {
     uint8_t isize = 4;
