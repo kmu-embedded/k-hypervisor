@@ -1,7 +1,7 @@
 #ifndef __SMP_H__
 #define __SMP_H__
 
-#include "arch_types.h"
+#include "stdint.h"
 #include "armv7_p15.h"
 #include <asm-arm_inline.h>
 

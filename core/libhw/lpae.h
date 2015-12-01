@@ -1,6 +1,6 @@
 #ifndef __LPAE_H__
 #define __LPAE_H__
-#include <arch_types.h>
+#include <stdint.h>
 #include <memory.h>
 
 /**

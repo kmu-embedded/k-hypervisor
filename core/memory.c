@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <arch/arm/rtsm-config.h>
 #include <memory.h>
-#include <arch_types.h>
+#include <stdint.h>
 
 static struct memory_ops *_memory_ops;
 

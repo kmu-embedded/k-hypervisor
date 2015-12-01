@@ -2,7 +2,7 @@
 #define __GIC_H__
 
 #include <hvmm_types.h>
-#include <arch_types.h>
+#include <stdint.h>
 #include <smp.h>
 #include <interrupt.h>
 

@@ -283,7 +283,7 @@ static int32_t vdev_cp_write(struct arch_vdev_trigger_info *info,
     return 0;
 }
 
-static int32_t vdev_cp_post(struct arch_vdev_trigger_info *info,
+static hvmm_status_t vdev_cp_post(struct arch_vdev_trigger_info *info,
                         struct arch_regs *regs)
 {
     uint8_t isize = 4;

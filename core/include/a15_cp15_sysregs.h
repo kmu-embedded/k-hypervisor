@@ -1,7 +1,7 @@
 #ifndef __A15_CP15_SYSREGS_H_
 #define __A15_CP15_SYSREGS_H_
 
-#include "arch_types.h"
+#include "stdint.h"
 
 /*
  * Cortex-A15 Implementation Defined Registers

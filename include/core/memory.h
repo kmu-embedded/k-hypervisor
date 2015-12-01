@@ -2,7 +2,7 @@
 #define __MM_H__
 
 #include <hvmm_types.h>
-#include "arch_types.h"
+#include "stdint.h"
 
 /**
  * @brief Enum values of the stage2 memory attribute.

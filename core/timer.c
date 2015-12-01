@@ -6,7 +6,7 @@
  */
 
 #include <stdio.h>
-#include <arch_types.h>
+#include <stdint.h>
 #include <arch/arm/rtsm-config.h>
 #include <hvmm_trace.h>
 #include <timer.h>

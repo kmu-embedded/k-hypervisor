@@ -1,7 +1,7 @@
 #ifndef __HVMM_TYPES_H__
 #define __HVMM_TYPES_H__
 
-#include <arch_types.h>
+#include <stdint.h>
 #define VMID_INVALID    0xFF
 #define PIRQ_INVALID    0xFFFFFFFF
 #define VIRQ_INVALID    PIRQ_INVALID
@@ -16,7 +16,7 @@ typedef enum hvmm_status {
     HVMM_STATUS_IGNORED = -6,
 } hvmm_status_t;
 
-typedef char vmid_t;
+typedef int vmid_t;
 
 #endif
 
