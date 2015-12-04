@@ -2,7 +2,8 @@
 #include <armv7_p15.h>
 #include <gic.h>
 #include <trap.h>
-#include <guest.h>
+#include <guest_regs.h>
+#include <scheduler.h>
 #include <vdev.h>
 #include <smp.h>
 
