@@ -10,7 +10,7 @@
 #include <guest.h>
 
 extern struct guest_module _guest_module;
-extern struct guest_struct *_current_guest[NUM_CPUS];
+extern struct vcpu *_current_guest[NUM_CPUS];
 //extern struct guest_struct guests[NUM_GUESTS_STATIC];
 /**
  * sched_policy_determ_next() should be used to determine next virtual
