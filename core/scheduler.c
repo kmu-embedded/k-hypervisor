@@ -4,11 +4,11 @@
 #include <vdev.h>
 #include <guest_hw.h>
 
-extern struct guest_struct guests[NUM_GUESTS_STATIC];
+extern struct vcpu guests[NUM_GUESTS_STATIC];
 static int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
 
 static int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
-struct guest_struct *_current_guest[NUM_CPUS];
+struct vcpu *_current_guest[NUM_CPUS];
 /* further switch request will be ignored if set */
 static uint8_t _switch_locked[NUM_CPUS];
 
@@ -17,7 +17,7 @@ static hvmm_status_t perform_switch(struct arch_regs *regs, vmid_t next_vmid)
     /* _curreng_guest_vmid -> next_vmid */
 
     hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
-    struct guest_struct *guest = 0;
+    struct vcpu *guest = 0;
     uint32_t cpu = smp_processor_id();
     if (_current_guest_vmid[cpu] == next_vmid)
         return HVMM_STATUS_IGNORED; /* the same guest? */
@@ -75,7 +75,7 @@ hvmm_status_t guest_perform_switch(struct arch_regs *regs)
 /* Switch to the first guest */
 void guest_sched_start(void)
 {
-    struct guest_struct *guest = 0;
+    struct vcpu *guest = 0;
     uint32_t cpu = smp_processor_id();
 
     printf("[hyp] switch_to_initial_guest:\n");
