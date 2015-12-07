@@ -34,7 +34,7 @@ static hvmm_status_t perform_switch(struct arch_regs *regs, vmid_t next_vmid)
 
     /* guest_hw_dump */
     if (_guest_module.ops->dump)
-        _guest_module.ops->dump(GUEST_VERBOSE_LEVEL_3, &guest->regs);
+        _guest_module.ops->dump(GUEST_VERBOSE_LEVEL_3, &guest->vcpu_regs.regs);
 
     vdev_restore(_current_guest_vmid[cpu]);
 
@@ -87,11 +87,11 @@ void guest_sched_start(void)
         guest = &guests[0];
     /* guest_hw_dump */
     if (_guest_module.ops->dump)
-        _guest_module.ops->dump(GUEST_VERBOSE_LEVEL_0, &guest->regs);
+        _guest_module.ops->dump(GUEST_VERBOSE_LEVEL_0, &guest->vcpu_regs.regs);
     /* Context Switch with current context == none */
 
     guest_switchto(guest->vmid, 0);
-    guest_perform_switch(&guest->regs);
+    guest_perform_switch(&guest->vcpu_regs.regs);
 }
 
 vmid_t guest_first_vmid(void)

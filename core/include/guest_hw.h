@@ -18,6 +18,7 @@ struct regs_cop {
     uint32_t ttbr1;
     uint32_t ttbcr;
     uint32_t sctlr;
+    uint32_t vmpidr;
 };
 
 /* banked registers */
@@ -59,6 +60,11 @@ struct regs_banked {
 struct arch_context {
     struct regs_cop regs_cop;
     struct regs_banked regs_banked;
+};
+
+struct vcpu_regs {
+    struct arch_context context;
+    struct arch_regs regs;
 };
 
 /* moved from scheduler.h */
