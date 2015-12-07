@@ -2,7 +2,8 @@
 #include <hvmm_trace.h>
 #include <guest.h>
 #include <guest_hw.h>
-#include <arch/arm/rtsm-config.h>
+#include <vgic.h>
+#include <scheduler.h>
 
 #define CPSR_MODE_USER  0x10
 #define CPSR_MODE_FIQ   0x11
@@ -371,17 +372,3 @@ hvmm_status_t guest_hw_move(struct vcpu_regs *dst, struct vcpu_regs *src)
     return HVMM_STATUS_SUCCESS;
 }
 
-//struct guest_ops _guest_ops = {
-//    .init = guest_hw_init,
-//    .save = guest_hw_save,
-//    .restore = guest_hw_restore,
-//    .dump = guest_hw_dump,
-//    .move = guest_hw_move
-//};
-//
-//struct guest_module _guest_module = {
-//    .name = "K-Hypervisor Guest Module",
-//    .author = "Kookmin Univ.",
-//    .ops = &_guest_ops,
-//};
-//

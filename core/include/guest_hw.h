@@ -2,14 +2,10 @@
 #define _GUEST_HW_H__
 
 #include <arch/arm/rtsm-config.h>
-//#include <tools/tests_hypervisor/tests.h>
 #include <version.h>
-#include <hvmm_trace.h>
 #include <vgic.h>
-#include <scheduler.h>
-#include <guest_regs.h>
 
-//#define ARCH_REGS_NUM_GPR    13
+#define ARCH_REGS_NUM_GPR    13
 
 /* co-processor registers: cp15, cp2 */
 struct regs_cop {
@@ -49,12 +45,12 @@ struct regs_banked {
 };
 
 /* Defines the architecture specific registers */
-//struct arch_regs {
-//    uint32_t cpsr; /* CPSR */
-//    uint32_t pc; /* Program Counter */
-//    uint32_t lr;
-//    uint32_t gpr[ARCH_REGS_NUM_GPR]; /* R0 - R12 */
-//} __attribute((packed));
+struct arch_regs {
+    uint32_t cpsr; /* CPSR */
+    uint32_t pc; /* Program Counter */
+    uint32_t lr;
+    uint32_t gpr[ARCH_REGS_NUM_GPR]; /* R0 - R12 */
+} __attribute((packed));
 
 /* Defines the architecture specific information, except general regsiters */
 struct arch_context {
