@@ -7,6 +7,9 @@ ENTRY(__start)
 
 INPUT(../guestimages/guest0.bin)
 GUEST0_STACK     = CFG_MEMMAP_GUEST0_OFFSET + GUEST_SIZE_MAX;
+INPUT(../guestimages/guest1.bin)
+GUEST1_STACK    = CFG_MEMMAP_GUEST1_OFFSET + GUEST_SIZE_MAX;
+
 HEAP_SIZE   = 0x00100000;
 
 SECTIONS
@@ -23,6 +26,16 @@ SECTIONS
  guest0_stacktop = .;
  . = GUEST0_STACK + 0x01000000;
  guest0_stacklimit = .;
+
+ . = CFG_MEMMAP_GUEST1_OFFSET;
+ _guest1_bin_start = .;
+ .guest1 : { ../guestimages/guest1.bin }
+ _guest1_bin_end = .;
+
+ . = GUEST1_STACK;
+ guest1_stacktop = .;
+ . = GUEST1_STACK + 0x01000000;
+ guest1_stacklimit = .;
 
  .text : {
     *(.text);
