@@ -8,6 +8,8 @@
 #include <smp.h>
 #include <stdio.h>
 #include <scheduler.h>
+#include <armv7_p15.h>
+#include <vgic.h>
 
 #define _valid_vmid(vmid) \
     (guest_first_vmid() <= vmid && guest_last_vmid() >= vmid)
@@ -15,18 +17,13 @@
 hvmm_status_t guest_save(struct vcpu *guest, struct arch_regs *regs)
 {
     /* guest_hw_save : save the current guest's context*/
-//    if (guest_hw_save)
-        return  guest_hw_save(&guest->vcpu_regs, regs);
-
-//    return HVMM_STATUS_UNKNOWN_ERROR;
+    return  guest_hw_save(&guest->vcpu_regs, regs);
 }
 
 hvmm_status_t guest_restore(struct vcpu *guest, struct arch_regs *regs)
 {
     /* guest_hw_restore : The next becomes the current */
-//    if (guest_hw_restore)
      return  guest_hw_restore(&guest->vcpu_regs, regs);
-//     return HVMM_STATUS_UNKNOWN_ERROR;
 }
 
 void guest_dump_regs(struct arch_regs *regs)
@@ -48,7 +45,6 @@ hvmm_status_t guest_init()
     /* Initializes guests */
     guest_count = num_of_guest(cpu);
 
-
     if (cpu)
         start_vmid = num_of_guest(cpu - 1);
     else
@@ -61,7 +57,6 @@ hvmm_status_t guest_init()
         guest = &guests[i];
         guest->vmid = i;
         /* guest_hw_init */
-//        if (guest_hw_init)
         guest_hw_init(&guest->vcpu_regs);
     }
 

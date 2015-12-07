@@ -2,13 +2,16 @@
 #include <interrupt.h>
 #include <memory.h>
 #include <vdev.h>
-#include <guest_hw.h>
+#include <stdio.h>
+#include <armv7_p15.h>
+#include <timer.h>
+#include <vgic.h>
 
 extern struct vcpu guests[NUM_GUESTS_STATIC];
 static int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
 
 static int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
-struct vcpu *_current_guest[NUM_CPUS];
+//struct vcpu *_current_guest[NUM_CPUS];
 /* further switch request will be ignored if set */
 static uint8_t _switch_locked[NUM_CPUS];
 
@@ -33,7 +36,6 @@ static hvmm_status_t perform_switch(struct arch_regs *regs, vmid_t next_vmid)
     _current_guest_vmid[cpu] = next_vmid;
 
     /* guest_hw_dump */
-//    if (guest_hw_dump)
     guest_hw_dump(GUEST_VERBOSE_LEVEL_3, &guest->vcpu_regs.regs);
 
     vdev_restore(_current_guest_vmid[cpu]);
@@ -86,7 +88,6 @@ void guest_sched_start(void)
     else
         guest = &guests[0];
     /* guest_hw_dump */
-//    if (guest_hw_dump)
     guest_hw_dump(GUEST_VERBOSE_LEVEL_0, &guest->vcpu_regs.regs);
     /* Context Switch with current context == none */
 
