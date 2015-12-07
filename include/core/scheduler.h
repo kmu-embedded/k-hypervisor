@@ -3,7 +3,7 @@
 
 #include <hvmm_types.h>
 #include <guest_hw.h>
-#include <guest.h>
+#include <vcpu.h>
 
 struct vcpu *_current_guest[NUM_CPUS];
 

@@ -4,7 +4,7 @@
 #include <hvmm_trace.h>
 #include <lpae.h>
 #include <memory.h>
-#include <guest.h>
+#include <vcpu.h>
 #include <smp.h>
 #include <arch/arm/rtsm-config.h>
 

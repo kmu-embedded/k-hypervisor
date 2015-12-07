@@ -1,5 +1,5 @@
-#ifndef __GUEST_H__
-#define __GUEST_H__
+#ifndef __VCPU_H__
+#define __VCPU_H__
 
 #include <hvmm_types.h>
 #include <guest_hw.h>
@@ -37,19 +37,18 @@ extern uint32_t _guest2_bin_end;
 extern uint32_t _guest3_bin_start;
 extern uint32_t _guest3_bin_end;
 #endif
-//struct vcpu *_current_guest[NUM_CPUS];
-struct vcpu guests[NUM_GUESTS_STATIC];
 
-void guest_copy(struct vcpu *dst, vmid_t vmid_src);
-void guest_dump_regs(struct arch_regs *regs);
-hvmm_status_t guest_init();
-struct vcpu get_guest(uint32_t guest_num);
-void reboot_guest(vmid_t vmid, uint32_t pc, struct arch_regs **regs);
+struct vcpu running_vcpu[NUM_GUESTS_STATIC];
 
-hvmm_status_t guest_save(struct vcpu *guest, struct arch_regs *regs);
-hvmm_status_t guest_restore(struct vcpu *guest, struct arch_regs *regs);
+void vcpu_copy(struct vcpu *dst, vmid_t vmid_src);
+void vcpu_dump_regs(struct arch_regs *regs);
+hvmm_status_t vcpu_init();
+void reboot_vcpu(vmid_t vmid, uint32_t pc, struct arch_regs **regs);
 
-static inline unsigned long num_of_guest(int cpu)
+hvmm_status_t vcpu_save(struct vcpu *vcpu, struct arch_regs *regs);
+hvmm_status_t vcpu_restore(struct vcpu *vcpu, struct arch_regs *regs);
+
+static inline unsigned long num_of_vcpu(int cpu)
 {
     switch(cpu)
     {
@@ -67,4 +66,4 @@ static inline unsigned long num_of_guest(int cpu)
     return 255;
 }
 
-#endif
+#endif /* __VCPU_H__ */

@@ -1,4 +1,4 @@
-#include <guest.h>
+#include <vcpu.h>
 #include <interrupt.h>
 #include <timer.h>
 #include <vdev.h>
@@ -303,7 +303,7 @@ int main_cpu_init()
         printf("[start_guest] timer initialization failed...\n");
 
     /* Initialize Guests */
-    if (guest_init())
+    if (vcpu_init())
         printf("[start_guest] guest initialization failed...\n");
 
     /* Initialize Virtual Devices */
@@ -348,7 +348,7 @@ void secondary_cpu_init(uint32_t cpu)
         printf("[start_guest] timer initialization failed...\n");
 
     /* Initialize Guests */
-    if (guest_init())
+    if (vcpu_init())
         printf("[start_guest] guest initialization failed...\n");
 
     /* Initialize Virtual Devices */

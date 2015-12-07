@@ -7,11 +7,10 @@
 #include <timer.h>
 #include <vgic.h>
 
-extern struct vcpu guests[NUM_GUESTS_STATIC];
+extern struct vcpu running_vcpu[NUM_GUESTS_STATIC];
 static int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
 
 static int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
-//struct vcpu *_current_guest[NUM_CPUS];
 /* further switch request will be ignored if set */
 static uint8_t _switch_locked[NUM_CPUS];
 
@@ -25,13 +24,13 @@ static hvmm_status_t perform_switch(struct arch_regs *regs, vmid_t next_vmid)
     if (_current_guest_vmid[cpu] == next_vmid)
         return HVMM_STATUS_IGNORED; /* the same guest? */
 
-    guest_save(&guests[_current_guest_vmid[cpu]], regs);
+    vcpu_save(&running_vcpu[_current_guest_vmid[cpu]], regs);
     memory_save();
     interrupt_save(_current_guest_vmid[cpu]);
     vdev_save(_current_guest_vmid[cpu]);
 
     /* The context of the next guest */
-    guest = &guests[next_vmid];
+    guest = &running_vcpu[next_vmid];
     _current_guest[cpu] = guest;
     _current_guest_vmid[cpu] = next_vmid;
 
@@ -42,7 +41,7 @@ static hvmm_status_t perform_switch(struct arch_regs *regs, vmid_t next_vmid)
 
     interrupt_restore(_current_guest_vmid[cpu]);
     memory_restore(_current_guest_vmid[cpu]);
-    guest_restore(guest, regs);
+    vcpu_restore(guest, regs);
 
     return result;
 }
@@ -84,9 +83,9 @@ void guest_sched_start(void)
     /* Select the first guest context to switch to. */
     _current_guest_vmid[cpu] = VMID_INVALID;
     if (cpu)
-        guest = &guests[num_of_guest(cpu - 1) + 0];
+        guest = &running_vcpu[num_of_vcpu(cpu - 1) + 0];
     else
-        guest = &guests[0];
+        guest = &running_vcpu[0];
     /* guest_hw_dump */
     guest_hw_dump(GUEST_VERBOSE_LEVEL_0, &guest->vcpu_regs.regs);
     /* Context Switch with current context == none */
