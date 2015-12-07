@@ -16,7 +16,7 @@ hvmm_status_t guest_save(struct vcpu *guest, struct arch_regs *regs)
 {
     /* guest_hw_save : save the current guest's context*/
     if (_guest_module.ops->save)
-        return  _guest_module.ops->save(guest, regs);
+        return  _guest_module.ops->save(&guest->vcpu_regs, regs);
 
     return HVMM_STATUS_UNKNOWN_ERROR;
 }
@@ -25,7 +25,7 @@ hvmm_status_t guest_restore(struct vcpu *guest, struct arch_regs *regs)
 {
     /* guest_hw_restore : The next becomes the current */
     if (_guest_module.ops->restore)
-        return  _guest_module.ops->restore(guest, regs);
+        return  _guest_module.ops->restore(&guest->vcpu_regs, regs);
 
 
 
@@ -43,7 +43,6 @@ hvmm_status_t guest_init()
     struct timer_val timer;
     hvmm_status_t result = HVMM_STATUS_SUCCESS;
     struct vcpu *guest;
-    struct arch_regs *regs = 0;
     int i;
     int guest_count;
     int start_vmid = 0;
@@ -63,11 +62,10 @@ hvmm_status_t guest_init()
     for (i = start_vmid; i < guest_count; i++) {
         /* Guest i @guest_bin_start */
         guest = &guests[i];
-        regs = &guest->regs;
         guest->vmid = i;
         /* guest_hw_init */
         if (_guest_module.ops->init)
-            _guest_module.ops->init(guest, regs);
+            _guest_module.ops->init(&guest->vcpu_regs);
     }
 
     printf("[hyp] init_guests: return\n");
@@ -86,16 +84,16 @@ hvmm_status_t guest_init()
 
 void guest_copy(struct vcpu *dst, vmid_t vmid_src)
 {
-    _guest_module.ops->move(dst, &(guests[vmid_src]));
+    _guest_module.ops->move(&dst->vcpu_regs, &(guests[vmid_src]).vcpu_regs);
 }
 
-void reboot_guest(vmid_t vmid, uint32_t pc,
-        struct arch_regs **regs)
+void reboot_guest(vmid_t vmid, uint32_t pc, struct arch_regs **regs)
 {
-    _guest_module.ops->init(&guests[vmid], &(guests[vmid].regs));
-    guests[vmid].regs.pc = pc;
-    guests[vmid].regs.gpr[10] = 1;
+    struct vcpu_regs *vcpu_regs = &guests[vmid].vcpu_regs;
+    _guest_module.ops->init(vcpu_regs);
+    vcpu_regs->regs.pc = pc;
+    vcpu_regs->regs.gpr[10] = 1;
     if (regs != 0)
-        _guest_module.ops->restore(&guests[vmid], *regs);
+        _guest_module.ops->restore(vcpu_regs, *regs);
 }
 
