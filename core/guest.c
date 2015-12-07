@@ -141,7 +141,7 @@ vmid_t guest_first_vmid(void)
 
 vmid_t guest_last_vmid(void)
 {
-    uint32_t cpu = smp_processor_id();
+    uint32_t cpu = 1;// smp_processor_id();
 
     /* FIXME:Hardcoded for now */
 #if _SMP_
@@ -227,11 +227,13 @@ void clean_manually_select_vmid(void){
 
 vmid_t sched_policy_determ_next(void)
 {
+    printf("scheduler call\n");
 #if 1
     if (manually_next_vmid)
         return selected_manually_next_vmid;
 
     vmid_t next = guest_next_vmid(guest_current_vmid());
+    printf("current :%d next VMID = %d\n", guest_current_vmid(), next);
 
     /* FIXME:Hardcoded */
     if (next == VMID_INVALID)
