@@ -1,5 +1,5 @@
 #include <arch/arm/rtsm-config.h>
-#include <guest.h>
+#include <vcpu.h>
 #include <timer.h>
 #include <interrupt.h>
 #include <memory.h>
@@ -14,53 +14,53 @@
 #define _valid_vmid(vmid) \
     (guest_first_vmid() <= vmid && guest_last_vmid() >= vmid)
 
-hvmm_status_t guest_save(struct vcpu *guest, struct arch_regs *regs)
+hvmm_status_t vcpu_save(struct vcpu *vcpu, struct arch_regs *regs)
 {
     /* guest_hw_save : save the current guest's context*/
-    return  guest_hw_save(&guest->vcpu_regs, regs);
+    return  guest_hw_save(&vcpu->vcpu_regs, regs);
 }
 
-hvmm_status_t guest_restore(struct vcpu *guest, struct arch_regs *regs)
+hvmm_status_t vcpu_restore(struct vcpu *vcpu, struct arch_regs *regs)
 {
     /* guest_hw_restore : The next becomes the current */
-     return  guest_hw_restore(&guest->vcpu_regs, regs);
+     return  guest_hw_restore(&vcpu->vcpu_regs, regs);
 }
 
-void guest_dump_regs(struct arch_regs *regs)
+void vcpu_dump_regs(struct arch_regs *regs)
 {
     /* guest_hw_dump */
     guest_hw_dump(GUEST_VERBOSE_ALL, regs);
 }
 
-hvmm_status_t guest_init()
+hvmm_status_t vcpu_init()
 {
     struct timer_val timer;
     hvmm_status_t result = HVMM_STATUS_SUCCESS;
-    struct vcpu *guest;
+    struct vcpu *vcpu;
     int i;
-    int guest_count;
+    int vcpu_count;
     int start_vmid = 0;
     uint32_t cpu = smp_processor_id();
-    printf("[hyp] init_guests: enter\n");
-    /* Initializes guests */
-    guest_count = num_of_guest(cpu);
+    printf("[hyp] init_vcpus: enter\n");
+    /* Initializes vcpus */
+    vcpu_count = num_of_vcpu(cpu);
 
     if (cpu)
-        start_vmid = num_of_guest(cpu - 1);
+        start_vmid = num_of_vcpu(cpu - 1);
     else
         start_vmid = 0;
 
-    guest_count += start_vmid;
+    vcpu_count += start_vmid;
 
-    for (i = start_vmid; i < guest_count; i++) {
-        /* Guest i @guest_bin_start */
-        guest = &guests[i];
-        guest->vmid = i;
-        /* guest_hw_init */
-        guest_hw_init(&guest->vcpu_regs);
+    for (i = start_vmid; i < vcpu_count; i++) {
+        /* Guest i @vcpu_bin_start */
+        vcpu = &running_vcpu[i];
+        vcpu->vmid = i;
+        /* vcpu_hw_init */
+        guest_hw_init(&vcpu->vcpu_regs);
     }
 
-    printf("[hyp] init_guests: return\n");
+    printf("[hyp] init_vcpus: return\n");
 
     /* 100Mhz -> 1 count == 10ns at RTSM_VE_CA15, fast model*/
     timer.interval_us = GUEST_SCHED_TICK;
@@ -74,14 +74,14 @@ hvmm_status_t guest_init()
     return result;
 }
 
-void guest_copy(struct vcpu *dst, vmid_t vmid_src)
+void vcpu_copy(struct vcpu *dst, vmid_t vmid_src)
 {
-    guest_hw_move(&dst->vcpu_regs, &(guests[vmid_src]).vcpu_regs);
+    guest_hw_move(&dst->vcpu_regs, &(running_vcpu[vmid_src]).vcpu_regs);
 }
 
-void reboot_guest(vmid_t vmid, uint32_t pc, struct arch_regs **regs)
+void reboot_vcpu(vmid_t vmid, uint32_t pc, struct arch_regs **regs)
 {
-    struct vcpu_regs *vcpu_regs = &guests[vmid].vcpu_regs;
+    struct vcpu_regs *vcpu_regs = &running_vcpu[vmid].vcpu_regs;
     guest_hw_init(vcpu_regs);
     vcpu_regs->regs.pc = pc;
     vcpu_regs->regs.gpr[10] = 1;

@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <gic.h>
 #include <vgic.h>
-#include "guest.h"
+#include <vcpu.h>
 #include "hvmm_trace.h"
 #include "armv7_p15.h"
 #include "timer.h"
-#include "guest.h"
 #include "scheduler.h"
 #include <arch/arm/rtsm-config.h>
 #include <interrupt.h>
@@ -44,7 +43,7 @@ void interrupt_nsptimer(int irq, void *pregs, void *pdata)
     /* Test guest context switch */
     if ((regs->cpsr & 0x1F) != 0x1A) {
         /* Not from Hyp, switch the guest context */
-        guest_dump_regs(regs);
+        vcpu_dump_regs(regs);
         guest_switchto(sched_policy_determ_next(), 0);
     }
     HVMM_TRACE_EXIT();

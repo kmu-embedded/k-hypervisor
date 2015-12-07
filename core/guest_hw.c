@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <hvmm_trace.h>
-#include <guest.h>
+#include <vcpu.h>
 #include <guest_hw.h>
 #include <vgic.h>
 #include <scheduler.h>
