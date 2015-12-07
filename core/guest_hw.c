@@ -329,7 +329,7 @@ hvmm_status_t guest_hw_init(struct vcpu_regs *vcpu_regs)
     return HVMM_STATUS_SUCCESS;
 }
 
-static hvmm_status_t guest_hw_dump(uint8_t verbose, struct arch_regs *regs)
+hvmm_status_t guest_hw_dump(uint8_t verbose, struct arch_regs *regs)
 {
     if (verbose & GUEST_VERBOSE_LEVEL_0) {
         printf("cpsr: 0x%08x\n", regs->cpsr);
@@ -371,17 +371,17 @@ hvmm_status_t guest_hw_move(struct vcpu_regs *dst, struct vcpu_regs *src)
     return HVMM_STATUS_SUCCESS;
 }
 
-struct guest_ops _guest_ops = {
-    .init = guest_hw_init,
-    .save = guest_hw_save,
-    .restore = guest_hw_restore,
-    .dump = guest_hw_dump,
-    .move = guest_hw_move
-};
-
-struct guest_module _guest_module = {
-    .name = "K-Hypervisor Guest Module",
-    .author = "Kookmin Univ.",
-    .ops = &_guest_ops,
-};
-
+//struct guest_ops _guest_ops = {
+//    .init = guest_hw_init,
+//    .save = guest_hw_save,
+//    .restore = guest_hw_restore,
+//    .dump = guest_hw_dump,
+//    .move = guest_hw_move
+//};
+//
+//struct guest_module _guest_module = {
+//    .name = "K-Hypervisor Guest Module",
+//    .author = "Kookmin Univ.",
+//    .ops = &_guest_ops,
+//};
+//
