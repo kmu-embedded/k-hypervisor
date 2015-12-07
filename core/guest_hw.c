@@ -177,11 +177,23 @@ static void context_copy_banked(struct regs_banked *banked_dst, struct
 /* Co-processor state management: init/save/restore */
 static void context_init_cops(struct regs_cop *regs_cop)
 {
+    uint32_t vmpidr = read_vmpidr();
+
     regs_cop->vbar = 0;
     regs_cop->ttbr0 = 0;
     regs_cop->ttbr1 = 0;
     regs_cop->ttbcr = 0;
     regs_cop->sctlr = 0;
+
+    vmpidr &= 0xFFFFFFFC;
+    /* have to fix it
+     * vmpidr is to be the virtual cpus's core id.
+     * so this value have to determined by situation.
+     * ex) linux guest's secondary vcpu, bm guest vcpu .. etc.
+     */
+    vmpidr |= 0;
+    regs_cop->vmpidr = vmpidr;
+
 }
 
 static void context_save_cops(struct regs_cop *regs_cop)
@@ -191,6 +203,7 @@ static void context_save_cops(struct regs_cop *regs_cop)
     regs_cop->ttbr1 = read_ttbr1();
     regs_cop->ttbcr = read_ttbcr();
     regs_cop->sctlr = read_sctlr();
+    regs_cop->vmpidr = read_vmpidr();
 }
 
 static void context_restore_cops(struct regs_cop *regs_cop)
@@ -200,6 +213,7 @@ static void context_restore_cops(struct regs_cop *regs_cop)
     write_ttbr1(regs_cop->ttbr1);
     write_ttbcr(regs_cop->ttbcr);
     write_sctlr(regs_cop->sctlr);
+    write_vmpidr(regs_cop->vmpidr);
 }
 
 #ifndef DEBUG
@@ -239,16 +253,15 @@ static char *_modename(uint8_t mode)
 }
 #endif
 
-hvmm_status_t guest_hw_save(struct vcpu *guest,
-                struct arch_regs *current_regs)
+hvmm_status_t guest_hw_save(struct vcpu_regs *vcpu_regs, struct arch_regs *current_regs)
 {
-    struct arch_regs *regs = &guest->regs;
-    struct arch_context *context = &guest->context;
+    struct arch_regs *regs = &vcpu_regs->regs;
+    struct arch_context *context = &vcpu_regs->context;
 
     if (!current_regs)
         return HVMM_STATUS_SUCCESS;
 
-    guest-> vmpidr = read_vmpidr();
+//    guest-> vmpidr = read_vmpidr();
 
     context_copy_regs(regs, current_regs);
     context_save_cops(&context->regs_cop);
@@ -262,12 +275,12 @@ hvmm_status_t guest_hw_save(struct vcpu *guest,
     return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t guest_hw_restore(struct vcpu *guest,
-                struct arch_regs *current_regs)
+//hvmm_status_t guest_hw_restore(struct vcpu *guest, struct arch_regs *current_regs)
+hvmm_status_t guest_hw_restore(struct vcpu_regs *vcpu_regs, struct arch_regs *current_regs)
 {
-    struct arch_context *context = &guest->context;
+    struct arch_context *context = &vcpu_regs->context;
 
-    write_vmpidr(guest->vmpidr);
+//    write_vmpidr(guest->vmpidr);
 
     if (!current_regs) {
         /* init -> hyp mode -> guest */
@@ -275,33 +288,34 @@ hvmm_status_t guest_hw_restore(struct vcpu *guest,
          * The actual context switching (Hyp to Normal mode)
          * handled in the asm code
          */
-        __mon_switch_to_guest_context(&guest->regs);
+        __mon_switch_to_guest_context(&vcpu_regs->regs);
         return HVMM_STATUS_SUCCESS;
     }
 
     /* guest -> hyp -> guest */
-    context_copy_regs(current_regs, &guest->regs);
+    context_copy_regs(current_regs, &vcpu_regs->regs);
     context_restore_cops(&context->regs_cop);
     context_restore_banked(&context->regs_banked);
 
     return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t guest_hw_init(struct vcpu *guest,
-                struct arch_regs *regs)
+//hvmm_status_t guest_hw_init(struct vcpu *guest, struct arch_regs *regs)
+hvmm_status_t guest_hw_init(struct vcpu_regs *vcpu_regs)
 {
-    struct arch_context *context = &guest->context;
-    uint32_t vmpidr;
+    struct arch_context *context = &vcpu_regs->context;
+    struct arch_regs *regs = &vcpu_regs->regs;
+//    uint32_t vmpidr;
 
-    vmpidr = read_vmpidr();
-    vmpidr &= 0xFFFFFFFC;
+//    vmpidr = read_vmpidr();
+//    vmpidr &= 0xFFFFFFFC;
     /* have to fix it
      * vmpidr is to be the virtual cpus's core id.
      * so this value have to determined by situation.
      * ex) linux guest's secondary vcpu, bm guest vcpu .. etc.
      */
-    vmpidr |= 0;
-    guest->vmpidr = vmpidr;
+//    vmpidr |= 0;
+//    guest->vmpidr = vmpidr;
 
     regs->pc = CFG_GUEST_START_ADDRESS;
     /* Initialize loader status for reboot */
@@ -334,9 +348,9 @@ static hvmm_status_t guest_hw_dump(uint8_t verbose, struct arch_regs *regs)
         asm volatile("mov  %0, lr" : "=r"(lr) : : "memory", "cc");
         printf("context: restoring vmid[%d] mode(%x):%s pc:0x%x lr:0x%x\n",
                 _current_guest[0]->vmid,
-                _current_guest[0]->regs.cpsr & 0x1F,
-                _modename(_current_guest[0]->regs.cpsr & 0x1F),
-                _current_guest[0]->regs.pc, lr);
+                _current_guest[0]->vcpu_regs.regs.cpsr & 0x1F,
+                _modename(_current_guest[0]->vcpu_regs.regs.cpsr & 0x1F),
+                _current_guest[0]->vcpu_regs.regs.pc, lr);
 
     }
     if (verbose & GUEST_VERBOSE_LEVEL_2) {
@@ -349,7 +363,7 @@ static hvmm_status_t guest_hw_dump(uint8_t verbose, struct arch_regs *regs)
 }
 
 //hvmm_status_t guest_hw_move(struct arch_regs *dst, struct arch_regs *src)
-hvmm_status_t guest_hw_move(struct vcpu *dst, struct vcpu *src)
+hvmm_status_t guest_hw_move(struct vcpu_regs *dst, struct vcpu_regs *src)
 {
     context_copy_regs(&(dst->regs), &(src->regs));
     context_copy_banked(&(dst->context.regs_banked),

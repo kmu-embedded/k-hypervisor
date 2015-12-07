@@ -29,28 +29,31 @@ enum hyp_hvc_result {
 // guest_struct's features will be vcpu's and change guest_struct
 // this time, guest_struct is vcpu.
 struct vcpu {
-    struct arch_regs regs;
-    struct arch_context context;
-    uint32_t vmpidr;
+//    struct arch_regs regs;
+//    struct arch_context context;
+
+    struct vcpu_regs vcpu_regs;
+//    uint32_t vmpidr;
     vmid_t vmid;
 };
 
 
 struct guest_ops {
     /** Initalize guest state */
-    hvmm_status_t (*init)(struct vcpu *, struct arch_regs *);
+//    hvmm_status_t (*init)(struct vcpu *, struct arch_regs *);
+    hvmm_status_t (*init)(struct vcpu_regs *);
 
     /** Save registers for context switch */
-    hvmm_status_t (*save)(struct vcpu *, struct arch_regs *);
+    hvmm_status_t (*save)(struct vcpu_regs *, struct arch_regs *);
 
     /** Restore registers for context switch */
-    hvmm_status_t (*restore)(struct vcpu *, struct arch_regs *);
+    hvmm_status_t (*restore)(struct vcpu_regs *, struct arch_regs *);
 
     /** Dump state of the guest */
     hvmm_status_t (*dump)(uint8_t, struct arch_regs *regs);
 
     /** Move Guest's info from src to dst */
-    hvmm_status_t (*move)(struct vcpu *, struct vcpu *);
+    hvmm_status_t (*move)(struct vcpu_regs *, struct vcpu_regs *);
 };
 
 struct guest_module {
