@@ -15,27 +15,24 @@
 hvmm_status_t guest_save(struct vcpu *guest, struct arch_regs *regs)
 {
     /* guest_hw_save : save the current guest's context*/
-    if (_guest_module.ops->save)
-        return  _guest_module.ops->save(&guest->vcpu_regs, regs);
+//    if (guest_hw_save)
+        return  guest_hw_save(&guest->vcpu_regs, regs);
 
-    return HVMM_STATUS_UNKNOWN_ERROR;
+//    return HVMM_STATUS_UNKNOWN_ERROR;
 }
 
 hvmm_status_t guest_restore(struct vcpu *guest, struct arch_regs *regs)
 {
     /* guest_hw_restore : The next becomes the current */
-    if (_guest_module.ops->restore)
-        return  _guest_module.ops->restore(&guest->vcpu_regs, regs);
-
-
-
-     return HVMM_STATUS_UNKNOWN_ERROR;
+//    if (guest_hw_restore)
+     return  guest_hw_restore(&guest->vcpu_regs, regs);
+//     return HVMM_STATUS_UNKNOWN_ERROR;
 }
 
 void guest_dump_regs(struct arch_regs *regs)
 {
     /* guest_hw_dump */
-    _guest_module.ops->dump(GUEST_VERBOSE_ALL, regs);
+    guest_hw_dump(GUEST_VERBOSE_ALL, regs);
 }
 
 hvmm_status_t guest_init()
@@ -64,8 +61,8 @@ hvmm_status_t guest_init()
         guest = &guests[i];
         guest->vmid = i;
         /* guest_hw_init */
-        if (_guest_module.ops->init)
-            _guest_module.ops->init(&guest->vcpu_regs);
+//        if (guest_hw_init)
+        guest_hw_init(&guest->vcpu_regs);
     }
 
     printf("[hyp] init_guests: return\n");
@@ -84,16 +81,16 @@ hvmm_status_t guest_init()
 
 void guest_copy(struct vcpu *dst, vmid_t vmid_src)
 {
-    _guest_module.ops->move(&dst->vcpu_regs, &(guests[vmid_src]).vcpu_regs);
+    guest_hw_move(&dst->vcpu_regs, &(guests[vmid_src]).vcpu_regs);
 }
 
 void reboot_guest(vmid_t vmid, uint32_t pc, struct arch_regs **regs)
 {
     struct vcpu_regs *vcpu_regs = &guests[vmid].vcpu_regs;
-    _guest_module.ops->init(vcpu_regs);
+    guest_hw_init(vcpu_regs);
     vcpu_regs->regs.pc = pc;
     vcpu_regs->regs.gpr[10] = 1;
     if (regs != 0)
-        _guest_module.ops->restore(vcpu_regs, *regs);
+        guest_hw_restore(vcpu_regs, *regs);
 }
 
