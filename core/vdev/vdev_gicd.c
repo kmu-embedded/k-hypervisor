@@ -2,6 +2,7 @@
 #include <gic_regs.h>
 #include <vdev.h>
 #include <asm-arm_inline.h>
+#include <scheduler.h>
 
 #define DEBUG
 #include <stdio.h>

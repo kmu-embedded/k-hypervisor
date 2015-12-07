@@ -6,6 +6,7 @@
 #include "armv7_p15.h"
 #include "timer.h"
 #include "guest.h"
+#include "scheduler.h"
 #include <arch/arm/rtsm-config.h>
 #include <interrupt.h>
 

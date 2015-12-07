@@ -6,6 +6,7 @@
 #include <gic_regs.h>
 #include <tests.h>
 #include <smp.h>
+#include <scheduler.h>
 #include <arch/arm/rtsm-config.h>
 #include "vm_main.h"
 #include "host_memory_hw.h"

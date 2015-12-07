@@ -1,6 +1,7 @@
 #include <vdev.h>
 #define DEBUG
 #include <stdio.h>
+#include <scheduler.h>
 
 #define SAMPLE_BASE_ADDR 0x3FFFF000
 
