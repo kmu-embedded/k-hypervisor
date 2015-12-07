@@ -70,4 +70,9 @@ struct vcpu_regs {
 /* moved from scheduler.h */
 extern void __mon_switch_to_guest_context(struct arch_regs *regs);
 
+hvmm_status_t guest_hw_move(struct vcpu_regs *dst, struct vcpu_regs *src);
+hvmm_status_t guest_hw_dump(uint8_t verbose, struct arch_regs *regs);
+hvmm_status_t guest_hw_init(struct vcpu_regs *vcpu_regs);
+hvmm_status_t guest_hw_restore(struct vcpu_regs *vcpu_regs, struct arch_regs *current_regs);
+hvmm_status_t guest_hw_save(struct vcpu_regs *vcpu_regs, struct arch_regs *current_regs);
 #endif

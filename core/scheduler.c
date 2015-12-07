@@ -33,8 +33,8 @@ static hvmm_status_t perform_switch(struct arch_regs *regs, vmid_t next_vmid)
     _current_guest_vmid[cpu] = next_vmid;
 
     /* guest_hw_dump */
-    if (_guest_module.ops->dump)
-        _guest_module.ops->dump(GUEST_VERBOSE_LEVEL_3, &guest->vcpu_regs.regs);
+//    if (guest_hw_dump)
+    guest_hw_dump(GUEST_VERBOSE_LEVEL_3, &guest->vcpu_regs.regs);
 
     vdev_restore(_current_guest_vmid[cpu]);
 
@@ -86,8 +86,8 @@ void guest_sched_start(void)
     else
         guest = &guests[0];
     /* guest_hw_dump */
-    if (_guest_module.ops->dump)
-        _guest_module.ops->dump(GUEST_VERBOSE_LEVEL_0, &guest->vcpu_regs.regs);
+//    if (guest_hw_dump)
+    guest_hw_dump(GUEST_VERBOSE_LEVEL_0, &guest->vcpu_regs.regs);
     /* Context Switch with current context == none */
 
     guest_switchto(guest->vmid, 0);
@@ -211,8 +211,8 @@ void guest_schedule(void *pdata)
     struct arch_regs *regs = pdata;
     //uint32_t cpu = smp_processor_id();
     /* guest_hw_dump */
-    if (_guest_module.ops->dump)
-        _guest_module.ops->dump(GUEST_VERBOSE_LEVEL_3, regs);
+//    if (guest_hw_dump)
+    guest_hw_dump(GUEST_VERBOSE_LEVEL_3, regs);
     /*
      * Note: As of guest_switchto() and guest_perform_switch()
      * are available, no need to test if trapped from Hyp mode.
