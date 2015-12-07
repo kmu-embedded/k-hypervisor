@@ -245,7 +245,7 @@ void setup_memory()
      * PA: 0xB0000000 ~ 0xEFFFFFFF    guest2_bin_start
      */
     guest0_memory_md[0].pa = (uint64_t)((uint32_t) &_guest0_bin_start);
-    //guest1_memory_md[0].pa = (uint64_t)((uint32_t) &_guest1_bin_start);
+    guest1_memory_md[0].pa = (uint64_t)((uint32_t) &_guest1_bin_start);
 #if _SMP_
     guest2_memory_md[0].pa = (uint64_t)((uint32_t) &_guest2_bin_start);
     guest3_memory_md[0].pa = (uint64_t)((uint32_t) &_guest3_bin_start);

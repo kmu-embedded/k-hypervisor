@@ -85,8 +85,8 @@
  *         TLB.
  *
  *   - Upper attributes
- *     - Contigues hint[52]
- *       - A hint bit indicating that 16 adjacent translation table entries
+ *     - Contigues cb[52]
+ *       - A cb bit indicating that 16 adjacent translation table entries
  *         point to contiguous memory regions.
  *     - PXN[53]
  *       - The Privileged eXecute Never bit. Determine whether the region is
@@ -127,8 +127,8 @@
  *       - The Access flag.
  *
  *   - Upper attribute
- *     - Contigues hint[52]
- *       - A hint bit indicating that 16 adjacent translation table entries
+ *     - Contigues cb[52]
+ *       - A cb bit indicating that 16 adjacent translation table entries
  *         point to contiguous memory regions.
  *     - XN[54]
  *       - The eXecute Never bit. Determines whether the region is executable.
@@ -262,7 +262,7 @@
  *
  *   - Theses seven bits are only used in Block entries and are ignored.
  *     (Stage-1 Upper block attributes, Used in block & page Descriptor)
- *     - hint - Contiguous hint, In a block of 16 contiguous entries.
+ *     - cb - Contiguous cb, In a block of 16 contiguous entries.
  *     - pxn - Privileged-eXecute-Never
  *     - xn - eXecute-Never
  *     - avail - Ignored by Hardware
@@ -274,31 +274,32 @@
  *     - apt - APTable
  *     - nst - NSTable
  */
-struct lpae_pt {
+struct stage1_pagetable {
     /* These are used in all kinds of entry. */
     unsigned long valid:1;     /**< Valid mapping */
-    unsigned long table:1;     /**< == 1 in 4k map entries too. */
+    unsigned long type:1;     /**< == 1 in 4k map entries too. */
 
     /* These ten bits are only used in Block entries and are ignored
      * in Table entries. */
-    unsigned long ai:3;        /**< Attribute Index */
+    unsigned long attr_indx:3;        /**< Attribute Index */
     unsigned long ns:1;        /**< Not-Secure */
-    unsigned long user:1;      /**< User-visible */
-    unsigned long ro:1;        /**< Read-Only */
+    //unsigned long user:1;      /**< User-visible */
+    //unsigned long ro:1;        /**< Read-Only */
+    unsigned long ap:2;        /**< Shareability */
     unsigned long sh:2;        /**< Shareability */
     unsigned long af:1;        /**< Access Flag */
     unsigned long ng:1;        /**< Not-Global */
 
     /* The base address must be appropriately aligned for Block entries */
     unsigned long base:28;     /**< Base address of block or next table. */
-    unsigned long sbz:12;      /**< Must be zero */
+    unsigned long sbzp:12;      /**< Must be zero */
 
     /* These seven bits are only used in Block entries and are ignored
      * in Table entries. */
-    unsigned long hint:1;      /**< In a block of 16 contiguous entries. */
+    unsigned long cb:1;      /**< In a block of 16 contiguous entries. */
     unsigned long pxn:1;       /**< Privileged XN */
     unsigned long xn:1;        /**< eXecute Never */
-    unsigned long avail:4;     /**< Ignored by hardware */
+    unsigned long reserved:4;     /**< Ignored by hardware */
 
     /* These 5 bits are only used in Table entries and are ignored in
      * Block entries */
@@ -311,7 +312,7 @@ struct lpae_pt {
 /**
  * @brief LPAE table descriptor for stage-2 translation
  *
- * This descriptor has almost the same layout to lpae_pt.
+ * This descriptor has almost the same layout to stage1_entry.
  * But it is stage-2 translation descriptor.
  * - \ref Long_descriptor "Details"
  *
@@ -335,36 +336,36 @@ struct lpae_pt {
  *     - base - Bass Address of block or next table.
  *   - These six bits are only used in Block entries and are ignored in Table
  *     entries.
- *     - hint - Contiguous Hint, In a block of 16 contiguous entries.
+ *     - cb - Contiguous Hint, In a block of 16 contiguous entries.
  *     - xn - eXecute Never
  *     - avail - Ignored by Hardware
  */
-struct lpae_p2m {
+struct stage2_pagetable {
     /* These are used in all kinds of entry. */
     unsigned long valid:1;     /**< Valid mapping */
-    unsigned long table:1;     /**< == 1 in 4k map entries too. */
+    unsigned long type:1;     /**< == 1 in 4k map entries too. */
 
     /* These ten bits are only used in Block entries and are ignored
      * in Table entries. */
     unsigned long mattr:4;     /**< Memory Attributes */
-    unsigned long read:1;      /**< Read access */
-    unsigned long write:1;     /**< Write access */
+    unsigned long ap:2;      /**< Read access */
+    //unsigned long read:1;      /**< Read access */
+    //unsigned long write:1;     /**< Write access */
     unsigned long sh:2;        /**< Shareability */
     unsigned long af:1;        /**< Access Flag */
-    unsigned long sbz4:1;
+    unsigned long ng:1;
 
     /* The base address must be appropriately aligned for Block entries */
     unsigned long base:28;     /**< Base address of block or next table. */
-    unsigned long sbz3:12;
+    unsigned long sbzp:12;
 
     /* These seven bits are only used in Block entries and are ignored
      * in Table entries. */
-    unsigned long hint:1;      /**< In a block of 16 contiguous entries. */
-    unsigned long sbz2:1;
+    unsigned long cb:1;      /**< In a block of 16 contiguous entries. */
+    unsigned long pxn:1;
     unsigned long xn:1;        /**< eXecute Never. */
-    unsigned long avail:4;     /**< Ignored by hardware. */
-
-    unsigned long sbz1:5;
+    unsigned long reserved:4;     /**< Ignored by hardware. */
+    unsigned long ignored:5;
 } __attribute__((__packed__));
 
 
@@ -386,7 +387,7 @@ struct lpae_p2m {
 struct lpae_walk {
     /* These are used in all kinds of entry. */
     unsigned long valid:1;     /**< Valid mapping. */
-    unsigned long table:1;     /**< == 1 in 4k map entries too. */
+    unsigned long type:1;     /**< == 1 in 4k map entries too. */
 
     unsigned long pad2:10;
 
@@ -401,10 +402,10 @@ struct lpae_walk {
  *
  * For saves the page table descriptor.
  */
-union lpaed {
+union lpaed_t {
     uint64_t bits;
-    struct lpae_pt pt;
-    struct lpae_p2m  p2m;
+    struct stage1_pagetable stage1;
+    struct stage2_pagetable stage2;
     struct lpae_walk walk;
 };
 
@@ -428,7 +429,7 @@ union lpaed {
  * @param  attr_idx Attribute index for memory this descriptor.
  * @return  Generated level1 block LPAE descriptor.
  */
-union lpaed lpaed_host_l1_block(uint64_t pa, uint8_t attr_idx);
+union lpaed_t lpaed_host_l1_block(uint64_t pa, uint8_t attr_idx);
 
 /**
  * @brief Level 1, 1GB, each entry refer level2 page table
@@ -446,7 +447,7 @@ union lpaed lpaed_host_l1_block(uint64_t pa, uint8_t attr_idx);
  * @param pa Physical address Refers level2 page table.
  * @return Generated level 1 page table LPAE descriptor.
  */
-union lpaed lpaed_host_l1_table(uint64_t pa);
+union lpaed_t lpaed_host_l1_table(uint64_t pa);
 /**
  * @brief Level 2, 2MB, each entry refer level3 page table
  *
@@ -463,7 +464,7 @@ union lpaed lpaed_host_l1_table(uint64_t pa);
  * @param pa Physical address Refers level3 page table.
  * @return Generated level 2 page table LPAE descriptor.
  */
-union lpaed lpaed_host_l2_table(uint64_t pa);
+union lpaed_t lpaed_host_l2_table(uint64_t pa);
 /**
  * @brief Level 3, each entry refer 4KB physical address
  *
@@ -483,7 +484,7 @@ union lpaed lpaed_host_l2_table(uint64_t pa);
  * @param valid Validation of table descriptor.
  * @return Generated level 3 page table LPAE descriptor.
  */
-union lpaed lpaed_host_l3_table(uint64_t pa, uint8_t attr_idx,
+union lpaed_t lpaed_host_l3_table(uint64_t pa, uint8_t attr_idx,
                 uint8_t valid);
 /**
  * @brief Configures the stage-1 level 3 table entry.
@@ -499,7 +500,7 @@ union lpaed lpaed_host_l3_table(uint64_t pa, uint8_t attr_idx,
  * @param valid Validate
  * @return void
  */
-void lpaed_guest_stage1_conf_l3_table(union lpaed *ttbl3, uint64_t baddr,
+void lpaed_guest_stage1_conf_l3_table(union lpaed_t *ttbl3, uint64_t baddr,
                 uint8_t valid);
 /**
  * @brief Disables the stage-1 level 3 table entry.
@@ -510,7 +511,7 @@ void lpaed_guest_stage1_conf_l3_table(union lpaed *ttbl3, uint64_t baddr,
  * @param *ttbl3 Pointer of level 3 table descriptor.
  * @return void
  */
-void lpaed_guest_stage1_disable_l3_table(union lpaed *ttbl2);
+void lpaed_guest_stage1_disable_l3_table(union lpaed_t *ttbl2);
 /**
  * @brief Mapping the stage-2 level 2 lpae descriptor to physical address
  * and memory attribute.
@@ -520,14 +521,14 @@ void lpaed_guest_stage1_disable_l3_table(union lpaed *ttbl2);
  *
  * - State configuration
  *   - valid = 1, table = 1, mattr = mattr & 0x0F, read = 1, write 1
- *   - sh = 0, af = 1, hint = 0, xn = 0 physical address = pa
+ *   - sh = 0, af = 1, cb = 0, xn = 0 physical address = pa
  *
  * @param *pte Page table descriptor.
  * @param pa Physical address.
  * @param mattr Memory entry.
  * @return void
  */
-void lpaed_guest_stage2_map_page(union lpaed *pte, uint64_t pa,
+void lpaed_guest_stage2_map_page(union lpaed_t *pte, uint64_t pa,
         enum memattr mattr);
 /**
  * @brief Configure valid & table bit of the stage-2 level 1 table descriptor.
@@ -545,7 +546,7 @@ void lpaed_guest_stage2_map_page(union lpaed *pte, uint64_t pa,
  * @param valid Validation
  * @return void
  */
-void lpaed_guest_stage2_conf_l1_table(union lpaed *ttbl1, uint64_t baddr,
+void lpaed_guest_stage2_conf_l1_table(union lpaed_t *ttbl1, uint64_t baddr,
         uint8_t valid);
 /**
  * @brief Configure the stage-2 level 2 table entry's valid & table bit
@@ -563,7 +564,7 @@ void lpaed_guest_stage2_conf_l1_table(union lpaed *ttbl1, uint64_t baddr,
  * @param valid Validation.
  * @return void
  */
-void lpaed_guest_stage2_conf_l2_table(union lpaed *ttbl2, uint64_t baddr,
+void lpaed_guest_stage2_conf_l2_table(union lpaed_t *ttbl2, uint64_t baddr,
         uint8_t valid);
 /**
  * @brief Enables the stage-2 level2 table entry.
@@ -576,7 +577,7 @@ void lpaed_guest_stage2_conf_l2_table(union lpaed *ttbl2, uint64_t baddr,
  * @param *ttbl2 The stage-2 Level2 translation table descriptor.
  * @return void
  */
-void lpaed_guest_stage2_enable_l2_table(union lpaed *ttbl2);
+void lpaed_guest_stage2_enable_l2_table(union lpaed_t *ttbl2);
 /**
  * @brief Disables the stage-2 level2 table entry.
  *
@@ -588,6 +589,6 @@ void lpaed_guest_stage2_enable_l2_table(union lpaed *ttbl2);
  * @param *ttbl2 the stage-2 level2 translation table descriptor.
  * @return void
  */
-void lpaed_guest_stage2_disable_l2_table(union lpaed *ttbl2);
+void lpaed_guest_stage2_disable_l2_table(union lpaed_t *ttbl2);
 
 #endif
