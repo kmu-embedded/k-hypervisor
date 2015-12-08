@@ -67,13 +67,13 @@ struct vdev_ops {
      *  This function is used by the virtual device framework, when the
      *  trap is occurred, finding the virtual device using the this function.
      */
-    int32_t (*check)(struct arch_vdev_trigger_info *, struct arch_regs *);
+    int32_t (*check)(struct arch_vdev_trigger_info *, struct core_regs *);
 
     /** Read a virtual register */
-    int32_t (*read)(struct arch_vdev_trigger_info *, struct arch_regs *);
+    int32_t (*read)(struct arch_vdev_trigger_info *, struct core_regs *);
 
     /** Write a virtual register */
-    int32_t (*write)(struct arch_vdev_trigger_info *, struct arch_regs *);
+    int32_t (*write)(struct arch_vdev_trigger_info *, struct core_regs *);
 
     /** Currently unused function */
     hvmm_status_t (*enable)(void);
@@ -88,7 +88,7 @@ struct vdev_ops {
     hvmm_status_t (*notify_irq)(uint32_t);
 
     /** Post for remain on the job */
-    hvmm_status_t (*post)(struct arch_vdev_trigger_info *, struct arch_regs *);
+    hvmm_status_t (*post)(struct arch_vdev_trigger_info *, struct core_regs *);
 
     /** Save virtual device state */
     hvmm_status_t (*save)(vmid_t vmid);
@@ -132,13 +132,13 @@ struct vdev_module {
 
 hvmm_status_t vdev_register(int level, struct vdev_module *module);
 int32_t vdev_find(int level, struct arch_vdev_trigger_info *info,
-        struct arch_regs *regs);
+        struct core_regs *regs);
 int32_t vdev_read(int level, int num, struct arch_vdev_trigger_info *info,
-            struct arch_regs *regs);
+            struct core_regs *regs);
 int32_t vdev_write(int level, int num, struct arch_vdev_trigger_info *info,
-            struct arch_regs *regs);
+            struct core_regs *regs);
 hvmm_status_t vdev_post(int level, int num, struct arch_vdev_trigger_info *info,
-            struct arch_regs *regs);
+            struct core_regs *regs);
 hvmm_status_t vdev_save(vmid_t vmid);
 hvmm_status_t vdev_restore(vmid_t vmid);
 hvmm_status_t vdev_init(void);

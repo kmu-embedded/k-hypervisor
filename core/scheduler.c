@@ -14,7 +14,7 @@ static int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
 /* further switch request will be ignored if set */
 static uint8_t _switch_locked[NUM_CPUS];
 
-static hvmm_status_t perform_switch(struct arch_regs *regs, vmid_t next_vmid)
+static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
 {
     /* _curreng_guest_vmid -> next_vmid */
 
@@ -34,8 +34,8 @@ static hvmm_status_t perform_switch(struct arch_regs *regs, vmid_t next_vmid)
     _current_guest[cpu] = guest;
     _current_guest_vmid[cpu] = next_vmid;
 
-    /* guest_hw_dump */
-    guest_hw_dump(GUEST_VERBOSE_LEVEL_3, &guest->vcpu_regs.regs);
+    /* vcpu_regs_dump */
+    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_3, &guest->vcpu_regs.core_regs);
 
     vdev_restore(_current_guest_vmid[cpu]);
 
@@ -46,7 +46,7 @@ static hvmm_status_t perform_switch(struct arch_regs *regs, vmid_t next_vmid)
     return result;
 }
 
-hvmm_status_t guest_perform_switch(struct arch_regs *regs)
+hvmm_status_t guest_perform_switch(struct core_regs *regs)
 {
     hvmm_status_t result = HVMM_STATUS_IGNORED;
     uint32_t cpu = smp_processor_id();
@@ -86,12 +86,12 @@ void guest_sched_start(void)
         guest = &running_vcpu[num_of_vcpu(cpu - 1) + 0];
     else
         guest = &running_vcpu[0];
-    /* guest_hw_dump */
-    guest_hw_dump(GUEST_VERBOSE_LEVEL_0, &guest->vcpu_regs.regs);
+    /* vcpu_regs_dump */
+    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_0, &guest->vcpu_regs.core_regs);
     /* Context Switch with current context == none */
 
-    guest_switchto(guest->vmid, 0);
-    guest_perform_switch(&guest->vcpu_regs.regs);
+    guest_switchto(guest->vcpuid, 0);
+    guest_perform_switch(&guest->vcpu_regs.core_regs);
 }
 
 vmid_t guest_first_vmid(void)
@@ -208,11 +208,11 @@ vmid_t sched_policy_determ_next(void)
 
 void guest_schedule(void *pdata)
 {
-    struct arch_regs *regs = pdata;
+    struct core_regs *regs = pdata;
     //uint32_t cpu = smp_processor_id();
-    /* guest_hw_dump */
-//    if (guest_hw_dump)
-    guest_hw_dump(GUEST_VERBOSE_LEVEL_3, regs);
+    /* vcpu_regs_dump */
+//    if (vcpu_regs_dump)
+    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_3, regs);
     /*
      * Note: As of guest_switchto() and guest_perform_switch()
      * are available, no need to test if trapped from Hyp mode.

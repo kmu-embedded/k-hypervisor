@@ -4,14 +4,14 @@
 #include <asm-arm_inline.h>
 
 static int32_t vdev_hvc_ping_write(struct arch_vdev_trigger_info *info,
-                        struct arch_regs *regs)
+                        struct core_regs *regs)
 {
     printf("[hyp] _hyp_hvc_service:ping\n\r");
     return 0;
 }
 
 static int32_t vdev_hvc_ping_check(struct arch_vdev_trigger_info *info,
-                        struct arch_regs *regs)
+                        struct core_regs *regs)
 {
     if ((info->iss & 0xFFFF) == 0xFFFE)
         return 0;
