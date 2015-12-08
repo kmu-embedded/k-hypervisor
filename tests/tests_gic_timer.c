@@ -31,7 +31,7 @@ static void test_start_timer(void)
 void interrupt_nsptimer(int irq, void *pregs, void *pdata)
 {
     uint32_t ctl;
-    struct arch_regs *regs = pregs;
+    struct core_regs *regs = pregs;
     printf("=======================================\n\r");
     HVMM_TRACE_ENTER();
     /* Disable NS Physical Timer Interrupt */

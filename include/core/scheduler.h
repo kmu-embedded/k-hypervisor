@@ -2,13 +2,13 @@
 #define __SCHEDULER_H__
 
 #include <hvmm_types.h>
-#include <guest_hw.h>
+#include <vcpu_regs.h>
 #include <vcpu.h>
 
 struct vcpu *_current_guest[NUM_CPUS];
 
 vmid_t sched_policy_determ_next(void);
-hvmm_status_t guest_perform_switch(struct arch_regs *regs);
+hvmm_status_t guest_perform_switch(struct core_regs *regs);
 
 void guest_sched_start(void);
 vmid_t guest_first_vmid(void);
