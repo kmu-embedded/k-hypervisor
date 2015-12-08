@@ -6,6 +6,7 @@
 #include <armv7_p15.h>
 #include <timer.h>
 #include <vgic.h>
+#include <timer.h>
 
 extern struct vcpu running_vcpu[NUM_GUESTS_STATIC];
 static int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
@@ -13,6 +14,16 @@ static int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
 static int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
 /* further switch request will be ignored if set */
 static uint8_t _switch_locked[NUM_CPUS];
+
+void sched_init()
+{
+    struct timer_val timer;
+
+    timer.interval_us = GUEST_SCHED_TICK;
+    timer.callback = &guest_schedule;
+
+    timer_set(&timer, HOST_TIMER);
+}
 
 static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
 {

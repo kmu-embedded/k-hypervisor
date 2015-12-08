@@ -318,6 +318,7 @@ int main_cpu_init()
     printf("%s", BANNER_STRING);
 
     /* Switch to the first guest */
+    sched_init();
     guest_sched_start();
 
     /* The code flow must not reach here */
