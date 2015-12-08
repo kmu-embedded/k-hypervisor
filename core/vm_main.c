@@ -24,6 +24,18 @@
 
 
 static struct guest_virqmap _guest_virqmap[NUM_GUESTS_STATIC];
+static struct vcpu *vcpu[NUM_GUESTS_STATIC];
+
+extern uint32_t _guest0_bin_start;
+extern uint32_t _guest0_bin_end;
+extern uint32_t _guest1_bin_start;
+#ifdef _SMP_
+extern uint32_t _guest2_bin_start;
+extern uint32_t _guest2_bin_end;
+extern uint32_t _guest3_bin_start;
+extern uint32_t _guest3_bin_end;
+#endif
+
 
 /**
  * \defgroup Guest_memory_map_descriptor
@@ -276,6 +288,8 @@ uint8_t secondary_smp_pen;
 
 int main_cpu_init()
 {
+    int i = 0;
+
     printf("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
 
     /* Initialize Memory Management */
@@ -303,8 +317,14 @@ int main_cpu_init()
         printf("[start_guest] timer initialization failed...\n");
 
     /* Initialize Guests */
-    if (vcpu_init())
-        printf("[start_guest] guest initialization failed...\n");
+    vcpu_setup();
+    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
+        if ((vcpu[i] = vcpu_create()) == VCPU_CREATE_FAILED)
+            printf("[start_guest] guest initialization failed...\n");
+        if (vcpu_init(vcpu[i]) != VCPU_REGISTERED)
+            printf("[start_guest] guest initialization failed...\n");
+        // TODO(casionwoo) : vcpu_start should be called when after scheduler is implemented
+    }
 
     /* Initialize Virtual Devices */
     if (vdev_init())
