@@ -7,6 +7,7 @@
 
 struct vcpu *_current_guest[NUM_CPUS];
 
+void sched_init();
 vmid_t sched_policy_determ_next(void);
 hvmm_status_t guest_perform_switch(struct core_regs *regs);
 

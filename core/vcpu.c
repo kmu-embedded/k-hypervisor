@@ -33,7 +33,7 @@ void vcpu_dump_regs(struct core_regs *core_regs)
 
 hvmm_status_t vcpu_init()
 {
-    struct timer_val timer;
+//    struct timer_val timer;
     hvmm_status_t result = HVMM_STATUS_SUCCESS;
     struct vcpu *vcpu;
     int i;
@@ -62,13 +62,13 @@ hvmm_status_t vcpu_init()
     printf("[hyp] init_vcpus: return\n");
 
     /* 100Mhz -> 1 count == 10ns at RTSM_VE_CA15, fast model*/
-    timer.interval_us = GUEST_SCHED_TICK;
-    timer.callback = &guest_schedule;
-
-    result = timer_set(&timer, HOST_TIMER);
-
-    if (result != HVMM_STATUS_SUCCESS)
-        printf("[%s] timer startup failed...\n", __func__);
+//    timer.interval_us = GUEST_SCHED_TICK;
+//    timer.callback = &guest_schedule;
+//
+//    result = timer_set(&timer, HOST_TIMER);
+//
+//    if (result != HVMM_STATUS_SUCCESS)
+//        printf("[%s] timer startup failed...\n", __func__);
 
     return result;
 }
