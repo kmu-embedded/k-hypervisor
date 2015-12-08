@@ -3,13 +3,23 @@
 
 #include <hvmm_types.h>
 #include <vcpu_regs.h>
+#include <list.h>
 
-#define NUM_GUEST_CONTEXTS        NUM_GUESTS_CPU0_STATIC
+#define VCPU_CREATE_FAILED    NULL
+#define VCPU_NOT_EXISTED      NULL
+#define NUM_GUEST_CONTEXTS    NUM_GUESTS_CPU0_STATIC
 
 enum hyp_hvc_result {
     HYP_RESULT_ERET = 0,
     HYP_RESULT_STAY = 1
 };
+
+typedef enum vcpu_state {
+    VCPU_UNDEFINED,
+    VCPU_DEFINED,
+    VCPU_REGISTERED,
+    VCPU_ACTIVATED,
+} vcpu_state_t;
 
 #define GUEST_VERBOSE_ALL       0xFF
 #define GUEST_VERBOSE_LEVEL_0   0x01
@@ -25,9 +35,18 @@ enum hyp_hvc_result {
 // this time, guest_struct is vcpu.
 struct vcpu {
     vcpuid_t vcpuid;
-//    vmid_t vmid;
+    vmid_t vmid;
 
     struct vcpu_regs vcpu_regs;
+
+    unsigned int period;
+    unsigned int deadline;
+
+    unsigned long long running_time;
+    unsigned long long actual_running_time;
+
+    vcpu_state_t state;
+    struct list_head head;
 };
 
 extern uint32_t _guest0_bin_start;
@@ -42,6 +61,12 @@ extern uint32_t _guest3_bin_end;
 
 struct vcpu running_vcpu[NUM_GUESTS_STATIC];
 
+hvmm_status_t vcpu_setup();
+struct vcpu *vcpu_create();
+//vcpu_state_t vcpu_init(struct vcpu *vcpu);
+vcpu_state_t vcpu_start(struct vcpu *vcpu);
+vcpu_state_t vcpu_delete(struct vcpu *vcpu);
+
 void vcpu_copy(struct vcpu *dst, vmid_t vmid_src);
 void vcpu_dump_regs(struct core_regs *regs);
 hvmm_status_t vcpu_init();
@@ -49,6 +74,9 @@ void reboot_vcpu(vmid_t vmid, uint32_t pc, struct core_regs **regs);
 
 hvmm_status_t vcpu_save(struct vcpu *vcpu, struct core_regs *regs);
 hvmm_status_t vcpu_restore(struct vcpu *vcpu, struct core_regs *regs);
+
+struct vcpu *vcpu_find(vcpuid_t vcpuid);
+void print_all_vcpu();
 
 static inline unsigned long num_of_vcpu(int cpu)
 {
