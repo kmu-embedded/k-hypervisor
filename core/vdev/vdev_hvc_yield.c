@@ -4,7 +4,7 @@
 #include <scheduler.h>
 
 static int32_t vdev_hvc_yield_write(struct arch_vdev_trigger_info *info,
-                        struct arch_regs *regs)
+                        struct core_regs *regs)
 {
     printf("[hyp] _hyp_hvc_service:yield\n\r");
     guest_switchto(sched_policy_determ_next(), 0);
@@ -12,7 +12,7 @@ static int32_t vdev_hvc_yield_write(struct arch_vdev_trigger_info *info,
 }
 
 static int32_t vdev_hvc_yield_check(struct arch_vdev_trigger_info *info,
-                        struct arch_regs *regs)
+                        struct core_regs *regs)
 {
     if ((info->iss & 0xFFFF) == 0xFFFD)
         return 0;

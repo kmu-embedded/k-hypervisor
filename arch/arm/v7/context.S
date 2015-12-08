@@ -1,5 +1,5 @@
     .global __mon_switch_to_guest_context
-__mon_switch_to_guest_context:    @ struct arch_regs *r0
+__mon_switch_to_guest_context:    @ struct core_regs *r0
     ldmfd    r0!, {r1, r3, lr}
     msr     spsr_hyp, r1
     msr     elr_hyp, r3
