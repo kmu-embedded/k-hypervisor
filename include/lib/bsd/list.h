@@ -197,8 +197,8 @@ list_del_init(struct list_head *node)
 	INIT_LIST_HEAD(node);
 }
 
-#define offsetof(type, member) \
-        ((size_t)(unsigned long)(&(((type *)0)->member)))
+// FIXME(casionwoo) : Duplicated with include/lib/c/stddef.h : offsetof 
+//#define offsetof(type, member)  ((size_t)(unsigned long)(&(((type *)0)->member)))
 
 #define __validate_container_of(PTR, TYPE, FIELD)           \
         (0 * sizeof((PTR) - &((TYPE *)(((char *)(PTR)) -            \
