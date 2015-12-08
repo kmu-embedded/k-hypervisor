@@ -31,8 +31,6 @@ typedef enum vcpu_state {
 #define GUEST_VERBOSE_LEVEL_6   0x40
 #define GUEST_VERBOSE_LEVEL_7   0x80
 
-// guest_struct's features will be vcpu's and change guest_struct
-// this time, guest_struct is vcpu.
 struct vcpu {
     vcpuid_t vcpuid;
     vmid_t vmid;
@@ -49,51 +47,19 @@ struct vcpu {
     struct list_head head;
 };
 
-extern uint32_t _guest0_bin_start;
-extern uint32_t _guest0_bin_end;
-extern uint32_t _guest1_bin_start;
-#ifdef _SMP_
-extern uint32_t _guest2_bin_start;
-extern uint32_t _guest2_bin_end;
-extern uint32_t _guest3_bin_start;
-extern uint32_t _guest3_bin_end;
-#endif
-
-struct vcpu running_vcpu[NUM_GUESTS_STATIC];
-
 hvmm_status_t vcpu_setup();
 struct vcpu *vcpu_create();
-//vcpu_state_t vcpu_init(struct vcpu *vcpu);
+vcpu_state_t vcpu_init(struct vcpu *vcpu);
 vcpu_state_t vcpu_start(struct vcpu *vcpu);
 vcpu_state_t vcpu_delete(struct vcpu *vcpu);
 
-void vcpu_copy(struct vcpu *dst, vmid_t vmid_src);
+// FIXME(casionwoo) : This function should be removed when trap.c is modified
 void vcpu_dump_regs(struct core_regs *regs);
-hvmm_status_t vcpu_init();
-void reboot_vcpu(vmid_t vmid, uint32_t pc, struct core_regs **regs);
 
 hvmm_status_t vcpu_save(struct vcpu *vcpu, struct core_regs *regs);
 hvmm_status_t vcpu_restore(struct vcpu *vcpu, struct core_regs *regs);
 
 struct vcpu *vcpu_find(vcpuid_t vcpuid);
 void print_all_vcpu();
-
-static inline unsigned long num_of_vcpu(int cpu)
-{
-    switch(cpu)
-    {
-        case 0:
-            return NUM_GUESTS_CPU0_STATIC;
-        case 1:
-            return NUM_GUESTS_CPU1_STATIC;
-            /*
-        case 2:
-            return NUM_GUESTS_CPU2_STATIC;
-        case 3:
-            return NUM_GUESTS_CPU3_STATIC;
-            */
-    }
-    return 255;
-}
 
 #endif /* __VCPU_H__ */

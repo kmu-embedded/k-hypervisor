@@ -8,7 +8,7 @@
 #include <vgic.h>
 #include <timer.h>
 
-extern struct vcpu running_vcpu[NUM_GUESTS_STATIC];
+//extern struct vcpu running_vcpu[NUM_GUESTS_STATIC];
 static int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
 
 static int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
@@ -19,6 +19,7 @@ void sched_init()
 {
     struct timer_val timer;
 
+    /* 100Mhz -> 1 count == 10ns at RTSM_VE_CA15, fast model */
     timer.interval_us = GUEST_SCHED_TICK;
     timer.callback = &guest_schedule;
 
@@ -35,13 +36,15 @@ static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
     if (_current_guest_vmid[cpu] == next_vmid)
         return HVMM_STATUS_IGNORED; /* the same guest? */
 
-    vcpu_save(&running_vcpu[_current_guest_vmid[cpu]], regs);
+//    vcpu_save(&running_vcpu[_current_guest_vmid[cpu]], regs);
+    vcpu_save(vcpu_find(_current_guest_vmid[cpu]), regs);
     memory_save();
     interrupt_save(_current_guest_vmid[cpu]);
     vdev_save(_current_guest_vmid[cpu]);
 
     /* The context of the next guest */
-    guest = &running_vcpu[next_vmid];
+//    guest = &running_vcpu[next_vmid];
+    guest = vcpu_find(next_vmid);
     _current_guest[cpu] = guest;
     _current_guest_vmid[cpu] = next_vmid;
 
@@ -87,22 +90,22 @@ hvmm_status_t guest_perform_switch(struct core_regs *regs)
 /* Switch to the first guest */
 void guest_sched_start(void)
 {
-    struct vcpu *guest = 0;
+    struct vcpu *vcpu = 0;
     uint32_t cpu = smp_processor_id();
 
     printf("[hyp] switch_to_initial_guest:\n");
     /* Select the first guest context to switch to. */
     _current_guest_vmid[cpu] = VMID_INVALID;
     if (cpu)
-        guest = &running_vcpu[num_of_vcpu(cpu - 1) + 0];
+        vcpu = vcpu_find(2);
     else
-        guest = &running_vcpu[0];
+        vcpu = vcpu_find(0);
     /* vcpu_regs_dump */
-    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_0, &guest->vcpu_regs.core_regs);
+    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_0, &vcpu->vcpu_regs.core_regs);
     /* Context Switch with current context == none */
 
-    guest_switchto(guest->vcpuid, 0);
-    guest_perform_switch(&guest->vcpu_regs.core_regs);
+    guest_switchto(vcpu->vcpuid, 0);
+    guest_perform_switch(&vcpu->vcpu_regs.core_regs);
 }
 
 vmid_t guest_first_vmid(void)
