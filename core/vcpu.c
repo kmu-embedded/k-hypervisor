@@ -11,7 +11,7 @@
 void print_vcpu(struct vcpu *vcpu);
 
 static struct list_head vcpu_list;
-static vcpuid_t vcpu_count;
+static int vcpu_count;
 
 hvmm_status_t vcpu_setup()
 {
@@ -43,7 +43,6 @@ struct vcpu *vcpu_create()
 
 vcpu_state_t vcpu_init(struct vcpu *vcpu)
 {
-
     vcpu_regs_init(&vcpu->vcpu_regs);
     vcpu->state = VCPU_REGISTERED;
 
@@ -70,12 +69,6 @@ vcpu_state_t vcpu_delete(struct vcpu *vcpu)
 	free(vcpu);
 
 	return VCPU_UNDEFINED;
-}
-
-void vcpu_dump_regs(struct core_regs *core_regs)
-{
-    /* vcpu_regs_dump */
-    vcpu_regs_dump(GUEST_VERBOSE_ALL, core_regs);
 }
 
 hvmm_status_t vcpu_save(struct vcpu *vcpu, struct core_regs *regs)

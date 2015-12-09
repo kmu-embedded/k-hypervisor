@@ -1,8 +1,6 @@
 #include <hvmm_trace.h>
-#include <armv7_p15.h>
 #include <gic.h>
 #include <trap.h>
-//#include <guest_regs.h>
 #include <scheduler.h>
 #include <vdev.h>
 #include <smp.h>
@@ -24,7 +22,7 @@
  */
 hvmm_status_t _hyp_dabort(struct core_regs *regs)
 {
-    vcpu_dump_regs(regs);
+    vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
     hyp_abort_infinite();
     return HVMM_STATUS_UNKNOWN_ERROR;
 }
@@ -54,7 +52,7 @@ hvmm_status_t _hyp_irq(struct core_regs *regs)
  */
 hvmm_status_t _hyp_unhandled(struct core_regs *regs)
 {
-    vcpu_dump_regs(regs);
+    vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
     hyp_abort_infinite();
     return HVMM_STATUS_UNKNOWN_ERROR;
 }
@@ -177,7 +175,7 @@ enum hyp_hvc_result _hyp_hvc_service(struct core_regs *regs)
         printf("[hyp] _hyp_hvc_service:unknown hsr.iss= %x\n", iss);
         printf("[hyp] hsr.ec= %x\n", ec);
         printf("[hyp] hsr= %x\n", hsr);
-        vcpu_dump_regs(regs);
+        vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
         goto trap_error;
     }
 
