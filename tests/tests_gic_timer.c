@@ -43,7 +43,8 @@ void interrupt_nsptimer(int irq, void *pregs, void *pdata)
     /* Test guest context switch */
     if ((regs->cpsr & 0x1F) != 0x1A) {
         /* Not from Hyp, switch the guest context */
-        vcpu_dump_regs(regs);
+//        vcpu_dump_regs(regs);
+        vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
         guest_switchto(sched_policy_determ_next(), 0);
     }
     HVMM_TRACE_EXIT();
