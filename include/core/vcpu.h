@@ -21,16 +21,6 @@ typedef enum vcpu_state {
     VCPU_ACTIVATED,
 } vcpu_state_t;
 
-#define GUEST_VERBOSE_ALL       0xFF
-#define GUEST_VERBOSE_LEVEL_0   0x01
-#define GUEST_VERBOSE_LEVEL_1   0x02
-#define GUEST_VERBOSE_LEVEL_2   0x04
-#define GUEST_VERBOSE_LEVEL_3   0x08
-#define GUEST_VERBOSE_LEVEL_4   0x10
-#define GUEST_VERBOSE_LEVEL_5   0x20
-#define GUEST_VERBOSE_LEVEL_6   0x40
-#define GUEST_VERBOSE_LEVEL_7   0x80
-
 struct vcpu {
     vcpuid_t vcpuid;
     vmid_t vmid;
@@ -52,9 +42,6 @@ struct vcpu *vcpu_create();
 vcpu_state_t vcpu_init(struct vcpu *vcpu);
 vcpu_state_t vcpu_start(struct vcpu *vcpu);
 vcpu_state_t vcpu_delete(struct vcpu *vcpu);
-
-// FIXME(casionwoo) : This function should be removed when trap.c is modified
-void vcpu_dump_regs(struct core_regs *regs);
 
 hvmm_status_t vcpu_save(struct vcpu *vcpu, struct core_regs *regs);
 hvmm_status_t vcpu_restore(struct vcpu *vcpu, struct core_regs *regs);

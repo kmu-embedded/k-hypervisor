@@ -15,6 +15,16 @@
 #define CPSR_MODE_UND   0x1B
 #define CPSR_MODE_SYS   0x1F
 
+#define GUEST_VERBOSE_ALL       0xFF
+#define GUEST_VERBOSE_LEVEL_0   0x01
+#define GUEST_VERBOSE_LEVEL_1   0x02
+#define GUEST_VERBOSE_LEVEL_2   0x04
+#define GUEST_VERBOSE_LEVEL_3   0x08
+#define GUEST_VERBOSE_LEVEL_4   0x10
+#define GUEST_VERBOSE_LEVEL_5   0x20
+#define GUEST_VERBOSE_LEVEL_6   0x40
+#define GUEST_VERBOSE_LEVEL_7   0x80
+
 static void context_copy_regs(struct core_regs *core_regs_dst, struct core_regs *core_regs_src)
 {
     int i;
@@ -152,26 +162,26 @@ static void context_restore_banked(struct banked_regs *banked_regs)
 }
 static void context_copy_banked(struct banked_regs *banked_dst, struct banked_regs *banked_src)
 {
-    banked_dst->sp_usr = banked_src->sp_usr;
+    banked_dst->sp_usr   = banked_src->sp_usr;
     banked_dst->spsr_svc = banked_src->spsr_svc;
-    banked_dst->sp_svc = banked_src->sp_svc;
-    banked_dst->lr_svc = banked_src->lr_svc;
+    banked_dst->sp_svc   = banked_src->sp_svc;
+    banked_dst->lr_svc   = banked_src->lr_svc;
     banked_dst->spsr_abt = banked_src->spsr_abt;
-    banked_dst->sp_abt = banked_src->sp_abt;
-    banked_dst->lr_abt = banked_src->lr_abt;
+    banked_dst->sp_abt   = banked_src->sp_abt;
+    banked_dst->lr_abt   = banked_src->lr_abt;
     banked_dst->spsr_und = banked_src->spsr_und;
-    banked_dst->sp_und = banked_src->sp_und;
-    banked_dst->lr_und = banked_src->sp_und;
+    banked_dst->sp_und   = banked_src->sp_und;
+    banked_dst->lr_und   = banked_src->sp_und;
     banked_dst->spsr_irq = banked_src->spsr_irq;
-    banked_dst->sp_irq = banked_src->sp_irq;
-    banked_dst->lr_irq = banked_src->lr_irq;
+    banked_dst->sp_irq   = banked_src->sp_irq;
+    banked_dst->lr_irq   = banked_src->lr_irq;
     banked_dst->spsr_fiq = banked_src->spsr_fiq;
-    banked_dst->lr_fiq = banked_src->lr_fiq;
-    banked_dst->r8_fiq = banked_src->r8_fiq;
-    banked_dst->r9_fiq = banked_src->r9_fiq;
-    banked_dst->r10_fiq = banked_src->r10_fiq;
-    banked_dst->r11_fiq = banked_src->r11_fiq;
-    banked_dst->r12_fiq = banked_src->r12_fiq;
+    banked_dst->lr_fiq   = banked_src->lr_fiq;
+    banked_dst->r8_fiq   = banked_src->r8_fiq;
+    banked_dst->r9_fiq   = banked_src->r9_fiq;
+    banked_dst->r10_fiq  = banked_src->r10_fiq;
+    banked_dst->r11_fiq  = banked_src->r11_fiq;
+    banked_dst->r12_fiq  = banked_src->r12_fiq;
 }
 /* Co-processor state management: init/save/restore */
 static void context_init_cops(struct cop_regs *cop_regs)
