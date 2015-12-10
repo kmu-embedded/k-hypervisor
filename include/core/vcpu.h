@@ -48,5 +48,6 @@ hvmm_status_t vcpu_restore(struct vcpu *vcpu, struct core_regs *regs);
 
 struct vcpu *vcpu_find(vcpuid_t vcpuid);
 void print_all_vcpu();
+void print_vcpu(struct vcpu *vcpu);
 
 #endif /* __VCPU_H__ */
