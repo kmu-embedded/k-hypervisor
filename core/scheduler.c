@@ -49,7 +49,8 @@ static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
     _current_guest_vmid[cpu] = next_vmid;
 
     /* vcpu_regs_dump */
-    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_3, &guest->vcpu_regs.core_regs);
+//    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_3, &guest->vcpu_regs.core_regs);
+//    print_core_regs(&guest->vcpu_regs.core_regs);
 
     vdev_restore(_current_guest_vmid[cpu]);
 
@@ -101,7 +102,8 @@ void guest_sched_start(void)
     else
         vcpu = vcpu_find(0);
     /* vcpu_regs_dump */
-    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_0, &vcpu->vcpu_regs.core_regs);
+//    print_core_regs(&vcpu->vcpu_regs.core_regs);
+//    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_0, &vcpu->vcpu_regs.core_regs);
     /* Context Switch with current context == none */
 
     guest_switchto(vcpu->vcpuid, 0);
@@ -182,7 +184,7 @@ hvmm_status_t guest_switchto(vmid_t vmid, uint8_t locked)
     if (_switch_locked[cpu] == 0) {
         _next_guest_vmid[cpu] = vmid;
         result = HVMM_STATUS_SUCCESS;
-        printf("switching to vmid: %x\n", (uint32_t)vmid);
+//        printf("switching to vmid: %x\n", (uint32_t)vmid);
     } else
         printf("context: next vmid locked to %d\n", _next_guest_vmid[cpu]);
 
@@ -222,11 +224,12 @@ vmid_t sched_policy_determ_next(void)
 
 void guest_schedule(void *pdata)
 {
-    struct core_regs *regs = pdata;
+//    struct core_regs *regs = pdata;
     //uint32_t cpu = smp_processor_id();
     /* vcpu_regs_dump */
 //    if (vcpu_regs_dump)
-    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_3, regs);
+//    print_core_regs(regs);
+//    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_3, regs);
     /*
      * Note: As of guest_switchto() and guest_perform_switch()
      * are available, no need to test if trapped from Hyp mode.
