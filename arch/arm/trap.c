@@ -22,7 +22,8 @@
  */
 hvmm_status_t _hyp_dabort(struct core_regs *regs)
 {
-    vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
+//    vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
+//    print_core_regs(regs);
     hyp_abort_infinite();
     return HVMM_STATUS_UNKNOWN_ERROR;
 }
@@ -52,7 +53,8 @@ hvmm_status_t _hyp_irq(struct core_regs *regs)
  */
 hvmm_status_t _hyp_unhandled(struct core_regs *regs)
 {
-    vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
+//    vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
+//    print_core_regs(regs);
     hyp_abort_infinite();
     return HVMM_STATUS_UNKNOWN_ERROR;
 }
@@ -175,7 +177,8 @@ enum hyp_hvc_result _hyp_hvc_service(struct core_regs *regs)
         printf("[hyp] _hyp_hvc_service:unknown hsr.iss= %x\n", iss);
         printf("[hyp] hsr.ec= %x\n", ec);
         printf("[hyp] hsr= %x\n", hsr);
-        vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
+//        print_core_regs(regs);
+//        vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
         goto trap_error;
     }
 

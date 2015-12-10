@@ -3,6 +3,7 @@
 #include <vdev.h>
 #include <asm-arm_inline.h>
 #include <scheduler.h>
+#include <vgic.h>
 
 #define DEBUG
 #include <stdio.h>
