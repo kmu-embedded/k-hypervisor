@@ -1,9 +1,8 @@
-#include <stdio.h>
-#include <hvmm_trace.h>
-#include <vcpu.h>
 #include <vcpu_regs.h>
-#include <vgic.h>
+#include <stdio.h>
+#include <armv7_p15.h>
 #include <scheduler.h>
+#include <arch/arm/rtsm-config.h>
 
 #define CPSR_MODE_USER  0x10
 #define CPSR_MODE_FIQ   0x11
@@ -15,6 +14,16 @@
 #define CPSR_MODE_UND   0x1B
 #define CPSR_MODE_SYS   0x1F
 
+#define VALUE_ZERO      0
+#define CPSR_MODE_MASK           0X1F
+#define CPSR_ASYNC_ABT_DIABLE    0x100
+#define CPSR_IRQ_DISABLE         0x80
+#define CPSR_FIQ_DISABLE         0x40
+
+#define CPSR_ASYNC_ABT_BIT  CPSR_ASYNC_ABT_DIABLE
+#define CPSR_IRQ_BIT        CPSR_IRQ_DISABLE
+#define CPSR_FIQ_BIT        CPSR_FIQ_DISABLE
+
 #define GUEST_VERBOSE_ALL       0xFF
 #define GUEST_VERBOSE_LEVEL_0   0x01
 #define GUEST_VERBOSE_LEVEL_1   0x02
@@ -25,43 +34,87 @@
 #define GUEST_VERBOSE_LEVEL_6   0x40
 #define GUEST_VERBOSE_LEVEL_7   0x80
 
-static void context_copy_regs(struct core_regs *core_regs_dst, struct core_regs *core_regs_src)
+static void core_regs_init(struct core_regs *core_regs)
 {
-    int i;
-    core_regs_dst->cpsr = core_regs_src->cpsr;
-    core_regs_dst->pc = core_regs_src->pc;
-    core_regs_dst->lr = core_regs_src->lr;
-    for (i = 0; i < ARCH_REGS_NUM_GPR; i++)
-        core_regs_dst->gpr[i] = core_regs_src->gpr[i];
+    int i = 0;
+
+    /* TODO(casionwoo) : Why PC should be this value? */
+    core_regs->pc = CFG_GUEST_START_ADDRESS;
+    core_regs->cpsr = (CPSR_ASYNC_ABT_BIT | CPSR_IRQ_BIT | CPSR_FIQ_BIT
+                        | CPSR_MODE_SVC | VALUE_ZERO);
+    for (i = 0; i < ARCH_REGS_NUM_GPR ; i++) {
+        core_regs->gpr[i] = 0;
+    }
 }
 
-/* banked registers */
-static void context_init_banked(struct banked_regs *banked_regs)
+static void cop_regs_init(struct cop_regs *cop_regs)
 {
-    banked_regs->sp_usr = 0;
+    uint32_t vmpidr = read_vmpidr();
+
+    cop_regs->vbar  = 0;
+    cop_regs->ttbr0 = 0;
+    cop_regs->ttbr1 = 0;
+    cop_regs->ttbcr = 0;
+    cop_regs->sctlr = 0;
+
+    vmpidr &= 0xFFFFFFFC;
+    /* have to fix it
+     * vmpidr is to be the virtual cpus's core id.
+     * so this value have to determined by situation.
+     * ex) linux guest's secondary vcpu, bm guest vcpu .. etc.
+     */
+    vmpidr |= 0;
+    cop_regs->vmpidr = vmpidr;
+}
+
+static void banked_regs_init(struct banked_regs *banked_regs)
+{
+    banked_regs->sp_usr   = 0;
     banked_regs->spsr_svc = 0;
-    banked_regs->sp_svc = 0;
-    banked_regs->lr_svc = 0;
+    banked_regs->sp_svc   = 0;
+    banked_regs->lr_svc   = 0;
     banked_regs->spsr_abt = 0;
-    banked_regs->sp_abt = 0;
-    banked_regs->lr_abt = 0;
+    banked_regs->sp_abt   = 0;
+    banked_regs->lr_abt   = 0;
     banked_regs->spsr_und = 0;
-    banked_regs->sp_und = 0;
-    banked_regs->lr_und = 0;
+    banked_regs->sp_und   = 0;
+    banked_regs->lr_und   = 0;
     banked_regs->spsr_irq = 0;
-    banked_regs->sp_irq = 0;
-    banked_regs->lr_irq = 0;
+    banked_regs->sp_irq   = 0;
+    banked_regs->lr_irq   = 0;
     banked_regs->spsr_fiq = 0;
-    banked_regs->lr_fiq = 0;
-    banked_regs->r8_fiq = 0;
-    banked_regs->r9_fiq = 0;
-    banked_regs->r10_fiq = 0;
-    banked_regs->r11_fiq = 0;
-    banked_regs->r12_fiq = 0;
+    banked_regs->lr_fiq   = 0;
+    banked_regs->r8_fiq   = 0;
+    banked_regs->r9_fiq   = 0;
+    banked_regs->r10_fiq  = 0;
+    banked_regs->r11_fiq  = 0;
+    banked_regs->r12_fiq  = 0;
     /* Cortex-A15 processor does not support sp_fiq */
 }
 
-static void context_save_banked(struct banked_regs *banked_regs)
+static void core_regs_copy(struct core_regs *dst, struct core_regs *src)
+{
+    int i;
+
+    dst->cpsr = src->cpsr;
+    dst->pc = src->pc;
+    dst->lr = src->lr;
+    for (i = 0; i < ARCH_REGS_NUM_GPR; i++) {
+        dst->gpr[i] = src->gpr[i];
+    }
+}
+
+static void core_regs_save(struct core_regs *core_regs, struct core_regs *current_core_regs)
+{
+    core_regs_copy(core_regs, current_core_regs);
+}
+
+static void core_regs_restore(struct core_regs *core_regs, struct core_regs *current_core_regs)
+{
+    core_regs_copy(current_core_regs, core_regs);
+}
+
+static void banked_regs_save(struct banked_regs *banked_regs)
 {
     /* USR banked register */
     asm volatile(" mrs     %0, sp_usr\n\t"
@@ -111,7 +164,7 @@ static void context_save_banked(struct banked_regs *banked_regs)
                  : "=r"(banked_regs->r12_fiq) : : "memory", "cc");
 }
 
-static void context_restore_banked(struct banked_regs *banked_regs)
+static void banked_regs_restore(struct banked_regs *banked_regs)
 {
     /* USR banked register */
     asm volatile(" msr    sp_usr, %0\n\t"
@@ -160,54 +213,10 @@ static void context_restore_banked(struct banked_regs *banked_regs)
     asm volatile(" msr    r12_fiq, %0\n\t"
                  : : "r"(banked_regs->r12_fiq) : "memory", "cc");
 }
-static void context_copy_banked(struct banked_regs *banked_dst, struct banked_regs *banked_src)
+
+static void cop_regs_save(struct cop_regs *cop_regs)
 {
-    banked_dst->sp_usr   = banked_src->sp_usr;
-    banked_dst->spsr_svc = banked_src->spsr_svc;
-    banked_dst->sp_svc   = banked_src->sp_svc;
-    banked_dst->lr_svc   = banked_src->lr_svc;
-    banked_dst->spsr_abt = banked_src->spsr_abt;
-    banked_dst->sp_abt   = banked_src->sp_abt;
-    banked_dst->lr_abt   = banked_src->lr_abt;
-    banked_dst->spsr_und = banked_src->spsr_und;
-    banked_dst->sp_und   = banked_src->sp_und;
-    banked_dst->lr_und   = banked_src->sp_und;
-    banked_dst->spsr_irq = banked_src->spsr_irq;
-    banked_dst->sp_irq   = banked_src->sp_irq;
-    banked_dst->lr_irq   = banked_src->lr_irq;
-    banked_dst->spsr_fiq = banked_src->spsr_fiq;
-    banked_dst->lr_fiq   = banked_src->lr_fiq;
-    banked_dst->r8_fiq   = banked_src->r8_fiq;
-    banked_dst->r9_fiq   = banked_src->r9_fiq;
-    banked_dst->r10_fiq  = banked_src->r10_fiq;
-    banked_dst->r11_fiq  = banked_src->r11_fiq;
-    banked_dst->r12_fiq  = banked_src->r12_fiq;
-}
-/* Co-processor state management: init/save/restore */
-static void context_init_cops(struct cop_regs *cop_regs)
-{
-    uint32_t vmpidr = read_vmpidr();
-
-    cop_regs->vbar = 0;
-    cop_regs->ttbr0 = 0;
-    cop_regs->ttbr1 = 0;
-    cop_regs->ttbcr = 0;
-    cop_regs->sctlr = 0;
-
-    vmpidr &= 0xFFFFFFFC;
-    /* have to fix it
-     * vmpidr is to be the virtual cpus's core id.
-     * so this value have to determined by situation.
-     * ex) linux guest's secondary vcpu, bm guest vcpu .. etc.
-     */
-    vmpidr |= 0;
-    cop_regs->vmpidr = vmpidr;
-
-}
-
-static void context_save_cops(struct cop_regs *cop_regs)
-{
-    cop_regs->vbar = read_vbar();
+    cop_regs->vbar  = read_vbar();
     cop_regs->ttbr0 = read_ttbr0();
     cop_regs->ttbr1 = read_ttbr1();
     cop_regs->ttbcr = read_ttbcr();
@@ -215,7 +224,7 @@ static void context_save_cops(struct cop_regs *cop_regs)
     cop_regs->vmpidr = read_vmpidr();
 }
 
-static void context_restore_cops(struct cop_regs *cop_regs)
+static void cop_regs_restore(struct cop_regs *cop_regs)
 {
     write_vbar(cop_regs->vbar);
     write_ttbr0(cop_regs->ttbr0);
@@ -262,22 +271,60 @@ static char *_modename(uint8_t mode)
 }
 #endif
 
+void print_core_regs(struct core_regs *core_regs)
+{
+    int i;
+
+    printf("cpsr: 0x%08x\n", core_regs->cpsr);
+    printf("cpsr mode(%x) : %s\n", core_regs->cpsr & CPSR_MODE_MASK
+                                 , _modename(core_regs->cpsr & CPSR_MODE_MASK));
+    printf("  pc: 0x%08x\n", core_regs->pc);
+    printf("  lr: 0x%08x\n", core_regs->lr);
+    printf(" gpr:\n\r");
+    for (i = 0; i < ARCH_REGS_NUM_GPR; i++) {
+        printf("     0x%08x\n", core_regs->gpr[i]);
+    }
+
+    printf("cntpct: %llu\n", read_cntpct());
+    printf("cnth_tval:0x%08x\n", read_cnthp_tval());
+
+}
+
+void print_banked_regs(struct banked_regs *banked_regs)
+{
+
+}
+
+void print_cop_regs(struct cop_regs *cop_regs)
+{
+
+}
+
+
+hvmm_status_t vcpu_regs_init(struct vcpu_regs *vcpu_regs)
+{
+    struct context_regs *context_regs = &vcpu_regs->context_regs;
+
+//    /* Initialize loader status for reboot */
+//    core_regs->gpr[10] = 0;
+
+    core_regs_init(&vcpu_regs->core_regs);
+    cop_regs_init(&context_regs->cop_regs);
+    banked_regs_init(&context_regs->banked_regs);
+
+    return HVMM_STATUS_SUCCESS;
+}
+
 hvmm_status_t vcpu_regs_save(struct vcpu_regs *vcpu_regs, struct core_regs *current_regs)
 {
-    struct core_regs *core_regs = &vcpu_regs->core_regs;
     struct context_regs *context_regs = &vcpu_regs->context_regs;
 
     if (!current_regs)
         return HVMM_STATUS_SUCCESS;
 
-    context_copy_regs(core_regs, current_regs);
-    context_save_cops(&context_regs->cop_regs);
-    context_save_banked(&context_regs->banked_regs);
-    printf("vcpu_regs_save  context: saving vmid[%d] mode(%x):%s pc:0x%x\n",
-            _current_guest[0]->vcpuid,
-           core_regs->cpsr & 0x1F,
-           _modename(core_regs->cpsr & 0x1F),
-           core_regs->pc);
+    core_regs_save(&vcpu_regs->core_regs, current_regs);
+    cop_regs_save(&context_regs->cop_regs);
+    banked_regs_save(&context_regs->banked_regs);
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -296,70 +343,23 @@ hvmm_status_t vcpu_regs_restore(struct vcpu_regs *vcpu_regs, struct core_regs *c
         return HVMM_STATUS_SUCCESS;
     }
 
-    /* guest -> hyp -> guest */
-    context_copy_regs(current_regs, &vcpu_regs->core_regs);
-    context_restore_cops(&context_regs->cop_regs);
-    context_restore_banked(&context_regs->banked_regs);
+    core_regs_restore(&vcpu_regs->core_regs, current_regs);
+    cop_regs_restore(&context_regs->cop_regs);
+    banked_regs_restore(&context_regs->banked_regs);
 
     return HVMM_STATUS_SUCCESS;
 }
 
-//hvmm_status_t vcpu_regs_init(struct vcpu *guest, struct core_regs *regs)
-hvmm_status_t vcpu_regs_init(struct vcpu_regs *vcpu_regs)
+void print_vcpu_regs(struct vcpu_regs *vcpu_regs)
 {
-    struct context_regs *context_regs = &vcpu_regs->context_regs;
-    struct core_regs *core_regs = &vcpu_regs->core_regs;
+    print_core_regs(&vcpu_regs->core_regs);
 
-    core_regs->pc = CFG_GUEST_START_ADDRESS;
-    /* Initialize loader status for reboot */
-    core_regs->gpr[10] = 0;
-    /* supervisor mode */
-    core_regs->cpsr = 0x1d3;
-    /* regs->gpr[] = whatever */
-    context_init_cops(&context_regs->cop_regs);
-    context_init_banked(&context_regs->banked_regs);
+    /* TODO(casionwoo) : Decide if bellow two functions stay or remove */
+//    print_banked_regs(&context_regs->banked_regs);
+//    print_cop_regs(&context_regs->cop_regs);
 
-    return HVMM_STATUS_SUCCESS;
-}
-
-hvmm_status_t vcpu_regs_dump(uint8_t verbose, struct core_regs *core_regs)
-{
-    if (verbose & GUEST_VERBOSE_LEVEL_0) {
-        printf("cpsr: 0x%08x\n", core_regs->cpsr);
-        printf("  pc: 0x%08x\n", core_regs->pc);
-        printf("  lr: 0x%08x\n", core_regs->lr);
-        {
-            int i;
-            printf(" gpr:\n\r");
-            for (i = 0; i < ARCH_REGS_NUM_GPR; i++) {
-                printf("     0x%08x\n", core_regs->gpr[i]);
-            }
-        }
-    }
-    if (verbose & GUEST_VERBOSE_LEVEL_1) {
-        uint32_t lr = 0;
-        asm volatile("mov  %0, lr" : "=r"(lr) : : "memory", "cc");
-        printf("context: restoring vmid[%d] mode(%x):%s pc:0x%x lr:0x%x\n",
-                _current_guest[0]->vcpuid,
-                _current_guest[0]->vcpu_regs.core_regs.cpsr & 0x1F,
-                _modename(_current_guest[0]->vcpu_regs.core_regs.cpsr & 0x1F),
-                _current_guest[0]->vcpu_regs.core_regs.pc, lr);
-
-    }
-    if (verbose & GUEST_VERBOSE_LEVEL_2) {
-        uint64_t pct = read_cntpct();
-        uint32_t tval = read_cnthp_tval();
-        printf("cntpct: %llu\n", pct);
-        printf("cnth_tval:0x%08x\n", tval);
-    }
-    return HVMM_STATUS_SUCCESS;
-}
-
-hvmm_status_t vcpu_regs_move(struct vcpu_regs *dst, struct vcpu_regs *src)
-{
-    context_copy_regs(&(dst->core_regs), &(src->core_regs));
-    context_copy_banked(&(dst->context_regs.banked_regs),
-            &(src->context_regs.banked_regs));
-    return HVMM_STATUS_SUCCESS;
+    /* TODO(casionwoo) : Decide if print bellow count registers */
+    printf("cntpct: %llu\n", read_cntpct());
+    printf("cnth_tval:0x%08x\n", read_cnthp_tval());
 }
 

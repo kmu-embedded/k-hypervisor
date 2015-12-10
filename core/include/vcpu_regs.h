@@ -1,9 +1,7 @@
 #ifndef __VCPU_REGS_H__
 #define __VCPU_REGS_H__
 
-#include <arch/arm/rtsm-config.h>
-#include <version.h>
-#include <vgic.h>
+#include <hvmm_types.h>
 
 #define ARCH_REGS_NUM_GPR    13
 
@@ -66,9 +64,11 @@ struct vcpu_regs {
 /* moved from scheduler.h */
 extern void __mon_switch_to_guest_context(struct core_regs *core_regs);
 
-hvmm_status_t vcpu_regs_move(struct vcpu_regs *dst, struct vcpu_regs *src);
-hvmm_status_t vcpu_regs_dump(uint8_t verbose, struct core_regs *regs);
 hvmm_status_t vcpu_regs_init(struct vcpu_regs *vcpu_regs);
-hvmm_status_t vcpu_regs_restore(struct vcpu_regs *vcpu_regs, struct core_regs *current_regs);
 hvmm_status_t vcpu_regs_save(struct vcpu_regs *vcpu_regs, struct core_regs *current_regs);
+hvmm_status_t vcpu_regs_restore(struct vcpu_regs *vcpu_regs, struct core_regs *current_regs);
+
+//void print_vcpu_regs(struct vcpu_regs *vcpu_regs);
+void print_core_regs(struct core_regs *core_regs);
+
 #endif
