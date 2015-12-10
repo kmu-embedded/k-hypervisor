@@ -8,7 +8,6 @@
 #define _valid_vmid(vmid) \
     (guest_first_vmid() <= vmid && guest_last_vmid() >= vmid)
 
-void print_vcpu(struct vcpu *vcpu);
 
 static struct list_head vcpu_list;
 static int vcpu_count;
