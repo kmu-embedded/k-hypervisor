@@ -10,7 +10,7 @@
 #include <arch/arm/rtsm-config.h>
 #include "vm_main.h"
 #include "host_memory_hw.h"
-
+#include <version.h>
 #include "hvmm_trace.h"
 
 
