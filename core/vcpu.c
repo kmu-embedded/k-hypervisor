@@ -46,7 +46,7 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
     vcpu->state = VCPU_REGISTERED;
 
 	// TODO(casionwoo) : Register vcpu id to scheduler
-
+    
     return vcpu->state;
 }
 

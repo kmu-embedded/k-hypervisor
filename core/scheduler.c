@@ -1,13 +1,15 @@
 #include <scheduler.h>
+#include <sched/scheduler_skeleton.h>
+#include <context_switch_to.h>
 #include <interrupt.h>
 #include <memory.h>
 #include <vdev.h>
-#include <stdio.h>
 #include <armv7_p15.h>
 #include <timer.h>
 #include <vgic.h>
 #include <timer.h>
-#include <context_switch_to.h>
+#include <stdio.h>
+
 
 //extern struct vcpu running_vcpu[NUM_GUESTS_STATIC];
 int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
@@ -22,9 +24,15 @@ void sched_init()
 
     /* 100Mhz -> 1 count == 10ns at RTSM_VE_CA15, fast model */
     timer.interval_us = GUEST_SCHED_TICK;
-    timer.callback = &guest_schedule;
+    timer.callback = &do_schedule;
 
     timer_set(&timer, HOST_TIMER);
+
+    /* Check scheduler config */
+    /* Allocate memory for system-wide data */
+    /* Initialize data */
+    // call sched_policy.init() for each policy implementation
+    sched_rr.init();
 }
 
 static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
@@ -193,23 +201,9 @@ hvmm_status_t guest_switchto(vmid_t vmid, uint8_t locked)
     return result;
 }
 
-static int manually_next_vmid;
-vmid_t selected_manually_next_vmid;
-void set_manually_select_vmid(vmid_t vmid)
-{
-    manually_next_vmid = 1;
-    selected_manually_next_vmid = vmid;
-}
-void clean_manually_select_vmid(void){
-    manually_next_vmid = 0;
-}
-
 vmid_t sched_policy_determ_next(void)
 {
 #if 1
-    if (manually_next_vmid)
-        return selected_manually_next_vmid;
-
     vmid_t next = guest_next_vmid(guest_current_vmid());
 
     /* FIXME:Hardcoded */
@@ -237,5 +231,103 @@ void guest_schedule(void *pdata)
 
     /* Switch request, actually performed at trap exit */
     guest_switchto(sched_policy_determ_next(), 0);
+}
 
+
+
+/**
+ * Register a vCPU to a scheduler
+ *
+ * You have to call sched_vcpu_attach() to \
+ * run a vcpu by adding it to runqueue, additionally.
+ *
+ * @param shed A scheduler definition
+ * @param vcpuid ID of vCPU
+ * @param pcpuid ID of physical CPU
+ * @return
+ */
+int sched_vcpu_register(int vcpuid)
+{
+    /* call scheduler.register_vcpu() */
+    sched_rr.register_vcpu(vcpuid);
+
+    return 0;
+}
+
+/**
+ * Unregister a vCPU from a scheduler
+ *
+ * You have to detach vcpu first.
+ *
+ * @param shed A scheduler definition
+ * @param vcpuid ID of vCPU
+ * @return
+ */
+int sched_vcpu_unregister()
+{
+    /* call scheduler.unregister_vcpu() */
+    sched_rr.unregister_vcpu();
+
+    return 0;
+}
+
+/**
+ * Attach a vcpu to scheduler runqueue
+ *
+ * You have to register the vcpu first
+ *
+ * @param shed A scheduler definition
+ * @param vcpuid ID of vCPU
+ * @return
+ */
+int sched_vcpu_attach(int vcpuid)
+{
+    /* call scheduler.attach_vcpu() */
+    sched_rr.attach_vcpu(vcpuid);
+
+    return 0;
+}
+
+/**
+ * Detach a vcpu from scheduler runqueue
+ *
+ * @param shed A scheduler definition
+ * @param vcpuid ID of vCPU
+ * @return
+ */
+int sched_vcpu_detach()
+{
+    /* call scheduler.detach_vcpu() */
+    sched_rr.detach_vcpu();
+
+    return 0;
+}
+
+/**
+ * Main scheduler routine
+ *
+ * @param
+ * @return
+ */
+// int do_schedule()
+void do_schedule(void *pdata)
+{
+    int next_vcpuid;
+
+    /* get assigned scheduling policy of pCPU? */
+
+    /* determine next vcpu to be run
+     * by calling scheduler.do_schedule() */
+    next_vcpuid = sched_rr.do_schedule();
+
+    /* update vCPU's running time */
+
+
+    /* manipulate variables to
+     * cause context switch */
+    //printf("### NEXT vCPU: %d\n", next_vcpuid);
+    
+    guest_switchto(next_vcpuid, 0);
+
+//     return 0;
 }

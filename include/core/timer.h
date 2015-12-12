@@ -76,4 +76,8 @@ uint64_t get_timer_savecnt(void);
 uint64_t get_timer_curcnt(void);
 uint64_t get_timer_cnt(void);
 uint32_t get_timer_interval_us(uint64_t after, uint64_t before);
+
+
+hvmm_status_t timer_stop(void);
+hvmm_status_t timer_start(void);
 #endif
