@@ -1,7 +1,6 @@
+#include <sched/scheduler_skeleton.h>
+#include <lib/bsd/list.h>
 #include <stdio.h>
-
-#include <lib/list.h>
-#include <scheduler_skeleton.h>
 
 typedef enum {
     DETACHED,
@@ -111,7 +110,7 @@ int sched_rr_vcpu_register(int vcpuid)
 {
     struct rq_entry_rr *new_entry;
 
-    printf("RR_VCPU_REGISTER\n");
+    // printf("RR_VCPU_REGISTER\n");
     /* Check if vcpu is already registered */
 
 
@@ -132,7 +131,7 @@ int sched_rr_vcpu_register(int vcpuid)
     /* Add it to registerd vcpus list */
     list_add_tail(&new_entry->registered_list_head, &registered_list_rr);
 
-    print_all_entries_rr();
+//     print_all_entries_rr();
     return 0;
 }
 
@@ -177,11 +176,11 @@ int sched_rr_vcpu_attach(int vcpuid)
     struct rq_entry_rr *entry = NULL;
     struct rq_entry_rr *registered_entry = NULL;
 
-    printf("RR_VCPU_ATTACH\n");
+    // printf("RR_VCPU_ATTACH\n");
     /* To find entry in registered entry list */
     list_for_each_entry(entry, &registered_list_rr, registered_list_head) {
         if (entry->vcpuid == vcpuid) {
-            printf("Found %d\n", vcpuid);
+//             printf("Found %d\n", vcpuid);
             registered_entry = entry;
             break;
         }
@@ -200,7 +199,7 @@ int sched_rr_vcpu_attach(int vcpuid)
     /* Add it to runqueue */
     list_add_tail(&registered_entry->runqueue_head, &runqueue_rr);
 
-    print_all_entries_rr();
+//     print_all_entries_rr();
 
     return 0;
 }
@@ -287,8 +286,8 @@ int sched_rr_do_schedule()
         next_vcpuid = next_entry->vcpuid;
     }
 
-    printf("\n### DO_SCHEDULE_RR\n");
-    print_all_entries_rr();
+//     printf("\n### DO_SCHEDULE_RR\n");
+//     print_all_entries_rr();
 
     return next_vcpuid;
 }

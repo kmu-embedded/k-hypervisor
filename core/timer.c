@@ -29,7 +29,7 @@ static inline uint64_t timer_t2c(uint64_t time_us)
 /*
  * Starts the timer.
  */
-static hvmm_status_t timer_start(void)
+hvmm_status_t timer_start(void)
 {
     /* timer_enable() */
     if (_ops->enable)
@@ -41,7 +41,7 @@ static hvmm_status_t timer_start(void)
 /*
  *  Stops the timer.
  */
-static hvmm_status_t timer_stop(void)
+hvmm_status_t timer_stop(void)
 {
     /* timer_disable() */
     if (_ops->disable)
