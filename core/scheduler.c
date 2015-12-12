@@ -7,9 +7,10 @@
 #include <timer.h>
 #include <vgic.h>
 #include <timer.h>
+#include <context_switch_to.h>
 
 //extern struct vcpu running_vcpu[NUM_GUESTS_STATIC];
-static int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
+int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
 
 static int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
 /* further switch request will be ignored if set */
@@ -36,27 +37,25 @@ static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
     if (_current_guest_vmid[cpu] == next_vmid)
         return HVMM_STATUS_IGNORED; /* the same guest? */
 
-//    vcpu_save(&running_vcpu[_current_guest_vmid[cpu]], regs);
-    vcpu_save(vcpu_find(_current_guest_vmid[cpu]), regs);
-    memory_save();
-    interrupt_save(_current_guest_vmid[cpu]);
-    vdev_save(_current_guest_vmid[cpu]);
+//    vcpu_save(vcpu_find(_current_guest_vmid[cpu]), regs);
+//    memory_save();
+//    interrupt_save(_current_guest_vmid[cpu]);
+//    vdev_save(_current_guest_vmid[cpu]);
 
     /* The context of the next guest */
-//    guest = &running_vcpu[next_vmid];
     guest = vcpu_find(next_vmid);
     _current_guest[cpu] = guest;
     _current_guest_vmid[cpu] = next_vmid;
 
-    /* vcpu_regs_dump */
-//    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_3, &guest->vcpu_regs.core_regs);
-//    print_core_regs(&guest->vcpu_regs.core_regs);
+//    vdev_restore(_current_guest_vmid[cpu]);
+//    interrupt_restore(_current_guest_vmid[cpu]);
+//    memory_restore(_current_guest_vmid[cpu]);
+//    vcpu_restore(guest, regs);
 
-    vdev_restore(_current_guest_vmid[cpu]);
-
-    interrupt_restore(_current_guest_vmid[cpu]);
-    memory_restore(_current_guest_vmid[cpu]);
-    vcpu_restore(guest, regs);
+    context_switch_to(_current_guest_vmid[cpu], next_vmid, regs);
+//    guest = vcpu_find(next_vmid);
+//    _current_guest[cpu] = guest;
+//    _current_guest_vmid[cpu] = next_vmid;
 
     return result;
 }

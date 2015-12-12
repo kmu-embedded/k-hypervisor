@@ -68,7 +68,7 @@ hvmm_status_t vcpu_regs_init(struct vcpu_regs *vcpu_regs);
 hvmm_status_t vcpu_regs_save(struct vcpu_regs *vcpu_regs, struct core_regs *current_regs);
 hvmm_status_t vcpu_regs_restore(struct vcpu_regs *vcpu_regs, struct core_regs *current_regs);
 
-//void print_vcpu_regs(struct vcpu_regs *vcpu_regs);
+void print_vcpu_regs(struct vcpu_regs *vcpu_regs);
 void print_core_regs(struct core_regs *core_regs);
 
 #endif
