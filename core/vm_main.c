@@ -339,6 +339,15 @@ int main_cpu_init()
 
     /* Switch to the first guest */
     sched_init();
+    
+    /* FIXME: May be placed in vcpu */
+    timer_stop();
+    sched_vcpu_register(0);//vcpu->vcpuid);
+    sched_vcpu_register(1);//vcpu->vcpuid);
+    sched_vcpu_attach(0);//vcpu->vcpuid);
+    sched_vcpu_attach(1);//vcpu->vcpuid);
+    timer_start();
+
     guest_sched_start();
 
     /* The code flow must not reach here */

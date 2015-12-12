@@ -4,6 +4,7 @@ ASM_FILES	= $(wildcard $(ARCH)/$(VERSION)/*.S)		\
 			  $(wildcard $(LIB)/c/src/arch-arm/*.S)
 
 C_FILES 	= $(wildcard $(CORE)/*.c) 				\
+			  $(wildcard $(CORE)/sched/*.c) 			\
 			  $(wildcard $(CORE)/libhw/*.c) 		\
 			  $(wildcard $(CORE)/vdev/*.c) 			\
 			  $(wildcard tests/*.c) 				\

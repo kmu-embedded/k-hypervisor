@@ -19,19 +19,19 @@
 struct vcpu *_current_guest[NUM_CPUS];
 
 void sched_init();
+int sched_vcpu_register(int vcpuid);
+int sched_vcpu_unregister();
+int sched_vcpu_attach(int vcpuid);
+int sched_vcpu_detach();
+// int do_schedule();
+void do_schedule(void *pdata);
+
 vmid_t sched_policy_determ_next(void);
 hvmm_status_t guest_perform_switch(struct core_regs *regs);
 
 void guest_sched_start(void);
-vmid_t guest_first_vmid(void);
-vmid_t guest_last_vmid(void);
-vmid_t guest_next_vmid(vmid_t ofvmid);
 vmid_t guest_current_vmid(void);
-vmid_t guest_waiting_vmid(void);
 hvmm_status_t guest_switchto(vmid_t vmid, uint8_t locked);
-
-void set_manually_select_vmid(vmid_t vmid);
-void clean_manually_select_vmid(void);
 
 void guest_schedule(void *pdata);
 #endif /* __SCHEDULER_H__ */
