@@ -53,10 +53,10 @@ $(OUTPUT): $(MACHINE).lds $(OBJS)
 $(BIN): $(OUTPUT)
 	$(OBJCOPY) -O binary $(OUTPUT) $(BIN)
 
-$(OBJ_DIR)%.o: $(ARCH)%.S
+%.o: %.S
 	$(CC) $(CPPFLAGS) -I. -c -o $@ $<
 
-$(OBJ_DIR)%.o: $(SRC_DIR)%.c
+%.o: %.c
 	$(CC) $(CPPFLAGS) -I. -c -o $@ $<
 
 $(MACHINE).lds: $(LD_SCRIPT) Makefile
