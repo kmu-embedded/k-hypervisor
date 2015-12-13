@@ -8,6 +8,7 @@
 #include <smp.h>
 #include <arch/arm/rtsm-config.h>
 #include "vm_main.h"
+#include "host_memory_hw.h"
 
 #include "hvmm_trace.h"
 
@@ -278,6 +279,9 @@ int main_cpu_init()
 
     /* Initialize Memory Management */
     setup_memory();
+
+    host_memory_init();
+    memory_enable();
 
     if (memory_init(guest0_mdlist, guest1_mdlist))
         printf("[start_guest] virtual memory initialization failed...\n");

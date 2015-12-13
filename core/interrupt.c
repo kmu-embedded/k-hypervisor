@@ -14,6 +14,8 @@
 
 static struct interrupt_ops *_guest_ops;
 static struct interrupt_ops *_host_ops;
+extern struct interrupt_ops _host_interrupt_ops;
+extern struct interrupt_ops _guest_interrupt_ops;
 
 static struct guest_virqmap *_guest_virqmap;
 
@@ -232,8 +234,8 @@ hvmm_status_t interrupt_init(struct guest_virqmap *virqmap)
     uint32_t cpu = smp_processor_id();
 
     if (!cpu) {
-        _host_ops = _interrupt_module.host_ops;
-        _guest_ops = _interrupt_module.guest_ops;
+        _host_ops = &_host_interrupt_ops;
+        _guest_ops = &_guest_interrupt_ops;
 
         _guest_virqmap = virqmap;
     }
@@ -242,14 +244,14 @@ hvmm_status_t interrupt_init(struct guest_virqmap *virqmap)
     if (_host_ops->init) {
         ret = _host_ops->init();
         if (ret)
-            printf("host initial failed:'%s'\n", _interrupt_module.name);
+            printf("host initial failed:'%s'\n", "host_interrupt_ops");
     }
 
     /* guest_interrupt_init() */
     if (_guest_ops->init) {
         ret = _guest_ops->init();
         if (ret)
-            printf("guest initial failed:'%s'\n", _interrupt_module.name);
+            printf("guest initial failed:'%s'\n", "guest_interrupt_ops");
     }
 
     return ret;
