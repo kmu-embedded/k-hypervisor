@@ -2,13 +2,13 @@
 #include <armv7_p15.h>
 #include <stdint.h>
 #include <hvmm_trace.h>
-#include <lpae.h>
 #include <memory.h>
 #include <vcpu.h>
 #include <smp.h>
 #include <arch/arm/rtsm-config.h>
 
-//#include <host_memory_hw.h>
+#include <stage2_mm.h>
+
 /**
  * \defgroup Memory_Attribute_Indirection_Register
  *
@@ -80,9 +80,6 @@
  * @{
  */
 /** @}*/
-
-
-
 
 #define L2_ENTRY_MASK 0x1FF
 #define L2_SHIFT 21
