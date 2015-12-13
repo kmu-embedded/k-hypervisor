@@ -12,7 +12,7 @@
 //extern struct vcpu running_vcpu[NUM_GUESTS_STATIC];
 int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
 
-static int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
+int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
 /* further switch request will be ignored if set */
 static uint8_t _switch_locked[NUM_CPUS];
 
@@ -32,7 +32,7 @@ static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
     /* _curreng_guest_vmid -> next_vmid */
 
     hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
-    struct vcpu *guest = 0;
+//    struct vcpu *guest = 0;
     uint32_t cpu = smp_processor_id();
     if (_current_guest_vmid[cpu] == next_vmid)
         return HVMM_STATUS_IGNORED; /* the same guest? */
@@ -43,9 +43,9 @@ static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
 //    vdev_save(_current_guest_vmid[cpu]);
 
     /* The context of the next guest */
-    guest = vcpu_find(next_vmid);
-    _current_guest[cpu] = guest;
-    _current_guest_vmid[cpu] = next_vmid;
+//    guest = vcpu_find(next_vmid);
+//    _current_guest[cpu] = guest;
+//    _current_guest_vmid[cpu] = next_vmid;
 
 //    vdev_restore(_current_guest_vmid[cpu]);
 //    interrupt_restore(_current_guest_vmid[cpu]);
@@ -125,7 +125,7 @@ vmid_t guest_first_vmid(void)
 
 vmid_t guest_last_vmid(void)
 {
-    uint32_t cpu = smp_processor_id();
+    uint32_t cpu = 1;//smp_processor_id();
 
     /* FIXME:Hardcoded for now */
 #if _SMP_
