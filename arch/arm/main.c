@@ -29,6 +29,10 @@ int init_khypervisor(void)
     printf("%p\n", arr);
     printf("0x%08x\n", arr);
 
+    free(arr);
+
+    stage1_mm_init();
+
 #if 1
     vm_main();
 #endif
