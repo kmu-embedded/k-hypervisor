@@ -4,6 +4,7 @@
 #include <timer.h>
 #include <interrupt.h>
 #include <smp.h>
+#include <scheduler.h>
 
 #define VTIMER_BASE_ADDR 0x3FFFE000
 #define VTIMER_IRQ 30
@@ -55,7 +56,7 @@ static hvmm_status_t vdev_vtimer_access_handler(uint32_t write,
 }
 
 static int32_t vdev_vtimer_read(struct arch_vdev_trigger_info *info,
-                        struct arch_regs *regs)
+                        struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_timer_info.base;
 
@@ -63,7 +64,7 @@ static int32_t vdev_vtimer_read(struct arch_vdev_trigger_info *info,
 }
 
 static int32_t vdev_vtimer_write(struct arch_vdev_trigger_info *info,
-                        struct arch_regs *regs)
+                        struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_timer_info.base;
 
@@ -71,7 +72,7 @@ static int32_t vdev_vtimer_write(struct arch_vdev_trigger_info *info,
 }
 
 static hvmm_status_t vdev_vtimer_post(struct arch_vdev_trigger_info *info,
-                        struct arch_regs *regs)
+                        struct core_regs *regs)
 {
     uint8_t isize = 4;
 
@@ -84,7 +85,7 @@ static hvmm_status_t vdev_vtimer_post(struct arch_vdev_trigger_info *info,
 }
 
 static int32_t vdev_vtimer_check(struct arch_vdev_trigger_info *info,
-                        struct arch_regs *regs)
+                        struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_timer_info.base;
 

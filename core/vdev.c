@@ -46,7 +46,7 @@ hvmm_status_t vdev_register(int level, struct vdev_module *module)
  * \retval -1 This is an internal error.
  */
 int32_t vdev_find(int level, struct arch_vdev_trigger_info *info,
-        struct arch_regs *regs)
+        struct core_regs *regs)
 {
     int32_t i;
     int32_t vdev_num = VDEV_NOT_FOUND;
@@ -76,7 +76,7 @@ int32_t vdev_find(int level, struct arch_vdev_trigger_info *info,
 }
 
 int32_t vdev_read(int level, int num, struct arch_vdev_trigger_info *info,
-            struct arch_regs *regs)
+            struct core_regs *regs)
 {
     int32_t size = 0;
     struct vdev_module *vdev = _vdev_module[level][num];
@@ -100,7 +100,7 @@ int32_t vdev_read(int level, int num, struct arch_vdev_trigger_info *info,
 }
 
 int32_t vdev_write(int level, int num, struct arch_vdev_trigger_info *info,
-            struct arch_regs *regs)
+            struct core_regs *regs)
 {
     int32_t size = 0;
     struct vdev_module *vdev = _vdev_module[level][num];
@@ -124,7 +124,7 @@ int32_t vdev_write(int level, int num, struct arch_vdev_trigger_info *info,
 }
 
 hvmm_status_t vdev_post(int level, int num, struct arch_vdev_trigger_info *info,
-            struct arch_regs *regs)
+            struct core_regs *regs)
 {
     hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
     struct vdev_module *vdev = _vdev_module[level][num];

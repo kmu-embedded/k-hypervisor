@@ -1,8 +1,7 @@
 #ifndef __TRAP_H__
 #define __TRAP_H__
 
-#include <hvmm_types.h>
-#include <guest.h>
+#include <vcpu_regs.h>
 
 /* HSR Exception Class. */
 #define TRAP_EC_ZERO_UNKNOWN        0x00
@@ -97,6 +96,6 @@
  * @param regs ARM registers for current virtual machine.
  * @return Returns the result of exceptions.
  */
-enum hyp_hvc_result _hyp_hvc_service(struct arch_regs *regs);
+enum hyp_hvc_result _hyp_hvc_service(struct core_regs *regs);
 
 #endif
