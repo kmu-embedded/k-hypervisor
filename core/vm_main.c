@@ -297,9 +297,6 @@ int main_cpu_init()
     /* Initialize Memory Management */
     setup_memory();
 
-    host_memory_init();
-    memory_enable();
-
     if (memory_init(guest0_mdlist, guest1_mdlist))
         printf("[start_guest] virtual memory initialization failed...\n");
     /* Initialize PIRQ to VIRQ mapping */
