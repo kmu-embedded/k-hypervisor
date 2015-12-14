@@ -2,6 +2,8 @@
 #include <gic_regs.h>
 #include <vdev.h>
 #include <asm-arm_inline.h>
+#include <scheduler.h>
+#include <vgic.h>
 
 #define DEBUG
 #include <stdio.h>
@@ -616,7 +618,7 @@ static hvmm_status_t vdev_gicd_access_handler(uint32_t write,
 }
 
 static int32_t vdev_gicd_read(struct arch_vdev_trigger_info *info,
-        struct arch_regs *regs)
+        struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
 
@@ -624,7 +626,7 @@ static int32_t vdev_gicd_read(struct arch_vdev_trigger_info *info,
 }
 
 static int32_t vdev_gicd_write(struct arch_vdev_trigger_info *info,
-        struct arch_regs *regs)
+        struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
 
@@ -632,7 +634,7 @@ static int32_t vdev_gicd_write(struct arch_vdev_trigger_info *info,
 }
 
 static hvmm_status_t vdev_gicd_post(struct arch_vdev_trigger_info *info,
-        struct arch_regs *regs) {
+        struct core_regs *regs) {
     uint8_t isize = 4;
 
     if (regs->cpsr & 0x20) /* Thumb */
@@ -644,7 +646,7 @@ static hvmm_status_t vdev_gicd_post(struct arch_vdev_trigger_info *info,
 }
 
 static int32_t vdev_gicd_check(struct arch_vdev_trigger_info *info,
-        struct arch_regs *regs)
+        struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
 
