@@ -591,4 +591,6 @@ void lpaed_guest_stage2_enable_l2_table(union lpaed_t *ttbl2);
  */
 void lpaed_guest_stage2_disable_l2_table(union lpaed_t *ttbl2);
 
+void guest_memory_init(struct memmap_desc **guest0_map, struct memmap_desc **guest1_map);
+void stage2_mm_init(struct memmap_desc **guest_map, vmid_t vmid);
 #endif

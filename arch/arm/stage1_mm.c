@@ -24,6 +24,8 @@ static pgentry set_table(uint32_t paddr)
     return entry;
 }
 
+// TODO(wonseok): configure AP(Access Permission) bit
+// currently, we are going to set AP as a read/write only at PL2.
 static pgentry set_entry(uint32_t paddr, uint8_t attr_indx, pgsize_t size)
 {
     pgentry entry;
@@ -35,7 +37,7 @@ static pgentry set_entry(uint32_t paddr, uint8_t attr_indx, pgsize_t size)
             entry.block.type = 0;
             entry.block.base = paddr >> L1_SHIFT;
             entry.block.attr_indx = attr_indx;
-            entry.block.ap = 0;
+            entry.block.ap = 1;
             entry.block.sh = 3;
             entry.block.af = 1;
             entry.block.ng = 1;
@@ -50,7 +52,7 @@ static pgentry set_entry(uint32_t paddr, uint8_t attr_indx, pgsize_t size)
             entry.block.type = 0;
             entry.block.base = paddr >> L2_SHIFT;
             entry.block.attr_indx = attr_indx;
-            entry.block.ap = 0;
+            entry.block.ap = 1;
             entry.block.sh = 3;
             entry.block.af = 1;
             entry.block.ng = 1;
@@ -65,7 +67,7 @@ static pgentry set_entry(uint32_t paddr, uint8_t attr_indx, pgsize_t size)
             entry.page.type = 1;
             entry.page.base = paddr >> L3_SHIFT;
             entry.page.attr_indx = attr_indx;
-            entry.page.ap = 0;
+            entry.page.ap = 1;
             entry.page.sh = 3;
             entry.page.af = 1;
             entry.page.ng = 1;
