@@ -1,8 +1,7 @@
 #include <hvmm_trace.h>
-#include <armv7_p15.h>
 #include <gic.h>
 #include <trap.h>
-#include <guest.h>
+#include <scheduler.h>
 #include <vdev.h>
 #include <smp.h>
 
@@ -21,9 +20,10 @@
  * \ref ARM
  * @return Returns HVMM_STATUS_UNKNOWN_ERROR only.
  */
-hvmm_status_t _hyp_dabort(struct arch_regs *regs)
+hvmm_status_t _hyp_dabort(struct core_regs *regs)
 {
-    guest_dump_regs(regs);
+//    vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
+//    print_core_regs(regs);
     hyp_abort_infinite();
     return HVMM_STATUS_UNKNOWN_ERROR;
 }
@@ -34,7 +34,7 @@ hvmm_status_t _hyp_dabort(struct arch_regs *regs)
  * \ref ARM
  * @return Returns HVMM_STATUS_SUCCESS only.
  */
-hvmm_status_t _hyp_irq(struct arch_regs *regs)
+hvmm_status_t _hyp_irq(struct core_regs *regs)
 {
     uint32_t irq;
 
@@ -51,9 +51,10 @@ hvmm_status_t _hyp_irq(struct arch_regs *regs)
  * \ref ARM
  * @return Returns HVMM_STATUS_UNKNOWN_ERROR only.
  */
-hvmm_status_t _hyp_unhandled(struct arch_regs *regs)
+hvmm_status_t _hyp_unhandled(struct core_regs *regs)
 {
-    guest_dump_regs(regs);
+//    vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
+//    print_core_regs(regs);
     hyp_abort_infinite();
     return HVMM_STATUS_UNKNOWN_ERROR;
 }
@@ -64,7 +65,7 @@ hvmm_status_t _hyp_unhandled(struct arch_regs *regs)
  * @return Returns the result is the same as _hyp_hvc_service().
  * @todo Within the near future, this function will be deleted.
  */
-enum hyp_hvc_result _hyp_hvc(struct arch_regs *regs)
+enum hyp_hvc_result _hyp_hvc(struct core_regs *regs)
 {
     return _hyp_hvc_service(regs);
 }
@@ -127,7 +128,7 @@ static void _trap_dump_bregs(void)
  * If hypervisor can b handled the exception then it returns HYP_RESULT_ERET.
  * If not, hypervisor should be stopped into trap_error in handler.
  */
-enum hyp_hvc_result _hyp_hvc_service(struct arch_regs *regs)
+enum hyp_hvc_result _hyp_hvc_service(struct core_regs *regs)
 {
     int32_t vdev_num = -1;
     uint32_t hsr = read_hsr();
@@ -176,7 +177,8 @@ enum hyp_hvc_result _hyp_hvc_service(struct arch_regs *regs)
         printf("[hyp] _hyp_hvc_service:unknown hsr.iss= %x\n", iss);
         printf("[hyp] hsr.ec= %x\n", ec);
         printf("[hyp] hsr= %x\n", hsr);
-        guest_dump_regs(regs);
+//        print_core_regs(regs);
+//        vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
         goto trap_error;
     }
 

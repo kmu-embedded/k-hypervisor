@@ -1,6 +1,6 @@
 #define DEBUG
 #include <stdio.h>
-#include <guest.h>
+#include <vcpu.h>
 #include <trap.h>
 #include <vdev.h>
 #include <armv7_p15.h>
@@ -190,7 +190,7 @@ void emulate_wfi_wfe(unsigned int iss, unsigned int il)
 }
 
 static int32_t vdev_cp_read(struct arch_vdev_trigger_info *info,
-                        struct arch_regs *regs)
+                        struct core_regs *regs)
 {
     unsigned int ec = info->ec;
     unsigned int hsr = read_hsr();
@@ -237,7 +237,7 @@ static int32_t vdev_cp_read(struct arch_vdev_trigger_info *info,
 }
 
 static int32_t vdev_cp_write(struct arch_vdev_trigger_info *info,
-                        struct arch_regs *regs)
+                        struct core_regs *regs)
 {
     unsigned int ec = info->ec;
     unsigned int hsr = read_hsr();
@@ -284,7 +284,7 @@ static int32_t vdev_cp_write(struct arch_vdev_trigger_info *info,
 }
 
 static hvmm_status_t vdev_cp_post(struct arch_vdev_trigger_info *info,
-                        struct arch_regs *regs)
+                        struct core_regs *regs)
 {
     uint8_t isize = 4;
 
@@ -297,7 +297,7 @@ static hvmm_status_t vdev_cp_post(struct arch_vdev_trigger_info *info,
 }
 
 static int32_t vdev_cp_check(struct arch_vdev_trigger_info *info,
-                        struct arch_regs *regs)
+                        struct core_regs *regs)
 {
     uint32_t ec = info->ec;
 

@@ -1,4 +1,4 @@
-#include <guest.h>
+#include <vcpu.h>
 #include <interrupt.h>
 #include <timer.h>
 #include <vdev.h>
@@ -6,10 +6,11 @@
 #include <gic_regs.h>
 #include <tests.h>
 #include <smp.h>
+#include <scheduler.h>
 #include <arch/arm/rtsm-config.h>
 #include "vm_main.h"
 #include "host_memory_hw.h"
-
+#include <version.h>
 #include "hvmm_trace.h"
 
 
@@ -23,6 +24,18 @@
 
 
 static struct guest_virqmap _guest_virqmap[NUM_GUESTS_STATIC];
+static struct vcpu *vcpu[NUM_GUESTS_STATIC];
+
+extern uint32_t _guest0_bin_start;
+extern uint32_t _guest0_bin_end;
+extern uint32_t _guest1_bin_start;
+#ifdef _SMP_
+extern uint32_t _guest2_bin_start;
+extern uint32_t _guest2_bin_end;
+extern uint32_t _guest3_bin_start;
+extern uint32_t _guest3_bin_end;
+#endif
+
 
 /**
  * \defgroup Guest_memory_map_descriptor
@@ -275,6 +288,8 @@ uint8_t secondary_smp_pen;
 
 int main_cpu_init()
 {
+    int i = 0;
+
     printf("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
 
     /* Initialize Memory Management */
@@ -302,8 +317,14 @@ int main_cpu_init()
         printf("[start_guest] timer initialization failed...\n");
 
     /* Initialize Guests */
-    if (guest_init())
-        printf("[start_guest] guest initialization failed...\n");
+    vcpu_setup();
+    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
+        if ((vcpu[i] = vcpu_create()) == VCPU_CREATE_FAILED)
+            printf("[start_guest] guest initialization failed...\n");
+        if (vcpu_init(vcpu[i]) != VCPU_REGISTERED)
+            printf("[start_guest] guest initialization failed...\n");
+        // TODO(casionwoo) : vcpu_start should be called when after scheduler is implemented
+    }
 
     /* Initialize Virtual Devices */
     if (vdev_init())
@@ -317,6 +338,16 @@ int main_cpu_init()
     printf("%s", BANNER_STRING);
 
     /* Switch to the first guest */
+    sched_init();
+    
+    /* FIXME: May be placed in vcpu */
+    timer_stop();
+    sched_vcpu_register(0);//vcpu->vcpuid);
+    sched_vcpu_register(1);//vcpu->vcpuid);
+    sched_vcpu_attach(0);//vcpu->vcpuid);
+    sched_vcpu_attach(1);//vcpu->vcpuid);
+    timer_start();
+
     guest_sched_start();
 
     /* The code flow must not reach here */
@@ -347,7 +378,7 @@ void secondary_cpu_init(uint32_t cpu)
         printf("[start_guest] timer initialization failed...\n");
 
     /* Initialize Guests */
-    if (guest_init())
+    if (vcpu_init())
         printf("[start_guest] guest initialization failed...\n");
 
     /* Initialize Virtual Devices */
