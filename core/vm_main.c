@@ -31,6 +31,8 @@ static struct vcpu *vcpu[NUM_GUESTS_STATIC];
 extern uint32_t _guest0_bin_start;
 extern uint32_t _guest0_bin_end;
 extern uint32_t _guest1_bin_start;
+extern uint32_t _guest1_bin_end;
+
 #ifdef _SMP_
 extern uint32_t _guest2_bin_start;
 extern uint32_t _guest2_bin_end;
@@ -54,6 +56,7 @@ static struct memmap_desc guest_md_empty[] = {
     {       0, 0, 0, 0,  0},
 };
 /*  label, ipa, pa, size, attr */
+#if 0
 static struct memmap_desc guest0_device_md[] = {
     { "sysreg", 0x1C010000, 0x1C010000, SZ_4K, MEMATTR_DM },
     { "sysctl", 0x1C020000, 0x1C020000, SZ_4K, MEMATTR_DM },
@@ -78,10 +81,18 @@ static struct memmap_desc guest0_device_md[] = {
     { "simplebus2", 0x18000000, 0x18000000, SZ_64M, MEMATTR_DM },
     { 0, 0, 0, 0, 0 }
 };
+#endif
+static struct memmap_desc guest0_device_md[] = {
+    { "uart", 0x1C090000, 0x1C0A0000, SZ_4K, MEMATTR_DM },
+    //{ "sp804", 0x1C110000, 0x1C120000, SZ_4K, MEMATTR_DM },
+    { "gicc", 0x2C000000 | GIC_OFFSET_GICC,
+       CFG_GIC_BASE_PA | GIC_OFFSET_GICVI, SZ_8K, MEMATTR_DM },
+    {0, 0, 0, 0, 0}
+};
 
 static struct memmap_desc guest1_device_md[] = {
     { "uart", 0x1C090000, 0x1C0B0000, SZ_4K, MEMATTR_DM },
-    { "sp804", 0x1C110000, 0x1C120000, SZ_4K, MEMATTR_DM },
+    //{ "sp804", 0x1C110000, 0x1C120000, SZ_4K, MEMATTR_DM },
     { "gicc", 0x2C000000 | GIC_OFFSET_GICC,
        CFG_GIC_BASE_PA | GIC_OFFSET_GICVI, SZ_8K, MEMATTR_DM },
     {0, 0, 0, 0, 0}
@@ -296,6 +307,8 @@ int main_cpu_init()
 
     /* Initialize Memory Management */
     setup_memory();
+
+    //test();
 
     if (memory_init(guest0_mdlist, guest1_mdlist))
         printf("[start_guest] virtual memory initialization failed...\n");
