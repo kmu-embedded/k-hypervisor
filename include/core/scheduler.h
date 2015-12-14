@@ -33,5 +33,5 @@ void guest_sched_start(void);
 vmid_t guest_current_vmid(void);
 hvmm_status_t guest_switchto(vmid_t vmid, uint8_t locked);
 
-void guest_schedule(void *pdata);
+//void guest_schedule(void *pdata);
 #endif /* __SCHEDULER_H__ */
