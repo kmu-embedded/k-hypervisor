@@ -26,6 +26,10 @@ SECTIONS
  guest0_stacktop = .;
  . = GUEST0_STACK + 0x01000000;
  guest0_stacklimit = .;
+ . = CFG_MEMMAP_GUEST1_OFFSET;
+ _guest1_bin_start = .;
+ .guest1 : { ../guestimages/guest1.bin }
+ _guest1_bin_end = .;
 
  . = CFG_MEMMAP_GUEST1_OFFSET;
  _guest1_bin_start = .;
