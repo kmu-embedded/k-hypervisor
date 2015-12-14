@@ -40,30 +40,11 @@ static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
     /* _curreng_guest_vmid -> next_vmid */
 
     hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
-//    struct vcpu *guest = 0;
     uint32_t cpu = smp_processor_id();
     if (_current_guest_vmid[cpu] == next_vmid)
-        return HVMM_STATUS_IGNORED; /* the same guest? */
-
-//    vcpu_save(vcpu_find(_current_guest_vmid[cpu]), regs);
-//    memory_save();
-//    interrupt_save(_current_guest_vmid[cpu]);
-//    vdev_save(_current_guest_vmid[cpu]);
-
-    /* The context of the next guest */
-//    guest = vcpu_find(next_vmid);
-//    _current_guest[cpu] = guest;
-//    _current_guest_vmid[cpu] = next_vmid;
-
-//    vdev_restore(_current_guest_vmid[cpu]);
-//    interrupt_restore(_current_guest_vmid[cpu]);
-//    memory_restore(_current_guest_vmid[cpu]);
-//    vcpu_restore(guest, regs);
+        return HVMM_STATUS_IGNORED;
 
     context_switch_to(_current_guest_vmid[cpu], next_vmid, regs);
-//    guest = vcpu_find(next_vmid);
-//    _current_guest[cpu] = guest;
-//    _current_guest_vmid[cpu] = next_vmid;
 
     return result;
 }
@@ -108,10 +89,6 @@ void guest_sched_start(void)
         vcpu = vcpu_find(2);
     else
         vcpu = vcpu_find(0);
-    /* vcpu_regs_dump */
-//    print_core_regs(&vcpu->vcpu_regs.core_regs);
-//    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_0, &vcpu->vcpu_regs.core_regs);
-    /* Context Switch with current context == none */
 
     guest_switchto(vcpu->vcpuid, 0);
     guest_perform_switch(&vcpu->vcpu_regs.core_regs);
@@ -191,7 +168,6 @@ hvmm_status_t guest_switchto(vmid_t vmid, uint8_t locked)
     if (_switch_locked[cpu] == 0) {
         _next_guest_vmid[cpu] = vmid;
         result = HVMM_STATUS_SUCCESS;
-//        printf("switching to vmid: %x\n", (uint32_t)vmid);
     } else
         printf("context: next vmid locked to %d\n", _next_guest_vmid[cpu]);
 
@@ -212,28 +188,7 @@ vmid_t sched_policy_determ_next(void)
 
     return next;
 #endif
-//    return guest_first_vmid();
 }
-
-void guest_schedule(void *pdata)
-{
-//    struct core_regs *regs = pdata;
-    //uint32_t cpu = smp_processor_id();
-    /* vcpu_regs_dump */
-//    if (vcpu_regs_dump)
-//    print_core_regs(regs);
-//    vcpu_regs_dump(GUEST_VERBOSE_LEVEL_3, regs);
-    /*
-     * Note: As of guest_switchto() and guest_perform_switch()
-     * are available, no need to test if trapped from Hyp mode.
-     * guest_perform_switch() takes care of it
-     */
-
-    /* Switch request, actually performed at trap exit */
-    guest_switchto(sched_policy_determ_next(), 0);
-}
-
-
 
 /**
  * Register a vCPU to a scheduler
@@ -322,12 +277,8 @@ void do_schedule(void *pdata)
 
     /* update vCPU's running time */
 
-
     /* manipulate variables to
      * cause context switch */
-    //printf("### NEXT vCPU: %d\n", next_vcpuid);
-    
-    guest_switchto(next_vcpuid, 0);
 
-//     return 0;
+    guest_switchto(next_vcpuid, 0);
 }
