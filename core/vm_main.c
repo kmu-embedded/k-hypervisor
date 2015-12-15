@@ -328,16 +328,6 @@ int main_cpu_init()
     if (timer_init(_timer_irq))
         printf("[start_guest] timer initialization failed...\n");
 
-    /* Initialize Guests */
-    vcpu_setup();
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        if ((vcpu[i] = vcpu_create()) == VCPU_CREATE_FAILED)
-            printf("[start_guest] guest initialization failed...\n");
-        if (vcpu_init(vcpu[i]) != VCPU_REGISTERED)
-            printf("[start_guest] guest initialization failed...\n");
-        // TODO(casionwoo) : vcpu_start should be called when after scheduler is implemented
-    }
-
     /* Initialize Virtual Devices */
     if (vdev_init())
         printf("[start_guest] virtual device initialization failed...\n");
@@ -349,17 +339,21 @@ int main_cpu_init()
     /* Print Banner */
     printf("%s", BANNER_STRING);
 
-    /* Switch to the first guest */
+    /* Scheduler initialization */
     sched_init();
 
-    /* FIXME: May be placed in vcpu */
-    timer_stop();
-    sched_vcpu_register(0);//vcpu->vcpuid);
-    sched_vcpu_register(1);//vcpu->vcpuid);
-    sched_vcpu_attach(0);//vcpu->vcpuid);
-    sched_vcpu_attach(1);//vcpu->vcpuid);
-    timer_start();
+    /* Initialize vCPUs */
+    vcpu_setup();
+    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
+        if ((vcpu[i] = vcpu_create()) == VCPU_CREATE_FAILED)
+            printf("vcpu_create(vcpu[%d]) is failed...\n", i);
+        if (vcpu_init(vcpu[i]) != VCPU_REGISTERED)
+            printf("vcpu_init(vcpu[%d]) is failed...\n", i);
+        if (vcpu_start(vcpu[i]) != VCPU_ACTIVATED)
+            printf("vcpu_start(vcpu[%d]) is failed...\n", i);
+    }
 
+    /* Switch to the first vcpu */
     guest_sched_start();
 
     /* The code flow must not reach here */
