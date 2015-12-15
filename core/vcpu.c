@@ -5,10 +5,6 @@
 #include <scheduler.h>
 #include <stdlib.h>
 
-#define _valid_vmid(vmid) \
-    (guest_first_vmid() <= vmid && guest_last_vmid() >= vmid)
-
-
 static struct list_head vcpu_list;
 static int vcpu_count;
 
@@ -72,13 +68,11 @@ vcpu_state_t vcpu_delete(struct vcpu *vcpu)
 
 hvmm_status_t vcpu_save(struct vcpu *vcpu, struct core_regs *regs)
 {
-    /* vcpu_regs_save : save the current guest's context*/
     return  vcpu_regs_save(&vcpu->vcpu_regs, regs);
 }
 
 hvmm_status_t vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
 {
-    /* vcpu_regs_restore : The next becomes the current */
     return  vcpu_regs_restore(&vcpu->vcpu_regs, regs);
 }
 
@@ -91,6 +85,7 @@ struct vcpu *vcpu_find(vcpuid_t vcpuid)
 			return vcpu;
 		}
 	}
+
 	return VCPU_NOT_EXISTED;
 }
 
@@ -109,3 +104,4 @@ void print_vcpu(struct vcpu *vcpu)
 	printf("VCPUID  : %d\n", vcpu->vcpuid);
 	printf("STATE  : %d\n", vcpu->state);
 }
+

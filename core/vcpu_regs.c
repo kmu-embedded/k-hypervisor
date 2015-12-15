@@ -24,24 +24,15 @@
 #define CPSR_IRQ_BIT        CPSR_IRQ_DISABLE
 #define CPSR_FIQ_BIT        CPSR_FIQ_DISABLE
 
-#define GUEST_VERBOSE_ALL       0xFF
-#define GUEST_VERBOSE_LEVEL_0   0x01
-#define GUEST_VERBOSE_LEVEL_1   0x02
-#define GUEST_VERBOSE_LEVEL_2   0x04
-#define GUEST_VERBOSE_LEVEL_3   0x08
-#define GUEST_VERBOSE_LEVEL_4   0x10
-#define GUEST_VERBOSE_LEVEL_5   0x20
-#define GUEST_VERBOSE_LEVEL_6   0x40
-#define GUEST_VERBOSE_LEVEL_7   0x80
-
 static void core_regs_init(struct core_regs *core_regs)
 {
     int i = 0;
 
-    /* TODO(casionwoo) : Why PC should be this value? */
+    /* TODO(casionwoo) : Why PC should be this value */
     core_regs->pc = CFG_GUEST_START_ADDRESS;
-    core_regs->cpsr = (CPSR_ASYNC_ABT_BIT | CPSR_IRQ_BIT | CPSR_FIQ_BIT
-                        | CPSR_MODE_SVC | VALUE_ZERO);
+    core_regs->cpsr =
+        (CPSR_ASYNC_ABT_BIT | CPSR_IRQ_BIT | CPSR_FIQ_BIT | CPSR_MODE_SVC | VALUE_ZERO);
+
     for (i = 0; i < ARCH_REGS_NUM_GPR ; i++) {
         core_regs->gpr[i] = 0;
     }
@@ -57,6 +48,7 @@ static void cop_regs_init(struct cop_regs *cop_regs)
     cop_regs->ttbcr = 0;
     cop_regs->sctlr = 0;
 
+    // TODO(casionwoo) : Modify the way of initialize vmpidr later?
     vmpidr &= 0xFFFFFFFC;
     /* have to fix it
      * vmpidr is to be the virtual cpus's core id.
@@ -234,7 +226,6 @@ static void cop_regs_restore(struct cop_regs *cop_regs)
     write_vmpidr(cop_regs->vmpidr);
 }
 
-#ifndef DEBUG
 static char *_modename(uint8_t mode)
 {
     char *name = "Unknown";
@@ -269,15 +260,13 @@ static char *_modename(uint8_t mode)
     }
     return name;
 }
-#endif
 
 void print_core_regs(struct core_regs *core_regs)
 {
     int i;
 
     printf("cpsr: 0x%08x\n", core_regs->cpsr);
-    printf("cpsr mode(%x) : %s\n", core_regs->cpsr & CPSR_MODE_MASK
-                                 , _modename(core_regs->cpsr & CPSR_MODE_MASK));
+    printf("cpsr mode(%x) : %s\n", core_regs->cpsr & CPSR_MODE_MASK, _modename(core_regs->cpsr & CPSR_MODE_MASK));
     printf("  pc: 0x%08x\n", core_regs->pc);
     printf("  lr: 0x%08x\n", core_regs->lr);
     printf(" gpr:\n\r");
@@ -290,23 +279,13 @@ void print_core_regs(struct core_regs *core_regs)
 
 }
 
-void print_banked_regs(struct banked_regs *banked_regs)
-{
-
-}
-
-void print_cop_regs(struct cop_regs *cop_regs)
-{
-
-}
-
-
 hvmm_status_t vcpu_regs_init(struct vcpu_regs *vcpu_regs)
 {
     struct context_regs *context_regs = &vcpu_regs->context_regs;
 
-//    /* Initialize loader status for reboot */
-//    core_regs->gpr[10] = 0;
+    // TODO(casionwoo) : What is the meanning of bellow line
+    // Initialize loader status for reboot
+    // core_regs->gpr[10] = 0;
 
     core_regs_init(&vcpu_regs->core_regs);
     cop_regs_init(&context_regs->cop_regs);
@@ -353,10 +332,6 @@ hvmm_status_t vcpu_regs_restore(struct vcpu_regs *vcpu_regs, struct core_regs *c
 void print_vcpu_regs(struct vcpu_regs *vcpu_regs)
 {
     print_core_regs(&vcpu_regs->core_regs);
-
-    /* TODO(casionwoo) : Decide if bellow two functions stay or remove */
-//    print_banked_regs(&context_regs->banked_regs);
-//    print_cop_regs(&context_regs->cop_regs);
 
     /* TODO(casionwoo) : Decide if print bellow count registers */
     printf("cntpct: %llu\n", read_cntpct());
