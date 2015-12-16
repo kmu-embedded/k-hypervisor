@@ -41,15 +41,16 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
     vcpu_regs_init(&vcpu->vcpu_regs);
     vcpu->state = VCPU_REGISTERED;
 
-	// TODO(casionwoo) : Register vcpu id to scheduler
+    // TODO(casionwoo) : Check the return value after scheduler status value defined
+    sched_vcpu_register(vcpu->vcpuid);
 
     return vcpu->state;
 }
 
 vcpu_state_t vcpu_start(struct vcpu *vcpu)
 {
-	// TODO(casionwoo) : Signal scheduler to start the vcpu
-
+    // TODO(casionwoo) : Check the return value after scheduler status value defined
+    sched_vcpu_attach(vcpu->vcpuid);
 	vcpu->state = VCPU_ACTIVATED;
 
 	return vcpu->state;
