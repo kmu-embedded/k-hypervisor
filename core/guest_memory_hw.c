@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <armv7_p15.h>
-#include <stdint.h>
-#include <hvmm_trace.h>
 #include <memory.h>
 #include <vcpu.h>
 #include <smp.h>
@@ -9,6 +5,7 @@
 
 #include <stage2_mm.h>
 #include <guest_mm.h>
+#include <guest_memory_hw.h>
 
 #define L2_ENTRY_MASK 0x1FF
 #define L2_SHIFT 21
@@ -168,8 +165,7 @@ static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, vm_pgentry *ttbl)
  *
  * @return HVMM_STATUS_SUCCESS, Always success.
  */
-static int memory_hw_init(struct memmap_desc **guest0,
-            struct memmap_desc **guest1)
+hvmm_status_t memory_hw_init(struct memmap_desc **guest0, struct memmap_desc **guest1)
 {
     uint32_t cpu = smp_processor_id();
     printf("[memory] memory_init: enter\n\r");
@@ -191,7 +187,7 @@ static int memory_hw_init(struct memmap_desc **guest0,
  * management module.
  * - Disables stage-2 translation by HCR.vm = 0.
  */
-static hvmm_status_t memory_hw_save(void)
+hvmm_status_t memory_hw_save(void)
 {
     /*
      * We assume VTCR has been configured and initialized
@@ -211,7 +207,7 @@ static hvmm_status_t memory_hw_save(void)
  *
  * @param guest Context of the next guest.
  */
-static hvmm_status_t memory_hw_restore(vmid_t vmid)
+hvmm_status_t memory_hw_restore(vmid_t vmid)
 {
     /*
      * Restore Translation Table for the next guest and
@@ -223,22 +219,4 @@ static hvmm_status_t memory_hw_restore(vmid_t vmid)
 
     return HVMM_STATUS_SUCCESS;
 }
-
-static hvmm_status_t memory_hw_dump(void)
-{
-    return HVMM_STATUS_SUCCESS;
-}
-
-struct memory_ops _memory_ops = {
-    .init = memory_hw_init,
-    .save = memory_hw_save,
-    .restore = memory_hw_restore,
-    .dump = memory_hw_dump,
-};
-
-struct memory_module _memory_module = {
-    .name = "K-Hypervisor Memory Module",
-    .author = "Kookmin Univ.",
-    .ops = &_memory_ops,
-};
 
