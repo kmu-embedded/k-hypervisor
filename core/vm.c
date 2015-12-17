@@ -43,7 +43,8 @@ vmid_t vm_create(unsigned char num_vcpus)
         vm->vcpu[i]->vmid = vm->vmid;
     }
 
-    // TODO(casionwoo) : vMEM create
+    vmem_create();
+
     // TODO(casionwoo) : vIRQ create
 
     list_add_tail(&vm->head, &vm_list);
@@ -68,7 +69,8 @@ vmcb_state_t vm_init(vmid_t vmid)
 
     vm->state = HALTED;
 
-    // TODO(casionwoo) : vMEM init
+    vmem_init(&vm->vmem, vm->vmid);
+
     // TODO(casionwoo) : vIRQ init
 
     return vm->state;
@@ -113,6 +115,34 @@ vmcb_state_t vm_delete(vmid_t vmid)
     free(vm);
 
     return UNDEFINED;
+}
+
+hvmm_status_t vm_save(vmid_t save_vmid)
+{
+    /*
+        vmem_save()
+        interrupt_save()
+        vdev_save()
+    */
+    vmem_save();
+    vdev_save(save_vmid);
+
+    return HVMM_STATUS_SUCCESS;
+}
+
+hvmm_status_t vm_restore(vmid_t restore_vmid)
+{
+    /*
+        vdev_restore()
+        interrupt_restore()
+        vmem_restore()
+    */
+    struct vmcb *vm = vm_find(restore_vmid);
+
+    vdev_restore(restore_vmid);
+    vmem_restore(&vm->vmem, restore_vmid);
+
+    return HVMM_STATUS_SUCCESS;
 }
 
 struct vmcb *vm_find(vmid_t vmid)

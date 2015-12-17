@@ -1,5 +1,4 @@
 #include <guest_memory_hw.h>
-#include <arch/arm/rtsm-config.h>
 #include <armv7_p15.h>
 #include <stage2_mm.h>
 #include <guest_mm.h>
@@ -10,8 +9,6 @@
 
 #define L3_ENTRY_MASK 0x1FF
 #define L3_SHIFT 12
-
-extern vm_pgentry *_vmid_ttbl[NUM_GUESTS_STATIC];
 
 #define VTTBR_INITVAL                                   0x0000000000000000ULL
 #define VTTBR_VMID_MASK                                 0x00FF000000000000ULL
@@ -163,13 +160,12 @@ static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, vm_pgentry *ttbl)
  *
  * @return HVMM_STATUS_SUCCESS, Always success.
  */
-hvmm_status_t memory_hw_init(struct memmap_desc **guest0, struct memmap_desc **guest1)
+hvmm_status_t memory_hw_init(struct memmap_desc **memmap, char **_vmid_ttbl, vmid_t vmid)
 {
-//    uint32_t cpu = smp_processor_id();
     printf("[memory] memory_init: enter\n\r");
 
-    stage2_mm_init(guest0, 0);
-    stage2_mm_init(guest1, 1);
+    // TODO(casionwoo) : When VM has pagetable, parameter of vmid will be removed.
+    stage2_mm_init(memmap, _vmid_ttbl, vmid);
 
     guest_memory_init_mmu();
 
@@ -205,13 +201,13 @@ hvmm_status_t memory_hw_save(void)
  *
  * @param guest Context of the next guest.
  */
-hvmm_status_t memory_hw_restore(vmid_t vmid)
+hvmm_status_t memory_hw_restore(vmid_t vmid, char **_vmid_ttbl)
 {
     /*
      * Restore Translation Table for the next guest and
      * Enable Stage 2 Translation
      */
-    guest_memory_set_vmid_ttbl(vmid, _vmid_ttbl[vmid]);
+    guest_memory_set_vmid_ttbl(vmid, *_vmid_ttbl);
 
     guest_memory_stage2_enable(1);
 
