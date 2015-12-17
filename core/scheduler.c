@@ -2,7 +2,7 @@
 #include <sched/scheduler_skeleton.h>
 #include <context_switch_to.h>
 #include <interrupt.h>
-#include <memory.h>
+#include <vmem.h>
 #include <vdev.h>
 #include <armv7_p15.h>
 #include <timer.h>

@@ -1,21 +1,15 @@
-#include <vcpu.h>
 #include <vm.h>
 #include <interrupt.h>
 #include <timer.h>
 #include <vdev.h>
-#include <vmem.h>
 #include <gic_regs.h>
 #include <tests.h>
 #include <smp.h>
 #include <scheduler.h>
 #include <arch/arm/rtsm-config.h>
-#include "vm_main.h"
-
-#include <stage1_mm.h>
+#include <vm_main.h>
 #include <version.h>
-
-#include "hvmm_trace.h"
-
+#include <hvmm_trace.h>
 
 #define PLATFORM_BASIC_TESTS 4
 
@@ -25,9 +19,7 @@
         name[id].map[_virq].pirq = _pirq;       \
     } while (0)
 
-
 static struct guest_virqmap _guest_virqmap[NUM_GUESTS_STATIC];
-static struct vcpu *vcpu[NUM_GUESTS_STATIC];
 static vmid_t vm[NUM_GUESTS_STATIC];
 
 extern uint32_t _guest0_bin_start;
@@ -299,13 +291,6 @@ int main_cpu_init()
 
     printf("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
 
-    /* Initialize Memory Management */
-    setup_memory();
-
-    //test();
-
-    if (memory_init(guest0_mdlist, guest1_mdlist))
-        printf("[start_guest] virtual memory initialization failed...\n");
     /* Initialize PIRQ to VIRQ mapping */
     setup_interrupt();
     /* Initialize Interrupt Management */
@@ -337,14 +322,27 @@ int main_cpu_init()
     sched_init();
 
     /* Initialize vCPUs */
+    setup_memory(); // FIXME(casionwoo) : This should be removed later
     vm_setup();
     for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        if ((vm[i] = vm_create(1)) == VM_CREATE_FAILED)
+        if ((vm[i] = vm_create(1)) == VM_CREATE_FAILED) {
             printf("vm_create(vm[%d]) is failed...\n", i);
-        if (vm_init(vm[i]) != HALTED)
+        }
+
+        /* FIXME(casionwoo) : This bellow memmap setting should be removed after DTB implementing */
+        if (i == 0) {
+            vm_find(i)->vmem.memmap = guest0_mdlist;
+        }
+        else {
+            vm_find(i)->vmem.memmap = guest1_mdlist;
+        }
+
+        if (vm_init(vm[i]) != HALTED) {
             printf("vm_init(vm[%d]) is failed...\n", i);
-        if (vm_start(vm[i]) != RUNNING)
+        }
+        if (vm_start(vm[i]) != RUNNING) {
             printf("vm_start(vm[%d]) is failed...\n", i);
+        }
     }
 
     /* Switch to the first vcpu */

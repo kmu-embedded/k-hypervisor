@@ -37,9 +37,9 @@ struct memmap_desc {
     enum memattr attr;
 };
 
-hvmm_status_t memory_hw_init(struct memmap_desc **guest0, struct memmap_desc **guest1);
+hvmm_status_t memory_hw_init(struct memmap_desc **memmap, char **_vmid_ttbl, vmid_t vmid);
 hvmm_status_t memory_hw_save(void);
-hvmm_status_t memory_hw_restore(vmid_t vmid);
+hvmm_status_t memory_hw_restore(vmid_t vmid, char **_vmid_ttbl);
 
 #endif /*  __GUEST_MEMORY_HW__ */
 

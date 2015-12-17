@@ -1,22 +1,22 @@
 #include <vmem.h>
 
-void memory_create()
+void vmem_create()
 {
     // TODO(casionwoo) : This will be implemented after making struct vmem.
 }
 
-hvmm_status_t memory_init(struct memmap_desc **guest0, struct memmap_desc **guest1)
+hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
 {
-    return memory_hw_init(guest0, guest1);
+    return memory_hw_init(vmem->memmap, &vmem->pgtable_base, vmid);
 }
 
-hvmm_status_t memory_save(void)
+hvmm_status_t vmem_save(void)
 {
     return memory_hw_save();
 }
 
-hvmm_status_t memory_restore(vmid_t vmid)
+hvmm_status_t vmem_restore(struct vmem *vmem, vmid_t vmid)
 {
-    return memory_hw_restore(vmid);
+    return memory_hw_restore(vmid, &vmem->pgtable_base);
 }
 
