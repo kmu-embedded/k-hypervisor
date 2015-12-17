@@ -1,11 +1,9 @@
-#include <memory.h>
-#include <vcpu.h>
-#include <smp.h>
+#include <guest_memory_hw.h>
 #include <arch/arm/rtsm-config.h>
-
+#include <armv7_p15.h>
 #include <stage2_mm.h>
 #include <guest_mm.h>
-#include <guest_memory_hw.h>
+#include <stdio.h>
 
 #define L2_ENTRY_MASK 0x1FF
 #define L2_SHIFT 21
@@ -167,7 +165,7 @@ static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, vm_pgentry *ttbl)
  */
 hvmm_status_t memory_hw_init(struct memmap_desc **guest0, struct memmap_desc **guest1)
 {
-    uint32_t cpu = smp_processor_id();
+//    uint32_t cpu = smp_processor_id();
     printf("[memory] memory_init: enter\n\r");
 
     stage2_mm_init(guest0, 0);
