@@ -55,8 +55,8 @@ extern uint32_t _guest3_bin_end;
 static struct memmap_desc guest_md_empty[] = {
     {       0, 0, 0, 0,  0},
 };
+
 /*  label, ipa, pa, size, attr */
-#if 0
 static struct memmap_desc guest0_device_md[] = {
     { "sysreg", 0x1C010000, 0x1C010000, SZ_4K, MEMATTR_DM },
     { "sysctl", 0x1C020000, 0x1C020000, SZ_4K, MEMATTR_DM },
@@ -80,14 +80,6 @@ static struct memmap_desc guest0_device_md[] = {
     { "SMSC91c111i", 0x1A000000, 0x1A000000, SZ_16M, MEMATTR_DM },
     { "simplebus2", 0x18000000, 0x18000000, SZ_64M, MEMATTR_DM },
     { 0, 0, 0, 0, 0 }
-};
-#endif
-static struct memmap_desc guest0_device_md[] = {
-    { "uart", 0x1C090000, 0x1C0A0000, SZ_4K, MEMATTR_DM },
-    //{ "sp804", 0x1C110000, 0x1C120000, SZ_4K, MEMATTR_DM },
-    { "gicc", 0x2C000000 | GIC_OFFSET_GICC,
-       CFG_GIC_BASE_PA | GIC_OFFSET_GICVI, SZ_8K, MEMATTR_DM },
-    {0, 0, 0, 0, 0}
 };
 
 static struct memmap_desc guest1_device_md[] = {
