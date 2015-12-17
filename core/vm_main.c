@@ -3,7 +3,7 @@
 #include <interrupt.h>
 #include <timer.h>
 #include <vdev.h>
-#include <memory.h>
+#include <vmem.h>
 #include <gic_regs.h>
 #include <tests.h>
 #include <smp.h>
