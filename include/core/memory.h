@@ -2,7 +2,7 @@
 #define __MM_H__
 
 #include <hvmm_types.h>
-#include "stdint.h"
+#include <stdint.h>
 
 /**
  * @brief Enum values of the stage2 memory attribute.
@@ -38,64 +38,8 @@ struct memmap_desc {
     enum memattr attr;
 };
 
-struct memory_ops {
-    /** Initalize Memory state */
-    hvmm_status_t (*init)(struct memmap_desc **, struct memmap_desc **);
-
-    /** Allocate heap memory */
-    void * (*alloc)(unsigned long size);
-
-    /** Free heap memory */
-    void (*free)(void *ap);
-
-    /** Save guest memory structure */
-    hvmm_status_t (*save)(void);
-
-    /** Restore guest memory structure */
-    hvmm_status_t (*restore)(vmid_t);
-
-    /** Dump state of the memory */
-    hvmm_status_t (*dump)(void);
-};
-
-struct memory_module {
-    /** tag must be initialized to HAL_TAG */
-    uint32_t tag;
-
-    /**
-     * Version of the module-specific device API. This value is used by
-     * the derived-module user to manage different device implementations.
-     * The user who uses this module is responsible for checking
-     * the module_api_version and device version fields to ensure that
-     * the user is capable of communicating with the specific module
-     * implementation.
-     *
-     */
-    uint32_t version;
-
-    /** Identifier of module */
-    const char *id;
-
-    /** Name of this module */
-    const char *name;
-
-    /** Author/owner/implementor of the module */
-    const char *author;
-
-    /** Memory Operation */
-    struct memory_ops *ops;
-};
-
-extern struct memory_module _memory_module;
-extern uint32_t _guest_bin_start;
-extern uint32_t _guest2_bin_start;
-extern uint32_t _guest_secondary_bin_start;
-
-void memory_free(void *ap);
-void *memory_alloc(unsigned long size);
+hvmm_status_t memory_init(struct memmap_desc **guest0, struct memmap_desc **guest1);
 hvmm_status_t memory_save(void);
 hvmm_status_t memory_restore(vmid_t vmid);
-hvmm_status_t memory_init(struct memmap_desc **guest0,
-                    struct memmap_desc **guest1);
 
 #endif
