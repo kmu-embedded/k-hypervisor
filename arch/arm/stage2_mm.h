@@ -1,7 +1,7 @@
 #ifndef __LPAE_H__
 #define __LPAE_H__
 #include <stdint.h>
-#include <memory.h>
+#include <vmem.h>
 
 /**
  * @file lpae.h

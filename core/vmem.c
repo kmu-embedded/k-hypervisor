@@ -1,5 +1,9 @@
-#include <memory.h>
-#include <guest_memory_hw.h>
+#include <vmem.h>
+
+void memory_create()
+{
+    // TODO(casionwoo) : This will be implemented after making struct vmem.
+}
 
 hvmm_status_t memory_init(struct memmap_desc **guest0, struct memmap_desc **guest1)
 {
