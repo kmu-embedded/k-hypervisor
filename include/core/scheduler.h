@@ -23,15 +23,14 @@ int sched_vcpu_register(int vcpuid);
 int sched_vcpu_unregister();
 int sched_vcpu_attach(int vcpuid);
 int sched_vcpu_detach();
-// int do_schedule();
 void do_schedule(void *pdata);
 
 vmid_t sched_policy_determ_next(void);
-hvmm_status_t guest_perform_switch(struct core_regs *regs);
 
 void guest_sched_start(void);
 vmid_t guest_current_vmid(void);
-hvmm_status_t guest_switchto(vmid_t vmid, uint8_t locked);
 
-//void guest_schedule(void *pdata);
+hvmm_status_t guest_perform_switch(struct core_regs *regs);
+hvmm_status_t guest_switchto(vmid_t vmid);
+
 #endif /* __SCHEDULER_H__ */

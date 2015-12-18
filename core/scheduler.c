@@ -9,14 +9,20 @@
 #include <vgic.h>
 #include <timer.h>
 #include <stdio.h>
+#include <hvmm_trace.h>
 
-
-//extern struct vcpu running_vcpu[NUM_GUESTS_STATIC];
 int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
-
 int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
-/* further switch request will be ignored if set */
-static uint8_t _switch_locked[NUM_CPUS];
+
+/* TODO:(igkang) rename sched functions
+ *   - remove the word 'guest'
+ */
+
+/* TODO:(igkang) make sched functions run based on phisical CPU-assigned policy
+ *
+ *   - add pcpu sched mapping
+ *   - modify functions parameters to use pCPU ID
+ */
 
 void sched_init()
 {
@@ -35,12 +41,24 @@ void sched_init()
     sched_rr.init();
 }
 
+/* TODO:(igkang) context switching related fucntions should be redesigned
+ *
+ * in scheduler.c
+ *   - perform_switch
+ *   - guest_perform_switch
+ *   - sched_policy_determ_next
+ *   - guest_switchto
+ *
+ * and outside of scheduler.c
+ *   - context_switch_to
+ */
 static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
 {
     /* _curreng_guest_vmid -> next_vmid */
 
     hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
     uint32_t cpu = smp_processor_id();
+
     if (_current_guest_vmid[cpu] == next_vmid)
         return HVMM_STATUS_IGNORED;
 
@@ -60,19 +78,16 @@ hvmm_status_t guest_perform_switch(struct core_regs *regs)
          * first guest. It occur in initial time.
          */
         printf("context: launching the first guest\n");
-
         result = perform_switch(0, _next_guest_vmid[cpu]);
         /* DOES NOT COME BACK HERE */
     } else if (_next_guest_vmid[cpu] != VMID_INVALID &&
-                _current_guest_vmid[cpu] != _next_guest_vmid[cpu]) {
-        printf("curr: %x\n", _current_guest_vmid[cpu]);
-        printf("next: %x\n", _next_guest_vmid[cpu]);
+            _current_guest_vmid[cpu] != _next_guest_vmid[cpu]) {
+        printf("[sched] curr:%x next:%x\n", _current_guest_vmid[cpu], _next_guest_vmid[cpu]);
         /* Only if not from Hyp */
         result = perform_switch(regs, _next_guest_vmid[cpu]);
         _next_guest_vmid[cpu] = VMID_INVALID;
     }
 
-    _switch_locked[cpu] = 0;
     return result;
 }
 
@@ -90,104 +105,45 @@ void guest_sched_start(void)
     else
         vcpu = vcpu_find(0);
 
-    guest_switchto(vcpu->vcpuid, 0);
+    guest_switchto(vcpu->vcpuid);
     guest_perform_switch(&vcpu->vcpu_regs.core_regs);
-}
-
-vmid_t guest_first_vmid(void)
-{
-    uint32_t cpu = smp_processor_id();
-
-    /* FIXME:Hardcoded for now */
-#if _SMP_
-    if (cpu)
-        return 2;
-    else
-        return 0;
-#endif
-    return cpu;
-}
-
-vmid_t guest_last_vmid(void)
-{
-    uint32_t cpu = 1;//smp_processor_id();
-
-    /* FIXME:Hardcoded for now */
-#if _SMP_
-    if (cpu)
-        return 3;
-    else
-        return 1;
-#endif
-    return cpu;
-}
-
-vmid_t guest_next_vmid(vmid_t ofvmid)
-{
-    vmid_t next = VMID_INVALID;
-#if 0
-#ifdef _SMP_
-    uint32_t cpu = smp_processor_id();
-
-    if (cpu)
-        return 2;
-    else
-        return 0;
-#endif
-#endif
-
-    /* FIXME:Hardcoded */
-    if (ofvmid == VMID_INVALID)
-        next = guest_first_vmid();
-    else if (ofvmid < guest_last_vmid()) {
-        /* FIXME:Hardcoded */
-        next = ofvmid + 1;
-    }
-    return next;
 }
 
 vmid_t guest_current_vmid(void)
 {
     uint32_t cpu = smp_processor_id();
+
+    /* TODO:(igkang) let this function use API of policy implementation,
+     *   instead of globally defined array */
+
     return _current_guest_vmid[cpu];
 }
 
-vmid_t guest_waiting_vmid(void)
-{
-    uint32_t cpu = smp_processor_id();
-    return _next_guest_vmid[cpu];
-}
-
-
-hvmm_status_t guest_switchto(vmid_t vmid, uint8_t locked)
+hvmm_status_t guest_switchto(vmid_t vmid)
 {
     hvmm_status_t result = HVMM_STATUS_IGNORED;
     uint32_t cpu = smp_processor_id();
 
+    /* TODO:(igkang) check about below comment */
     /* valid and not current vmid, switch */
-    if (_switch_locked[cpu] == 0) {
-        _next_guest_vmid[cpu] = vmid;
-        result = HVMM_STATUS_SUCCESS;
-    } else
-        printf("context: next vmid locked to %d\n", _next_guest_vmid[cpu]);
-
-    if (locked)
-        _switch_locked[cpu] = locked;
+    _next_guest_vmid[cpu] = vmid;
+    result = HVMM_STATUS_SUCCESS;
 
     return result;
 }
 
 vmid_t sched_policy_determ_next(void)
 {
-#if 1
-    vmid_t next = guest_next_vmid(guest_current_vmid());
+    /* FIXME:(igkang) Hardcoded for rr */
+    vmid_t next = sched_rr.do_schedule();
 
-    /* FIXME:Hardcoded */
-    if (next == VMID_INVALID)
-        next = guest_first_vmid();
+    if (next == VMID_INVALID) {
+        printf("policy_determ result: VMID_INVALID\n");
+        next = 0;
+        hyp_abort_infinite();
+    }
 
     return next;
-#endif
 }
 
 /**
@@ -264,9 +220,9 @@ int sched_vcpu_detach()
  * @param
  * @return
  */
-// int do_schedule()
 void do_schedule(void *pdata)
 {
+    /* TODO:(igkang) function type(return/param) should be renewed */
     int next_vcpuid;
 
     /* get assigned scheduling policy of pCPU? */
@@ -280,5 +236,5 @@ void do_schedule(void *pdata)
     /* manipulate variables to
      * cause context switch */
 
-    guest_switchto(next_vcpuid, 0);
+    guest_switchto(next_vcpuid);
 }
