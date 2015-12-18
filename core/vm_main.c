@@ -1,4 +1,5 @@
 #include <vcpu.h>
+#include <vm.h>
 #include <interrupt.h>
 #include <timer.h>
 #include <vdev.h>
@@ -27,6 +28,7 @@
 
 static struct guest_virqmap _guest_virqmap[NUM_GUESTS_STATIC];
 static struct vcpu *vcpu[NUM_GUESTS_STATIC];
+static vmid_t vm[NUM_GUESTS_STATIC];
 
 extern uint32_t _guest0_bin_start;
 extern uint32_t _guest0_bin_end;
@@ -335,14 +337,14 @@ int main_cpu_init()
     sched_init();
 
     /* Initialize vCPUs */
-    vcpu_setup();
+    vm_setup();
     for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        if ((vcpu[i] = vcpu_create()) == VCPU_CREATE_FAILED)
-            printf("vcpu_create(vcpu[%d]) is failed...\n", i);
-        if (vcpu_init(vcpu[i]) != VCPU_REGISTERED)
-            printf("vcpu_init(vcpu[%d]) is failed...\n", i);
-        if (vcpu_start(vcpu[i]) != VCPU_ACTIVATED)
-            printf("vcpu_start(vcpu[%d]) is failed...\n", i);
+        if ((vm[i] = vm_create(1)) == VM_CREATE_FAILED)
+            printf("vm_create(vm[%d]) is failed...\n", i);
+        if (vm_init(vm[i]) != HALTED)
+            printf("vm_init(vm[%d]) is failed...\n", i);
+        if (vm_start(vm[i]) != RUNNING)
+            printf("vm_start(vm[%d]) is failed...\n", i);
     }
 
     /* Switch to the first vcpu */
