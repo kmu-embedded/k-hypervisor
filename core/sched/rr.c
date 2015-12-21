@@ -1,6 +1,7 @@
 #include <sched/scheduler_skeleton.h>
 #include <lib/bsd/list.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 typedef enum {
     DETACHED,
@@ -9,7 +10,7 @@ typedef enum {
 } state_rr;
 
 struct rq_entry_rr {
-    struct list_head runqueue_head;
+    struct list_head head;
     struct list_head registered_list_head;
 
     /* TODO:(igkang) set field types to abstract types */
@@ -44,28 +45,27 @@ struct rq_entry_rr *alloc_rq_entry_rr()
 
 void print_all_entries_rr(void)
 {
-    /* TODO:(igkang) rename e --> rq_entry */
-    struct rq_entry_rr *e;
+    struct rq_entry_rr *rq_entry;
     int cur_vcpuid = -1;
 
     /* print current running vCPU */
     if (current != NULL) {
-        e = list_entry(current, struct rq_entry_rr, runqueue_head);
-        cur_vcpuid = e->vcpuid;
+        rq_entry = list_entry(current, struct rq_entry_rr, head);
+        cur_vcpuid = rq_entry->vcpuid;
     }
     printf("RR CURRENT: %d\n", cur_vcpuid);
 
     /* print registered vCPU list */
     printf("RR REG_LIST Entries:");
-    list_for_each_entry(e, &registered_list_rr, registered_list_head) {
-        printf(" %d", e->vcpuid);
+    list_for_each_entry(rq_entry, &registered_list_rr, registered_list_head) {
+        printf(" %d", rq_entry->vcpuid);
     }
     printf("\n");
 
     /* print attached vCPU list */
     printf("RR RUNQUEUE Entries:");
-    list_for_each_entry(e, &runqueue_rr, runqueue_head) {
-        printf(" %d", e->vcpuid);
+    list_for_each_entry(rq_entry, &runqueue_rr, head) {
+        printf(" %d", rq_entry->vcpuid);
     }
     printf("\n");
 }
@@ -110,18 +110,16 @@ int sched_rr_vcpu_register(int vcpuid)
 {
     struct rq_entry_rr *new_entry;
 
-    // printf("RR_VCPU_REGISTER\n");
     /* Check if vcpu is already registered */
-
 
     /* Allocate a rq_entry_rr */
     new_entry = alloc_rq_entry_rr();
 
     /* Initialize rq_entry_rr instance */
     INIT_LIST_HEAD(&new_entry->registered_list_head);
-    INIT_LIST_HEAD(&new_entry->runqueue_head);
+    INIT_LIST_HEAD(&new_entry->head);
 
-    /* FIXME: should use function parameter's value for tick_reset_val init. */
+    /* FIXME:(igkang) should use function parameter's value for tick_reset_val init. */
     new_entry->vcpuid = vcpuid;
     new_entry->tick_reset_val = 5;
     new_entry->tick = new_entry->tick_reset_val;
@@ -131,7 +129,6 @@ int sched_rr_vcpu_register(int vcpuid)
     /* Add it to registerd vcpus list */
     list_add_tail(&new_entry->registered_list_head, &registered_list_rr);
 
-//     print_all_entries_rr();
     return 0;
 }
 
@@ -157,7 +154,7 @@ int sched_rr_vcpu_unregister()
     /* Remove it from registered list */
 
     /* Deallocate rq_entry_rr */
-    /* FIXME: Deallocation will cause problem as  we are using
+    /* FIXME:(igkang) Deallocation will cause problem as  we are using
      *   array-base pool for now. Dynamic allocation fucntion
      *   is needed. Better NOT to use vcpu_unregister until
      *   this problem is fixed*/
@@ -174,32 +171,28 @@ int sched_rr_vcpu_unregister()
 int sched_rr_vcpu_attach(int vcpuid)
 {
     struct rq_entry_rr *entry = NULL;
-    struct rq_entry_rr *registered_entry = NULL;
+    struct rq_entry_rr *entry_to_be_attached = NULL;
 
-    // printf("RR_VCPU_ATTACH\n");
     /* To find entry in registered entry list */
     list_for_each_entry(entry, &registered_list_rr, registered_list_head) {
         if (entry->vcpuid == vcpuid) {
-//             printf("Found %d\n", vcpuid);
-            registered_entry = entry;
+            entry_to_be_attached = entry;
             break;
         }
     }
 
     /* TODO:(igkang) Name the return value constants. */
-    if (registered_entry == NULL)
+    if (entry_to_be_attached == NULL)
         return -1; /* error: not registered */
 
-    if (registered_entry->state != DETACHED)
+    if (entry_to_be_attached->state != DETACHED)
         return -2; /* error: already attached */
 
     /* Set rq_entry_rr's fields */
-    registered_entry->state = WAITING;
+    entry_to_be_attached->state = WAITING;
 
     /* Add it to runqueue */
-    list_add_tail(&registered_entry->runqueue_head, &runqueue_rr);
-
-//     print_all_entries_rr();
+    list_add_tail(&entry_to_be_attached->head, &runqueue_rr);
 
     return 0;
 }
@@ -229,10 +222,9 @@ int sched_rr_vcpu_detach()
  */
 int sched_rr_do_schedule()
 {
-    /* TODO:(igkang) rename will_be_switched */
     /* TODO:(igkang) change type to bool */
-    int will_be_switched = false;
     struct rq_entry_rr *next_entry = NULL;
+    bool is_switching_needed = false;
     int next_vcpuid = -1;
 
     /* check pending attach list
@@ -244,18 +236,18 @@ int sched_rr_do_schedule()
      *  - if there is an detach-pending vcpu than detach it. */
     if (current == NULL) { /* No vCPU is running */
         if (!list_empty(&runqueue_rr)) /* and there are some vcpus waiting */
-            will_be_switched = true;
+            is_switching_needed = true;
     } else { /* There's a vCPU currently running */
         struct rq_entry_rr *current_entry = NULL;
 
         /* check & decrease tick. if tick was <= 0 let's switch */
-        current_entry = list_entry(current, struct rq_entry_rr, runqueue_head);
+        current_entry = list_entry(current, struct rq_entry_rr, head);
 
         /* if tick is still left */
         if (current_entry->tick) {
             current_entry->tick--;
         } else { /* tick's over */
-            will_be_switched = true;
+            is_switching_needed = true;
 
             /* reset tick for next scheduling */
             current_entry->tick = current_entry->tick_reset_val;
@@ -268,26 +260,23 @@ int sched_rr_do_schedule()
     }
 
     /* update scheduling-related data (like tick) */
-    if (will_be_switched) {
+    if (is_switching_needed) {
         /* move entry from runqueue_rr to current */
         current = list_first(&runqueue_rr);
         list_del_init(current);
 
-        next_entry = list_entry(current, struct rq_entry_rr, runqueue_head);
+        next_entry = list_entry(current, struct rq_entry_rr, head);
         next_entry->tick -= 1;
     }
 
     /* vcpu of current entry will be the next vcpu */
     if (current != NULL) {
-        next_entry = list_entry(current, struct rq_entry_rr, runqueue_head);
+        next_entry = list_entry(current, struct rq_entry_rr, head);
         next_entry->state = RUNNING;
 
         /* set return next_vcpuid value */
         next_vcpuid = next_entry->vcpuid;
     }
-
-//     printf("\n### DO_SCHEDULE_RR\n");
-//     print_all_entries_rr();
 
     return next_vcpuid;
 }
