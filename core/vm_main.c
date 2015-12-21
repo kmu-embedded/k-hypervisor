@@ -329,11 +329,10 @@ int main_cpu_init()
             printf("vm_create(vm[%d]) is failed...\n", i);
         }
 
-        /* FIXME(casionwoo) : This bellow memmap setting should be removed after DTB implementing */
+        /* FIXME(casionwoo) : This below memmap setting should be removed after DTB implementing */
         if (i == 0) {
             vm_find(i)->vmem.memmap = guest0_mdlist;
-        }
-        else {
+        }else {
             vm_find(i)->vmem.memmap = guest1_mdlist;
         }
 
