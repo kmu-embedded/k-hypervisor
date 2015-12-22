@@ -1,31 +1,30 @@
 #include <context_switch_to.h>
+#include <vm.h>
 #include <vcpu.h>
 #include <interrupt.h>
-#include <memory.h>
-#include <vdev.h>
 
 extern struct vcpu *_current_guest[NUM_CPUS];
 extern int _current_guest_vmid[NUM_CPUS];
-hvmm_status_t context_switch_to(vcpuid_t from_id, vcpuid_t to_id, struct core_regs *current_core_regs)
+
+hvmm_status_t context_switch_to(vcpuid_t current_id, vcpuid_t next_id, struct core_regs *current_regs)
 {
-    struct vcpu *from_vcpu = vcpu_find(from_id);
-    struct vcpu *to_vcpu = vcpu_find(to_id);
+    struct vcpu *current = vcpu_find(current_id);
+    struct vcpu *next = vcpu_find(next_id);
 
-    // TODO(casionwoo) : After VM is implemented, routine of save & restore would be changed to compare
-    //                   the vmid and determine if memory, interrupt, vdev save and restore.
-    vcpu_save(from_vcpu, current_core_regs);
-    memory_save();
-    interrupt_save(from_id);
-    vdev_save(from_id);
+    vcpu_save(current, current_regs);
+    if (current->vmid != next->vmid) {
+        vm_save(current_id);
+        interrupt_save(current_id);
 
-    // TODO(casionwoo) : these 2 lines will be removed after vmem, virq is generated.
-    _current_guest[0] = to_vcpu;
-    _current_guest_vmid[0] = to_id;
+        // TODO(casionwoo) : vm_save, vm_restore two functions will be merged later.
+        // TODO(casionwoo) : After interrupt is modified, below 2 lines will be removed.
+        _current_guest[0] = next;
+        _current_guest_vmid[0] = next_id;
 
-    vdev_restore(to_id);
-    interrupt_restore(to_id);
-    memory_restore(to_id);
-    vcpu_restore(to_vcpu, current_core_regs);
+        interrupt_restore(next_id);
+        vm_restore(next_id);
+    }
+    vcpu_restore(next, current_regs);
 
     return HVMM_STATUS_SUCCESS;
 }
