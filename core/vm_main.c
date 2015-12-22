@@ -1,20 +1,15 @@
-#include <vcpu.h>
+#include <vm.h>
 #include <interrupt.h>
 #include <timer.h>
 #include <vdev.h>
-#include <memory.h>
 #include <gic_regs.h>
 #include <tests.h>
 #include <smp.h>
 #include <scheduler.h>
 #include <arch/arm/rtsm-config.h>
-#include "vm_main.h"
-
-#include <stage1_mm.h>
+#include <vm_main.h>
 #include <version.h>
-
-#include "hvmm_trace.h"
-
+#include <hvmm_trace.h>
 
 #define PLATFORM_BASIC_TESTS 4
 
@@ -24,9 +19,8 @@
         name[id].map[_virq].pirq = _pirq;       \
     } while (0)
 
-
 static struct guest_virqmap _guest_virqmap[NUM_GUESTS_STATIC];
-static struct vcpu *vcpu[NUM_GUESTS_STATIC];
+static vmid_t vm[NUM_GUESTS_STATIC];
 
 extern uint32_t _guest0_bin_start;
 extern uint32_t _guest0_bin_end;
@@ -55,8 +49,8 @@ extern uint32_t _guest3_bin_end;
 static struct memmap_desc guest_md_empty[] = {
     {       0, 0, 0, 0,  0},
 };
+
 /*  label, ipa, pa, size, attr */
-#if 0
 static struct memmap_desc guest0_device_md[] = {
     { "sysreg", 0x1C010000, 0x1C010000, SZ_4K, MEMATTR_DM },
     { "sysctl", 0x1C020000, 0x1C020000, SZ_4K, MEMATTR_DM },
@@ -80,14 +74,6 @@ static struct memmap_desc guest0_device_md[] = {
     { "SMSC91c111i", 0x1A000000, 0x1A000000, SZ_16M, MEMATTR_DM },
     { "simplebus2", 0x18000000, 0x18000000, SZ_64M, MEMATTR_DM },
     { 0, 0, 0, 0, 0 }
-};
-#endif
-static struct memmap_desc guest0_device_md[] = {
-    { "uart", 0x1C090000, 0x1C0A0000, SZ_4K, MEMATTR_DM },
-    //{ "sp804", 0x1C110000, 0x1C120000, SZ_4K, MEMATTR_DM },
-    { "gicc", 0x2C000000 | GIC_OFFSET_GICC,
-       CFG_GIC_BASE_PA | GIC_OFFSET_GICVI, SZ_8K, MEMATTR_DM },
-    {0, 0, 0, 0, 0}
 };
 
 static struct memmap_desc guest1_device_md[] = {
@@ -305,13 +291,6 @@ int main_cpu_init()
 
     printf("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
 
-    /* Initialize Memory Management */
-    setup_memory();
-
-    //test();
-
-    if (memory_init(guest0_mdlist, guest1_mdlist))
-        printf("[start_guest] virtual memory initialization failed...\n");
     /* Initialize PIRQ to VIRQ mapping */
     setup_interrupt();
     /* Initialize Interrupt Management */
@@ -328,16 +307,6 @@ int main_cpu_init()
     if (timer_init(_timer_irq))
         printf("[start_guest] timer initialization failed...\n");
 
-    /* Initialize Guests */
-    vcpu_setup();
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        if ((vcpu[i] = vcpu_create()) == VCPU_CREATE_FAILED)
-            printf("[start_guest] guest initialization failed...\n");
-        if (vcpu_init(vcpu[i]) != VCPU_REGISTERED)
-            printf("[start_guest] guest initialization failed...\n");
-        // TODO(casionwoo) : vcpu_start should be called when after scheduler is implemented
-    }
-
     /* Initialize Virtual Devices */
     if (vdev_init())
         printf("[start_guest] virtual device initialization failed...\n");
@@ -349,17 +318,33 @@ int main_cpu_init()
     /* Print Banner */
     printf("%s", BANNER_STRING);
 
-    /* Switch to the first guest */
+    /* Scheduler initialization */
     sched_init();
 
-    /* FIXME: May be placed in vcpu */
-    timer_stop();
-    sched_vcpu_register(0);//vcpu->vcpuid);
-    sched_vcpu_register(1);//vcpu->vcpuid);
-    sched_vcpu_attach(0);//vcpu->vcpuid);
-    sched_vcpu_attach(1);//vcpu->vcpuid);
-    timer_start();
+    /* Initialize vCPUs */
+    setup_memory(); // FIXME(casionwoo) : This should be removed later
+    vm_setup();
+    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
+        if ((vm[i] = vm_create(1)) == VM_CREATE_FAILED) {
+            printf("vm_create(vm[%d]) is failed...\n", i);
+        }
 
+        /* FIXME(casionwoo) : This below memmap setting should be removed after DTB implementing */
+        if (i == 0) {
+            vm_find(i)->vmem.memmap = guest0_mdlist;
+        }else {
+            vm_find(i)->vmem.memmap = guest1_mdlist;
+        }
+
+        if (vm_init(vm[i]) != HALTED) {
+            printf("vm_init(vm[%d]) is failed...\n", i);
+        }
+        if (vm_start(vm[i]) != RUNNING) {
+            printf("vm_start(vm[%d]) is failed...\n", i);
+        }
+    }
+
+    /* Switch to the first vcpu */
     guest_sched_start();
 
     /* The code flow must not reach here */
