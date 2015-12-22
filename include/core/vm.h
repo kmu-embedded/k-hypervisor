@@ -3,6 +3,7 @@
 
 #include <list.h>
 #include <vcpu.h>
+#include <vmem.h>
 #include <hvmm_types.h>
 
 #define SIZE_OF_NAME        32
@@ -24,7 +25,7 @@ struct vmcb {
     unsigned char num_vcpus;
 
     struct vcpu **vcpu;
-    // TODO(casionwoo) : Define vMEM
+    struct vmem vmem;
     // TODO(casionwoo) : Define vIRQ
 
     vmcb_state_t state;
@@ -38,7 +39,8 @@ vmcb_state_t vm_start(vmid_t vmid);
 vmcb_state_t vm_delete(vmid_t vmid);
 
 // TODO(casionwoo) : vm_suspend, resume, shutdown
-// TODO(casionwoo) : vm_save, vm_restore
+hvmm_status_t vm_save(vmid_t vmid);
+hvmm_status_t vm_restore(vmid_t vmid);
 
 struct vmcb *vm_find(vmid_t vmid);
 void print_all_vm();

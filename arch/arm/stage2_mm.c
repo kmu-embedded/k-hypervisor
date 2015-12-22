@@ -1,9 +1,8 @@
+#include <stage2_mm.h>
 #include <stdio.h>
-#include <smp.h>
 #include <armv7_p15.h>
 #include <hvmm_trace.h>
 #include <arch/arm/rtsm-config.h>
-#include <stage2_mm.h>
 #include <guest_mm.h>
 
 #include <stage1_mm.h>  //PAGE_SHIFT
@@ -23,7 +22,6 @@
         + VMM_L1_PADDING_PTE_NUM + VMM_L2L3_PTE_NUM_TOTAL   \
         * VMM_L1_PTE_NUM)
 
-char *_vmid_ttbl[NUM_GUESTS_STATIC];
 vm_pgentry guest_pgtable[NUM_GUESTS_STATIC][VMM_PTE_NUM_TOTAL]  __attribute((__aligned__(4096)));
 
 vm_pgentry l1_pgtable[NUM_GUESTS_STATIC][4]  __attribute((__aligned__(4096)));
@@ -502,10 +500,10 @@ static vm_pgentry set_block(uint32_t paddr, enum memattr mem_attr)
     return entry;
 }
 
-void stage2_mm_init(struct memmap_desc **guest_map, vmid_t vmid)
+void stage2_mm_init(struct memmap_desc **guest_map, char **_vmid_ttbl, vmid_t vmid)
 {
     uint64_t pa = 0x00000000ULL;
-    _vmid_ttbl[vmid] = &guest_pgtable[vmid][0];
+    *_vmid_ttbl = &guest_pgtable[vmid][0];
     guest_memory_init_first_level(&guest_pgtable[vmid][0], guest_map, 0);
 
 }
