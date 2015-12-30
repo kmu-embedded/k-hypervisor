@@ -24,11 +24,6 @@
 
 vm_pgentry guest_pgtable[NUM_GUESTS_STATIC][VMM_PTE_NUM_TOTAL]  __attribute((__aligned__(4096)));
 
-vm_pgentry l1_pgtable[NUM_GUESTS_STATIC][4]  __attribute((__aligned__(4096)));
-vm_pgentry l2_pgtable[NUM_GUESTS_STATIC][512]  __attribute((__aligned__(4096)));
-vm_pgentry l3_pgtable[NUM_GUESTS_STATIC][512][512]  __attribute((__aligned__(4096)));
-
-
 /**
  * \defgroup LPAE_address_mask
  *
@@ -505,5 +500,4 @@ void stage2_mm_init(struct memmap_desc **guest_map, char **_vmid_ttbl, vmid_t vm
     uint64_t pa = 0x00000000ULL;
     *_vmid_ttbl = &guest_pgtable[vmid][0];
     guest_memory_init_first_level(&guest_pgtable[vmid][0], guest_map, 0);
-
 }
