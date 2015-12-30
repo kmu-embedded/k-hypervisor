@@ -3,7 +3,6 @@
 #include <armv7_p15.h>
 #include <hvmm_trace.h>
 #include <arch/arm/rtsm-config.h>
-#include <guest_mm.h>
 
 #include <stage1_mm.h>  //PAGE_SHIFT
 

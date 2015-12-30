@@ -1,7 +1,6 @@
 #include <guest_memory_hw.h>
 #include <armv7_p15.h>
 #include <stage2_mm.h>
-#include <guest_mm.h>
 #include <stdio.h>
 
 #define L2_ENTRY_MASK 0x1FF
