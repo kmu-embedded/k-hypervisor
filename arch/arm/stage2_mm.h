@@ -1,5 +1,5 @@
-#ifndef __LPAE_H__
-#define __LPAE_H__
+#ifndef __STAGE2_MM_H__
+#define __STAGE2_MM_H__
 
 #include <vmem.h>
 
@@ -97,4 +97,5 @@ typedef union stage2_pgentry vm_pgentry;
 
 void stage2_mm_init(struct memmap_desc **guest_map, char ** _vmid_ttbl, vmid_t vmid);
 
-#endif
+#endif /* __STAGE2_MM_H__ */
+
