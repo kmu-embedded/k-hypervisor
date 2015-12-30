@@ -95,6 +95,7 @@ union stage2_pgentry
 
 typedef union stage2_pgentry vm_pgentry;
 
+void stage2_mm_setup();
 void stage2_mm_init(struct memmap_desc **guest_map, char ** _vmid_ttbl, vmid_t vmid);
 
 #endif /* __STAGE2_MM_H__ */

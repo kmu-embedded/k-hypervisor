@@ -14,6 +14,7 @@ struct vmem {
     uint32ptr_t pgtable_base;
 };
 
+void vmem_setup();
 void vmem_create();
 hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid);
 hvmm_status_t vmem_save(void);

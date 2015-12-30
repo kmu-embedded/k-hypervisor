@@ -254,6 +254,7 @@ hvmm_status_t vdev_init(void)
                 continue;
 
             result = vdev->ops->init();
+            printf("vdev->name: %s\n", vdev->name);
             if (result) {
                 printf("vdev : Initial error, name : %s\n", vdev->name);
                 return result;
