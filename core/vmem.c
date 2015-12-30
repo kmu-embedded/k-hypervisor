@@ -1,5 +1,10 @@
 #include <vmem.h>
 
+void vmem_setup()
+{
+    memory_hw_setup();
+}
+
 void vmem_create()
 {
     // TODO(casionwoo) : This will be implemented after making struct vmem.

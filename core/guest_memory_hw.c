@@ -107,6 +107,9 @@ static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, vm_pgentry *ttbl)
     vttbr |= (uint32_t) ttbl & VTTBR_BADDR_MASK;
     write_vttbr(vttbr);
     vttbr = read_vttbr();
+    printf("--------------------------------\n");
+    printf("vttbr: %x%x\n", vttbr);
+    printf("--------------------------------\n");
 #if 0 /* ignore message due to flood log message */
     printf("changed vttbr:");
     printf_hex64(vttbr);
@@ -116,6 +119,10 @@ static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, vm_pgentry *ttbl)
 }
 
 
+void memory_hw_setup()
+{
+    stage2_mm_setup();
+}
 
 /**
  * @brief Initializes the virtual mode(guest mode) memory management

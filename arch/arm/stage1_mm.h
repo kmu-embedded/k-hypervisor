@@ -108,6 +108,9 @@ typedef union stage1_pgentry pgentry;
  * |MAIR1| 0000 0000 | 0000 0000 | 1111 1111 | 1100 1100 |
  */
 
+//#define MAIR0_VALUE 0xeeaa4400
+//#define MAIR1_VALUE 0xff000004
+
 #define MAIR0_VALUE 0x88440400
 #define MAIR1_VALUE 0x0000FFCC
 
@@ -118,12 +121,12 @@ typedef enum {
 } pgsize_t;
 
 typedef enum {
-    MT_STRONGLY_ORDERED,
-    MT_DEVICE,
-    MT_NONCACHEABLE,
-    MT_WRITEBACK,
-    MT_WRITETHROUGH,
-    MT_WRITETHROUGH_RW_ALLOC
+    MT_STRONGLY_ORDERED,    // 0
+    MT_DEVICE,              // 1
+    MT_NONCACHEABLE,        // 2
+    MT_WRITEBACK,           // 3
+    MT_WRITETHROUGH,        // 4
+    MT_WRITETHROUGH_RW_ALLOC  // 5
 } attr_indx_t;
 
 typedef enum {
