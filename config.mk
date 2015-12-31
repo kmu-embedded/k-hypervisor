@@ -15,6 +15,11 @@ ROOT				?= .
 ARCH				?= arch/arm
 VERSION				?= v7
 CORE				?= core
+TESTS				?= tests
 LIB					?= lib
 DRV					?= drivers
 INC					?= include
+MKDIR				?= mkdir
+BUILD				?= build
+
+MAKE				?= make
