@@ -1,17 +1,17 @@
-#ifndef __STAGE1_MM__
-#define __STAGE1_MM__
+#ifndef __STAGE1_MM_H__
+#define __STAGE1_MM_H__
 
 union stage1_pgentry
 {
     uint64_t raw;
 
     struct{
-        uint64_t valid:1; // == 0;
+        uint64_t valid:1;
     } invalid;
 
     struct  {
-        uint64_t valid:1; // == 1;
-        uint64_t type:1; // == 0;
+        uint64_t valid:1;
+        uint64_t type:1;
     } reserved;
 
     struct {
@@ -108,9 +108,6 @@ typedef union stage1_pgentry pgentry;
  * |MAIR1| 0000 0000 | 0000 0000 | 1111 1111 | 1100 1100 |
  */
 
-//#define MAIR0_VALUE 0xeeaa4400
-//#define MAIR1_VALUE 0xff000004
-
 #define MAIR0_VALUE 0x88440400
 #define MAIR1_VALUE 0x0000FFCC
 
@@ -121,12 +118,12 @@ typedef enum {
 } pgsize_t;
 
 typedef enum {
-    MT_STRONGLY_ORDERED,    // 0
-    MT_DEVICE,              // 1
-    MT_NONCACHEABLE,        // 2
-    MT_WRITEBACK,           // 3
-    MT_WRITETHROUGH,        // 4
-    MT_WRITETHROUGH_RW_ALLOC  // 5
+    MT_STRONGLY_ORDERED,
+    MT_DEVICE,
+    MT_NONCACHEABLE,
+    MT_WRITEBACK,
+    MT_WRITETHROUGH,
+    MT_WRITETHROUGH_RW_ALLOC
 } attr_indx_t;
 
 typedef enum {
@@ -152,23 +149,6 @@ struct mem_desc
     attr_indx_t mattr;
 };
 
-#define PGSIZE_4K 1
-#if defined(PGSIZE_4K)
-
-#define ENTRY_SHIFT 9
-#define PAGE_SHIFT 12
-
-#define L3_SHIFT    PAGE_SHIFT                  // 0x1000
-#define L2_SHIFT    (L3_SHIFT + ENTRY_SHIFT)     // 0x100000
-#define L1_SHIFT    (L2_SHIFT + ENTRY_SHIFT)
-
-#define L1_ENTRY    4
-#define L2_ENTRY    512
-#define L3_ENTRY    512
-
-#else // PAGE_2M
-#endif // PAGE_2M
-
 void stage1_mm_init();
 
-#endif // __STAGE1_MM__
+#endif /* __STAGE1_MM_H__ */

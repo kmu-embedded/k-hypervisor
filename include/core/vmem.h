@@ -1,5 +1,5 @@
-#ifndef __MM_H__
-#define __MM_H__
+#ifndef __VMEM_H__
+#define __VMEM_H__
 
 #include <hvmm_types.h>
 #include <stdint.h>
@@ -20,4 +20,4 @@ hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid);
 hvmm_status_t vmem_save(void);
 hvmm_status_t vmem_restore(struct vmem *vmem, vmid_t vmid);
 
-#endif
+#endif /* __VMEM_H__ */
