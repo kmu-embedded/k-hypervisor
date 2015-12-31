@@ -7,15 +7,15 @@
 #define ENTRY_SHIFT 9
 #define PAGE_SHIFT 12
 
-#define L3_SHIFT    PAGE_SHIFT                  // 0x1000
-#define L2_SHIFT    (L3_SHIFT + ENTRY_SHIFT)     // 0x100000
+#define L3_SHIFT    PAGE_SHIFT
+#define L2_SHIFT    (L3_SHIFT + ENTRY_SHIFT)
 #define L1_SHIFT    (L2_SHIFT + ENTRY_SHIFT)
 
 #define L1_ENTRY    4
 #define L2_ENTRY    512
 #define L3_ENTRY    512
 
-#else // PAGE_2M
+#else
 #endif // PAGE_2M
 
 #endif /* __MM_H__*/

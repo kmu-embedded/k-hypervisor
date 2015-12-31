@@ -3,8 +3,7 @@
 #include <armv7_p15.h>
 #include <hvmm_trace.h>
 #include <arch/arm/rtsm-config.h>
-
-#include <stage1_mm.h>  //PAGE_SHIFT
+#include <mm.h>
 
 vm_pgentry vm0_l1_pgtable[L1_ENTRY] __attribute((__aligned__(4096)));
 vm_pgentry vm0_l2_pgtable[L1_ENTRY][L2_ENTRY] __attribute((__aligned__(4096)));
