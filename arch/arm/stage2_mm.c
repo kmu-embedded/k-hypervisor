@@ -360,6 +360,45 @@ void set_next_table(vm_pgentry *entry, uint32_t paddr)
     return entry;
 }
 
+void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
+{
+    int i, j;
+
+    uint32_t size, pages;
+
+    uint32_t va = (uint32_t) guest_map->va;
+    uint64_t pa = guest_map->pa;
+
+    uint32_t l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
+    uint32_t l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
+    uint32_t l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
+
+    vm_pgentry *l1_base_addr = (vm_pgentry *) _vmid_ttbl;
+    vm_pgentry *l2_base_addr = l1_base_addr[l1_index].table.base << PAGE_SHIFT;
+    vm_pgentry *l3_base_addr;
+
+    set_vm_table(&l1_base_addr[l1_index], 1);
+    size = guest_map->size;
+
+    i = 0;
+    do {
+        set_vm_table(&l2_base_addr[l2_index + i], 1);
+        l3_base_addr = l2_base_addr[l2_index + i].table.base << PAGE_SHIFT;
+
+        pages = size >> PAGE_SHIFT;
+        if(pages > L3_ENTRY)
+            pages = L3_ENTRY;
+
+        for (j = 0; j < pages; j++) {
+            set_vm_entry(&l3_base_addr[l3_index + j], pa, guest_map->attr);
+            pa += LPAE_PAGE_SIZE;
+            size -= LPAE_PAGE_SIZE;
+        }
+
+        i++;
+    } while(size > 0);
+}
+
 void init_pgtable()
 {
     int i, j, k;
@@ -391,12 +430,24 @@ void stage2_mm_setup()
     init_pgtable();
 }
 
-void stage2_mm_init(struct memmap_desc **guest_map, char **_vmid_ttbl, vmid_t vmid)
+void stage2_mm_init(struct memmap_desc **mdlist, char **_vmid_ttbl, vmid_t vmid)
 {
-    if (vmid == 0)
-        *_vmid_ttbl = vm0_l1_pgtable;
-    else
-        *_vmid_ttbl = vm1_l1_pgtable;
+    int i, j;
+    struct memmap_desc *memmap;
 
-    guest_memory_init_first_level(*_vmid_ttbl, guest_map, 0);
+    *_vmid_ttbl = (!vmid) ? vm0_l1_pgtable : vm1_l1_pgtable;
+
+    for (i = 0; mdlist[i]; i++) {
+        if (mdlist[i]->label == 0)
+            continue;
+
+        j = 0;
+        memmap = mdlist[i];
+        while (memmap[j].label != 0) {
+            write_pgentry(*_vmid_ttbl, &memmap[j]);
+            j++;
+        }
+    }
+
+//    guest_memory_init_first_level(*_vmid_ttbl, mdlist, 0);
 }
