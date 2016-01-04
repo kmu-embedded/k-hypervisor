@@ -5,13 +5,9 @@
 #include <arch/arm/rtsm-config.h>
 #include <mm.h>
 
-vm_pgentry vm0_l1_pgtable[L1_ENTRY] __attribute((__aligned__(4096)));
-vm_pgentry vm0_l2_pgtable[L1_ENTRY][L2_ENTRY] __attribute((__aligned__(4096)));
-vm_pgentry vm0_l3_pgtable[L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(4096)));
-
-vm_pgentry vm1_l1_pgtable[L1_ENTRY] __attribute((__aligned__(4096)));
-vm_pgentry vm1_l2_pgtable[L1_ENTRY][L2_ENTRY] __attribute((__aligned__(4096)));
-vm_pgentry vm1_l3_pgtable[L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(4096)));
+vm_pgentry vm_l1_pgtable[NUM_GUESTS_STATIC][L1_ENTRY];
+vm_pgentry vm_l2_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
+vm_pgentry vm_l3_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 
 /**
  * \defgroup LPAE_address_mask
@@ -130,7 +126,8 @@ void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
     size = guest_map->size;
 
     i = 0;
-    do {
+
+    while(size > 0) {
         set_vm_table(&l2_base_addr[l2_index + i], 1);
         l3_base_addr = l2_base_addr[l2_index + i].table.base << PAGE_SHIFT;
 
@@ -145,30 +142,33 @@ void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
         }
 
         i++;
-    } while(size > 0);
+    }
 }
 
 void init_pgtable()
 {
-    int i, j, k;
+    int i, j, k, l;
 
-    for(i = 0; i < L1_ENTRY; i++) {
-        set_next_table(&vm0_l1_pgtable[i], vm0_l2_pgtable[i]);
-        set_next_table(&vm1_l1_pgtable[i], vm1_l2_pgtable[i]);
-    }
-
-    for(i = 0; i < L1_ENTRY; i++) {
-        for(j = 0; j < L2_ENTRY; j++) {
-            set_next_table(&vm0_l2_pgtable[i][j], vm0_l3_pgtable[i][j]);
-            set_next_table(&vm1_l2_pgtable[i][j], vm1_l3_pgtable[i][j]);
+    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
+        for(j = 0; j < L1_ENTRY; j++) {
+            set_next_table(&vm_l1_pgtable[i][j], vm_l2_pgtable[i][j]);
         }
     }
 
-    for(i = 0; i < L1_ENTRY; i++) {
-        for(j = 0; j < L2_ENTRY; j++) {
-            for(k = 0; k < L3_ENTRY; k++) {
-                vm0_l3_pgtable[i][j][k].page.valid = 0;
-                vm1_l3_pgtable[i][j][k].page.valid = 0;
+    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
+        for(j = 0; j < L1_ENTRY; j++) {
+            for(k = 0; k < L2_ENTRY; k++) {
+                set_next_table(&vm_l2_pgtable[i][j][k], vm_l3_pgtable[i][j][k]);
+            }
+        }
+    }
+
+    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
+        for(j = 0; j < L1_ENTRY; j++) {
+            for(k = 0; k < L2_ENTRY; k++) {
+                for(l = 0; l < L3_ENTRY; l++) {
+                    vm_l3_pgtable[i][j][k][l].page.valid = 0;
+                }
             }
         }
     }
@@ -184,7 +184,7 @@ void stage2_mm_init(struct memmap_desc **mdlist, char **_vmid_ttbl, vmid_t vmid)
     int i, j;
     struct memmap_desc *memmap;
 
-    *_vmid_ttbl = (!vmid) ? vm0_l1_pgtable : vm1_l1_pgtable;
+    *_vmid_ttbl = vm_l1_pgtable[vmid];
 
     for (i = 0; mdlist[i]; i++) {
         if (mdlist[i]->label == 0)

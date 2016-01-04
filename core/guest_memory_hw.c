@@ -12,7 +12,7 @@
 #define VTTBR_INITVAL                                   0x0000000000000000ULL
 #define VTTBR_VMID_MASK                                 0x00FF000000000000ULL
 #define VTTBR_VMID_SHIFT                                48
-#define VTTBR_BADDR_MASK                                0x000000FFFFFFF000ULL
+#define VTTBR_BADDR_MASK                                0x000000FFFFFFFFFFULL
 #define VTTBR_BADDR_SHIFT                               12
 
 /** @} */
