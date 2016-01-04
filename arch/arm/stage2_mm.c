@@ -29,18 +29,14 @@ vm_pgentry vm_l3_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY][L3_ENTRY] __attr
 #define TTBL_L1_TABADDR_MASK    0x000000FFFFFFF000ULL
 #define TTBL_L2_TABADDR_MASK    0x000000FFFFFFF000ULL
 
-void set_vm_table(vm_pgentry *entry, uint8_t valid)
+void set_vm_table(vm_pgentry *entry)
 {
-    entry->table.valid = valid ? 1 : 0;
-    entry->table.type = valid ? 1 : 0;
+    entry->table.valid = 1;
 }
 
 void set_vm_entry(vm_pgentry *entry, uint64_t pa, enum memattr mattr)
 {
-    entry->raw = 0;
-
     entry->page.valid = 1;
-    entry->page.type = 1;
     entry->page.base = pa >> L3_SHIFT;
 
     entry->page.mem_attr = mattr & 0x0F;
@@ -101,15 +97,15 @@ void set_next_table(vm_pgentry *entry, uint32_t paddr)
 {
     entry->raw = 0;
     entry->table.base = paddr >> PAGE_SHIFT;
+    entry->table.type = 1;
 
     return entry;
 }
 
 void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
 {
-    int i, j;
-
-    uint32_t size, pages;
+    uint32_t i, j;
+    uint32_t size, nr_pages;
 
     uint32_t va = (uint32_t) guest_map->va;
     uint64_t pa = guest_map->pa;
@@ -122,26 +118,23 @@ void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
     vm_pgentry *l2_base_addr = l1_base_addr[l1_index].table.base << PAGE_SHIFT;
     vm_pgentry *l3_base_addr;
 
-    set_vm_table(&l1_base_addr[l1_index], 1);
+    set_vm_table(&l1_base_addr[l1_index]);
     size = guest_map->size;
 
-    i = 0;
-
-    while(size > 0) {
-        set_vm_table(&l2_base_addr[l2_index + i], 1);
+    for (i = 0; size > 0; i++ ) {
+        set_vm_table(&l2_base_addr[l2_index + i]);
         l3_base_addr = l2_base_addr[l2_index + i].table.base << PAGE_SHIFT;
 
-        pages = size >> PAGE_SHIFT;
-        if(pages > L3_ENTRY)
-            pages = L3_ENTRY;
+        // TODO(casionwoo) : This should cover the case of serveral size such as 3KB, 1.5GB
+        nr_pages = size >> PAGE_SHIFT;
+        if(nr_pages > L3_ENTRY)
+            nr_pages = L3_ENTRY;
 
-        for (j = 0; j < pages; j++) {
+        for (j = 0; j < nr_pages; j++) {
             set_vm_entry(&l3_base_addr[l3_index + j], pa, guest_map->attr);
             pa += LPAE_PAGE_SIZE;
             size -= LPAE_PAGE_SIZE;
         }
-
-        i++;
     }
 }
 
@@ -167,7 +160,8 @@ void init_pgtable()
         for(j = 0; j < L1_ENTRY; j++) {
             for(k = 0; k < L2_ENTRY; k++) {
                 for(l = 0; l < L3_ENTRY; l++) {
-                    vm_l3_pgtable[i][j][k][l].page.valid = 0;
+                    vm_l3_pgtable[i][j][k][l].raw = 0;
+                    vm_l3_pgtable[i][j][k][l].page.type = 1;
                 }
             }
         }
