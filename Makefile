@@ -61,10 +61,10 @@ TESTS:
 
 
 $(MAP): $(OUTPUT)
-	$(NM) $< > $@
+	$(NM) $(BUILD)/$< > $(BUILD)/$@
 
 $(OUTPUT): $(MACHINE).lds $(OBJS)
-	$(CC) $(CPPFLAGS) -e __start -T $(MACHINE).lds -o $@ \
+	$(CC) $(CPPFLAGS) -e __start -T $(BUILD)/$(MACHINE).lds -o $(BUILD)/$@ \
 		$(BUILD)/$(ARCH)/*.o	\
 		$(BUILD)/$(ARCH)/$(VERSION)/*.o	\
 		$(BUILD)/$(CORE)/*.o	\
@@ -82,7 +82,7 @@ $(BIN): $(OUTPUT)
 	$(OBJCOPY) -O binary $(OUTPUT) $(BIN)
 
 $(MACHINE).lds: $(LD_SCRIPT) Makefile
-	$(CC) $(CPPFLAGS) -E -P -C -o $@ $<
+	$(CC) $(CPPFLAGS) -E -P -C -o $(BUILD)/$@ $<
 
 %: force
 	$(MAKE) -C $(KERNEL_SRC) $@
@@ -93,6 +93,5 @@ Makefile: ;
 
 clean:
 	rm -rf $(ROOT)/$(BUILD) 
-	rm -f  $(MAP) $(OUTPUT) $(BIN) $(MACHINE).lds
 
 .PHONY: all clean config.mk
