@@ -36,7 +36,7 @@ struct memmap_desc {
     uint32_t size;
     enum memattr attr;
 };
-
+void memory_hw_setup();
 hvmm_status_t memory_hw_init(struct memmap_desc **memmap, char **_vmid_ttbl, vmid_t vmid);
 hvmm_status_t memory_hw_save(void);
 hvmm_status_t memory_hw_restore(vmid_t vmid, char **_vmid_ttbl);

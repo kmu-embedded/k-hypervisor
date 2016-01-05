@@ -2,6 +2,7 @@
 #include <armv7_p15.h>
 #include <hvmm_types.h>
 #include <stage1_mm.h>
+#include <mm.h>
 
 static pgentry hyp_l1_pgtable[L1_ENTRY] __attribute((__aligned__(4096)));
 static pgentry hyp_l2_pgtable[L2_ENTRY] __attribute((__aligned__(4096)));
