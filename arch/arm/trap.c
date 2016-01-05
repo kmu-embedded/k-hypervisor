@@ -22,8 +22,6 @@
  */
 hvmm_status_t _hyp_dabort(struct core_regs *regs)
 {
-//    vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
-//    print_core_regs(regs);
     hyp_abort_infinite();
     return HVMM_STATUS_UNKNOWN_ERROR;
 }
@@ -149,6 +147,7 @@ enum hyp_hvc_result _hyp_hvc_service(struct core_regs *regs)
     info.sas = (iss & ISS_SAS_MASK) >> ISS_SAS_SHIFT;
     srt = (iss & ISS_SRT_MASK) >> ISS_SRT_SHIFT;
     info.value = &(regs->gpr[srt]);
+
     switch (ec) {
     case TRAP_EC_ZERO_UNKNOWN:
     case TRAP_EC_ZERO_WFI_WFE:
@@ -177,8 +176,6 @@ enum hyp_hvc_result _hyp_hvc_service(struct core_regs *regs)
         printf("[hyp] _hyp_hvc_service:unknown hsr.iss= %x\n", iss);
         printf("[hyp] hsr.ec= %x\n", ec);
         printf("[hyp] hsr= %x\n", hsr);
-//        print_core_regs(regs);
-//        vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
         goto trap_error;
     }
 

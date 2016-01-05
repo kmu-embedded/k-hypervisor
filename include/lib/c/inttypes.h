@@ -86,8 +86,6 @@
 
 #include <stdint.h>
 
-#include <arch/inttypes.h>
-
 /* 7.8.1 Macros for format specifies */
 
 /* 7.8.1.2 signed integers */

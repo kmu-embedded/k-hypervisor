@@ -348,7 +348,6 @@ hvmm_status_t gic_set_sgi(const uint32_t target, uint32_t sgi)
     if(!(sgi < 16))
         return HVMM_STATUS_BAD_ACCESS;
 
-    dsb();
     _gic.ba_gicd[GICD_SGIR] = GICD_SGIR_TARGET_LIST |
         (target << GICD_SGIR_CPU_TARGET_LIST_OFFSET) |
         (sgi & GICD_SGIR_SGI_INT_ID_MASK);
