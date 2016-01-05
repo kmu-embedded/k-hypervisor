@@ -1,7 +1,6 @@
 #include <guest_memory_hw.h>
 #include <armv7_p15.h>
 #include <stage2_mm.h>
-#include <guest_mm.h>
 #include <stdio.h>
 
 #define L2_ENTRY_MASK 0x1FF
@@ -13,7 +12,7 @@
 #define VTTBR_INITVAL                                   0x0000000000000000ULL
 #define VTTBR_VMID_MASK                                 0x00FF000000000000ULL
 #define VTTBR_VMID_SHIFT                                48
-#define VTTBR_BADDR_MASK                                0x000000FFFFFFF000ULL
+#define VTTBR_BADDR_MASK                                0x000000FFFFFFFFFFULL
 #define VTTBR_BADDR_SHIFT                               12
 
 /** @} */
@@ -117,6 +116,10 @@ static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, vm_pgentry *ttbl)
 }
 
 
+void memory_hw_setup()
+{
+    stage2_mm_setup();
+}
 
 /**
  * @brief Initializes the virtual mode(guest mode) memory management

@@ -13,6 +13,7 @@ hvmm_status_t vm_setup()
     vm_count = 0;
 
     vcpu_setup();
+    vmem_setup();
 
     return HVMM_STATUS_SUCCESS;
 }
