@@ -1,29 +1,45 @@
 include config.mk
 
-ARCH_DIRS	= $(ROOT)/$(ARCH) $(ROOT)/$(ARCH)/$(VERSION)
-CORE_DIRS	= $(ROOT)/$(CORE) $(ROOT)/$(CORE)/sched $(ROOT)/$(CORE)/vdev
-DRIVERS_DIRS	= $(ROOT)/$(DRV)
-LIB_DIRS	= $(ROOT)/$(LIB)/c/src $(ROOT)/$(LIB)/c/src/arch-arm $(ROOT)/$(LIB)/c/src/sys-baremetal	\
-		  $(ROOT)/$(LIB)/c/src/sys-baremetal/arch-arm
-TESTS_DIRS	= $(ROOT)/$(TESTS) $(ROOT)/$(TESTS)/libs
+export ROOT_PATH	= $(CURDIR)
+export CONFIG_PATH	= $(ROOT_PATH)/config.mk
 
-BIN		= $(BUILD_DIR)/$(TARGET).bin
-LD_SCRIPT	= $(PROJECT).lds.S
-OUTPUT		= $(TARGET).axf
-MAP		= $(PROJECT).map
+ARCH_DIRS		= $(ROOT)/$(ARCH) $(ROOT)/$(ARCH)/$(VERSION)
+CORE_DIRS		= $(ROOT)/$(CORE) $(ROOT)/$(CORE)/sched $(ROOT)/$(CORE)/vdev
+DRIVERS_DIRS		= $(ROOT)/$(DRV)
+LIB_DIRS		= $(ROOT)/$(LIB)/c/src $(ROOT)/$(LIB)/c/src/arch-arm $(ROOT)/$(LIB)/c/src/sys-baremetal	\
+			  $(ROOT)/$(LIB)/c/src/sys-baremetal/arch-arm
+TESTS_DIRS		= $(ROOT)/$(TESTS) $(ROOT)/$(TESTS)/libs
 
-CC		= $(CROSS_COMPILE)gcc
-LD		= $(CROSS_COMPILE)ld
-NM		= $(CROSS_COMPILE)nm
-OBJCOPY		= $(CROSS_COMPILE)objcopy
+BIN			= $(BUILD_DIR)/$(TARGET).bin
+LD_SCRIPT		= $(PROJECT).lds.S
+OUTPUT			= $(TARGET).axf
+MAP			= $(PROJECT).map
 
-INCLUDES	= -I $(INC) -I $(INC)/$(LIB)/c -I $(INC)/$(LIB)/bsd -I $(INC)/$(LIB)
-INCLUDES	+= -I $(INC)/$(DRV)
-INCLUDES	+= -I $(CORE)/libhw -I tests -I $(CORE) -I $(CORE)/include -I include/lib -I ./lib -I ./include/core
-INCLUDES	+= -I tests/libs -I ./arch/arm
+CC			= $(CROSS_COMPILE)gcc
+LD			= $(CROSS_COMPILE)ld
+NM			= $(CROSS_COMPILE)nm
+OBJCOPY			= $(CROSS_COMPILE)objcopy
 
-CPPFLAGS	= $(CONFIG_FLAG) $(INCLUDES) -ffreestanding -nostdlib -nodefaultlibs -nostartfiles $(DEBUG_FLAG)
-CPPFLAGS	+= -Wall
+INCLUDES		= -I $(INC)
+INCLUDES		+= -I $(INC)/$(LIB)/c 
+INCLUDES		+= -I $(INC)/$(LIB)/bsd
+INCLUDES		+= -I $(INC)/$(LIB)
+INCLUDES		+= -I $(INC)/$(CORE)
+INCLUDES		+= -I $(INC)/$(DRV)
+
+INCLUDES		+= -I $(ARCH)/$(ARM)
+
+INCLUDES		+= -I $(CORE)/libhw
+INCLUDES		+= -I $(CORE)
+INCLUDES		+= -I $(CORE)/$(INC)
+
+INCLUDES		+= -I $(LIB)
+
+INCLUDES		+= -I $(TESTS)
+INCLUDES		+= -I $(TESTS)/libs
+
+CPPFLAGS		= $(CONFIG_FLAG) $(INCLUDES) -ffreestanding -nostdlib -nodefaultlibs -nostartfiles $(DEBUG_FLAG)
+CPPFLAGS		+= -Wall
 
 
 all:	ARCH CORE DRIVERS LIB TESTS \
