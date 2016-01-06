@@ -117,8 +117,8 @@ hvmm_status_t interrupt_guest_inject(vmid_t vmid, uint32_t virq, uint32_t pirq,
                 uint8_t hw);
 hvmm_status_t interrupt_guest_enable(vmid_t vmid, uint32_t irq);
 hvmm_status_t interrupt_guest_disable(vmid_t vmid, uint32_t irq);
-hvmm_status_t interrupt_save(vmid_t vmid);
-hvmm_status_t interrupt_restore(vmid_t vmid);
+// hvmm_status_t interrupt_save(vmid_t vmid);
+// hvmm_status_t interrupt_restore(vmid_t vmid);
 void interrupt_service_routine(int irq, void *current_regs, void *pdata);
 const int32_t interrupt_check_guest_irq(uint32_t pirq);
 const uint32_t interrupt_pirq_to_virq(vmid_t vmid, uint32_t pirq);

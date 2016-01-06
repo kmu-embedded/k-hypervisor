@@ -4,6 +4,7 @@
 #include <list.h>
 #include <vcpu.h>
 #include <vmem.h>
+#include <virq.h>
 #include <hvmm_types.h>
 
 #define SIZE_OF_NAME        32
@@ -27,6 +28,8 @@ struct vmcb {
     struct vcpu **vcpu;
     struct vmem vmem;
     // TODO(casionwoo) : Define vIRQ
+
+    struct virq virq;
 
     vmcb_state_t state;
     struct list_head head;

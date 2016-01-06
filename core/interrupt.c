@@ -206,28 +206,6 @@ void interrupt_service_routine(int irq, void *current_regs, void *pdata)
         printf("interrupt:no pending irq:%x\n", irq);
 }
 
-hvmm_status_t interrupt_save(vmid_t vmid)
-{
-    hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
-
-    /* guest_interrupt_save() */
-    if (_guest_ops->save)
-        ret = _guest_ops->save(vmid);
-
-    return ret;
-}
-
-hvmm_status_t interrupt_restore(vmid_t vmid)
-{
-    hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
-
-    /* guest_interrupt_restore() */
-    if (_guest_ops->restore)
-        ret = _guest_ops->restore(vmid);
-
-    return ret;
-}
-
 hvmm_status_t interrupt_init(struct guest_virqmap *virqmap)
 {
     hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
