@@ -47,7 +47,7 @@ hvmm_status_t vgic_init(void);
  * @param vmid      guest id.
  * @return          Always returns "success".
  */
-hvmm_status_t vgic_init_status(struct vgic_status *status, vmid_t vmid);
+hvmm_status_t vgic_init_status(struct vgic_status *status);
 hvmm_status_t vgic_save_status(struct vgic_status *status);
 hvmm_status_t vgic_restore_status(struct vgic_status *status, vmid_t vmid);
 hvmm_status_t vgic_flush_virqs(vmid_t vmid);
@@ -86,6 +86,6 @@ hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
             Sets callback function about injection of queued VIRQs.
  * @return  Always returns "success".
  */
-hvmm_status_t virq_init(void);
+hvmm_status_t virq_table_init(void);
 hvmm_status_t vgic_sgi(uint32_t cpu, enum gic_sgi sgi);
 #endif
