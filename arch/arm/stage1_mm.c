@@ -145,19 +145,15 @@ static hvmm_status_t enable_stage1_mmu(void)
     /* HSCTLR */
     /* i-Cache and Alignment Checking Enabled */
     /* MMU, D-cache, Write-implies-XN, Low-latency IRQs Disabled */
-    hsctlr = read_hsctlr();
-    printf("hsctlr: 0x%08x\n", hsctlr);
-    hsctlr = HSCTLR_BASE | SCTLR_A;
-    write_hsctlr(hsctlr);
-    hsctlr = read_hsctlr();
-    printf("hsctlr: 0x%08x\n", hsctlr);
     /* HSCTLR Enable MMU and D-cache */
-    hsctlr |= (SCTLR_M | SCTLR_C);
-
     /* Flush PTE writes */
+    /* Flush iCache */
+    hsctlr = read_hsctlr();
+    printf("hsctlr: 0x%08x\n", hsctlr);
+    hsctlr = (HSCTLR_BASE | SCTLR_A | SCTLR_M | SCTLR_C);
+
     asm("dsb");
     write_hsctlr(hsctlr);
-    /* Flush iCache */
     asm("isb");
 
     hsctlr = read_hsctlr();
