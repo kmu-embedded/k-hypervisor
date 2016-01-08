@@ -44,7 +44,7 @@ vmid_t vm_create(unsigned char num_vcpus)
         vm->vcpu[i]->vmid = vm->vmid;
     }
 
-    vmem_create();
+    vmem_create(&vm->vmem, vm->vmid);
 
     // TODO(casionwoo) : vIRQ create
 
