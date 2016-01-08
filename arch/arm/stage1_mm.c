@@ -4,7 +4,7 @@
 #include <stage1_mm.h>
 #include <mm.h>
 
-static pgentry hyp_l1_pgtable[L1_ENTRY] __attribute((__aligned__(4096)));
+static pgentry hyp_l1_pgtable[L1_ENTRY];
 static pgentry hyp_l2_pgtable[L2_ENTRY] __attribute((__aligned__(4096)));
 static pgentry hyp_l3_pgtable[L2_ENTRY][L3_ENTRY] __attribute((__aligned__(4096)));
 
