@@ -128,8 +128,9 @@ int main_cpu_init()
     /* Scheduler initialization */
     sched_init();
 
-    /* Initialize vCPUs */
-    setup_memory(); // FIXME(casionwoo) : This should be removed later
+    /* Virtual Machines Initialization */
+    // FIXME(casionwoo) : This should be removed later
+    setup_memory();
     vm_setup();
     for (i = 0; i < NUM_GUESTS_STATIC; i++) {
         if ((vm[i] = vm_create(1)) == VM_CREATE_FAILED) {
@@ -151,7 +152,7 @@ int main_cpu_init()
         }
     }
 
-    /* Switch to the first vcpu */
+    /* Switch to the first vCPU */
     guest_sched_start();
 
     /* The code flow must not reach here */
