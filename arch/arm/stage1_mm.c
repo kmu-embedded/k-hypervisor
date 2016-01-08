@@ -84,62 +84,49 @@ static pgentry set_entry(uint32_t paddr, uint8_t attr_indx, pgsize_t size)
     return entry;
 }
 
-#define HTTBR_INITVAL               0x0000000000000000ULL
-#define HTTBR_BADDR_MASK            0x000000FFFFFFF000ULL
-#define HTTBR_BADDR_SHIFT           12
-#define HSCTLR_TE        (1 << 30) /**< Thumb Exception enable. */
-#define HSCTLR_EE        (1 << 25) /**< Exception Endianness. */
-#define HSCTLR_FI        (1 << 21) /**< Fast Interrupts configuration enable. */
-#define HSCTLR_WXN       (1 << 19) /**< Write permission emplies XN. */
-#define HSCTLR_I         (1 << 12) /**< Instruction cache enable.  */
-#define HSCTLR_CP15BEN   (1 << 7)  /**< In ARMv7 this bit is RAZ/SBZP. */
-#define HSCTLR_C         (1 << 2)  /**< Cache enable. */
-#define HSCTLR_A         (1 << 1)  /**< Alignment check enable. */
-#define HSCTLR_M         (1 << 0)  /**< MMU enable. */
+#define HSCTLR_TE        (1<<30) /**< Thumb Exception enable. */
+#define HSCTLR_EE        (1<<25) /**< Exception Endianness. */
+#define HSCTLR_FI        (1<<21) /**< Fast Interrupts configuration enable. */
+#define HSCTLR_WXN       (1<<19) /**< Write permission emplies XN. */
+#define HSCTLR_I         (1<<12) /**< Instruction cache enable.  */
+#define HSCTLR_CP15BEN   (1<<7)  /**< In ARMv7 this bit is RAZ/SBZP. */
+#define HSCTLR_C         (1<<2)  /**< Cache enable. */
+#define HSCTLR_A         (1<<1)  /**< Alignment check enable. */
+#define HSCTLR_M         (1<<0)  /**< MMU enable. */
 #define HSCTLR_BASE       0x30c51878  /**< HSTCLR Base address */
+
+#define OUTER_WRITETHROUGH_CACHEABLE (WRITETHROUGH_CACHEABLE << 10)
+#define INNER_WRITETHROUGH_CACHEABLE (WRITETHROUGH_CACHEABLE << 12)
 
 static hvmm_status_t enable_stage1_mmu(void)
 {
-    uint32_t htcr, hsctlr;
-    uint64_t httbr;
+    uint32_t htcr = 0, hsctlr = 0;
+    uint64_t httbr = 0;
 
     write_mair0(MAIR0_VALUE);
     write_mair1(MAIR1_VALUE);
     write_hmair0(MAIR0_VALUE);
     write_hmair1(MAIR1_VALUE);
-    /*
-     * HTCR: Hyp Translation Control Register
-     * It holds cacheability and shareability information
-     * for stage 1 address translation
-     *
-     * Shareability - SH0[13:12] = 0 - Not shared
-     * Outer Cacheability - ORGN0[11:10] = 11b -
-     *                          Write Back no Write Allocate Cacheable
-     * Inner Cacheability - IRGN0[9:8] = 11b - Same
-     * T0SZ[2:0] = 0 - 2^32 Input Address
-     */
-    htcr = 0;
-    htcr |= INNER_SHAREABLE << 12;
-    htcr |= WRITETHROUGH_CACHEABLE << 10;
-    htcr |= WRITETHROUGH_CACHEABLE << 8;
+
+    /* HTCR: Hyp Translation Control Register */
+    /* Shareability, Outer Cacheability, Inner Cacheability */
+    htcr |= (INNER_SHAREABLE << 12 | OUTER_WRITETHROUGH_CACHEABLE
+           | INNER_WRITETHROUGH_CACHEABLE );
     // TODO(wonseok): How to configure T0SZ?
     write_htcr(htcr);
+    // FIXME(casionwoo) : Current printf can't support 64-bit, it should be fixed
+    printf("hsctlr: 0x%x%x\n", htcr);
 
-    httbr = read_httbr();
-    httbr &= 0xFFFFFFFF00000000ULL;
+    /* HTTBR : Hyp Translation Table Base Register */
     httbr |= (uint32_t) &hyp_l1_pgtable;
-    httbr &= HTTBR_BADDR_MASK;
     write_httbr(httbr);
+    printf("httbr: 0x%x%x\n", httbr);
 
     /* HSCTLR : Hyp System Control Register*/
-    hsctlr = read_hsctlr();
-    printf("hsctlr: 0x%08x\n", hsctlr);
-
-    /*I-Cache, D-Cache, MMU, Alignment enabled*/
+    /* I-Cache, D-Cache, MMU, Alignment enable */
     hsctlr = (HSCTLR_I | HSCTLR_A | HSCTLR_M | HSCTLR_C);
-
     write_hsctlr(hsctlr);
-    printf("hsctlr: 0x%08x\n", hsctlr);
+    printf("hsctlr: 0x%x%x\n", hsctlr);
 
     return HVMM_STATUS_SUCCESS;
 }
