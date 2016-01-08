@@ -31,8 +31,6 @@ int init_khypervisor(void)
 
     free(arr);
 
-    stage1_mm_init();
-
 #if 1
     vm_main();
 #endif

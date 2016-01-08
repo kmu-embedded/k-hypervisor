@@ -11,8 +11,6 @@ static pgentry hyp_l3_pgtable[L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_
 static pgentry set_table(uint32_t paddr);
 static pgentry set_entry(uint32_t paddr, uint8_t attr_indx, pgsize_t size);
 
-static hvmm_status_t enable_stage1_mmu(void);
-
 static pgentry set_table(uint32_t paddr)
 {
     pgentry entry;
@@ -98,7 +96,7 @@ static pgentry set_entry(uint32_t paddr, uint8_t attr_indx, pgsize_t size)
 #define OUTER_WRITETHROUGH_CACHEABLE (WRITETHROUGH_CACHEABLE << 10)
 #define INNER_WRITETHROUGH_CACHEABLE (WRITETHROUGH_CACHEABLE << 12)
 
-static hvmm_status_t enable_stage1_mmu(void)
+hvmm_status_t enable_stage1_mmu(void)
 {
     uint32_t htcr = 0, hsctlr = 0;
     uint64_t httbr = 0;
@@ -131,7 +129,7 @@ static hvmm_status_t enable_stage1_mmu(void)
     return HVMM_STATUS_SUCCESS;
 }
 
-void stage1_mm_init()
+hvmm_status_t stage1_mm_init()
 {
     uint64_t paddr = 0x00000000ULL;
     int i, j;
@@ -153,5 +151,5 @@ void stage1_mm_init()
         }
     }
 
-    enable_stage1_mmu();
+    return HVMM_STATUS_SUCCESS;
 }
