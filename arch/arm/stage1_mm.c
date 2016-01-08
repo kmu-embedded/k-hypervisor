@@ -87,26 +87,15 @@ static pgentry set_entry(uint32_t paddr, uint8_t attr_indx, pgsize_t size)
 #define HTTBR_INITVAL               0x0000000000000000ULL
 #define HTTBR_BADDR_MASK            0x000000FFFFFFF000ULL
 #define HTTBR_BADDR_SHIFT           12
-#define SCTLR_TE        (1<<30) /**< Thumb Exception enable. */
-#define SCTLR_AFE       (1<<29) /**< Access Flag Enable. */
-#define SCTLR_TRE       (1<<28) /**< TEX Remp Enable. */
-#define SCTLR_NMFI      (1<<27) /**< Non-Maskable FIQ(NMFI) support. */
-#define SCTLR_EE        (1<<25) /**< Exception Endianness. */
-#define SCTLR_VE        (1<<24) /**< Interrupt Vectors Enable. */
-#define SCTLR_U         (1<<22) /**< In ARMv7 this bit is RAO/SBOP. */
-#define SCTLR_FI        (1<<21) /**< Fast Interrupts configuration enable. */
-#define SCTLR_WXN       (1<<19) /**< Write permission emplies XN. */
-#define SCTLR_HA        (1<<17) /**< Hardware Access flag enable. */
-#define SCTLR_RR        (1<<14) /**< Round Robin select. */
-#define SCTLR_V         (1<<13) /**< Vectors bit. */
-#define SCTLR_I         (1<<12) /**< Instruction cache enable.  */
-#define SCTLR_Z         (1<<11) /**< Branch prediction enable. */
-#define SCTLR_SW        (1<<10) /**< SWP and SWPB enable. */
-#define SCTLR_B         (1<<7)  /**< In ARMv7 this bit is RAZ/SBZP. */
-#define SCTLR_C         (1<<2)  /**< Cache enable. */
-#define SCTLR_A         (1<<1)  /**< Alignment check enable. */
-#define SCTLR_M         (1<<0)  /**< MMU enable. */
-#define SCTLR_BASE        0x00c50078  /**< STCLR Base address */
+#define HSCTLR_TE        (1 << 30) /**< Thumb Exception enable. */
+#define HSCTLR_EE        (1 << 25) /**< Exception Endianness. */
+#define HSCTLR_FI        (1 << 21) /**< Fast Interrupts configuration enable. */
+#define HSCTLR_WXN       (1 << 19) /**< Write permission emplies XN. */
+#define HSCTLR_I         (1 << 12) /**< Instruction cache enable.  */
+#define HSCTLR_CP15BEN   (1 << 7)  /**< In ARMv7 this bit is RAZ/SBZP. */
+#define HSCTLR_C         (1 << 2)  /**< Cache enable. */
+#define HSCTLR_A         (1 << 1)  /**< Alignment check enable. */
+#define HSCTLR_M         (1 << 0)  /**< MMU enable. */
 #define HSCTLR_BASE       0x30c51878  /**< HSTCLR Base address */
 
 static hvmm_status_t enable_stage1_mmu(void)
@@ -142,21 +131,14 @@ static hvmm_status_t enable_stage1_mmu(void)
     httbr &= HTTBR_BADDR_MASK;
     write_httbr(httbr);
 
-    /* HSCTLR */
-    /* i-Cache and Alignment Checking Enabled */
-    /* MMU, D-cache, Write-implies-XN, Low-latency IRQs Disabled */
-    /* HSCTLR Enable MMU and D-cache */
-    /* Flush PTE writes */
-    /* Flush iCache */
+    /* HSCTLR : Hyp System Control Register*/
     hsctlr = read_hsctlr();
     printf("hsctlr: 0x%08x\n", hsctlr);
-    hsctlr = (HSCTLR_BASE | SCTLR_A | SCTLR_M | SCTLR_C);
 
-    asm("dsb");
+    /*I-Cache, D-Cache, MMU, Alignment enabled*/
+    hsctlr = (HSCTLR_I | HSCTLR_A | HSCTLR_M | HSCTLR_C);
+
     write_hsctlr(hsctlr);
-    asm("isb");
-
-    hsctlr = read_hsctlr();
     printf("hsctlr: 0x%08x\n", hsctlr);
 
     return HVMM_STATUS_SUCCESS;
