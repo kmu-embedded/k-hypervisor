@@ -2,7 +2,7 @@ include $(CONFIG_PATH)
 
 OBJS_DIR	= $(ROOT_PATH)/$(BUILD)/arch/arm/v7
 
-CC		= $(CROSS_COMPILE)gcc
+CC		= $(CROSS_COMPILE)gcc$(TOOLCHAIN_VERSION_POSTFIX)
 
 INCLUDES	= -I $(ROOT_PATH)/$(INC)
 INCLUDES	+= -I $(ROOT_PATH)/$(INC)/$(LIB)/c
@@ -31,7 +31,7 @@ OBJS		= $(ASM_FILES:$(CURDIR)/%.S=$(OBJS_DIR)/%.o)
 all: $(OBJS)
 
 $(OBJS_DIR)/%.o: $(CURDIR)/%.S
-	@`[ -d $(OBJS_DIR) ] || $(MKDIR) -p $(OBJS_DIR)`	
+	@`[ -d $(OBJS_DIR) ] || $(MKDIR) -p $(OBJS_DIR)`
 	$(CC) $(CPPFLAGS) -c $(INCLUDES) $< -o $@
 
 clean:
