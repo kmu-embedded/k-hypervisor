@@ -101,6 +101,9 @@ hvmm_status_t khypervisor_init()
 {
     printf("[%s] START\n", __func__);
 
+    __malloc_init();
+
+    /* Initialize Memory */
     memory_init();
 
     /* Initialize PIRQ to VIRQ mapping */
