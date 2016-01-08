@@ -1,5 +1,6 @@
 #include <core.h>
 #include <arch/arm/rtsm-config.h>
+#include <memory.h>
 #include <interrupt.h>
 #include <timer.h>
 #include <vdev.h>
@@ -100,7 +101,7 @@ hvmm_status_t khypervisor_init()
 {
     printf("[%s] START\n", __func__);
 
-    // TODO(casionwoo) : Move stage1_mm_init from arch/arm/main.c to here
+    memory_init();
 
     /* Initialize PIRQ to VIRQ mapping */
     setup_interrupt();
