@@ -1,4 +1,3 @@
-#include <vm_main.h>
 #include <vm.h>
 #include <core.h>
 #include <scheduler.h>
