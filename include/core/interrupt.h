@@ -108,7 +108,8 @@ extern struct interrupt_module _interrupt_module;
  * @return  If all initialization is success, then returns "success"
  *          otherwise returns "unknown error"
  */
-hvmm_status_t interrupt_init(struct guest_virqmap *virqmap);
+
+hvmm_status_t interrupt_init();
 hvmm_status_t interrupt_request(uint32_t irq, interrupt_handler_t handler);
 hvmm_status_t interrupt_host_enable(uint32_t irq);
 hvmm_status_t interrupt_host_disable(uint32_t irq);

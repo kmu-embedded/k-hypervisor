@@ -27,7 +27,6 @@ struct vmcb {
 
     struct vcpu **vcpu;
     struct vmem vmem;
-    // TODO(casionwoo) : Define vIRQ
 
     struct virq virq;
 
