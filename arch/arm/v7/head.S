@@ -124,7 +124,7 @@ __start:
     /* Replace the NSHyp vector table for khypervisor*/
     ldr r0, = __hvc_vector
     mcr p15, 4, r0, c12, c0, 0
-    bl init_khypervisor
+    bl vm_main
 
 	@ Never reached
     b __error
