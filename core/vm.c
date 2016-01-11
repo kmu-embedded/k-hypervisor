@@ -14,6 +14,7 @@ hvmm_status_t vm_setup()
 
     vcpu_setup();
     vmem_setup();
+    virq_setup();
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -45,8 +46,7 @@ vmid_t vm_create(unsigned char num_vcpus)
     }
 
     vmem_create(&vm->vmem, vm->vmid);
-
-    // TODO(casionwoo) : vIRQ create
+    virq_create(&vm->virq, vm->vmid);
 
     list_add_tail(&vm->head, &vm_list);
 
@@ -71,9 +71,7 @@ vmcb_state_t vm_init(vmid_t vmid)
     vm->state = HALTED;
 
     vmem_init(&vm->vmem, vm->vmid);
-
-    // TODO(casionwoo) : vIRQ init
-    virq_init(&vm->virq);
+    virq_init(&vm->virq, vm->vmid);
 
     return vm->state;
 }
