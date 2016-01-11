@@ -1,6 +1,8 @@
 #ifndef __STAGE1_MM_H__
 #define __STAGE1_MM_H__
 
+#include <hvmm_types.h>
+
 union stage1_pgentry
 {
     uint64_t raw;
@@ -149,6 +151,7 @@ struct mem_desc
     attr_indx_t mattr;
 };
 
-void stage1_mm_init();
+hvmm_status_t stage1_mm_init();
+hvmm_status_t enable_stage1_mmu();
 
 #endif /* __STAGE1_MM_H__ */

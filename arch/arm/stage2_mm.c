@@ -9,26 +9,6 @@ vm_pgentry vm_l1_pgtable[NUM_GUESTS_STATIC][L1_ENTRY];
 vm_pgentry vm_l2_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 vm_pgentry vm_l3_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 
-/**
- * \defgroup LPAE_address_mask
- *
- * The address mask of each level descriptors.
- * - TTBL_L1_OUTADDR_MASK[39:30] Level1 Block address mask.
- * - TTBL_L2_OUTADDR_MASK[39:21] Level2 Block Address mask.
- * - TTBL_L3_OUTADDR_MASK[39:12] Page address mask.
- *
- * - TTBL_L1_TABADDR_MASK[39:12] Level2 table descriptor address mask.
- * - TTBL_L2_TABADDR_MASK]30:12] Level3 table descriptor address mask.
- * @{
- */
-
-#define TTBL_L1_OUTADDR_MASK    0x000000FFC0000000ULL
-#define TTBL_L2_OUTADDR_MASK    0x000000FFFFE00000ULL
-#define TTBL_L3_OUTADDR_MASK    0x000000FFFFFFF000ULL
-
-#define TTBL_L1_TABADDR_MASK    0x000000FFFFFFF000ULL
-#define TTBL_L2_TABADDR_MASK    0x000000FFFFFFF000ULL
-
 void set_vm_table(vm_pgentry *entry)
 {
     entry->table.valid = 1;
