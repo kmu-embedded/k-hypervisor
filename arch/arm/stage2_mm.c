@@ -30,46 +30,40 @@ void set_vm_entry(vm_pgentry *entry, uint64_t pa, enum memattr mattr)
     entry->page.reserved = 0;
 }
 
-#define VTCR_INITVAL                                    0x80000000
-#define VTCR_SH0_MASK                                   0x00003000
-#define VTCR_SH0_SHIFT                                  12
-#define VTCR_ORGN0_MASK                                 0x00000C00
-#define VTCR_ORGN0_SHIFT                                10
-#define VTCR_IRGN0_MASK                                 0x00000300
-#define VTCR_IRGN0_SHIFT                                8
-#define VTCR_SL0_MASK                                   0x000000C0
-#define VTCR_SL0_SHIFT                                  6
-#define VTCR_S_MASK                                     0x00000010
-#define VTCR_S_SHIFT                                    4
-#define VTCR_T0SZ_MASK                                  0x00000003
-#define VTCR_T0SZ_SHIFT                                 0
+/* VTCR ATTRIBUTES */
+#define VTCR_SL0_SECOND_LEVEL       0x0
+#define VTCR_SL0_FIRST_LEVEL        0x1
+#define VTCR_SL0_RESERVED           0x2
+#define VTCR_SL0_UNPREDICTABLE      0x3
+#define VTCR_SL0_BIT                6
+#define VTCR_ORGN0_ONC              0X0
+#define VTCR_ORGN0_OWBWAC           0x1
+#define VTCR_ORGN0_OWTC             0x2
+#define VTCR_ORGN0_OWBWAC           0x3
+#define VTCR_ORGN0_BIT              10
+#define VTCR_IRGN0_INC              0X0
+#define VTCR_IRGN0_IWBWAC           0x1
+#define VTCR_IRGN0_IWTC             0x2
+#define VTCR_IRGN0_IWBWAC           0x3
+#define VTCR_IRGN0_BIT              8
 
 void guest_memory_init_mmu(void)
 {
-    uint32_t vtcr, vttbr;
+    uint32_t vtcr = 0;
+
     HVMM_TRACE_ENTER();
-    vtcr = read_vtcr();
-    printf("vtcr: 0x%08x\n", vtcr);
-    printf("\n\r");
-    /* start lookup at level 1 table */
-    vtcr &= ~VTCR_SL0_MASK;
-    vtcr |= (0x01 << VTCR_SL0_SHIFT) & VTCR_SL0_MASK;
-    vtcr &= ~VTCR_ORGN0_MASK;
-    vtcr |= (0x3 << VTCR_ORGN0_SHIFT) & VTCR_ORGN0_MASK;
-    vtcr &= ~VTCR_IRGN0_MASK;
-    vtcr |= (0x3 << VTCR_IRGN0_SHIFT) & VTCR_IRGN0_MASK;
+
+    /* Stage-2 Translation Pagetable start lookup configuration */
+    vtcr |= (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
+    /* Outer cacheability attribute */
+    vtcr |= (VTCR_ORGN0_OWBWAC << VTCR_ORGN0_BIT);
+    /* Inner cacheability attribute */
+    vtcr |= (VTCR_IRGN0_IWBWAC << VTCR_IRGN0_BIT);
+
     write_vtcr(vtcr);
     vtcr = read_vtcr();
     printf("vtcr: 0x%08x\n", vtcr);
-    {
-        uint32_t sl0 = (vtcr & VTCR_SL0_MASK) >> VTCR_SL0_SHIFT;
-        uint32_t t0sz = vtcr & 0xF;
-        uint32_t baddr_x = (sl0 == 0 ? 14 - t0sz : 5 - t0sz);
-        printf("vttbr.baddr.x: 0x%08x\n", baddr_x);
-    }
-    /* VTTBR */
-    vttbr = read_vttbr();
-    printf("vttbr: %x%x\n", vttbr);
+
     HVMM_TRACE_EXIT();
 }
 
