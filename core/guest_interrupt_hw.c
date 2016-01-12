@@ -15,7 +15,7 @@ static hvmm_status_t guest_interrupt_init(void)
     if (result == HVMM_STATUS_SUCCESS)
         result = vgic_enable(1);
 
-    virq_init();
+    virq_table_init();
 
     return result;
 }
