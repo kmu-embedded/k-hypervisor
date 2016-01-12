@@ -29,6 +29,35 @@
 #define LPAE_BLOCK_L2_SIZE  (1 << LPAE_BLOCK_L2_SHIFT)
 #define LPAE_BLOCK_L2_MASK  (0x1FFFFF)
 
+typedef enum {
+    size_1gb,
+    size_2mb,
+    size_4kb,
+} pgsize_t;
+
+typedef enum {
+    MT_STRONGLY_ORDERED,
+    MT_DEVICE,
+    MT_NONCACHEABLE,
+    MT_WRITEBACK,
+    MT_WRITETHROUGH,
+    MT_WRITETHROUGH_RW_ALLOC
+} attr_indx_t;
+
+typedef enum {
+    NON_SHAREABLE,
+    UNPREDICTABLE,
+    OUTER_SHAREABLE,
+    INNER_SHAREABLE
+} shareability; // shareability
+
+typedef enum {
+    NONCACHEABLE,
+    WRITEBACK_CACHEABLE,
+    WRITETHROUGH_CACHEABLE,
+    WRITEBACK_NONCACHEABLE
+} cachebility; //cacheability;
+
 #else
 #endif // PAGE_2M
 
