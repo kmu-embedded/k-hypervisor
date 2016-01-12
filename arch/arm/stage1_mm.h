@@ -113,35 +113,6 @@ typedef union stage1_pgentry pgentry;
 #define MAIR0_VALUE 0x88440400
 #define MAIR1_VALUE 0x0000FFCC
 
-typedef enum {
-    size_1gb,
-    size_2mb,
-    size_4kb,
-} pgsize_t;
-
-typedef enum {
-    MT_STRONGLY_ORDERED,
-    MT_DEVICE,
-    MT_NONCACHEABLE,
-    MT_WRITEBACK,
-    MT_WRITETHROUGH,
-    MT_WRITETHROUGH_RW_ALLOC
-} attr_indx_t;
-
-typedef enum {
-    NON_SHAREABLE,
-    UNPREDICTABLE,
-    OUTER_SHAREABLE,
-    INNER_SHAREABLE
-} shareability; // shareability
-
-typedef enum {
-    NONCACHEABLE,
-    WRITEBACK_CACHEABLE,
-    WRITETHROUGH_CACHEABLE,
-    WRITEBACK_NONCACHEABLE
-} cachebility; //cacheability;
-
 hvmm_status_t stage1_mm_init();
 hvmm_status_t enable_stage1_mmu();
 
