@@ -1,6 +1,8 @@
 #define DEBUG
 #include <hvmm_types.h>
 #include <vcpu.h>
+#include <vm.h>
+#include <virq.h>
 #include <hvmm_trace.h>
 #include <interrupt.h>
 #include <smp.h>
@@ -11,13 +13,10 @@
 #define VALID_PIRQ(pirq) \
     (pirq >= VIRQ_MIN_VALID_PIRQ && pirq < VIRQ_NUM_MAX_PIRQS)
 
-
 static struct interrupt_ops *_guest_ops;
 static struct interrupt_ops *_host_ops;
 extern struct interrupt_ops _host_interrupt_ops;
 extern struct interrupt_ops _guest_interrupt_ops;
-
-static struct guest_virqmap *_guest_virqmap;
 
 /**< IRQ handler */
 static interrupt_handler_t _host_ppi_handlers[NUM_CPUS][MAX_PPI_IRQS];
@@ -29,7 +28,9 @@ const int32_t interrupt_check_guest_irq(uint32_t pirq)
     struct virqmap_entry *map;
 
     for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        map = _guest_virqmap[i].map;
+        struct vmcb *vm = vm_find(i);
+        map = vm->virq.guest_virqmap->map;
+
         if (map[pirq].virq != VIRQ_INVALID)
             return GUEST_IRQ;
     }
@@ -39,14 +40,16 @@ const int32_t interrupt_check_guest_irq(uint32_t pirq)
 
 const uint32_t interrupt_pirq_to_virq(vmid_t vmid, uint32_t pirq)
 {
-    struct virqmap_entry *map = _guest_virqmap[vmid].map;
+    struct vmcb *vm = vm_find(vmid);
+    struct virqmap_entry *map = vm->virq.guest_virqmap->map;
 
     return map[pirq].virq;
 }
 
 const uint32_t interrupt_virq_to_pirq(vmid_t vmid, uint32_t virq)
 {
-    struct virqmap_entry *map = _guest_virqmap[vmid].map;
+    struct vmcb *vm = vm_find(vmid);
+    struct virqmap_entry *map = vm->virq.guest_virqmap->map;
 
     return map[virq].pirq;
 }
@@ -54,7 +57,9 @@ const uint32_t interrupt_virq_to_pirq(vmid_t vmid, uint32_t virq)
 const uint32_t interrupt_pirq_to_enabled_virq(vmid_t vmid, uint32_t pirq)
 {
     uint32_t virq = VIRQ_INVALID;
-    struct virqmap_entry *map = _guest_virqmap[vmid].map;
+
+    struct vmcb *vm = vm_find(vmid);
+    struct virqmap_entry *map = vm->virq.guest_virqmap->map;
 
     if (map[pirq].enabled)
         virq = map[pirq].virq;
@@ -123,7 +128,9 @@ hvmm_status_t interrupt_host_configure(uint32_t irq)
 hvmm_status_t interrupt_guest_enable(vmid_t vmid, uint32_t irq)
 {
     hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
-    struct virqmap_entry *map = _guest_virqmap[vmid].map;
+
+    struct vmcb *vm = vm_find(vmid);
+    struct virqmap_entry *map = vm->virq.guest_virqmap->map;
 
     map[irq].enabled = GUEST_IRQ_ENABLE;
 
@@ -133,7 +140,9 @@ hvmm_status_t interrupt_guest_enable(vmid_t vmid, uint32_t irq)
 hvmm_status_t interrupt_guest_disable(vmid_t vmid, uint32_t irq)
 {
     hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
-    struct virqmap_entry *map = _guest_virqmap[vmid].map;
+
+    struct vmcb *vm = vm_find(vmid);
+    struct virqmap_entry *map = vm->virq.guest_virqmap->map;
 
     map[irq].enabled = GUEST_IRQ_DISABLE;
 
@@ -206,29 +215,7 @@ void interrupt_service_routine(int irq, void *current_regs, void *pdata)
         printf("interrupt:no pending irq:%x\n", irq);
 }
 
-hvmm_status_t interrupt_save(vmid_t vmid)
-{
-    hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
-
-    /* guest_interrupt_save() */
-    if (_guest_ops->save)
-        ret = _guest_ops->save(vmid);
-
-    return ret;
-}
-
-hvmm_status_t interrupt_restore(vmid_t vmid)
-{
-    hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
-
-    /* guest_interrupt_restore() */
-    if (_guest_ops->restore)
-        ret = _guest_ops->restore(vmid);
-
-    return ret;
-}
-
-hvmm_status_t interrupt_init(struct guest_virqmap *virqmap)
+hvmm_status_t interrupt_init()
 {
     hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
     uint32_t cpu = smp_processor_id();
@@ -236,8 +223,6 @@ hvmm_status_t interrupt_init(struct guest_virqmap *virqmap)
     if (!cpu) {
         _host_ops = &_host_interrupt_ops;
         _guest_ops = &_guest_interrupt_ops;
-
-        _guest_virqmap = virqmap;
     }
 
     /* host_interrupt_init() */
