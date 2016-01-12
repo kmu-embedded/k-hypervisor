@@ -142,15 +142,6 @@ typedef enum {
     WRITEBACK_NONCACHEABLE
 } cachebility; //cacheability;
 
-struct mem_desc
-{
-    char *name;
-    uint32_t vaddr;
-    uint32_t paddr;
-    uint32_t offsets;
-    attr_indx_t mattr;
-};
-
 hvmm_status_t stage1_mm_init();
 hvmm_status_t enable_stage1_mmu();
 
