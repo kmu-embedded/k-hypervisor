@@ -67,11 +67,13 @@ void guest_memory_init_mmu(void)
     HVMM_TRACE_EXIT();
 }
 
-void set_next_table(vm_pgentry *entry, uint32_t paddr)
+vm_pgentry set_table(uint32_t paddr)
 {
-    entry->raw = 0;
-    entry->table.base = paddr >> PAGE_SHIFT;
-    entry->table.type = 1;
+    vm_pgentry entry;
+
+    entry.raw = 0;
+    entry.table.base = paddr >> PAGE_SHIFT;
+    entry.table.type = 1;
 
     return entry;
 }
@@ -118,14 +120,14 @@ void init_pgtable()
 
     for (i = 0; i < NUM_GUESTS_STATIC; i++) {
         for(j = 0; j < L1_ENTRY; j++) {
-            set_next_table(&vm_l1_pgtable[i][j], vm_l2_pgtable[i][j]);
+            vm_l1_pgtable[i][j] = set_table(vm_l2_pgtable[i][j]);
         }
     }
 
     for (i = 0; i < NUM_GUESTS_STATIC; i++) {
         for(j = 0; j < L1_ENTRY; j++) {
             for(k = 0; k < L2_ENTRY; k++) {
-                set_next_table(&vm_l2_pgtable[i][j][k], vm_l3_pgtable[i][j][k]);
+               vm_l2_pgtable[i][j][k] = set_table(vm_l3_pgtable[i][j][k]);
             }
         }
     }
