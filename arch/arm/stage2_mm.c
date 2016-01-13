@@ -5,6 +5,8 @@
 #include <arch/arm/rtsm-config.h>
 #include <mm.h>
 
+#define MEM_ATTR_MASK   0x0F
+
 vm_pgentry vm_l1_pgtable[NUM_GUESTS_STATIC][L1_ENTRY];
 vm_pgentry vm_l2_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 vm_pgentry vm_l3_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
@@ -14,22 +16,59 @@ void set_vm_table(vm_pgentry *entry)
     entry->table.valid = 1;
 }
 
-vm_pgentry set_entry(uint64_t pa, enum memattr mattr)
+vm_pgentry set_entry(uint64_t pa, enum memattr mattr, pgsize_t size)
 {
     vm_pgentry entry;
 
-    entry.raw = 0;
-    entry.page.type = 1;
-    entry.page.valid = 1;
-    entry.page.base = pa >> L3_SHIFT;
-    entry.page.mem_attr = mattr & 0x0F;
-    entry.page.ap = 3;
-    entry.page.sh = 0;
-    entry.page.af = 1;
-    entry.page.ng = 0;
-    entry.page.cb = 0;
-    entry.page.pxn = 0;
-    entry.page.reserved = 0;
+    switch(size) {
+        case size_1gb:
+            entry.raw = 0;
+            entry.page.valid = 1;
+            entry.page.type = 0;
+            entry.page.base = pa >> L1_SHIFT;
+            entry.page.mem_attr = mattr & MEM_ATTR_MASK;
+            entry.page.ap = 3;
+            entry.page.sh = 0;
+            entry.page.af = 1;
+            entry.page.ng = 0;
+            entry.page.cb = 0;
+            entry.page.pxn = 0;
+            entry.page.reserved = 0;
+            break;
+
+        case size_2mb:
+            entry.raw = 0;
+            entry.page.valid = 1;
+            entry.page.type = 0;
+            entry.page.base = pa >> L2_SHIFT;
+            entry.page.mem_attr = mattr & MEM_ATTR_MASK;
+            entry.page.ap = 3;
+            entry.page.sh = 0;
+            entry.page.af = 1;
+            entry.page.ng = 0;
+            entry.page.cb = 0;
+            entry.page.pxn = 0;
+            entry.page.reserved = 0;
+            break;
+
+        case size_4kb:
+            entry.raw = 0;
+            entry.page.valid = 1;
+            entry.page.type = 1;
+            entry.page.base = pa >> L3_SHIFT;
+            entry.page.mem_attr = mattr & MEM_ATTR_MASK;
+            entry.page.ap = 3;
+            entry.page.sh = 0;
+            entry.page.af = 1;
+            entry.page.ng = 0;
+            entry.page.cb = 0;
+            entry.page.pxn = 0;
+            entry.page.reserved = 0;
+            break;
+
+        default:
+            break;
+    }
 
     return entry;
 }
@@ -111,7 +150,7 @@ void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
             nr_pages = L3_ENTRY;
 
         for (j = 0; j < nr_pages; j++) {
-            l3_base_addr[l3_index + j] = set_entry(pa, guest_map->attr);
+            l3_base_addr[l3_index + j] = set_entry(pa, guest_map->attr, size_4kb);
             pa += LPAE_PAGE_SIZE;
             size -= LPAE_PAGE_SIZE;
         }
