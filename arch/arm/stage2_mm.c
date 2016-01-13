@@ -11,11 +11,6 @@ vm_pgentry vm_l1_pgtable[NUM_GUESTS_STATIC][L1_ENTRY];
 vm_pgentry vm_l2_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 vm_pgentry vm_l3_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 
-void set_vm_table(vm_pgentry *entry)
-{
-    entry->table.valid = 1;
-}
-
 vm_pgentry set_entry(uint64_t pa, enum memattr mattr, pgsize_t size)
 {
     vm_pgentry entry;
@@ -137,11 +132,11 @@ void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
     vm_pgentry *l2_base_addr = l1_base_addr[l1_index].table.base << PAGE_SHIFT;
     vm_pgentry *l3_base_addr;
 
-    set_vm_table(&l1_base_addr[l1_index]);
+    l1_base_addr[l1_index].table.valid = 1;;
     size = guest_map->size;
 
     for (i = 0; size > 0; i++ ) {
-        set_vm_table(&l2_base_addr[l2_index + i]);
+        l2_base_addr[l2_index + i].table.valid = 1;
         l3_base_addr = l2_base_addr[l2_index + i].table.base << PAGE_SHIFT;
 
         // TODO(casionwoo) : This should cover the case of serveral size such as 3KB, 1.5GB
