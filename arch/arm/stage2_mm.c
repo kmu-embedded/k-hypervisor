@@ -14,20 +14,24 @@ void set_vm_table(vm_pgentry *entry)
     entry->table.valid = 1;
 }
 
-void set_vm_entry(vm_pgentry *entry, uint64_t pa, enum memattr mattr)
+vm_pgentry set_entry(uint64_t pa, enum memattr mattr)
 {
-    entry->page.valid = 1;
-    entry->page.base = pa >> L3_SHIFT;
+    vm_pgentry entry;
 
-    entry->page.mem_attr = mattr & 0x0F;
-    entry->page.ap = 3;
-    entry->page.sh = 0;
-    entry->page.af = 1;
-    entry->page.ng = 0;
+    entry.raw = 0;
+    entry.page.type = 1;
+    entry.page.valid = 1;
+    entry.page.base = pa >> L3_SHIFT;
+    entry.page.mem_attr = mattr & 0x0F;
+    entry.page.ap = 3;
+    entry.page.sh = 0;
+    entry.page.af = 1;
+    entry.page.ng = 0;
+    entry.page.cb = 0;
+    entry.page.pxn = 0;
+    entry.page.reserved = 0;
 
-    entry->page.cb = 0;
-    entry->page.pxn = 0;
-    entry->page.reserved = 0;
+    return entry;
 }
 
 /* VTCR ATTRIBUTES */
@@ -107,7 +111,7 @@ void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
             nr_pages = L3_ENTRY;
 
         for (j = 0; j < nr_pages; j++) {
-            set_vm_entry(&l3_base_addr[l3_index + j], pa, guest_map->attr);
+            l3_base_addr[l3_index + j] = set_entry(pa, guest_map->attr);
             pa += LPAE_PAGE_SIZE;
             size -= LPAE_PAGE_SIZE;
         }
@@ -128,17 +132,6 @@ void init_pgtable()
         for(j = 0; j < L1_ENTRY; j++) {
             for(k = 0; k < L2_ENTRY; k++) {
                vm_l2_pgtable[i][j][k] = set_table(vm_l3_pgtable[i][j][k]);
-            }
-        }
-    }
-
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        for(j = 0; j < L1_ENTRY; j++) {
-            for(k = 0; k < L2_ENTRY; k++) {
-                for(l = 0; l < L3_ENTRY; l++) {
-                    vm_l3_pgtable[i][j][k][l].raw = 0;
-                    vm_l3_pgtable[i][j][k][l].page.type = 1;
-                }
             }
         }
     }
