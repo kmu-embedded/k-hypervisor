@@ -157,28 +157,24 @@ void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
     }
 }
 
-void init_pgtable()
+void init_pgtable(vmid_t vmid)
 {
-    int i, j, k, l;
+    int l1_index, l2_index;
 
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        for(j = 0; j < L1_ENTRY; j++) {
-            vm_l1_pgtable[i][j] = set_table(vm_l2_pgtable[i][j]);
-        }
+    for(l1_index = 0; l1_index < L1_ENTRY; l1_index++) {
+        vm_l1_pgtable[vmid][l1_index] = set_table(vm_l2_pgtable[vmid][l1_index]);
     }
 
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        for(j = 0; j < L1_ENTRY; j++) {
-            for(k = 0; k < L2_ENTRY; k++) {
-               vm_l2_pgtable[i][j][k] = set_table(vm_l3_pgtable[i][j][k]);
-            }
+    for(l1_index = 0; l1_index < L1_ENTRY; l1_index++) {
+        for(l2_index = 0; l2_index < L2_ENTRY; l2_index++) {
+            vm_l2_pgtable[vmid][l1_index][l2_index] = set_table(vm_l3_pgtable[vmid][l1_index][l2_index]);
         }
     }
 }
 
-void stage2_mm_setup()
+void stage2_mm_create(vmid_t vmid)
 {
-    init_pgtable();
+    init_pgtable(vmid);
 }
 
 void stage2_mm_init(struct memmap_desc **mdlist, char **_vmid_ttbl, vmid_t vmid)

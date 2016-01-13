@@ -79,13 +79,7 @@ struct memmap_desc *vm1_mdlist[] = {
     0
 };
 
-void vmem_setup()
-{
-    /* Pagetable Initialization */
-    memory_hw_setup();
-}
-
-void vmem_create(struct vmem *vmem, vmid_t vmid)
+void set_memmap(struct vmem *vmem, vmid_t vmid)
 {
     /*
      * VA: 0x00000000 ~ 0x3FFFFFFF,   1GB
@@ -100,6 +94,14 @@ void vmem_create(struct vmem *vmem, vmid_t vmid)
     }
 
     vmem->memmap = (vmid == 0) ? vm0_mdlist : vm1_mdlist;
+}
+
+void vmem_create(struct vmem *vmem, vmid_t vmid)
+{
+    /* Assign memory mapping */
+    set_memmap(vmem, vmid);
+    /* Pagetable Initialization */
+    memory_hw_create(vmid);
 }
 
 hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
