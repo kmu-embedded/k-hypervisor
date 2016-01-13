@@ -115,10 +115,11 @@ static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, vm_pgentry *ttbl)
     return HVMM_STATUS_SUCCESS;
 }
 
-
-void memory_hw_setup()
+hvmm_status_t memory_hw_create(vmid_t vmid)
 {
-    stage2_mm_setup();
+   stage2_mm_create(vmid);
+
+   return HVMM_STATUS_SUCCESS;
 }
 
 /**
