@@ -9,14 +9,18 @@ static vmid_t vm[NUM_GUESTS_STATIC];
 
 static int cpu_init()
 {
-    int i;
+    hvmm_status_t status;
     unsigned char nr_vcpus = 1; // TODO: It will be read from configuration file.
+    int i;
 
     printf("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
 
     // FIXME: Split khypervisor_init into per-core initialization and
     //        system-level initializatin to support SMP.
-    khypervisor_init();
+    status = khypervisor_init();
+    if (status != HVMM_STATUS_SUCCESS) {
+        goto error;
+    }
 
     printf("%s", BANNER_STRING); // TODO: make a print_banner();
 
@@ -49,6 +53,7 @@ static int cpu_init()
 error:
     printf("-------- [%s] ERROR: K-Hypervisor must not reach here\n", __func__);
     hyp_abort_infinite();
+    return 0;
 }
 
 // C Entry point
