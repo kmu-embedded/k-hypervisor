@@ -81,16 +81,17 @@ void virq_setup()
 
 void virq_create(struct virq *virq, vmid_t vmid)
 {
-    /* guest_virqmap initialization */
-    virq->guest_virqmap = &_guest_virqmap[vmid];
-
-    /* vgic_status initialization */
-    vgic_init_status(&virq->vgic_status);
+    /* TODO(igkang): something like virq_setup will be called here
+     *  to load configurations from DTB or config data */
 }
 
 hvmm_status_t virq_init(struct virq *virq, vmid_t vmid)
 {
-    return HVMM_STATUS_SUCCESS; //vgic_init_status(&virq->vgic_status);
+    /* guest_virqmap initialization */
+    virq->guest_virqmap = &_guest_virqmap[vmid];
+
+    /* vgic_status initialization */
+    return vgic_init_status(&virq->vgic_status);
 }
 
 hvmm_status_t virq_save(struct virq *virq)
