@@ -82,19 +82,29 @@ static pgentry set_entry(uint32_t paddr, uint8_t attr_indx, pgsize_t size)
     return entry;
 }
 
-#define HSCTLR_TE        (1 << 30) /**< Thumb Exception enable. */
-#define HSCTLR_EE        (1 << 25) /**< Exception Endianness. */
-#define HSCTLR_FI        (1 << 21) /**< Fast Interrupts configuration enable. */
-#define HSCTLR_WXN       (1 << 19) /**< Write permission emplies XN. */
-#define HSCTLR_I         (1 << 12) /**< Instruction cache enable.  */
-#define HSCTLR_CP15BEN   (1 << 7)  /**< In ARMv7 this bit is RAZ/SBZP. */
-#define HSCTLR_C         (1 << 2)  /**< Cache enable. */
-#define HSCTLR_A         (1 << 1)  /**< Alignment check enable. */
-#define HSCTLR_M         (1 << 0)  /**< MMU enable. */
-#define HSCTLR_BASE       0x30c51878  /**< HSTCLR Base address */
+#define HSCTLR_TE        (1 << 30)      /**< Thumb Exception enable. */
+#define HSCTLR_EE        (1 << 25)      /**< Exception Endianness. */
+#define HSCTLR_FI        (1 << 21)      /**< Fast Interrupts configuration enable. */
+#define HSCTLR_WXN       (1 << 19)      /**< Write permission emplies XN. */
+#define HSCTLR_I         (1 << 12)      /**< Instruction cache enable.  */
+#define HSCTLR_CP15BEN   (1 << 7)       /**< In ARMv7 this bit is RAZ/SBZP. */
+#define HSCTLR_C         (1 << 2)       /**< Data or unified cache enable. */
+#define HSCTLR_A         (1 << 1)       /**< Alignment check enable. */
+#define HSCTLR_M         (1 << 0)       /**< MMU enable. */
+#define HSCTLR_BASE      0x30c51878     /**< HSTCLR Base address */
 
 #define OUTER_WRITETHROUGH_CACHEABLE (WRITETHROUGH_CACHEABLE << 10)
 #define INNER_WRITETHROUGH_CACHEABLE (WRITETHROUGH_CACHEABLE << 12)
+
+typedef enum {
+    false,
+    true
+} bool;
+
+uint32_t set_cache(bool state)
+{
+    return ( state ? (HSCTLR_I | HSCTLR_C) : 0 );
+}
 
 hvmm_status_t enable_stage1_mmu(void)
 {
@@ -113,7 +123,7 @@ hvmm_status_t enable_stage1_mmu(void)
     // TODO(wonseok): How to configure T0SZ?
     write_htcr(htcr);
     // FIXME(casionwoo) : Current printf can't support 64-bit, it should be fixed
-    printf("hsctlr: 0x%x%x\n", htcr);
+    printf("htcr: 0x%x%x\n", htcr);
 
     /* HTTBR : Hyp Translation Table Base Register */
     httbr |= (uint32_t) &hyp_l1_pgtable;
@@ -121,10 +131,11 @@ hvmm_status_t enable_stage1_mmu(void)
     printf("httbr: 0x%x%x\n", httbr);
 
     /* HSCTLR : Hyp System Control Register*/
-    /* I-Cache, D-Cache, MMU, Alignment enable */
-    hsctlr = (HSCTLR_I | HSCTLR_A | HSCTLR_M | HSCTLR_C);
+    /* MMU, Alignment enable */
+    hsctlr = (HSCTLR_A | HSCTLR_M);
+    /* I-Cache, D-Cache init from hsctlr*/
+    hsctlr |= set_cache(true);
     write_hsctlr(hsctlr);
-    printf("hsctlr: 0x%x%x\n", hsctlr);
 
     return HVMM_STATUS_SUCCESS;
 }

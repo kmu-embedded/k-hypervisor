@@ -5,79 +5,113 @@
 #include <arch/arm/rtsm-config.h>
 #include <mm.h>
 
+#define MEM_ATTR_MASK   0x0F
+
 vm_pgentry vm_l1_pgtable[NUM_GUESTS_STATIC][L1_ENTRY];
 vm_pgentry vm_l2_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 vm_pgentry vm_l3_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 
-void set_vm_table(vm_pgentry *entry)
+vm_pgentry set_entry(uint64_t pa, enum memattr mattr, pgsize_t size)
 {
-    entry->table.valid = 1;
+    vm_pgentry entry;
+
+    switch(size) {
+        case size_1gb:
+            entry.raw = 0;
+            entry.page.valid = 1;
+            entry.page.type = 0;
+            entry.page.base = pa >> L1_SHIFT;
+            entry.page.mem_attr = mattr & MEM_ATTR_MASK;
+            entry.page.ap = 3;
+            entry.page.sh = 0;
+            entry.page.af = 1;
+            entry.page.ng = 0;
+            entry.page.cb = 0;
+            entry.page.pxn = 0;
+            entry.page.reserved = 0;
+            break;
+
+        case size_2mb:
+            entry.raw = 0;
+            entry.page.valid = 1;
+            entry.page.type = 0;
+            entry.page.base = pa >> L2_SHIFT;
+            entry.page.mem_attr = mattr & MEM_ATTR_MASK;
+            entry.page.ap = 3;
+            entry.page.sh = 0;
+            entry.page.af = 1;
+            entry.page.ng = 0;
+            entry.page.cb = 0;
+            entry.page.pxn = 0;
+            entry.page.reserved = 0;
+            break;
+
+        case size_4kb:
+            entry.raw = 0;
+            entry.page.valid = 1;
+            entry.page.type = 1;
+            entry.page.base = pa >> L3_SHIFT;
+            entry.page.mem_attr = mattr & MEM_ATTR_MASK;
+            entry.page.ap = 3;
+            entry.page.sh = 0;
+            entry.page.af = 1;
+            entry.page.ng = 0;
+            entry.page.cb = 0;
+            entry.page.pxn = 0;
+            entry.page.reserved = 0;
+            break;
+
+        default:
+            break;
+    }
+
+    return entry;
 }
 
-void set_vm_entry(vm_pgentry *entry, uint64_t pa, enum memattr mattr)
-{
-    entry->page.valid = 1;
-    entry->page.base = pa >> L3_SHIFT;
-
-    entry->page.mem_attr = mattr & 0x0F;
-    entry->page.ap = 3;
-    entry->page.sh = 0;
-    entry->page.af = 1;
-    entry->page.ng = 0;
-
-    entry->page.cb = 0;
-    entry->page.pxn = 0;
-    entry->page.reserved = 0;
-}
-
-#define VTCR_INITVAL                                    0x80000000
-#define VTCR_SH0_MASK                                   0x00003000
-#define VTCR_SH0_SHIFT                                  12
-#define VTCR_ORGN0_MASK                                 0x00000C00
-#define VTCR_ORGN0_SHIFT                                10
-#define VTCR_IRGN0_MASK                                 0x00000300
-#define VTCR_IRGN0_SHIFT                                8
-#define VTCR_SL0_MASK                                   0x000000C0
-#define VTCR_SL0_SHIFT                                  6
-#define VTCR_S_MASK                                     0x00000010
-#define VTCR_S_SHIFT                                    4
-#define VTCR_T0SZ_MASK                                  0x00000003
-#define VTCR_T0SZ_SHIFT                                 0
+/* VTCR ATTRIBUTES */
+#define VTCR_SL0_SECOND_LEVEL       0x0
+#define VTCR_SL0_FIRST_LEVEL        0x1
+#define VTCR_SL0_RESERVED           0x2
+#define VTCR_SL0_UNPREDICTABLE      0x3
+#define VTCR_SL0_BIT                6
+#define VTCR_ORGN0_ONC              0X0
+#define VTCR_ORGN0_OWBWAC           0x1
+#define VTCR_ORGN0_OWTC             0x2
+#define VTCR_ORGN0_OWBWAC           0x3
+#define VTCR_ORGN0_BIT              10
+#define VTCR_IRGN0_INC              0X0
+#define VTCR_IRGN0_IWBWAC           0x1
+#define VTCR_IRGN0_IWTC             0x2
+#define VTCR_IRGN0_IWBWAC           0x3
+#define VTCR_IRGN0_BIT              8
 
 void guest_memory_init_mmu(void)
 {
-    uint32_t vtcr, vttbr;
+    uint32_t vtcr = 0;
+
     HVMM_TRACE_ENTER();
-    vtcr = read_vtcr();
-    printf("vtcr: 0x%08x\n", vtcr);
-    printf("\n\r");
-    /* start lookup at level 1 table */
-    vtcr &= ~VTCR_SL0_MASK;
-    vtcr |= (0x01 << VTCR_SL0_SHIFT) & VTCR_SL0_MASK;
-    vtcr &= ~VTCR_ORGN0_MASK;
-    vtcr |= (0x3 << VTCR_ORGN0_SHIFT) & VTCR_ORGN0_MASK;
-    vtcr &= ~VTCR_IRGN0_MASK;
-    vtcr |= (0x3 << VTCR_IRGN0_SHIFT) & VTCR_IRGN0_MASK;
+
+    /* Stage-2 Translation Pagetable start lookup configuration */
+    vtcr |= (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
+    /* Outer cacheability attribute */
+    vtcr |= (VTCR_ORGN0_OWBWAC << VTCR_ORGN0_BIT);
+    /* Inner cacheability attribute */
+    vtcr |= (VTCR_IRGN0_IWBWAC << VTCR_IRGN0_BIT);
+
     write_vtcr(vtcr);
     vtcr = read_vtcr();
     printf("vtcr: 0x%08x\n", vtcr);
-    {
-        uint32_t sl0 = (vtcr & VTCR_SL0_MASK) >> VTCR_SL0_SHIFT;
-        uint32_t t0sz = vtcr & 0xF;
-        uint32_t baddr_x = (sl0 == 0 ? 14 - t0sz : 5 - t0sz);
-        printf("vttbr.baddr.x: 0x%08x\n", baddr_x);
-    }
-    /* VTTBR */
-    vttbr = read_vttbr();
-    printf("vttbr: %x%x\n", vttbr);
+
     HVMM_TRACE_EXIT();
 }
 
-void set_next_table(vm_pgentry *entry, uint32_t paddr)
+vm_pgentry set_table(uint32_t paddr)
 {
-    entry->raw = 0;
-    entry->table.base = paddr >> PAGE_SHIFT;
-    entry->table.type = 1;
+    vm_pgentry entry;
+
+    entry.raw = 0;
+    entry.table.base = paddr >> PAGE_SHIFT;
+    entry.table.type = 1;
 
     return entry;
 }
@@ -98,11 +132,11 @@ void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
     vm_pgentry *l2_base_addr = l1_base_addr[l1_index].table.base << PAGE_SHIFT;
     vm_pgentry *l3_base_addr;
 
-    set_vm_table(&l1_base_addr[l1_index]);
+    l1_base_addr[l1_index].table.valid = 1;;
     size = guest_map->size;
 
     for (i = 0; size > 0; i++ ) {
-        set_vm_table(&l2_base_addr[l2_index + i]);
+        l2_base_addr[l2_index + i].table.valid = 1;
         l3_base_addr = l2_base_addr[l2_index + i].table.base << PAGE_SHIFT;
 
         // TODO(casionwoo) : This should cover the case of serveral size such as 3KB, 1.5GB
@@ -111,46 +145,31 @@ void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
             nr_pages = L3_ENTRY;
 
         for (j = 0; j < nr_pages; j++) {
-            set_vm_entry(&l3_base_addr[l3_index + j], pa, guest_map->attr);
+            l3_base_addr[l3_index + j] = set_entry(pa, guest_map->attr, size_4kb);
             pa += LPAE_PAGE_SIZE;
             size -= LPAE_PAGE_SIZE;
         }
     }
 }
 
-void init_pgtable()
+void init_pgtable(vmid_t vmid)
 {
-    int i, j, k, l;
+    int l1_index, l2_index;
 
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        for(j = 0; j < L1_ENTRY; j++) {
-            set_next_table(&vm_l1_pgtable[i][j], vm_l2_pgtable[i][j]);
-        }
+    for(l1_index = 0; l1_index < L1_ENTRY; l1_index++) {
+        vm_l1_pgtable[vmid][l1_index] = set_table(vm_l2_pgtable[vmid][l1_index]);
     }
 
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        for(j = 0; j < L1_ENTRY; j++) {
-            for(k = 0; k < L2_ENTRY; k++) {
-                set_next_table(&vm_l2_pgtable[i][j][k], vm_l3_pgtable[i][j][k]);
-            }
-        }
-    }
-
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        for(j = 0; j < L1_ENTRY; j++) {
-            for(k = 0; k < L2_ENTRY; k++) {
-                for(l = 0; l < L3_ENTRY; l++) {
-                    vm_l3_pgtable[i][j][k][l].raw = 0;
-                    vm_l3_pgtable[i][j][k][l].page.type = 1;
-                }
-            }
+    for(l1_index = 0; l1_index < L1_ENTRY; l1_index++) {
+        for(l2_index = 0; l2_index < L2_ENTRY; l2_index++) {
+            vm_l2_pgtable[vmid][l1_index][l2_index] = set_table(vm_l3_pgtable[vmid][l1_index][l2_index]);
         }
     }
 }
 
-void stage2_mm_setup()
+void stage2_mm_create(vmid_t vmid)
 {
-    init_pgtable();
+    init_pgtable(vmid);
 }
 
 void stage2_mm_init(struct memmap_desc **mdlist, char **_vmid_ttbl, vmid_t vmid)
