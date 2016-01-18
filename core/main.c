@@ -44,7 +44,7 @@ int main_cpu_init()
     hyp_abort_infinite();
 }
 
-int vm_main(void)
+int main(void)
 {
     main_cpu_init();
 
