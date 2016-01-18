@@ -16,8 +16,6 @@
 #define GUEST_VERBOSE_LEVEL_6   0x40
 #define GUEST_VERBOSE_LEVEL_7   0x80
 
-struct vcpu *_current_guest[NUM_CPUS];
-
 void sched_init();
 int sched_vcpu_register(int vcpuid);
 int sched_vcpu_unregister();
