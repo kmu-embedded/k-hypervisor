@@ -1,11 +1,11 @@
 #include <core.h>
-#include <arch/arm/rtsm-config.h>
 #include <memory.h>
 #include <interrupt.h>
 #include <timer.h>
 #include <vdev.h>
 #include <tests.h>
 #include <stdint.h>
+#include <arch/arm/rtsm-config.h>
 
 #define PLATFORM_BASIC_TESTS 4
 
@@ -29,35 +29,35 @@ void setup_timer()
     _timer_irq = 26;
 }
 
+// TODO: Every subfunction have a return value.
 hvmm_status_t khypervisor_init()
 {
-    printf("[%s] START\n", __func__);
+    hvmm_status_t status;
 
-    /* Initialize malloc library */
     __malloc_init();
-
-    /* Initialize Memory */
     memory_init();
-
-    /* Initialize Interrupt Management */
-    if (interrupt_init())
+    if (status = interrupt_init()) {
         printf("[%s] interrupt initialization failed\n", __func__);
+        return status;
+    }
 
-    /* Initialize Timer */
     setup_timer();
-    if(timer_init(_timer_irq)) {
+    if(status = timer_init(_timer_irq)) {
         printf("[%s] timer initialization failed\n", __func__);
+        return status;
     }
 
-    /* Initialize Virtual Devices */
-    if (vdev_init()) {
+    if (status = vdev_init()) {
         printf("[%s] vdev initialization failed\n", __func__);
+        return status;
     }
 
-    /* Begin running test code for newly implemented features */
-    if (basic_tests_run(PLATFORM_BASIC_TESTS))
+    if (status = basic_tests_run(PLATFORM_BASIC_TESTS)) {
         printf("[%s] basic testing failed\n", __func__);
+        // FIXME: Currently, testing routines for vdev are failed
+        //return status;
+    }
 
-    printf("[%s] END\n", __func__);
+    return status;
 }
 

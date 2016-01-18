@@ -1,51 +1,40 @@
-SRC_DIR		= .
-OBJDIR		= .
-C_FILES 	= $(wildcard $(SRC_DIR)/*.c)
-OBJS 		:= $(addprefix $(OBJDIR)/,$(notdir $(ASM_FILES:.S=.o))) $(addprefix $(OBJDIR)/,$(notdir $(C_FILES:.c=.o)))
-INC			= ../../include
-LIB			= lib
-CORE		= ..
-DRV			= drivers
+include $(CONFIG_PATH)
 
-TARGET		= outer
-BIN			= $(BUILD_DIR)/$(TARGET).bin
-OUTPUT 		= $(TARGET).axf
-MAP			= $(TARGET).map
+OBJS_DIR	= $(ROOT_PATH)/$(BUILD)/core/sched
 
-CC			= $(CROSS_COMPILE)gcc
-LD			= $(CROSS_COMPILE)ld
-NM			= $(CROSS_COMPILE)nm
-OBJCOPY		= $(CROSS_COMPILE)objcopy
+CC		= $(CROSS_COMPILE)gcc
 
-INCLUDES	= -I $(INC)/$(LIB)/bsd
-INCLUDES    += -I ../include -I ../../include/lib/
+INCLUDES	= -I $(ROOT_PATH)/$(INC)
+INCLUDES	+= -I $(ROOT_PATH)/$(INC)/$(LIB)/c
+INCLUDES	+= -I $(ROOT_PATH)/$(INC)/$(LIB)/bsd
+INCLUDES	+= -I $(ROOT_PATH)/$(INC)/$(LIB)
+INCLUDES	+= -I $(ROOT_PATH)/$(INC)/$(CORE)
+INCLUDES	+= -I $(ROOT_PATH)/$(INC)/$(DRV)
 
-CONFIG_FLAGS= -g
-CPPFLAGS	+= $(CONFIG_FLAGS) $(INCLUDES) -Werror
+INCLUDES	+= -I $(ROOT_PATH)/$(ARCH)/$(ARM)
 
-all: $(OBJS) $(OUTPUT) $(MAP)
+INCLUDES	+= -I $(ROOT_PATH)/$(CORE)/libhw
+INCLUDES	+= -I $(ROOT_PATH)/$(CORE)
+INCLUDES	+= -I $(ROOT_PATH)/$(CORE)/$(INC)
 
-$(MAP): $(OUTPUT)
-	$(NM) $< > $@
+INCLUDES	+= -I $(ROOT_PATH)/$(LIB)
+
+INCLUDES	+= -I $(ROOT_PATH)/$(TESTS)
+INCLUDES	+= -I $(ROOT_PATH)/$(TESTS)/libs
+
+CPPFLAGS	= $(CONFIG_FLAG) $(INCLUDES) -ffreestanding -nostdlib -nodefaultlibs -nostartfiles $(DEBUG_FLAG)
+CPPFLAGS	+= -Wall
+
+C_FILES		= $(wildcard $(CURDIR)/*.c)
+OBJS		= $(C_FILES:$(CURDIR)/%.c=$(OBJS_DIR)/%.o)
+
+all: $(OBJS)
+
+$(OBJS_DIR)/%.o: $(CURDIR)/%.c
+	@`[ -d $(OBJS_DIR) ] || $(MKDIR) -p $(OBJS_DIR)`
+	$(CC) $(CPPFLAGS) -c $(INCLUDES) $< -o $@
 
 clean:
-	rm -f $(MAP) $(OUTPUT) $(BIN) \
-	$(TARGET).lds $(OBJS)
+	rm -rf $(OBJS_DIR)
 
-$(OUTPUT): $(OBJS)
-	$(CC) -o $@ $(OBJS)
-
-$(BIN): $(OUTPUT)
-	$(OBJCOPY) -O binary $(OUTPUT) $(BIN)
-
-$(OBJ_DIR)%.o: $(SRC_DIR)/%.c
-	$(CC) $(CPPFLAGS) -static -I. -c -o $@ $<
-
-%: force
-	$(MAKE) -C $(KERNEL_SRC) $@
-
-force: ;
-
-Makefile: ;
-
-.PHONY: all clean config.mk
+.PHONY: clean

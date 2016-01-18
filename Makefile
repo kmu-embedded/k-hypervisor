@@ -4,7 +4,7 @@ export ROOT_PATH	= $(CURDIR)
 export CONFIG_PATH	= $(ROOT_PATH)/config.mk
 
 ARCH_DIRS		= $(ROOT)/$(ARCH) $(ROOT)/$(ARCH)/$(VERSION)
-CORE_DIRS		= $(ROOT)/$(CORE) $(ROOT)/$(CORE)/sched $(ROOT)/$(CORE)/vdev
+CORE_DIRS		= $(ROOT)/$(CORE) $(ROOT)/$(CORE)/sched $(ROOT)/$(CORE)/vdev $(ROOT)/$(CORE)/vm
 DRIVERS_DIRS		= $(ROOT)/$(DRV)
 LIB_DIRS		= $(ROOT)/$(LIB)/c/src $(ROOT)/$(LIB)/c/src/arch-arm $(ROOT)/$(LIB)/c/src/sys-baremetal	\
 			  $(ROOT)/$(LIB)/c/src/sys-baremetal/arch-arm
