@@ -58,11 +58,14 @@ static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
 
     hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
     uint32_t cpu = smp_processor_id();
+    vmid_t currentcurrent = VMID_INVALID;
 
     if (_current_guest_vmid[cpu] == next_vmid)
         return HVMM_STATUS_IGNORED;
 
-    context_switch_to(_current_guest_vmid[cpu], next_vmid, regs);
+    currentcurrent = _current_guest_vmid[cpu];
+    _current_guest_vmid[cpu] = next_vmid;
+    context_switch_to(currentcurrent, next_vmid, regs);
 
     return result;
 }
