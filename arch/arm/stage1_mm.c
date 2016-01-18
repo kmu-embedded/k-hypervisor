@@ -106,13 +106,11 @@ uint32_t set_cache(bool state)
     return ( state ? (HSCTLR_I | HSCTLR_C) : 0 );
 }
 
-hvmm_status_t enable_stage1_mmu(void)
+hvmm_status_t stage1_mmu_init(void)
 {
     uint32_t htcr = 0, hsctlr = 0;
     uint64_t httbr = 0;
 
-    write_mair0(MAIR0_VALUE);
-    write_mair1(MAIR1_VALUE);
     write_hmair0(MAIR0_VALUE);
     write_hmair1(MAIR1_VALUE);
 
@@ -140,23 +138,24 @@ hvmm_status_t enable_stage1_mmu(void)
     return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t stage1_mm_init()
+hvmm_status_t stage1_pgtable_init()
 {
-    uint64_t paddr = 0x00000000ULL;
+    uint64_t paddr;
     int i, j;
 
+    paddr = 0x00000000ULL;
     hyp_l1_pgtable[0] = set_entry(paddr, MT_DEVICE, size_1gb);
-    paddr += 0x40000000;
+
+    paddr += 0x40000000; // start with 0x4000_0000
     hyp_l1_pgtable[1] = set_entry(paddr, MT_NONCACHEABLE, size_1gb);
-    paddr += 0x40000000;
+
+    paddr += 0x40000000; // start with 0x8000_0000
     hyp_l1_pgtable[2] = set_entry(paddr, MT_WRITEBACK, size_1gb);
 
-    paddr += 0x40000000;
+    paddr += 0x40000000; // start with 0xC000_0000
     hyp_l1_pgtable[3] = set_table((uint32_t) &hyp_l2_pgtable[0]);
-
     for(i = 0; i < 512; i++) {
         hyp_l2_pgtable[i] = set_table((uint32_t) hyp_l3_pgtable[i]);
-
         for (j = 0; j < 512; paddr += 0x1000, j++) {
             hyp_l3_pgtable[i][j] = set_entry(paddr, MT_WRITETHROUGH_RW_ALLOC, size_4kb);
         }

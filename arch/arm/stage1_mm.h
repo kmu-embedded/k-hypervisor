@@ -113,7 +113,7 @@ typedef union stage1_pgentry pgentry;
 #define MAIR0_VALUE 0x88440400
 #define MAIR1_VALUE 0x0000FFCC
 
-hvmm_status_t stage1_mm_init();
-hvmm_status_t enable_stage1_mmu();
+hvmm_status_t stage1_pgtable_init();
+hvmm_status_t stage1_mmu_init();
 
 #endif /* __STAGE1_MM_H__ */
