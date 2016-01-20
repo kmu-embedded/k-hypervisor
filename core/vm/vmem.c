@@ -9,6 +9,8 @@ extern uint32_t _guest1_bin_start;
 struct memmap_desc vm_md_empty[] = {
     { 0, 0, 0, 0,  0 },
 };
+
+/*  label, ipa, pa, size, attr */
 struct memmap_desc vm0_device_md[] = {
     { "sysreg", 0x1C010000, 0x1C010000, SZ_4K, MEMATTR_DM },
     { "sysctl", 0x1C020000, 0x1C020000, SZ_4K, MEMATTR_DM },
@@ -33,11 +35,28 @@ struct memmap_desc vm0_device_md[] = {
 };
 
 struct memmap_desc vm1_device_md[] = {
-    { "uart", 0x1C090000, 0x1C0B0000, SZ_4K, MEMATTR_DM },
-    //{ "sp804", 0x1C110000, 0x1C120000, SZ_4K, MEMATTR_DM },
-    { "gicc", 0x2C000000 | GIC_OFFSET_GICC,
-       CFG_GIC_BASE_PA | GIC_OFFSET_GICVI, SZ_8K, MEMATTR_DM },
-    {0, 0, 0, 0, 0}
+    { "sysreg", 0x1C010000, 0x1C010000, SZ_4K, MEMATTR_DM },
+    { "sysctl", 0x1C020000, 0x1C020000, SZ_4K, MEMATTR_DM },
+    { "aaci", 0x1C040000, 0x1C040000, SZ_4K, MEMATTR_DM },
+    { "mmci", 0x1C050000, 0x1C050000, SZ_4K, MEMATTR_DM },
+    { "kmi", 0x1C060000, 0x1C060000,  SZ_64K, MEMATTR_DM },
+    { "kmi2", 0x1C070000, 0x1C070000, SZ_64K, MEMATTR_DM },
+    { "v2m_serial0", 0x1C090000, 0x1C0B0000, SZ_4K, MEMATTR_DM },
+    { "v2m_serial1", 0x1C0A0000, 0x1C090000, SZ_4K, MEMATTR_DM },
+    { "v2m_serial2", 0x1C0B0000, 0x1C0B0000, SZ_4K, MEMATTR_DM },
+    { "v2m_serial3", 0x1C0C0000, 0x1C0C0000, SZ_4K, MEMATTR_DM },
+    { "wdt", 0x1C0F0000, 0x1C0F0000, SZ_4K, MEMATTR_DM },
+    { "v2m_timer01(sp804)", 0x1C110000, 0x1C110000, SZ_4K,
+            MEMATTR_DM },
+    { "v2m_timer23", 0x1C120000, 0x1C120000, SZ_4K, MEMATTR_DM },
+    { "rtc", 0x1C170000, 0x1C170000, SZ_4K, MEMATTR_DM },
+    { "clcd", 0x1C1F0000, 0x1C1F0000, SZ_4K, MEMATTR_DM },
+    { "gicc", CFG_GIC_BASE_PA | GIC_OFFSET_GICC,
+            CFG_GIC_BASE_PA | GIC_OFFSET_GICVI, SZ_8K,
+            MEMATTR_DM },
+    { "SMSC91c111i", 0x1A000000, 0x1A000000, SZ_16M, MEMATTR_DM },
+    { "simplebus2", 0x18000000, 0x18000000, SZ_64M, MEMATTR_DM },
+    { 0, 0, 0, 0, 0 }
 };
 
 /**
