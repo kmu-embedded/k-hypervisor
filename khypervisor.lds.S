@@ -38,6 +38,8 @@ SECTIONS
  . = GUEST1_STACK + 0x01000000;
  guest1_stacklimit = .;
 
+ . = CFG_HYP_START_ADDRESS;
+
  .text : {
     *(.text);
     __vdev_module_high_start = .;

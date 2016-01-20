@@ -63,7 +63,7 @@ struct memmap_desc vm1_device_md[] = {
  * @brief Memory map for VM0 image .
  */
 struct memmap_desc vm0_memory_md[] = {
-    {"start", CFG_GUEST_START_ADDRESS, 0, 0x40000000,
+    {"start", CFG_GUEST_START_ADDRESS, 0, 0x10000000,
      MEMATTR_NORMAL_OWB | MEMATTR_NORMAL_IWB
     },
     {0, 0, 0, 0,  0},
