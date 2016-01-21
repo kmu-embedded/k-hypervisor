@@ -42,10 +42,12 @@ void virq_setup()
      *  vimm-0, pirq-34, virq-34 = SP804: shared driver
      *  vimm-0, pirq-35, virq-35 = SP804: shared driver
      *  vimm-0, pirq-36, virq-36 = RTC: shared driver
+
      *  vimm-0, pirq-38, virq-37 = UART: dedicated driver IRQ 37 for guest 0
      *  vimm-1, pirq-39, virq-37 = UART: dedicated driver IRQ 37 for guest 1
      *  vimm-2, pirq,40, virq-37 = UART: dedicated driver IRQ 37 for guest 2
      *  vimm-3, pirq,48, virq-37 = UART: dedicated driver IRQ 38 for guest 3 -ch
+
      *  vimm-0, pirq-43, virq-43 = ACCI: shared driver
      *  vimm-0, pirq-44, virq-44 = KMI: shared driver
      *  vimm-0, pirq-45, virq-45 = KMI: shared driver
@@ -65,7 +67,6 @@ void virq_setup()
     DECLARE_VIRQMAP(_guest_virqmap, 0, 34, 34);
     DECLARE_VIRQMAP(_guest_virqmap, 0, 35, 35);
     DECLARE_VIRQMAP(_guest_virqmap, 0, 36, 36);
-    DECLARE_VIRQMAP(_guest_virqmap, 0, 37, 38);
     DECLARE_VIRQMAP(_guest_virqmap, 0, 38, 37);
     DECLARE_VIRQMAP(_guest_virqmap, 0, 41, 41);
     DECLARE_VIRQMAP(_guest_virqmap, 0, 42, 42);
@@ -87,7 +88,6 @@ void virq_setup()
     DECLARE_VIRQMAP(_guest_virqmap, 1, 34, 34);
     DECLARE_VIRQMAP(_guest_virqmap, 1, 35, 35);
     DECLARE_VIRQMAP(_guest_virqmap, 1, 36, 36);
-    DECLARE_VIRQMAP(_guest_virqmap, 1, 37, 38);
     DECLARE_VIRQMAP(_guest_virqmap, 1, 39, 37);
     DECLARE_VIRQMAP(_guest_virqmap, 1, 41, 41);
     DECLARE_VIRQMAP(_guest_virqmap, 1, 42, 42);
@@ -97,6 +97,27 @@ void virq_setup()
     DECLARE_VIRQMAP(_guest_virqmap, 1, 46, 46);
     DECLARE_VIRQMAP(_guest_virqmap, 1, 47, 47);
     DECLARE_VIRQMAP(_guest_virqmap, 1, 69, 69);
+
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 1, 1);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 16, 16);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 17, 17);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 18, 18);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 19, 19);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 31, 31);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 32, 32);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 33, 33);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 34, 34);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 35, 35);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 36, 36);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 40, 37);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 41, 41);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 42, 42);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 43, 43);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 44, 44);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 45, 45);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 46, 46);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 47, 47);
+    DECLARE_VIRQMAP(_guest_virqmap, 2, 69, 69);
 }
 
 void virq_create(struct virq *virq, vmid_t vmid)
