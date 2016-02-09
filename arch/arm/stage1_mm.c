@@ -2,6 +2,7 @@
 #include <armv7_p15.h>
 #include <hvmm_types.h>
 #include <stage1_mm.h>
+#include <stdbool.h>
 #include <mm.h>
 
 static pgentry hyp_l1_pgtable[L1_ENTRY];
@@ -95,11 +96,6 @@ static pgentry set_entry(uint32_t paddr, uint8_t attr_indx, pgsize_t size)
 
 #define OUTER_WRITETHROUGH_CACHEABLE (WRITETHROUGH_CACHEABLE << 10)
 #define INNER_WRITETHROUGH_CACHEABLE (WRITETHROUGH_CACHEABLE << 12)
-
-typedef enum {
-    false,
-    true
-} bool;
 
 uint32_t set_cache(bool state)
 {
