@@ -11,10 +11,10 @@ void pl01x_putc(const char c)
     writel(c, (uint32_t *) PL01X_BASE + PL01X_UARTDR);
 }
 
-int pl01x_tst_fifo(uint32_t base)
+int pl01x_tst_fifo()
 {
     /* There is not a data in the FIFO */
-    if (readl((void *)(base + PL01X_UARTFR)) & PL01X_UARTFR_RXFE)
+    if (readl((void *)(PL01X_BASE + PL01X_UARTFR)) & PL01X_UARTFR_RXFE)
         return 0;
     else
         /* There is a data in the FIFO */
@@ -37,7 +37,7 @@ char pl01x_getc()
     return data;
 }
 
-void pl01x_init(uint32_t base, uint32_t baudrate, uint32_t input_clock)
+void pl01x_init(uint32_t baudrate, uint32_t input_clock)
 {
     unsigned int divider;
     unsigned int temp;
@@ -45,7 +45,7 @@ void pl01x_init(uint32_t base, uint32_t baudrate, uint32_t input_clock)
     unsigned int fraction;
 
     /* First, disable everything */
-    writel(0x0, (void *)(base + PL01X_UARTCR));
+    writel(0x0, (void *)(PL01X_BASE + PL01X_UARTCR));
 
     /*
      * Set baud rate
@@ -60,16 +60,16 @@ void pl01x_init(uint32_t base, uint32_t baudrate, uint32_t input_clock)
     temp = (8 * remainder) / baudrate;
     fraction = (temp >> 1) + (temp & 1);
 
-    writel(divider, (void *)(base + PL01X_UARTIBRD));
-    writel(fraction, (void *)(base + PL01X_UARTFBRD));
+    writel(divider, (void *)(PL01X_BASE + PL01X_UARTIBRD));
+    writel(fraction, (void *)(PL01X_BASE + PL01X_UARTFBRD));
 
     /* Set the UART to be 8 bits, 1 stop bit,
      * no parity, fifo enabled
      */
     writel((PL01X_UARTLCR_H_WLEN_8 | PL01X_UARTLCR_H_FEN),
-            (void *)(base + PL01X_UARTLCR_H));
+            (void *)(PL01X_BASE + PL01X_UARTLCR_H));
 
     /* Finally, enable the UART */
     writel((PL01X_UARTCR_UARTEN | PL01X_UARTCR_TXE | PL01X_UARTCR_RXE),
-            (void *)(base + PL01X_UARTCR));
+            (void *)(PL01X_BASE + PL01X_UARTCR));
 }

@@ -14,13 +14,21 @@ static int cpu_init()
     int i;
 
     printf("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
-
     // FIXME: Split khypervisor_init into per-core initialization and
     //        system-level initializatin to support SMP.
     status = khypervisor_init();
     if (status != HVMM_STATUS_SUCCESS) {
         goto error;
     }
+
+#ifdef FGETS_TEST
+    char name[256 + 1];
+    while(1) {
+        printf("Who are you? ");
+        fgets(name, 256, stdin);
+        printf("\nGlad to meet you, %s.\n",name);
+    }
+#endif
 
     printf("%s", BANNER_STRING); // TODO: make a print_banner();
 

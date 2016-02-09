@@ -76,7 +76,7 @@
  *  @param base pl01x's base address.
  *  @return There is not a data in the FIFO then returns 0, otherwise 1.
  */
-int pl01x_tst_fifo(uint32_t base);
+int pl01x_tst_fifo();
 
 /** @brief Like putc
  *  @param c Character to be written.
@@ -94,5 +94,5 @@ char pl01x_getc();
  *  @param baudrate To set baud rate.
  *  @param input_clock pl01x's clock.
  */
-void pl01x_init(uint32_t base, uint32_t baudrate, uint32_t input_clock);
+void pl01x_init(uint32_t baudrate, uint32_t input_clock);
 #endif
