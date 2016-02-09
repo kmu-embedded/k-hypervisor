@@ -86,7 +86,7 @@ extern int __fputc(int c, FILE *stream);
 int
 __fputc(int c, FILE *stream)
 {
-    uart_putc(c);
+    pl01x_putc(c);
 
 	return(0);
 }
