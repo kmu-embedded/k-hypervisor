@@ -1,56 +1,75 @@
 #include <arch/arm/rtsm-config.h>
+#include <pl01x.h>
+#include <asm_io.h>
 
-
-#define UART0_BASE       0x1C090000
-void uart_print(const char *str)
-{
-    volatile char *pUART = (char *) UART0_BASE;
-    while (*str)
-        *pUART = *str++;
-}
-
-#if 0
-void putchar(const char c)
+void pl01x_putc(const char c)
 {
     /* Wait until there is space in the FIFO */
-    while (*((unsigned int *)(UART0_BASE + 0x18)) & 0x20)
+    while (*((uint32_t *)(PL01X_BASE + 0x18)) & 0x20)
         ;
     /* Send the character */
-    volatile char *pUART = (char *) UART0_BASE;
-    *pUART = c;
+    writel(c, (uint32_t *) PL01X_BASE + PL01X_UARTDR);
 }
-#endif
 
-void uart_putc(const char c)
+int pl01x_tst_fifo(uint32_t base)
 {
-    /* Wait until there is space in the FIFO */
-    while (*((unsigned int *)(UART0_BASE + 0x18)) & 0x20)
+    /* There is not a data in the FIFO */
+    if (readl((void *)(base + PL01X_UARTFR)) & PL01X_UARTFR_RXFE)
+        return 0;
+    else
+        /* There is a data in the FIFO */
+        return 1;
+}
+
+char pl01x_getc()
+{
+    char data;
+    /* Wait until there is data in the FIFO */
+    while (readl((void *)(PL01X_BASE + PL01X_UARTFR)) & PL01X_UARTFR_RXFE)
         ;
-    /* Send the character */
-    volatile char *pUART = (char *) UART0_BASE;
-    *pUART = c;
-}
-
-void uart_print_hex32(unsigned int v)
-{
-    unsigned int mask8 = 0xF;
-    unsigned int c;
-    int i;
-    uart_print("0x");
-    for (i = 7; i >= 0; i--) {
-        c = ((v >> (i * 4)) & mask8);
-        if (c < 10)
-            c += '0';
-        else
-            c += 'A' - 10;
-        uart_putc((char) c);
+    data = *((uint32_t *)(PL01X_BASE + PL01X_UARTDR));
+    /* Check for an error flag */
+    if (data & 0xFFFFFF00) {
+        /* Clear the error */
+        writel(0xFFFFFFFF, (uint32_t *) PL01X_BASE + PL01X_UARTECR);
+        return -1;
     }
+    return data;
 }
 
-// warning: right shift count >= width of type [enabled by default]
-// void uart_print_hex64(unsigned long long v)
-void uart_print_hex64(unsigned long v)
+void pl01x_init(uint32_t base, uint32_t baudrate, uint32_t input_clock)
 {
-    uart_print_hex32(v);
-    uart_print_hex32((unsigned int)(v & 0xFFFFFFFF));
+    unsigned int divider;
+    unsigned int temp;
+    unsigned int remainder;
+    unsigned int fraction;
+
+    /* First, disable everything */
+    writel(0x0, (void *)(base + PL01X_UARTCR));
+
+    /*
+     * Set baud rate
+     *
+     * IBRD = UART_CLK / (16 * BAUD_RATE)
+     * FBRD = RND((64 * MOD(UART_CLK,(16 * BAUD_RATE)))
+     *    / (16 * BAUD_RATE))
+     */
+    temp = 16 * baudrate;
+    divider = input_clock / temp;
+    remainder = input_clock % temp;
+    temp = (8 * remainder) / baudrate;
+    fraction = (temp >> 1) + (temp & 1);
+
+    writel(divider, (void *)(base + PL01X_UARTIBRD));
+    writel(fraction, (void *)(base + PL01X_UARTFBRD));
+
+    /* Set the UART to be 8 bits, 1 stop bit,
+     * no parity, fifo enabled
+     */
+    writel((PL01X_UARTLCR_H_WLEN_8 | PL01X_UARTLCR_H_FEN),
+            (void *)(base + PL01X_UARTLCR_H));
+
+    /* Finally, enable the UART */
+    writel((PL01X_UARTCR_UARTEN | PL01X_UARTCR_TXE | PL01X_UARTCR_RXE),
+            (void *)(base + PL01X_UARTCR));
 }
