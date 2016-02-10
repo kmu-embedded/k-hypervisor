@@ -115,13 +115,13 @@ __start:
 // do not need to execute for every core.
 
     /* Initialize vector for monitor mode to enter NSHyp mode */
-    ldr r1, = __mon_vector
+    ldr r1, = __monitor_vector
     mcr p15, 0, r1, c12, c0, 1      @ Set the vector for monitor mode
 
     smc #0  @ -> trap_smc
     hvc #0  @ -> trap_hyp_entry
 
-    /* Replace the NSHyp vector table for khypervisor*/
+    /* Replace the NSHyp vector table for khypervisor */
     ldr r0, = __hvc_vector
     mcr p15, 4, r0, c12, c0, 0
     bl main
