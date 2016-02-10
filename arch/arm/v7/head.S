@@ -28,7 +28,6 @@ __start:
     /*
      * We assume that the CPU mode is SVC in secure world at this point.
      */
-
     // Set all interrupts to be non-secure
     ldr	r0, = CFG_GIC_BASE_PA+0x1000	@ Dist GIC base
     ldr	r1, [r0, #0x04]			@ Type Register
@@ -64,40 +63,6 @@ __start:
     b __error
 
 2:
-    // UART initialisation (38400 8N1)
-    ldr	r0, =0x1c090000			@ UART base (Versatile Express)
-    mov	r1, #0x10			@ ibrd
-    str	r1, [r0, #0x24]
-    mov	r1, #0xc300
-    orr	r1, #0x0001			@ cr
-    str	r1, [r0, #0x30]
-
-    /*
-     * Initialize UART1, UART2 and UART3 for access from guests, as a workaround,
-     * since initialization sequence in C, in guest, is not clear a the moment
-     * TODO(wonseok): The UART-related code will be moved into C
-     */
-    ldr	r0, =0x1c0a0000			@ UART base (Versatile Express)
-    mov	r1, #0x10			@ ibrd
-    str	r1, [r0, #0x24]
-    mov	r1, #0xc300
-    orr	r1, #0x0001			@ cr
-    str	r1, [r0, #0x30]
-
-    ldr	r0, =0x1c0b0000			@ UART base (Versatile Express)
-    mov	r1, #0x10			@ ibrd
-    str	r1, [r0, #0x24]
-    mov	r1, #0xc300
-    orr	r1, #0x0001			@ cr
-    str	r1, [r0, #0x30]
-
-    ldr	r0, =0x1c0c0000			@ UART base (Versatile Express)
-    mov	r1, #0x10			@ ibrd
-    str	r1, [r0, #0x24]
-    mov	r1, #0xc300
-    orr	r1, #0x0001			@ cr
-    str	r1, [r0, #0x30]
-
     /* Initialize bss section */
     ldr  r2, =__begin_bss
     ldr  r3, =__end_bss

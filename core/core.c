@@ -34,7 +34,6 @@ hvmm_status_t khypervisor_init()
 {
     hvmm_status_t status;
 
-    pl01x_init(115200, 24000000);
 
     __malloc_init();
     memory_init();

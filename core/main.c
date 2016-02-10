@@ -13,6 +13,7 @@ static int cpu_init()
     unsigned char nr_vcpus = 1; // TODO: It will be read from configuration file.
     int i;
 
+    pl01x_init(115200, 24000000);
     printf("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
     // FIXME: Split khypervisor_init into per-core initialization and
     //        system-level initializatin to support SMP.

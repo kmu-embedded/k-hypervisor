@@ -54,8 +54,8 @@ __hvc_vector:
 hvc_trap_handler:
     @ Push registers
     push    {r0-r12}
-    mrs    r0, spsr_hyp
-    mrs    r1, elr_hyp
+    mrs     r0, spsr_hyp
+    mrs     r1, elr_hyp
     push    {r0, r1, lr}
 
     @ service other argument values -> _hyp_hvc_service(sp)
