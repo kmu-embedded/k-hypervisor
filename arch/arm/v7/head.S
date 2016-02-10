@@ -21,10 +21,6 @@ __start:
     tst r0, #0x00010000         @ Compare the value in ID_PFR[12] to 1 or 0.
     beq __error_ge
 
-    // Configure the Generic Timer Frequency
-    ldr	r0, = CFG_CNTFRQ
-    mcr	p15, 0, r0, c14, c0, 0
-
     // Initialize CPU
     mrc	p15, 0, r4, c0, c0, 5		@ MPIDR (ARMv7 only)
     and	r4, r4, #15			@ CPU number
