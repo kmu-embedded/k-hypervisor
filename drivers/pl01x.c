@@ -37,6 +37,43 @@ char pl01x_getc()
     return data;
 }
 
+void pl01x_subinit(unsigned int base, uint32_t baudrate, uint32_t input_clock)
+{
+    unsigned int divider;
+    unsigned int temp;
+    unsigned int remainder;
+    unsigned int fraction;
+
+    /* First, disable everything */
+    writel(0x0, (void *)(base + PL01X_UARTCR));
+
+    /*
+     * Set baud rate
+     *
+     * IBRD = UART_CLK / (16 * BAUD_RATE)
+     * FBRD = RND((64 * MOD(UART_CLK,(16 * BAUD_RATE)))
+     *    / (16 * BAUD_RATE))
+     */
+    temp = 16 * baudrate;
+    divider = input_clock / temp;
+    remainder = input_clock % temp;
+    temp = (8 * remainder) / baudrate;
+    fraction = (temp >> 1) + (temp & 1);
+
+    writel(divider, (void *)(base + PL01X_UARTIBRD));
+    writel(fraction, (void *)(base + PL01X_UARTFBRD));
+
+    /* Set the UART to be 8 bits, 1 stop bit,
+     * no parity, fifo enabled
+     */
+    writel((PL01X_UARTLCR_H_WLEN_8 | PL01X_UARTLCR_H_FEN),
+            (void *)(base + PL01X_UARTLCR_H));
+
+    /* Finally, enable the UART */
+    writel((PL01X_UARTCR_UARTEN | PL01X_UARTCR_TXE | PL01X_UARTCR_RXE),
+            (void *)(base + PL01X_UARTCR));
+}
+
 void pl01x_init(uint32_t baudrate, uint32_t input_clock)
 {
     unsigned int divider;
@@ -72,4 +109,8 @@ void pl01x_init(uint32_t baudrate, uint32_t input_clock)
     /* Finally, enable the UART */
     writel((PL01X_UARTCR_UARTEN | PL01X_UARTCR_TXE | PL01X_UARTCR_RXE),
             (void *)(PL01X_BASE + PL01X_UARTCR));
+
+    pl01x_subinit(0x1C0A0000, baudrate, input_clock);
+    pl01x_subinit(0x1C0B0000, baudrate, input_clock);
+    pl01x_subinit(0x1C0C0000, baudrate, input_clock);
 }
