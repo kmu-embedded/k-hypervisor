@@ -6,12 +6,15 @@
 #include <stdlib.h>
 
 static struct list_head vcpu_list;
-static int vcpu_count;
+static int nr_vcpus;
 
 hvmm_status_t vcpu_setup()
 {
     INIT_LIST_HEAD(&vcpu_list);
-    vcpu_count = 0;
+    if (nr_vcpus != 0) {
+        /* Never this happend */
+        nr_vcpus = 0;
+    }
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -25,7 +28,7 @@ struct vcpu *vcpu_create()
         return vcpu;
     }
 
-    vcpu->vcpuid = vcpu_count++;
+    vcpu->vcpuid = nr_vcpus++;
     vcpu->state = VCPU_DEFINED;
 
     // TODO(casionwoo) : Initialize running_time and actual_running_time after time_module created

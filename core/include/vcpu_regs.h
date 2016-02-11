@@ -49,6 +49,15 @@ struct context_regs {
 };
 
 /* Defines the architecture specific registers */
+#if 0
+struct core_regs {
+    uint32_t gpr[ARCH_REGS_NUM_GPR]; /* R0 - R12 */
+    uint32_t lr;
+    uint32_t pc; /* Program Counter */
+    uint32_t cpsr; /* CPSR */
+} __attribute((packed));
+#endif
+
 struct core_regs {
     uint32_t cpsr; /* CPSR */
     uint32_t pc; /* Program Counter */
