@@ -1,7 +1,9 @@
 #ifndef __MM_H__
 #define __MM_H__
 
-#define PGSIZE_4K 1
+#include <lpaed.h>
+
+#define PGSIZE_4K   1
 #if defined(PGSIZE_4K)
 
 #define ENTRY_SHIFT 9
@@ -61,5 +63,8 @@ typedef enum {
 
 #else
 #endif // PAGE_2M
+
+pgentry set_table(uint32_t paddr);
+pgentry set_entry(uint32_t paddr, uint8_t mem_attr, pgsize_t size);
 
 #endif /* __MM_H__*/
