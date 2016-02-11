@@ -5,6 +5,11 @@
 #include <interrupt.h>
 #include <arch/arm/rtsm-config.h>
 
+#define NS_PL2_PTIMER_IRQ   26
+#define NS_VTIMER_IRQ       27
+#define PL1_PTIMER_IRQ      29
+#define NS_PL1_PTIMER_IRQ   30
+
 enum generic_timer_type {
     GENERIC_TIMER_HYP,      /* IRQ 26 */
     GENERIC_TIMER_VIR,      /* IRQ 27 */
