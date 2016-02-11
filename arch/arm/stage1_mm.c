@@ -1,87 +1,12 @@
 #include <stdio.h>
 #include <armv7_p15.h>
 #include <hvmm_types.h>
-#include <stage1_mm.h>
 #include <stdbool.h>
 #include <mm.h>
 
 static pgentry hyp_l1_pgtable[L1_ENTRY];
 static pgentry hyp_l2_pgtable[L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 static pgentry hyp_l3_pgtable[L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
-
-static pgentry set_table(uint32_t paddr);
-static pgentry set_entry(uint32_t paddr, uint8_t attr_indx, pgsize_t size);
-
-static pgentry set_table(uint32_t paddr)
-{
-    pgentry entry;
-
-    entry.raw = 0;
-    entry.table.valid = 1;
-    entry.table.type = 1;
-    entry.table.base = paddr >> PAGE_SHIFT;
-
-    return entry;
-}
-
-// TODO(wonseok): configure AP(Access Permission) bit
-// currently, we are going to set AP as a read/write only at PL2.
-static pgentry set_entry(uint32_t paddr, uint8_t attr_indx, pgsize_t size)
-{
-    pgentry entry;
-
-    switch(size) {
-        case size_1gb:
-            entry.raw = 0;
-            entry.block.valid = 1;
-            entry.block.type = 0;
-            entry.block.base = paddr >> L1_SHIFT;
-            entry.block.attr_indx = attr_indx;
-            entry.block.ap = 1;
-            entry.block.sh = 3;
-            entry.block.af = 1;
-            entry.block.ng = 1;
-            entry.block.cb = 0;
-            entry.block.pxn = 0;
-            entry.block.xn = 0;
-            break;
-
-        case size_2mb:
-            entry.raw = 0;
-            entry.block.valid = 1;
-            entry.block.type = 0;
-            entry.block.base = paddr >> L2_SHIFT;
-            entry.block.attr_indx = attr_indx;
-            entry.block.ap = 1;
-            entry.block.sh = 3;
-            entry.block.af = 1;
-            entry.block.ng = 1;
-            entry.block.cb = 0;
-            entry.block.pxn = 0;
-            entry.block.xn = 0;
-            break;
-
-        case size_4kb:
-            entry.raw = 0;
-            entry.page.valid = 1;
-            entry.page.type = 1;
-            entry.page.base = paddr >> L3_SHIFT;
-            entry.page.attr_indx = attr_indx;
-            entry.page.ap = 1;
-            entry.page.sh = 3;
-            entry.page.af = 1;
-            entry.page.ng = 1;
-            entry.page.cb = 0;
-            entry.page.pxn = 0;
-            entry.page.xn = 0;
-            break;
-
-        default:
-            break;
-    }
-
-    return entry;
-}
 
 #define HSCTLR_TE        (1 << 30)      /**< Thumb Exception enable. */
 #define HSCTLR_EE        (1 << 25)      /**< Exception Endianness. */
@@ -139,20 +64,21 @@ hvmm_status_t stage1_pgtable_init()
     int i, j;
 
     paddr = 0x00000000ULL;
-    hyp_l1_pgtable[0] = set_entry(paddr, MT_DEVICE, size_1gb);
+    hyp_l1_pgtable[0] = set_entry(paddr, MT_DEVICE, 0, size_1gb);
 
     paddr += 0x40000000; // start with 0x4000_0000
-    hyp_l1_pgtable[1] = set_entry(paddr, MT_NONCACHEABLE, size_1gb);
+    hyp_l1_pgtable[1] = set_entry(paddr, MT_NONCACHEABLE, 3, size_1gb);
+    hyp_l1_pgtable[1].block.valid = 0;
 
     paddr += 0x40000000; // start with 0x8000_0000
-    hyp_l1_pgtable[2] = set_entry(paddr, MT_WRITEBACK_NO_ALLOC, size_1gb);
+    hyp_l1_pgtable[2] = set_entry(paddr, MT_WRITEBACK_NO_ALLOC, 0, size_1gb);
 
     paddr += 0x40000000; // start with 0xC000_0000
-    hyp_l1_pgtable[3] = set_table((uint32_t) &hyp_l2_pgtable[0]);
+    hyp_l1_pgtable[3] = set_table((uint32_t) &hyp_l2_pgtable[0], 1);
     for(i = 0; i < 512; i++) {
-        hyp_l2_pgtable[i] = set_table((uint32_t) hyp_l3_pgtable[i]);
+        hyp_l2_pgtable[i] = set_table((uint32_t) hyp_l3_pgtable[i], 1);
         for (j = 0; j < 512; paddr += 0x1000, j++) {
-            hyp_l3_pgtable[i][j] = set_entry(paddr, MT_WRITEBACK_RW_ALLOC, size_4kb);
+            hyp_l3_pgtable[i][j] = set_entry(paddr, MT_WRITEBACK_RW_ALLOC, 0, size_4kb);
         }
     }
 
