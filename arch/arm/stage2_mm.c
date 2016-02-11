@@ -1,4 +1,3 @@
-#include <stage2_mm.h>
 #include <stdio.h>
 #include <armv7_p15.h>
 #include <hvmm_trace.h>
@@ -6,74 +5,15 @@
 #include <mm.h>
 #include "vtcr.h"
 
-
-vm_pgentry vm_l1_pgtable[NUM_GUESTS_STATIC][L1_ENTRY];
-vm_pgentry vm_l2_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
-vm_pgentry vm_l3_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
-
-vm_pgentry set_entry(uint64_t pa, enum memattr mattr, pgsize_t size)
-{
-    vm_pgentry entry;
-
-    switch(size) {
-        case size_1gb:
-            entry.raw = 0;
-            entry.page.valid = 1;
-            entry.page.type = 0;
-            entry.page.base = pa >> L1_SHIFT;
-            entry.page.mem_attr = mattr & MEM_ATTR_MASK;
-            entry.page.ap = 3;
-            entry.page.sh = 0;
-            entry.page.af = 1;
-            entry.page.ng = 0;
-            entry.page.cb = 0;
-            entry.page.pxn = 0;
-            entry.page.reserved = 0;
-            break;
-
-        case size_2mb:
-            entry.raw = 0;
-            entry.page.valid = 1;
-            entry.page.type = 0;
-            entry.page.base = pa >> L2_SHIFT;
-            entry.page.mem_attr = mattr & MEM_ATTR_MASK;
-            entry.page.ap = 3;
-            entry.page.sh = 0;
-            entry.page.af = 1;
-            entry.page.ng = 0;
-            entry.page.cb = 0;
-            entry.page.pxn = 0;
-            entry.page.reserved = 0;
-            break;
-
-        case size_4kb:
-            entry.raw = 0;
-            entry.page.valid = 1;
-            entry.page.type = 1;
-            entry.page.base = pa >> L3_SHIFT;
-            entry.page.mem_attr = mattr & MEM_ATTR_MASK;
-            entry.page.ap = 3;
-            entry.page.sh = 0;
-            entry.page.af = 1;
-            entry.page.ng = 0;
-            entry.page.cb = 0;
-            entry.page.pxn = 0;
-            entry.page.reserved = 0;
-            break;
-
-        default:
-            break;
-    }
-
-    return entry;
-}
-
+static pgentry vm_l1_pgtable[NUM_GUESTS_STATIC][L1_ENTRY];
+static pgentry vm_l2_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
+static pgentry vm_l3_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 
 void guest_memory_init_mmu(void)
 {
     HVMM_TRACE_ENTER();
     uint32_t vtcr = 0;
-    /* Basically, we set write policy to writeback for highest performance */
+    /* Basically, we set_vm write policy to writeback for highest performance */
     /* Set pagetable lookup level at 1 for stage-2 address translation */
     vtcr |= (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
     /* Set outer cacheability attribute */
@@ -88,17 +28,6 @@ void guest_memory_init_mmu(void)
     HVMM_TRACE_EXIT();
 }
 
-static vm_pgentry set_table(uint32_t paddr)
-{
-    vm_pgentry entry;
-
-    entry.raw = 0;
-    entry.table.base = paddr >> PAGE_SHIFT;
-    entry.table.type = 1;
-
-    return entry;
-}
-
 void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
 {
     uint32_t i, j;
@@ -111,9 +40,9 @@ void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
     uint32_t l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
     uint32_t l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
 
-    vm_pgentry *l1_base_addr = (vm_pgentry *) _vmid_ttbl;
-    vm_pgentry *l2_base_addr = l1_base_addr[l1_index].table.base << PAGE_SHIFT;
-    vm_pgentry *l3_base_addr;
+    pgentry *l1_base_addr = (pgentry *) _vmid_ttbl;
+    pgentry *l2_base_addr = l1_base_addr[l1_index].table.base << PAGE_SHIFT;
+    pgentry *l3_base_addr;
 
     l1_base_addr[l1_index].table.valid = 1;;
     size = guest_map->size;
@@ -128,7 +57,7 @@ void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
             nr_pages = L3_ENTRY;
 
         for (j = 0; j < nr_pages; j++) {
-            l3_base_addr[l3_index + j] = set_entry(pa, guest_map->attr, size_4kb);
+            l3_base_addr[l3_index + j] = set_entry(pa, guest_map->attr, 3, size_4kb);
             pa += LPAE_PAGE_SIZE;
             size -= LPAE_PAGE_SIZE;
         }
@@ -140,12 +69,12 @@ void init_pgtable(vmid_t vmid)
     int l1_index, l2_index;
 
     for(l1_index = 0; l1_index < L1_ENTRY; l1_index++) {
-        vm_l1_pgtable[vmid][l1_index] = set_table(vm_l2_pgtable[vmid][l1_index]);
+        vm_l1_pgtable[vmid][l1_index] = set_table(vm_l2_pgtable[vmid][l1_index], 0);
     }
 
     for(l1_index = 0; l1_index < L1_ENTRY; l1_index++) {
         for(l2_index = 0; l2_index < L2_ENTRY; l2_index++) {
-            vm_l2_pgtable[vmid][l1_index][l2_index] = set_table(vm_l3_pgtable[vmid][l1_index][l2_index]);
+            vm_l2_pgtable[vmid][l1_index][l2_index] = set_table(vm_l3_pgtable[vmid][l1_index][l2_index], 0);
         }
     }
 }
