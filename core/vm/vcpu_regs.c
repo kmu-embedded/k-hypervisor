@@ -312,13 +312,10 @@ hvmm_status_t vcpu_regs_restore(struct vcpu_regs *vcpu_regs, struct core_regs *c
 {
     struct context_regs *context_regs = &vcpu_regs->context_regs;
 
+    // 'current_regs == 0' means there is no vcpu are running on hypervisor.
+    // We need a way to boot first vcpu up as below.
     if (!current_regs) {
-        /* init -> hyp mode -> guest */
-        /*
-         * The actual context switching (Hyp to Normal mode)
-         * handled in the asm code
-         */
-        __mon_switch_to_guest_context(&vcpu_regs->core_regs);
+        __set_vcpu_context_first_time(&vcpu_regs->core_regs);
         return HVMM_STATUS_SUCCESS;
     }
 

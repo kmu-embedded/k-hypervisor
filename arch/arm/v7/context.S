@@ -1,10 +1,11 @@
-    .global __mon_switch_to_guest_context
-__mon_switch_to_guest_context:    @ struct core_regs *r0
-    ldmfd    r0!, {r1, r3, lr}
-    msr     spsr_hyp, r1
-    msr     elr_hyp, r3
-    ldm     r0, {r0-r12}
+    .global __set_vcpu_context_first_time
+__set_vcpu_context_first_time:    @ r0 = vcpu_regs->core_regs
+    ldmfd    r0!, {r1, r2}
+    msr     spsr_hyp, r1    @ set spsr
+    msr     elr_hyp, r2     @ set return address
+    ldm     r0, {r0-r12}    @ Currently, vcpu has no stack pointer.
+                            @ so, restoring r0-r12 is enough.
     clrex
     eret
-.type __mon_switch_to_guest_context, %function
+.type __set_vcpu_context_first_time, %function
 
