@@ -1,5 +1,4 @@
 #include <arch/arm/rtsm-config.h>
-
     .syntax	unified
     .arch_extension sec
     .arch_extension virt
@@ -10,14 +9,19 @@
 __start:
     cpsid aif                   @ Disable the all interrupts
 
-    // Check the virtualization Extensions(VE)
+    // Check whether or no currnt cpu mode is in secure state.
+    mrc p15, 0, r0, c1, c1, 0   @ Read Secure Configuration Register
+    teq r0, #0x1
+    beq __error_ns
+
+    // Check the virtualization Extensions(VE).
     mrc p15, 0, r0, c0, c1, 1   @ Read a Processor Feature Register 1(ID_PFR1).
     tst r0, #0x00001000         @ Compare the value in ID_PFR[12] to 1 or 0.
     beq __error_ve              @ If ID_PFR[12] is equal to 0, stop here.
 
-    // Check the Generic Timer Extenion
+    // Check the Generic Timer Extenion.
     // TODO(wonseok): We will move the generic timer configuration into C code.
-    mrc p15, 0, r0, c0, c1, 1   @ Read a Processor Feature Register 1(ID_PFR1).
+    @ mrc p15, 0, r0, c0, c1, 1   @ Read a Processor Feature Register 1(ID_PFR1).
     tst r0, #0x00010000         @ Compare the value in ID_PFR[12] to 1 or 0.
     beq __error_ge
 
@@ -28,7 +32,9 @@ __start:
     /*
      * We assume that the CPU mode is SVC in secure world at this point.
      */
-    // Set all interrupts to be non-secure
+    @ FIXME(wonseok): Do we need to execute procedure as below for each core?
+    @ Set all interrupts to be non-secure
+    @ TODO(wonseok): Replace named constrant.
     ldr	r0, = CFG_GIC_BASE_PA+0x1000	@ Dist GIC base
     ldr	r1, [r0, #0x04]			@ Type Register
     cmp	r4, #0
@@ -90,8 +96,8 @@ __start:
 	@ Never reached
     b __error
 
+__error_ns:
 __error_ve:
 __error_ge:
 __error:
-    wfe
     b __error
