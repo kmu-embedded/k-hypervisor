@@ -3,6 +3,8 @@
 CROSS_COMPILE		?= arm-linux-gnueabihf-
 PROCESSOR		?= cortex-a15
 
+TOOLCHAIN_VERSION_POSTFIX = -4.7
+
 DEBUG_FLAG		= -g
 CONFIG_FLAG		= -mcpu=$(PROCESSOR) -marm
 
