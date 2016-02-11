@@ -1,6 +1,7 @@
 #include <guest_memory_hw.h>
 #include <armv7_p15.h>
-#include <stage2_mm.h>
+//#include <stage2_mm.h>
+#include <lpaed.h>
 #include <stdio.h>
 
 #define L2_ENTRY_MASK 0x1FF
@@ -33,7 +34,7 @@
  * @brief Obtains TTBL_L3 entry.
  * Returns the address of TTBL l3 at 'index_l2' entry of L2.
  *
- * - vm_pgentry *TTBL_L3(vm_pgentry *ttbl_l2, uint32_t index_l2);
+ * - pgentry *TTBL_L3(pgentry *ttbl_l2, uint32_t index_l2);
  *
  */
 
@@ -88,7 +89,7 @@ static void guest_memory_stage2_enable(int enable)
  * @param ttbl Level 1 translation table of the guest.
  * @return HVMM_STATUS_SUCCESS only.
  */
-static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, vm_pgentry *ttbl)
+static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, pgentry *ttbl)
 {
     uint64_t vttbr;
     /*
