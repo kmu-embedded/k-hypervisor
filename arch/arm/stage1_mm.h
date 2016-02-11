@@ -97,9 +97,10 @@ typedef union stage1_pgentry pgentry;
  * STRONG_ORDERED 0000_0000
  * DEVICE         0000_0100
  * NON_CACHEABLE  0100_0100
- * WRITE_THROUGH_NO_ALLOC 1000_1000
- * WRITE_BACK_NO_ALLOC 1100_1100
- * WRITE_BACK_RW_ALLOC 1111_1111
+ * WRITETHROUGH_NO_ALLOC 1000_1000
+ * WRITETHROUGH_RW_ALLOC 1011_1011
+ * WRITEBACK_NO_ALLOC 1100_1100
+ * WRITEBACK_RW_ALLOC 1111_1111
  *
  * - Used initial value of MAIR0, MAIR1.
  * <pre>
@@ -107,11 +108,11 @@ typedef union stage1_pgentry pgentry;
  * |-----|-----------|-----------|-----------|-----------|
  * |MAIR0| 1000 1000 | 0100 0100 | 0000 0100 | 0000 0000 |
  * |-----|-----------|-----------|-----------|-----------|
- * |MAIR1| 0000 0000 | 0000 0000 | 1111 1111 | 1100 1100 |
+ * |MAIR1| 0000 0000 | 1111 1111 | 1100 1100 | 1011 1011 |
  */
 
 #define MAIR0_VALUE 0x88440400
-#define MAIR1_VALUE 0x0000FFCC
+#define MAIR1_VALUE 0x00FFCCBB
 
 hvmm_status_t stage1_pgtable_init();
 hvmm_status_t stage1_mmu_init();
