@@ -1,8 +1,6 @@
 #ifndef __STAGE1_MM_H__
 #define __STAGE1_MM_H__
 
-#include <hvmm_types.h>
-
 union stage1_pgentry
 {
     uint64_t raw;
