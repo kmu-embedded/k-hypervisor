@@ -36,12 +36,13 @@ typedef enum {
 } pgsize_t;
 
 typedef enum {
-    MT_STRONGLY_ORDERED,
-    MT_DEVICE,
-    MT_NONCACHEABLE,
-    MT_WRITEBACK,
-    MT_WRITETHROUGH,
-    MT_WRITETHROUGH_RW_ALLOC
+    MT_STRONGLY_ORDERED,    // 0
+    MT_DEVICE,              // 1
+    MT_NONCACHEABLE,        // 2
+    MT_WRITETHROUGH_NO_ALLOC, // 3
+    MT_WRITETHROUGH_RW_ALLOC,  // 4
+    MT_WRITEBACK_NO_ALLOC, // 5
+    MT_WRITEBACK_RW_ALLOC  // 6
 } attr_indx_t;
 
 typedef enum {

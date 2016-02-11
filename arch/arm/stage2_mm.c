@@ -4,8 +4,8 @@
 #include <hvmm_trace.h>
 #include <arch/arm/rtsm-config.h>
 #include <mm.h>
+#include "vtcr.h"
 
-#define MEM_ATTR_MASK   0x0F
 
 vm_pgentry vm_l1_pgtable[NUM_GUESTS_STATIC][L1_ENTRY];
 vm_pgentry vm_l2_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
@@ -68,44 +68,27 @@ vm_pgentry set_entry(uint64_t pa, enum memattr mattr, pgsize_t size)
     return entry;
 }
 
-/* VTCR ATTRIBUTES */
-#define VTCR_SL0_SECOND_LEVEL       0x0
-#define VTCR_SL0_FIRST_LEVEL        0x1
-#define VTCR_SL0_RESERVED           0x2
-#define VTCR_SL0_UNPREDICTABLE      0x3
-#define VTCR_SL0_BIT                6
-#define VTCR_ORGN0_ONC              0X0
-#define VTCR_ORGN0_OWBWAC           0x1
-#define VTCR_ORGN0_OWTC             0x2
-#define VTCR_ORGN0_OWBWAC           0x3
-#define VTCR_ORGN0_BIT              10
-#define VTCR_IRGN0_INC              0X0
-#define VTCR_IRGN0_IWBWAC           0x1
-#define VTCR_IRGN0_IWTC             0x2
-#define VTCR_IRGN0_IWBWAC           0x3
-#define VTCR_IRGN0_BIT              8
 
 void guest_memory_init_mmu(void)
 {
-    uint32_t vtcr = 0;
-
     HVMM_TRACE_ENTER();
-
-    /* Stage-2 Translation Pagetable start lookup configuration */
+    uint32_t vtcr = 0;
+    /* Basically, we set write policy to writeback for highest performance */
+    /* Set pagetable lookup level at 1 for stage-2 address translation */
     vtcr |= (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
-    /* Outer cacheability attribute */
-    vtcr |= (VTCR_ORGN0_OWBWAC << VTCR_ORGN0_BIT);
-    /* Inner cacheability attribute */
-    vtcr |= (VTCR_IRGN0_IWBWAC << VTCR_IRGN0_BIT);
-
+    /* Set outer cacheability attribute */
+    vtcr |= (VTCR_WRITEBACK_CACHEABLE << VTCR_ORGN0_BIT);
+    /* Set inner cacheability attribute */
+    vtcr |= (VTCR_WRITEBACK_CACHEABLE << VTCR_IRGN0_BIT);
     write_vtcr(vtcr);
+
     vtcr = read_vtcr();
     printf("vtcr: 0x%08x\n", vtcr);
 
     HVMM_TRACE_EXIT();
 }
 
-vm_pgentry set_table(uint32_t paddr)
+static vm_pgentry set_table(uint32_t paddr)
 {
     vm_pgentry entry;
 

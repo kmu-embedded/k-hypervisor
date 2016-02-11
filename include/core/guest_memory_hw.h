@@ -7,16 +7,14 @@
  * @brief Enum values of the stage2 memory attribute.
  *
  * \ref Memory_attribute "Memory attribute configuration"
+ * We only support type of memory attributes as below:
  */
 enum memattr {
-    MEMATTR_SO = 0x0,               /* Strongly Ordered */
-    MEMATTR_DM = 0x1,               /* Device memory */
-    MEMATTR_NORMAL_ONC = 0x4,       /* Outer Non-cacheable */
-    MEMATTR_NORMAL_OWT = 0x8,
-    MEMATTR_NORMAL_OWB = 0xC,
-    MEMATTR_NORMAL_INC = 0x1,
-    MEMATTR_NORMAL_IWT = 0x2,
-    MEMATTR_NORMAL_IWB = 0x3,
+    MEMATTR_STRONGLY_ORDERED        = 0x0,  // 00_00
+    MEMATTR_DEVICE_MEMORY           = 0x1,  // 00_01
+    MEMATTR_NORMAL_NON_CACHEABLE    = 0x5,  // 01_01
+    MEMATTR_NORMAL_WT_CACHEABLE     = 0xA,  // 10_10
+    MEMATTR_NORMAL_WB_CACHEABLE     = 0xF,  // 11_11
 };
 
 /**

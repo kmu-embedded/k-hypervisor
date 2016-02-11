@@ -94,8 +94,8 @@ static pgentry set_entry(uint32_t paddr, uint8_t attr_indx, pgsize_t size)
 #define HSCTLR_M         (1 << 0)       /**< MMU enable. */
 #define HSCTLR_BASE      0x30c51878     /**< HSTCLR Base address */
 
-#define OUTER_WRITETHROUGH_CACHEABLE (WRITETHROUGH_CACHEABLE << 10)
-#define INNER_WRITETHROUGH_CACHEABLE (WRITETHROUGH_CACHEABLE << 12)
+#define OUTER_WRITEBACK_CACHEABLE (WRITEBACK_CACHEABLE << 10)
+#define INNER_WRITEBACK_CACHEABLE (WRITEBACK_CACHEABLE << 12)
 
 uint32_t set_cache(bool state)
 {
@@ -112,9 +112,9 @@ hvmm_status_t stage1_mmu_init(void)
 
     /* HTCR: Hyp Translation Control Register */
     /* Shareability, Outer Cacheability, Inner Cacheability */
-    htcr |= (INNER_SHAREABLE << 12 | OUTER_WRITETHROUGH_CACHEABLE
-           | INNER_WRITETHROUGH_CACHEABLE );
+    htcr |= (INNER_SHAREABLE << 12 | OUTER_WRITEBACK_CACHEABLE | INNER_WRITEBACK_CACHEABLE );
     // TODO(wonseok): How to configure T0SZ?
+
     write_htcr(htcr);
     // FIXME(casionwoo) : Current printf can't support 64-bit, it should be fixed
     printf("htcr: 0x%x%x\n", htcr);
@@ -127,8 +127,7 @@ hvmm_status_t stage1_mmu_init(void)
     /* HSCTLR : Hyp System Control Register*/
     /* MMU, Alignment enable */
     hsctlr = (HSCTLR_A | HSCTLR_M);
-    /* I-Cache, D-Cache init from hsctlr*/
-    hsctlr |= set_cache(true);
+    hsctlr |= set_cache(true); /* I-Cache, D-Cache init from hsctlr*/
     write_hsctlr(hsctlr);
 
     return HVMM_STATUS_SUCCESS;
@@ -146,14 +145,14 @@ hvmm_status_t stage1_pgtable_init()
     hyp_l1_pgtable[1] = set_entry(paddr, MT_NONCACHEABLE, size_1gb);
 
     paddr += 0x40000000; // start with 0x8000_0000
-    hyp_l1_pgtable[2] = set_entry(paddr, MT_WRITEBACK, size_1gb);
+    hyp_l1_pgtable[2] = set_entry(paddr, MT_WRITEBACK_NO_ALLOC, size_1gb);
 
     paddr += 0x40000000; // start with 0xC000_0000
     hyp_l1_pgtable[3] = set_table((uint32_t) &hyp_l2_pgtable[0]);
     for(i = 0; i < 512; i++) {
         hyp_l2_pgtable[i] = set_table((uint32_t) hyp_l3_pgtable[i]);
         for (j = 0; j < 512; paddr += 0x1000, j++) {
-            hyp_l3_pgtable[i][j] = set_entry(paddr, MT_WRITETHROUGH_RW_ALLOC, size_4kb);
+            hyp_l3_pgtable[i][j] = set_entry(paddr, MT_WRITEBACK_RW_ALLOC, size_4kb);
         }
     }
 
