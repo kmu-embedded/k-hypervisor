@@ -84,7 +84,7 @@
 /*
  * 7.18.1.1 Exact-width integers
  */
-#include <arch-arm/stdint.h>
+#include <asm/stdint.h>
 
 /*
  * 7.18.2.1 Limits of exact-wdith integer types

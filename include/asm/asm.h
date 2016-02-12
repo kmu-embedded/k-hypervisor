@@ -1,10 +1,10 @@
 /*********************************************************************
  *
  * Copyright (C) 2003-2004,  National ICT Australia (NICTA)
- *                
+ *
  * File path:     l4/arm/asm.h
- * Description:   Assembler macros etc. 
- *                
+ * Description:   Assembler macros etc.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,7 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,9 +25,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *                
+ *
  * $Id: asm.h,v 1.3 2004/06/04 08:20:12 htuch Exp $
- *                
+ *
  ********************************************************************/
 
 #ifndef __L4__ARM__ASM_H__
@@ -62,7 +62,7 @@ $name
 #define END_PROC(name)				\
     ;
 
-/* 
+/*
  * The ADS and RVCT cpps do different things.  ADS puts blank space at the
  * start of lines, while RVCT puts no space at all! :(
  */
