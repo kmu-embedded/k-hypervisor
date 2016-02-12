@@ -44,6 +44,8 @@ INCLUDES		+= -I$(ROOT)/$(LIB)/c/include
 INCLUDES		+= -I$(ROOT)/$(TESTS)
 INCLUDES		+= -I$(ROOT)/$(TESTS)/libs
 
+INCLUDES		+= -I$(ROOT)/$(ARCH)/$(ARM)/platform
+
 INCLUDES		+= -I$(ROOT)/$(INC)/asm
 
 CC			= $(CROSS_COMPILE)gcc

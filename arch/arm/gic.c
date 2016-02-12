@@ -28,7 +28,7 @@
  * @brief Registers for Generic Interrupt Controller(GIC)
  */
 struct gic {
-    uint32_t baseaddr;          /**< GIC base address */
+    uint32_t base;          /**< GIC base address */
     volatile uint32_t *ba_gicd; /**< Distributor */
     volatile uint32_t *ba_gicc; /**< CPU interface */
     volatile uint32_t *ba_gich; /**< Virtual interface control (common)*/
@@ -49,7 +49,7 @@ static void gic_dump_registers(void)
     printf("midr: 0x%08x\n", midr);
     if ((midr & MIDR_MASK_PPN) == MIDR_PPN_CORTEXA15) {
         uint32_t value;
-        printf("cbar: 0x%08x\n", _gic.baseaddr);
+        printf("cbar: 0x%08x\n", _gic.base);
         printf("ba_gicd: 0x%08x\n", (uint32_t)_gic.ba_gicd);
         printf("ba_gicc: 0x%08x\n", (uint32_t)_gic.ba_gicc);
         printf("ba_gich: 0x%08x\n", (uint32_t)_gic.ba_gich);
@@ -86,12 +86,12 @@ static uint64_t gic_periphbase_pa(void)
     return periphbase;
 }
 /**
- * @brief   Return address of GIC memory map to _gic.baseaddr.
+ * @brief   Return address of GIC memory map to _gic.base.
  * @param   va_base Base address(Physical) of GIC.
  * @return  If target architecture is Cortex-A15 then return success,
  *          otherwise return failed.
  */
-static hvmm_status_t gic_init_baseaddr(uint32_t *va_base)
+static hvmm_status_t gic_init_base(uint32_t *va_base)
 {
     /* MIDR[15:4], CRn:c0, Op1:0, CRm:c0, Op2:0  == 0xC0F (Cortex-A15) */
     /* Cortex-A15 C15 System Control, C15 Registers */
@@ -113,13 +113,13 @@ static hvmm_status_t gic_init_baseaddr(uint32_t *va_base)
             va_base = (uint32_t *)(uint32_t)(gic_periphbase_pa() & \
                     0x00000000FFFFFFFFULL);
         }
-        _gic.baseaddr = (uint32_t) va_base;
-        printf("cbar: 0x%08x\n", _gic.baseaddr);
-        _gic.ba_gicd = (uint32_t *)(_gic.baseaddr + GIC_OFFSET_GICD);
-        _gic.ba_gicc = (uint32_t *)(_gic.baseaddr + GIC_OFFSET_GICC);
-        _gic.ba_gich = (uint32_t *)(_gic.baseaddr + GIC_OFFSET_GICH);
-        _gic.ba_gicv = (uint32_t *)(_gic.baseaddr + GIC_OFFSET_GICV);
-        _gic.ba_gicvi = (uint32_t *)(_gic.baseaddr + GIC_OFFSET_GICVI);
+        _gic.base = (uint32_t) va_base;
+        printf("cbar: 0x%08x\n", _gic.base);
+        _gic.ba_gicd = (uint32_t *)(_gic.base + GIC_OFFSET_GICD);
+        _gic.ba_gicc = (uint32_t *)(_gic.base + GIC_OFFSET_GICC);
+        _gic.ba_gich = (uint32_t *)(_gic.base + GIC_OFFSET_GICH);
+        _gic.ba_gicv = (uint32_t *)(_gic.base + GIC_OFFSET_GICV);
+        _gic.ba_gicvi = (uint32_t *)(_gic.base + GIC_OFFSET_GICVI);
         result = HVMM_STATUS_SUCCESS;
     } else {
         printf("GICv2 Unsupported\n\r");
@@ -263,7 +263,7 @@ hvmm_status_t gic_init(void)
      * Let is use the PA for the time being
      */
     if (!cpu) {
-        result = gic_init_baseaddr((void *)CFG_GIC_BASE_PA);
+        result = gic_init_base((void *)CFG_GIC_BASE_PA);
         if (result == HVMM_STATUS_SUCCESS)
             gic_dump_registers();
          /*

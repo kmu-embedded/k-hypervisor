@@ -1,6 +1,6 @@
 include config.mk
 
-ARCH_DIRS		= $(ROOT)/$(ARCH) $(ROOT)/$(ARCH)/$(VERSION)
+ARCH_DIRS		= $(ROOT)/$(ARCH) $(ROOT)/$(ARCH)/$(VERSION) $(ROOT)/$(ARCH)/platform
 CORE_DIRS		= $(ROOT)/$(CORE) $(ROOT)/$(CORE)/sched $(ROOT)/$(CORE)/vm
 DRIVERS_DIRS		= $(ROOT)/$(DRV) $(ROOT)/$(DRV)/vdev
 LIB_DIRS		= $(ROOT)/$(LIB)/c/src $(ROOT)/$(LIB)/c/src/arch-arm $(ROOT)/$(LIB)/c/src/sys-baremetal	\
@@ -53,6 +53,7 @@ $(MAP): $(OUTPUT)
 $(OUTPUT): $(MACHINE).lds $(OBJS)
 	$(CC) $(CPPFLAGS) -e __start -T $(BUILD)/$(MACHINE).lds -o $(BUILD)/$@ \
 		$(BUILD)/$(ARCH)/*.o	\
+		$(BUILD)/$(ARCH)/platform/*.o	\
 		$(BUILD)/$(ARCH)/$(VERSION)/*.o	\
 		$(BUILD)/$(CORE)/*.o	\
 		$(BUILD)/$(CORE)/sched/*.o	\
