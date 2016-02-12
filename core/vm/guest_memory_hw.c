@@ -5,10 +5,8 @@
 #include <lpae.h>
 
 #define L2_ENTRY_MASK 0x1FF
-#define L2_SHIFT 21
 
 #define L3_ENTRY_MASK 0x1FF
-#define L3_SHIFT 12
 
 #define VTTBR_INITVAL                                   0x0000000000000000ULL
 #define VTTBR_VMID_MASK                                 0x00FF000000000000ULL
