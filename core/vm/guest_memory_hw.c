@@ -1,8 +1,8 @@
+#include <stdio.h>
 #include <guest_memory_hw.h>
 #include <armv7_p15.h>
-//#include <stage2_mm.h>
-#include <lpaed.h>
-#include <stdio.h>
+
+#include <lpae.h>
 
 #define L2_ENTRY_MASK 0x1FF
 #define L2_SHIFT 21
