@@ -26,7 +26,6 @@ MAKE			= make
 INCLUDES		=  -I $(ROOT)/
 INCLUDES		+= -I $(ROOT)/$(INC)
 INCLUDES		+= -I $(ROOT)/$(INC)/board
-INCLUDES		+= -I $(ROOT)/$(INC)/$(LIB)/c
 INCLUDES		+= -I $(ROOT)/$(INC)/$(LIB)/bsd
 INCLUDES		+= -I $(ROOT)/$(INC)/$(LIB)
 INCLUDES		+= -I $(ROOT)/$(INC)/$(CORE)
@@ -39,6 +38,7 @@ INCLUDES		+= -I $(ROOT)/$(CORE)
 INCLUDES		+= -I $(ROOT)/$(CORE)/$(INC)
 
 INCLUDES		+= -I $(ROOT)/$(LIB)
+INCLUDES		+= -I $(ROOT)/$(LIB)/c/include
 
 INCLUDES		+= -I $(ROOT)/$(TESTS)
 INCLUDES		+= -I $(ROOT)/$(TESTS)/libs
