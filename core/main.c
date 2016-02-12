@@ -1,9 +1,10 @@
 #include <vm.h>
 #include <core.h>
 #include <scheduler.h>
-//#include <arch/arm/rtsm-config.h>
 #include <version.h>
 #include <hvmm_trace.h>
+
+#include <platform.h>
 
 static vmid_t vm[NUM_GUESTS_STATIC];
 
@@ -13,8 +14,6 @@ static int cpu_init()
     unsigned char nr_vcpus = 1; // TODO: It will be read from configuration file.
     int i;
 
-    pl01x_init(115200, 24000000);
-    printf("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
     // FIXME: Split khypervisor_init into per-core initialization and
     //        system-level initializatin to support SMP.
     status = khypervisor_init();
@@ -22,16 +21,7 @@ static int cpu_init()
         goto error;
     }
 
-#ifdef FGETS_TEST
-    char name[256 + 1];
-    while(1) {
-        printf("Who are you? ");
-        fgets(name, 256, stdin);
-        printf("\nGlad to meet you, %s.\n",name);
-    }
-#endif
-
-    printf("%s", BANNER_STRING); // TODO: make a print_banner();
+    printf("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
 
     // TODO: Rest parts of cpu_init() will be moved per-core initialization.
     sched_init();
@@ -56,6 +46,7 @@ static int cpu_init()
      * TODO: Rename guest_sched_start to do_schedule or something others.
      *       do_schedule(vmid) or do_schedule(vcpu_id)
      */
+    printf("%s", BANNER_STRING); // TODO: make a print_banner();
     guest_sched_start();
 
     /* The code flow must not reach here */
@@ -68,6 +59,7 @@ error:
 // C Entry point
 int main(void)
 {
+    init_platform();
     cpu_init();
 
     return 0;

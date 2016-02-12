@@ -64,7 +64,7 @@ hvmm_status_t stage1_pgtable_init()
     hyp_l1_pgtable[1].block.valid = 0;
 
     paddr += 0x40000000; // start with 0x8000_0000
-    hyp_l1_pgtable[2] = set_entry(paddr, MT_WRITEBACK_NO_ALLOC, 0, size_1gb);
+    hyp_l1_pgtable[2] = set_entry(paddr, MT_WRITEBACK_RW_ALLOC, 0, size_1gb);
 
     paddr += 0x40000000; // start with 0xC000_0000
     hyp_l1_pgtable[3] = set_table((uint32_t) &hyp_l2_pgtable[0], 1);

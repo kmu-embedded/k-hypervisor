@@ -1,11 +1,13 @@
 #include <core.h>
-#include <memory.h>
+//#include <memory.h>
 #include <interrupt.h>
 #include <timer.h>
 #include <vdev.h>
 #include <tests.h>
 #include <stdint.h>
 #include <rtsm-config.h>
+
+#include <platform.h>
 
 #define PLATFORM_BASIC_TESTS 4
 
@@ -34,9 +36,6 @@ hvmm_status_t khypervisor_init()
 {
     hvmm_status_t status;
 
-
-    __malloc_init();
-    memory_init();
     if ((status = interrupt_init()) == HVMM_STATUS_UNKNOWN_ERROR) {
         printf("[%s] interrupt initialization failed\n", __func__);
         return status;
