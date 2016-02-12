@@ -21,6 +21,7 @@ NM			= $(CROSS_COMPILE)nm
 OBJCOPY			= $(CROSS_COMPILE)objcopy
 
 INCLUDES		= -I $(INC)
+INCLUDES		+= -I $(INC)/board
 INCLUDES		+= -I $(INC)/$(LIB)/c 
 INCLUDES		+= -I $(INC)/$(LIB)/bsd
 INCLUDES		+= -I $(INC)/$(LIB)

@@ -5,7 +5,7 @@
 #include <vdev.h>
 #include <tests.h>
 #include <stdint.h>
-#include <arch/arm/rtsm-config.h>
+#include <rtsm-config.h>
 
 #define PLATFORM_BASIC_TESTS 4
 

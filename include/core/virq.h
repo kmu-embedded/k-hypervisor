@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <vgic.h>
 #include <interrupt.h>
-#include <arch/arm/rtsm-config.h>
 
 struct virq {
     struct vgic_status vgic_status;

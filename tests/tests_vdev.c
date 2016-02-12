@@ -5,7 +5,7 @@
 #include <gic.h>
 #include <stdio.h>
 
-#include <arch/arm/rtsm-config.h>
+#include <rtsm-config.h>
 
 hvmm_status_t hvmm_tests_vdev(void)
 {

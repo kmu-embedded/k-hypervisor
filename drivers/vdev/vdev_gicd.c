@@ -4,6 +4,7 @@
 #include <asm-arm_inline.h>
 #include <scheduler.h>
 #include <vgic.h>
+#include <rtsm-config.h>
 
 #define DEBUG
 #include <stdio.h>

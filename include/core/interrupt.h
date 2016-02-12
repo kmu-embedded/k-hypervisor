@@ -1,6 +1,6 @@
 #ifndef __INTERRUPT_H__
 #define __INTERRUPT_H__
-#include <arch/arm/rtsm-config.h>
+//#include <rtsm-config.h>
 #include "hvmm_types.h"
 
 #define HOST_IRQ 0
@@ -26,7 +26,7 @@ struct virqmap_entry {
 
 struct guest_virqmap {
     vmid_t vmid;
-    struct virqmap_entry map[MAX_IRQS];
+    struct virqmap_entry map[1024];
 };
 
 typedef void (*interrupt_handler_t)(int irq, void *regs, void *pdata);

@@ -4,7 +4,7 @@
 #include <hvmm_types.h>
 #include <vcpu_regs.h>
 #include <vcpu.h>
-#include <arch/arm/rtsm-config.h>
+//#include <board/rtsm-config.h>
 
 #define GUEST_VERBOSE_ALL       0xFF
 #define GUEST_VERBOSE_LEVEL_0   0x01

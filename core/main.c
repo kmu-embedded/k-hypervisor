@@ -1,7 +1,7 @@
 #include <vm.h>
 #include <core.h>
 #include <scheduler.h>
-#include <arch/arm/rtsm-config.h>
+//#include <arch/arm/rtsm-config.h>
 #include <version.h>
 #include <hvmm_trace.h>
 

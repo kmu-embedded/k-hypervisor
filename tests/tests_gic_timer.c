@@ -6,7 +6,7 @@
 #include "armv7_p15.h"
 #include "timer.h"
 #include "scheduler.h"
-#include <arch/arm/rtsm-config.h>
+#include <rtsm-config.h>
 #include <interrupt.h>
 
 static void test_start_timer(void)

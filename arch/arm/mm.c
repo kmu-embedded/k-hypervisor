@@ -6,23 +6,12 @@
 #include <mm.h>
 #include <lpae.h>
 
+#include <armv7/hsctlr.h>
+#include <armv7/htcr.h>
+
 static pgentry hyp_l1_pgtable[L1_ENTRY];
 static pgentry hyp_l2_pgtable[L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 static pgentry hyp_l3_pgtable[L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
-
-#define HSCTLR_TE        (1 << 30)      /**< Thumb Exception enable. */
-#define HSCTLR_EE        (1 << 25)      /**< Exception Endianness. */
-#define HSCTLR_FI        (1 << 21)      /**< Fast Interrupts configuration enable. */
-#define HSCTLR_WXN       (1 << 19)      /**< Write permission emplies XN. */
-#define HSCTLR_I         (1 << 12)      /**< Instruction cache enable.  */
-#define HSCTLR_CP15BEN   (1 << 7)       /**< In ARMv7 this bit is RAZ/SBZP. */
-#define HSCTLR_C         (1 << 2)       /**< Data or unified cache enable. */
-#define HSCTLR_A         (1 << 1)       /**< Alignment check enable. */
-#define HSCTLR_M         (1 << 0)       /**< MMU enable. */
-#define HSCTLR_BASE      0x30c51878     /**< HSTCLR Base address */
-
-#define OUTER_WRITEBACK_CACHEABLE (WRITEBACK_CACHEABLE << 10)
-#define INNER_WRITEBACK_CACHEABLE (WRITEBACK_CACHEABLE << 12)
 
 uint32_t set_cache(bool state)
 {
@@ -39,7 +28,9 @@ hvmm_status_t stage1_mmu_init(void)
 
     /* HTCR: Hyp Translation Control Register */
     /* Shareability, Outer Cacheability, Inner Cacheability */
-    htcr |= (INNER_SHAREABLE << 12 | OUTER_WRITEBACK_CACHEABLE | INNER_WRITEBACK_CACHEABLE );
+    htcr |= INNER_SHAREABLE << HTCR_SH0_BIT;
+    htcr |= WRITEBACK_CACHEABLE << HTCR_ORGN0_BIT;
+    htcr |= WRITEBACK_CACHEABLE << HTCR_IRGN0_BIT;
     // TODO(wonseok): How to configure T0SZ?
 
     write_htcr(htcr);

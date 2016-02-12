@@ -5,6 +5,7 @@ OBJS_DIR	= $(ROOT_PATH)/$(BUILD)/drivers
 CC		= $(CROSS_COMPILE)gcc
 
 INCLUDES	= -I $(ROOT_PATH)/$(INC)
+INCLUDES	+= -I $(ROOT_PATH)/$(INC)/board
 INCLUDES	+= -I $(ROOT_PATH)/$(INC)/$(LIB)/c
 INCLUDES	+= -I $(ROOT_PATH)/$(INC)/$(LIB)/bsd
 INCLUDES	+= -I $(ROOT_PATH)/$(INC)/$(LIB)
