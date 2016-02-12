@@ -2,8 +2,11 @@
 #include <armv7_p15.h>
 #include <hvmm_trace.h>
 #include <arch/arm/rtsm-config.h>
+
+#include <vtcr.h>
 #include <mm.h>
-#include "vtcr.h"
+#include <vmem.h>
+#include <lpae.h>
 
 static pgentry vm_l1_pgtable[NUM_GUESTS_STATIC][L1_ENTRY];
 static pgentry vm_l2_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));

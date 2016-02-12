@@ -1,3 +1,4 @@
+#include <lpae.h>
 #include <mm.h>
 
 pgentry set_table(uint32_t paddr, uint32_t valid)

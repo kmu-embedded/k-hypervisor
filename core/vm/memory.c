@@ -1,7 +1,6 @@
-#include <memory.h>
-//#include <stage1_mm.h>
-#include <lpaed.h>
 #include <stdio.h>
+#include <memory.h>
+#include <lpae.h>
 
 hvmm_status_t memory_init()
 {
