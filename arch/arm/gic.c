@@ -8,7 +8,7 @@
 #include <gic_regs.h>
 #include <hvmm_types.h>
 
-#include <arch/arm/rtsm-config.h>
+#include <board/rtsm-config.h>
 
 #define CBAR_PERIPHBASE_MSB_MASK    0x000000FF
 

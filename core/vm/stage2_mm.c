@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <armv7_p15.h>
 #include <hvmm_trace.h>
-#include <arch/arm/rtsm-config.h>
+#include <rtsm-config.h>
 
 #include <vtcr.h>
 #include <mm.h>
@@ -19,10 +19,8 @@ void guest_memory_init_mmu(void)
     /* Basically, we set_vm write policy to writeback for highest performance */
     /* Set pagetable lookup level at 1 for stage-2 address translation */
     vtcr |= (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
-    /* Set outer cacheability attribute */
-    vtcr |= (VTCR_WRITEBACK_CACHEABLE << VTCR_ORGN0_BIT);
-    /* Set inner cacheability attribute */
-    vtcr |= (VTCR_WRITEBACK_CACHEABLE << VTCR_IRGN0_BIT);
+    vtcr |= (WRITEBACK_CACHEABLE << VTCR_ORGN0_BIT);
+    vtcr |= (WRITEBACK_CACHEABLE << VTCR_IRGN0_BIT);
     write_vtcr(vtcr);
 
     vtcr = read_vtcr();
@@ -31,7 +29,7 @@ void guest_memory_init_mmu(void)
     HVMM_TRACE_EXIT();
 }
 
-void write_pgentry(char *_vmid_ttbl, struct memmap_desc *guest_map)
+void write_pgentry(void *_vmid_ttbl, struct memmap_desc *guest_map)
 {
     uint32_t i, j;
     uint32_t size, nr_pages;

@@ -5,6 +5,7 @@
 #include <interrupt.h>
 #include <smp.h>
 #include <scheduler.h>
+#include <rtsm-config.h>
 
 #define VTIMER_BASE_ADDR 0x3FFFE000
 #define VTIMER_IRQ 30

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <interrupt.h>
+#include <rtsm-config.h>
 #include <gic.h>
 #include <vgic.h>
 

@@ -1,4 +1,5 @@
 #include <virq.h>
+#include <rtsm-config.h>
 
 #define DECLARE_VIRQ(name, _pirq, _virq) \
     do {                                 \

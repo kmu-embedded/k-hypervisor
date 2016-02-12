@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <armv7_p15.h>
 #include <scheduler.h>
-#include <arch/arm/rtsm-config.h>
+#include <rtsm-config.h>
 
 #define CPSR_MODE_USER  0x10
 #define CPSR_MODE_FIQ   0x11

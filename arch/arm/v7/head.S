@@ -1,4 +1,4 @@
-#include <arch/arm/rtsm-config.h>
+#include <board/rtsm-config.h>
     .syntax	unified
     .arch_extension sec
     .arch_extension virt
