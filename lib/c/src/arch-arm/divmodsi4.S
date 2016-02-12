@@ -13,7 +13,7 @@
  *
  *===----------------------------------------------------------------------===*/
 
-#include <arch-arm/assembly.h>
+#include <asm/assembly.h>
 
 #define ESTABLISH_FRAME    \
     push   {r4-r7, lr}   ;\

@@ -3,7 +3,7 @@ OUTPUT_ARCH(arm)
 TARGET(binary)
 ENTRY(__start)
 
-#include <rtsm-config.h>
+#include <board/rtsm-config.h>
 
 INPUT(../guestimages/guest0.bin)
 GUEST0_STACK     = CFG_MEMMAP_GUEST0_OFFSET + GUEST_SIZE_MAX;

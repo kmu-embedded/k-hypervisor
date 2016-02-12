@@ -69,7 +69,7 @@ $(BIN): $(OUTPUT)
 	$(OBJCOPY) -O binary $(OUTPUT) $(BIN)
 
 $(MACHINE).lds: $(LD_SCRIPT) Makefile
-	$(CC) $(CPPFLAGS) -E -P -C -o $(BUILD)/$@ $<
+	$(CC) $(CPPFLAGS) $(INCLUDES) -E -P -C -o $(BUILD)/$@ $<
 
 %: force
 	$(MAKE) -C $(KERNEL_SRC) $@
