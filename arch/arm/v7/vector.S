@@ -32,6 +32,15 @@ smc_handler:
     movs    pc, lr
 
 hvc_handler:
+    @ Clear bss section.
+    ldr  r2, =__begin_bss
+    ldr  r3, =__end_bss
+
+    mov  r0, #0
+1:  str  r0, [r2], #4    @ clear bss
+    cmp  r2, r3
+    blo  1b
+
     /* Setup stack for Hyp for the first time */
     ldr sp, = __end_stack
     mrs lr, elr_hyp

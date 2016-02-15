@@ -11,5 +11,4 @@ void init_platform()
     __malloc_init();
     stage1_pgtable_init();
     stage1_mmu_init();
-
 }
