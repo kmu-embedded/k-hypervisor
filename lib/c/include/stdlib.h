@@ -153,6 +153,9 @@ void free(void *);
 void *calloc(size_t, size_t);
 void *realloc(void *, size_t);
 
+void *aligned_alloc(size_t, size_t);
+void aligned_free(void *);
+
 /* 7.20.4 Communcation with the environment */
 
 void abort(void);
