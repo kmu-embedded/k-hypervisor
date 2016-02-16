@@ -114,9 +114,9 @@ static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, pgentry *ttbl)
     return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t memory_hw_create(vmid_t vmid)
+hvmm_status_t memory_hw_create(struct vmem *vmem)
 {
-   stage2_mm_create(vmid);
+   stage2_mm_create(&vmem->pgtable_base);
 
    return HVMM_STATUS_SUCCESS;
 }
