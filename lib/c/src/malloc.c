@@ -1,6 +1,6 @@
 
 /*
- * K&R Malloc 
+ * K&R Malloc
  *
  * System specifc code should implement `more_core'
  */
@@ -37,7 +37,7 @@ void __malloc_dump(void);
 #endif
 
 /*
- * malloc: general-purpose storage allocator 
+ * malloc: general-purpose storage allocator
  */
 void *
 malloc(size_t nbytes)
@@ -97,7 +97,7 @@ malloc(size_t nbytes)
 }
 
 /*
- * free: put block ap in free list 
+ * free: put block ap in free list
  */
 void
 free(void *ap)

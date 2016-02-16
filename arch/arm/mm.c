@@ -9,9 +9,13 @@
 #include <armv7/hsctlr.h>
 #include <armv7/htcr.h>
 
-static pgentry hyp_l1_pgtable[L1_ENTRY];
+//static pgentry hyp_l1_pgtable[L1_ENTRY];
 static pgentry hyp_l2_pgtable[L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 static pgentry hyp_l3_pgtable[L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
+
+pgentry *l1_pgtable;
+pgentry **l2_pgtable;
+pgentry ***l3_pgtable;
 
 uint32_t set_cache(bool state)
 {
@@ -38,7 +42,7 @@ hvmm_status_t stage1_mmu_init(void)
     printf("htcr: 0x%x%x\n", htcr);
 
     /* HTTBR : Hyp Translation Table Base Register */
-    httbr |= (uint32_t) &hyp_l1_pgtable;
+    httbr |= (uint32_t) l1_pgtable;
     write_httbr(httbr);
     printf("httbr: 0x%x%x\n", httbr);
 
@@ -56,18 +60,27 @@ hvmm_status_t stage1_pgtable_init()
     uint64_t paddr;
     int i, j;
 
+    l1_pgtable = (pgentry *) aligned_alloc ((sizeof(pgentry) * 4), 0x1000);
+    printf("aligned_alloc: l1_pgtable[%p]\n", l1_pgtable);
+
     paddr = 0x00000000ULL;
-    hyp_l1_pgtable[0] = set_entry(paddr, MT_DEVICE, 0, size_1gb);
+    l1_pgtable[0] = set_entry(paddr, MT_DEVICE, 0, size_1gb);
+    printf("l1_pgtable[0]: %p, %x\n", l1_pgtable[0], l1_pgtable[0]);
+    printf("entry: %x\n", set_entry(paddr, MT_DEVICE, 0, size_1gb).raw);
 
     paddr += 0x40000000; // start with 0x4000_0000
-    hyp_l1_pgtable[1] = set_entry(paddr, MT_NONCACHEABLE, 3, size_1gb);
-    hyp_l1_pgtable[1].block.valid = 0;
+    l1_pgtable[1] = set_entry(paddr, MT_NONCACHEABLE, 3, size_1gb);
+    l1_pgtable[1].block.valid = 0;
+    printf("l1_pgtable[1]: %p, %x\n", l1_pgtable[1], l1_pgtable[1]);
+    printf("entry: %x\n", set_entry(paddr, MT_NONCACHEABLE, 3, size_1gb).raw);
 
     paddr += 0x40000000; // start with 0x8000_0000
-    hyp_l1_pgtable[2] = set_entry(paddr, MT_WRITEBACK_RW_ALLOC, 0, size_1gb);
+    l1_pgtable[2] = set_entry(paddr, MT_WRITEBACK_RW_ALLOC, 0, size_1gb);
+    printf("l1_pgtable[2]: %p, %x\n", l1_pgtable[2], l1_pgtable[2]);
+    printf("entry: %x\n", set_entry(paddr, MT_WRITEBACK_RW_ALLOC, 0, size_1gb).raw);
 
     paddr += 0x40000000; // start with 0xC000_0000
-    hyp_l1_pgtable[3] = set_table((uint32_t) &hyp_l2_pgtable[0], 1);
+    l1_pgtable[3] = set_table((uint32_t) &hyp_l2_pgtable[0], 1);
     for(i = 0; i < 512; i++) {
         hyp_l2_pgtable[i] = set_table((uint32_t) hyp_l3_pgtable[i], 1);
         for (j = 0; j < 512; paddr += 0x1000, j++) {

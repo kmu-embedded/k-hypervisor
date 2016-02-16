@@ -31,39 +31,96 @@ void guest_memory_init_mmu(void)
 
 void write_pgentry(void *_vmid_ttbl, struct memmap_desc *guest_map)
 {
-    uint32_t i, j;
-    uint32_t size, nr_pages;
+    uint32_t l1_offset, l2_offset, l3_offset;
+    uint32_t l1_index, l2_index, l3_index;
+    uint32_t va, pa;
+    uint32_t size;
 
-    uint32_t va = (uint32_t) guest_map->va;
-    uint64_t pa = guest_map->pa;
+    pgentry *l1_base_addr, *l2_base_addr, *l3_base_addr;
 
-    uint32_t l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
-    uint32_t l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
-    uint32_t l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
-
-    pgentry *l1_base_addr = (pgentry *) _vmid_ttbl;
-    pgentry *l2_base_addr = l1_base_addr[l1_index].table.base << PAGE_SHIFT;
-    pgentry *l3_base_addr;
-
-    l1_base_addr[l1_index].table.valid = 1;;
     size = guest_map->size;
+    va = (uint32_t) guest_map->va;
+    pa = (uint32_t) guest_map->pa;
 
-    for (i = 0; size > 0; i++ ) {
-        l2_base_addr[l2_index + i].table.valid = 1;
-        l3_base_addr = l2_base_addr[l2_index + i].table.base << PAGE_SHIFT;
+    l1_base_addr = (pgentry *) _vmid_ttbl;
+    l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
+    for (l1_offset = 0; size > 0; l1_offset++ ) {
+        l1_base_addr[l1_index + l1_offset].table.valid = 1;
+        l2_base_addr = l1_base_addr[l1_index + l1_offset].table.base << PAGE_SHIFT;
+        l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
 
-        // TODO(casionwoo) : This should cover the case of serveral size such as 3KB, 1.5GB
-        nr_pages = size >> PAGE_SHIFT;
-        if(nr_pages > L3_ENTRY)
-            nr_pages = L3_ENTRY;
+        for (l2_offset = 0; l2_index + l2_offset < L2_ENTRY && size > 0; l2_offset++ ) {
+            l2_base_addr[l2_index + l2_offset].table.valid = 1;
+            l3_base_addr = l2_base_addr[l2_index + l2_offset].table.base << PAGE_SHIFT;
+            l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
 
-        for (j = 0; j < nr_pages; j++) {
-            l3_base_addr[l3_index + j] = set_entry(pa, guest_map->attr, 3, size_4kb);
-            pa += LPAE_PAGE_SIZE;
-            size -= LPAE_PAGE_SIZE;
+            for (l3_offset = 0; l3_index + l3_offset < L3_ENTRY && size > 0; l3_offset++) {
+                l3_base_addr[l3_index + l3_offset] = set_entry(pa, guest_map->attr, 3, size_4kb);
+                pa += LPAE_PAGE_SIZE;
+                va += LPAE_PAGE_SIZE;
+                size -= LPAE_PAGE_SIZE;
+            }
         }
     }
 }
+#if 0
+void write_pgentry(void *_vmid_ttbl, struct memmap_desc *guest_map)
+{
+    uint32_t l1_offset, l2_offset, l3_offset;
+    uint32_t l1_index, l2_index, l3_index;
+    uint32_t va, pa;
+    uint32_t size;
+
+    pgentry *l1_base_addr, *l2_base_addr, *l3_base_addr;
+
+    size = guest_map->size;
+    va = (uint32_t) guest_map->va;
+    pa = (uint32_t) guest_map->pa;
+
+
+    switch(size) {
+        case SZ_4K:
+            l1_base_addr = (pgentry *) _vmid_ttbl; // replaced
+
+            l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
+            l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
+            l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
+
+            l2_base_addr = l1_base_addr[l1_index].table.base << PAGE_SHIFT;
+
+            l3_base_addr = l2_base_addr[l2_index].table.base << PAGE_SHIFT;
+            l3_base_addr[l3_index] = set_entry(pa, guest_map->attr, 3, size_4kb);
+
+            l2_base_addr[l2_index].table.valid = 1;
+            l1_base_addr[l1_index].table.valid = 1;
+
+            break;
+        default: /* size is bigger than 4KB */
+            l1_base_addr = (pgentry *) _vmid_ttbl;
+            l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
+            for (l1_offset = 0; size > 0; l1_offset++ ) {
+                l1_base_addr[l1_index + l1_offset].table.valid = 1;
+                l2_base_addr = l1_base_addr[l1_index + l1_offset].table.base << PAGE_SHIFT;
+                l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
+
+                for (l2_offset = 0; l2_index + l2_offset < L2_ENTRY && size > 0; l2_offset++ ) {
+                    l2_base_addr[l2_index + l2_offset].table.valid = 1;
+                    l3_base_addr = l2_base_addr[l2_index + l2_offset].table.base << PAGE_SHIFT;
+                    l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
+
+                    for (l3_offset = 0; l3_index + l3_offset < L3_ENTRY && size > 0; l3_offset++) {
+                        l3_base_addr[l3_index + l3_offset] = set_entry(pa, guest_map->attr, 3, size_4kb);
+                        pa += LPAE_PAGE_SIZE;
+                        va += LPAE_PAGE_SIZE;
+                        size -= LPAE_PAGE_SIZE;
+                    }
+                }
+            }
+            break;
+    }
+
+}
+#endif
 
 void init_pgtable(vmid_t vmid)
 {
