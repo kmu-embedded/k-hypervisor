@@ -2,6 +2,7 @@
 #include <armv7_p15.h>
 #include <hvmm_trace.h>
 #include <rtsm-config.h>
+#include <stdbool.h>
 
 #include <vtcr.h>
 #include <mm.h>
@@ -25,7 +26,7 @@ void guest_memory_init_mmu(void)
     HVMM_TRACE_EXIT();
 }
 
-void write_pgentry(void *_vmid_ttbl, struct memmap_desc *guest_map)
+void write_pgentry(void *_vmid_ttbl, struct memmap_desc *guest_map, bool isHyper)
 {
     uint32_t l1_offset, l2_offset, l3_offset;
     uint32_t l1_index, l2_index, l3_index;
@@ -51,7 +52,7 @@ void write_pgentry(void *_vmid_ttbl, struct memmap_desc *guest_map)
             l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
 
             for (l3_offset = 0; l3_index + l3_offset < L3_ENTRY && size > 0; l3_offset++) {
-                l3_base_addr[l3_index + l3_offset] = set_entry(pa, guest_map->attr, 3, size_4kb);
+                l3_base_addr[l3_index + l3_offset] = set_entry(pa, guest_map->attr, (isHyper ? 0 : 3), size_4kb);
                 pa += LPAE_PAGE_SIZE;
                 va += LPAE_PAGE_SIZE;
                 size -= LPAE_PAGE_SIZE;
@@ -154,7 +155,7 @@ void stage2_mm_init(struct memmap_desc **mdlist, char **_vmid_ttbl, vmid_t vmid)
         j = 0;
         memmap = mdlist[i];
         while (memmap[j].label != 0) {
-            write_pgentry(*_vmid_ttbl, &memmap[j]);
+            write_pgentry(*_vmid_ttbl, &memmap[j], false);
             j++;
         }
     }
