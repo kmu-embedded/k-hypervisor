@@ -22,6 +22,7 @@ void init_platform()
     test_aligned_alloc();
     while(1) ;
 #endif
+    stage1_pgtable_create();
     stage1_pgtable_init();
     stage1_mmu_init();
 }
