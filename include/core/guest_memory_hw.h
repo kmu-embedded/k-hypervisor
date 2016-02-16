@@ -2,6 +2,7 @@
 #define __GUEST_MEMORY_HW__
 
 #include <hvmm_types.h>
+#include <mm.h>
 #include <vmem.h>
 
 /**
@@ -28,13 +29,6 @@ enum memattr {
  * - size Size of this memory area.
  * - attr Memory attribute value.
  */
-struct memmap_desc {
-    char *label;
-    uint64_t va;
-    uint64_t pa;
-    uint32_t size;
-    enum memattr attr;
-};
 hvmm_status_t memory_hw_create(struct vmem *vmem);
 hvmm_status_t memory_hw_init(struct memmap_desc **memmap, char **_vmid_ttbl, vmid_t vmid);
 hvmm_status_t memory_hw_save(void);

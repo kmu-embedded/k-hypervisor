@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <lpae.h>
 #include <mm.h>
 
@@ -12,7 +13,6 @@ pgentry set_table(uint32_t paddr, uint32_t valid)
 
     return entry;
 }
-
 // TODO(wonseok): configure AP(Access Permission) bit
 // currently, we are going to set AP as a read/write only at PL2.
 pgentry set_entry(uint32_t paddr, uint8_t mem_attr, uint8_t ap, pgsize_t size)

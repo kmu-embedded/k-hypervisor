@@ -298,6 +298,7 @@ hvmm_status_t vcpu_regs_save(struct vcpu_regs *vcpu_regs, struct core_regs *curr
 {
     struct context_regs *context_regs = &vcpu_regs->context_regs;
 
+    // sched_start 때는 save 필요 없음
     if (!current_regs)
         return HVMM_STATUS_SUCCESS;
 
