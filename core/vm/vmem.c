@@ -161,7 +161,7 @@ void vmem_create(struct vmem *vmem, vmid_t vmid)
     /* Assign memory mapping */
     set_memmap(vmem, vmid);
     /* Pagetable Initialization */
-    memory_hw_create(vmid);
+    memory_hw_create(vmem);
 }
 
 hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)

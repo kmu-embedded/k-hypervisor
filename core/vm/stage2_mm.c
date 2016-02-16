@@ -8,10 +8,6 @@
 #include <vmem.h>
 #include <lpae.h>
 
-static pgentry vm_l1_pgtable[NUM_GUESTS_STATIC][L1_ENTRY];
-static pgentry vm_l2_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
-static pgentry vm_l3_pgtable[NUM_GUESTS_STATIC][L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
-
 void guest_memory_init_mmu(void)
 {
     HVMM_TRACE_ENTER();
@@ -122,32 +118,34 @@ void write_pgentry(void *_vmid_ttbl, struct memmap_desc *guest_map)
 }
 #endif
 
-void init_pgtable(vmid_t vmid)
+void init_pgtable(uint32ptr_t *pgtable_base)
 {
     int l1_index, l2_index;
+    pgentry *vm_l1_pgtable, *vm_l2_pgtable, *vm_l3_pgtable;
+
+    vm_l1_pgtable = (pgentry *) aligned_alloc ((sizeof(pgentry) * 4), 0x1000);
 
     for(l1_index = 0; l1_index < L1_ENTRY; l1_index++) {
-        vm_l1_pgtable[vmid][l1_index] = set_table(vm_l2_pgtable[vmid][l1_index], 0);
-    }
+        vm_l2_pgtable = (pgentry *) aligned_alloc ((sizeof(pgentry) * 512), 0x1000);
+        vm_l1_pgtable[l1_index] = set_table(vm_l2_pgtable, 0);
 
-    for(l1_index = 0; l1_index < L1_ENTRY; l1_index++) {
         for(l2_index = 0; l2_index < L2_ENTRY; l2_index++) {
-            vm_l2_pgtable[vmid][l1_index][l2_index] = set_table(vm_l3_pgtable[vmid][l1_index][l2_index], 0);
+            vm_l3_pgtable = (pgentry *) aligned_alloc ((sizeof(pgentry) * 512), 0x1000);
+            vm_l2_pgtable[l2_index] = set_table(vm_l3_pgtable, 0);
         }
     }
+    *pgtable_base = vm_l1_pgtable;
 }
 
-void stage2_mm_create(vmid_t vmid)
+void stage2_mm_create(uint32ptr_t *pgtable_base)
 {
-    init_pgtable(vmid);
+    init_pgtable(pgtable_base);
 }
 
 void stage2_mm_init(struct memmap_desc **mdlist, char **_vmid_ttbl, vmid_t vmid)
 {
     int i, j;
     struct memmap_desc *memmap;
-
-    *_vmid_ttbl = vm_l1_pgtable[vmid];
 
     for (i = 0; mdlist[i]; i++) {
         if (mdlist[i]->label == 0)
