@@ -2,9 +2,19 @@
 #define __MM_H__
 
 #include <hvmm_types.h>
+#include <stdbool.h>
 
-hvmm_status_t stage1_pgtable_init();
-hvmm_status_t stage1_pgtable_create();
-hvmm_status_t stage1_mmu_init();
+struct memmap_desc {
+    char *label;
+    uint64_t va;
+    uint64_t pa;
+    uint32_t size;
+    uint8_t attr;
+};
+
+hvmm_status_t set_pgtable();
+hvmm_status_t pgtable_init();
+hvmm_status_t enable_mmu();
+void write_pgentry(void *pgtable_base, struct memmap_desc *mem_desc, bool is_guest);
 
 #endif /* __MM_H__*/

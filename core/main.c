@@ -25,6 +25,7 @@ static int cpu_init()
 
     // TODO: Rest parts of cpu_init() will be moved per-core initialization.
     sched_init();
+
     vm_setup();
     for (i = 0; i < NUM_GUESTS_STATIC; i++) {
         if ((vm[i] = vm_create(nr_vcpus)) == VM_CREATE_FAILED) {

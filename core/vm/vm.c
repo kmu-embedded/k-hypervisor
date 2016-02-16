@@ -26,6 +26,8 @@ vmid_t vm_create(unsigned char num_vcpus)
     if (vm == NULL) {
         return VM_CREATE_FAILED;
     }
+    memset(vm, 0, sizeof(struct vmcb));
+
     vm->vmid = vm_count++;
     vm->state = DEFINED;
     vm->num_vcpus = num_vcpus;
@@ -123,6 +125,10 @@ hvmm_status_t vm_save(vmid_t save_vmid)
         vdev_save()
     */
     struct vmcb *vm = vm_find(save_vmid);
+    if (vm == NO_VM_FOUND) {
+        printf("[%s]: NO VM FOUND %d\n", __func__, save_vmid);
+        return HVMM_STATUS_NOT_FOUND;
+    }
 
     vmem_save();
     virq_save(&vm->virq);
@@ -139,6 +145,10 @@ hvmm_status_t vm_restore(vmid_t restore_vmid)
         vmem_restore()
     */
     struct vmcb *vm = vm_find(restore_vmid);
+    if (vm == NO_VM_FOUND) {
+        printf("[%s]: NO VM FOUND %d\n", __func__, restore_vmid);
+        return HVMM_STATUS_NOT_FOUND;
+    }
 
     vdev_restore(restore_vmid);
     virq_restore(&vm->virq, restore_vmid);

@@ -27,6 +27,7 @@ struct vcpu *vcpu_create()
     if (vcpu == VCPU_CREATE_FAILED) {
         return vcpu;
     }
+    memset(vcpu, 0, sizeof(struct vcpu));
 
     vcpu->vcpuid = nr_vcpus++;
     vcpu->state = VCPU_DEFINED;
@@ -82,7 +83,7 @@ hvmm_status_t vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
 
 struct vcpu *vcpu_find(vcpuid_t vcpuid)
 {
-    struct vcpu *vcpu;
+    struct vcpu *vcpu = NULL;
 
     list_for_each_entry(vcpu, &vcpu_list, head) {
         if (vcpu->vcpuid == vcpuid) {
@@ -106,6 +107,7 @@ void print_vcpu(struct vcpu *vcpu)
 {
     printf("ADDR  : 0x%p\n", vcpu);
     printf("VCPUID  : %d\n", vcpu->vcpuid);
+    printf("VMID  : %d\n", vcpu->vmid);
     printf("STATE  : %d\n", vcpu->state);
 }
 

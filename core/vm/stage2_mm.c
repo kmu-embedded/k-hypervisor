@@ -26,98 +26,6 @@ void guest_memory_init_mmu(void)
     HVMM_TRACE_EXIT();
 }
 
-void write_pgentry(void *_vmid_ttbl, struct memmap_desc *guest_map, bool isHyper)
-{
-    uint32_t l1_offset, l2_offset, l3_offset;
-    uint32_t l1_index, l2_index, l3_index;
-    uint32_t va, pa;
-    uint32_t size;
-
-    pgentry *l1_base_addr, *l2_base_addr, *l3_base_addr;
-
-    size = guest_map->size;
-    va = (uint32_t) guest_map->va;
-    pa = (uint32_t) guest_map->pa;
-
-    l1_base_addr = (pgentry *) _vmid_ttbl;
-    l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
-    for (l1_offset = 0; size > 0; l1_offset++ ) {
-        l1_base_addr[l1_index + l1_offset].table.valid = 1;
-        l2_base_addr = l1_base_addr[l1_index + l1_offset].table.base << PAGE_SHIFT;
-        l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
-
-        for (l2_offset = 0; l2_index + l2_offset < L2_ENTRY && size > 0; l2_offset++ ) {
-            l2_base_addr[l2_index + l2_offset].table.valid = 1;
-            l3_base_addr = l2_base_addr[l2_index + l2_offset].table.base << PAGE_SHIFT;
-            l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
-
-            for (l3_offset = 0; l3_index + l3_offset < L3_ENTRY && size > 0; l3_offset++) {
-                l3_base_addr[l3_index + l3_offset] = set_entry(pa, guest_map->attr, (isHyper ? 0 : 3), size_4kb);
-                pa += LPAE_PAGE_SIZE;
-                va += LPAE_PAGE_SIZE;
-                size -= LPAE_PAGE_SIZE;
-            }
-        }
-    }
-}
-#if 0
-void write_pgentry(void *_vmid_ttbl, struct memmap_desc *guest_map)
-{
-    uint32_t l1_offset, l2_offset, l3_offset;
-    uint32_t l1_index, l2_index, l3_index;
-    uint32_t va, pa;
-    uint32_t size;
-
-    pgentry *l1_base_addr, *l2_base_addr, *l3_base_addr;
-
-    size = guest_map->size;
-    va = (uint32_t) guest_map->va;
-    pa = (uint32_t) guest_map->pa;
-
-
-    switch(size) {
-        case SZ_4K:
-            l1_base_addr = (pgentry *) _vmid_ttbl; // replaced
-
-            l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
-            l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
-            l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
-
-            l2_base_addr = l1_base_addr[l1_index].table.base << PAGE_SHIFT;
-
-            l3_base_addr = l2_base_addr[l2_index].table.base << PAGE_SHIFT;
-            l3_base_addr[l3_index] = set_entry(pa, guest_map->attr, 3, size_4kb);
-
-            l2_base_addr[l2_index].table.valid = 1;
-            l1_base_addr[l1_index].table.valid = 1;
-
-            break;
-        default: /* size is bigger than 4KB */
-            l1_base_addr = (pgentry *) _vmid_ttbl;
-            l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
-            for (l1_offset = 0; size > 0; l1_offset++ ) {
-                l1_base_addr[l1_index + l1_offset].table.valid = 1;
-                l2_base_addr = l1_base_addr[l1_index + l1_offset].table.base << PAGE_SHIFT;
-                l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
-
-                for (l2_offset = 0; l2_index + l2_offset < L2_ENTRY && size > 0; l2_offset++ ) {
-                    l2_base_addr[l2_index + l2_offset].table.valid = 1;
-                    l3_base_addr = l2_base_addr[l2_index + l2_offset].table.base << PAGE_SHIFT;
-                    l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
-
-                    for (l3_offset = 0; l3_index + l3_offset < L3_ENTRY && size > 0; l3_offset++) {
-                        l3_base_addr[l3_index + l3_offset] = set_entry(pa, guest_map->attr, 3, size_4kb);
-                        pa += LPAE_PAGE_SIZE;
-                        va += LPAE_PAGE_SIZE;
-                        size -= LPAE_PAGE_SIZE;
-                    }
-                }
-            }
-            break;
-    }
-
-}
-#endif
 
 void init_pgtable(uint32ptr_t *pgtable_base)
 {
@@ -155,7 +63,7 @@ void stage2_mm_init(struct memmap_desc **mdlist, char **_vmid_ttbl, vmid_t vmid)
         j = 0;
         memmap = mdlist[i];
         while (memmap[j].label != 0) {
-            write_pgentry(*_vmid_ttbl, &memmap[j], false);
+            write_pgentry(*_vmid_ttbl, &memmap[j], true);
             j++;
         }
     }
