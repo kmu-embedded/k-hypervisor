@@ -12,7 +12,7 @@ struct memmap_desc {
     uint8_t attr;
 };
 
-hvmm_status_t set_pgtable();
+hvmm_status_t set_pgtable(struct memmap_desc *desc);
 hvmm_status_t pgtable_init();
 hvmm_status_t enable_mmu();
 void write_pgentry(void *pgtable_base, struct memmap_desc *mem_desc, bool is_guest);

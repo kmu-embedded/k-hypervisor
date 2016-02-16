@@ -16,34 +16,6 @@ static pgentry hyp_l1_pgtable[L1_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)
 static pgentry hyp_l2_pgtable[L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 static pgentry hyp_l3_pgtable[L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 
-struct memmap_desc vmm_memdesc[] = {
-    { "sysreg", 0x1C010000, 0x1C010000, SZ_4K, MT_DEVICE },
-    { "sysctl", 0x1C020000, 0x1C020000, SZ_4K, MT_DEVICE },
-    { "aaci", 0x1C040000, 0x1C040000, SZ_4K, MT_DEVICE },
-    { "mmci", 0x1C050000, 0x1C050000, SZ_4K, MT_DEVICE },
-    { "kmi", 0x1C060000, 0x1C060000,  SZ_64K, MT_DEVICE },
-    { "kmi2", 0x1C070000, 0x1C070000, SZ_64K, MT_DEVICE },
-    { "v2m_serial0", 0x1C090000, 0x1C090000, SZ_4K, MT_DEVICE },
-    { "v2m_serial1", 0x1C0A0000, 0x1C0A0000, SZ_4K, MT_DEVICE },
-    { "v2m_serial2", 0x1C0B0000, 0x1C0B0000, SZ_4K, MT_DEVICE },
-    { "v2m_serial3", 0x1C0C0000, 0x1C0C0000, SZ_4K, MT_DEVICE },
-    { "wdt", 0x1C0F0000, 0x1C0F0000, SZ_4K, MT_DEVICE },
-    { "v2m_timer01(sp804)", 0x1C110000, 0x1C110000, SZ_4K, MT_DEVICE },
-    { "v2m_timer23", 0x1C120000, 0x1C120000, SZ_4K, MT_DEVICE },
-    { "rtc", 0x1C170000, 0x1C170000, SZ_4K, MT_DEVICE },
-    { "clcd", 0x1C1F0000, 0x1C1F0000, SZ_4K, MT_DEVICE },
-    { "gicd", 0x2c001000, 0x2c001000, SZ_4K, MT_DEVICE },
-    { "gicc", 0x2c002000, 0x2c002000, SZ_4K, MT_DEVICE },
-    { "gicc", 0x2c003000, 0x2c003000, SZ_4K, MT_DEVICE },
-    { "gich", 0x2c004000, 0x2c004000, SZ_4K, MT_DEVICE },
-    { "gicv", 0x2c005000, 0x2c005000, SZ_4K, MT_DEVICE },
-    { "gicvi", 0x2c006000, 0x2c006000, SZ_4K, MT_DEVICE },
-    { "SMSC91c111i", 0x1A000000, 0x1A000000, SZ_16M, MT_DEVICE },
-    { "simplebus2", 0x18000000, 0x18000000, SZ_64M, MT_DEVICE },
-    { "l1_2", 0x80000000, 0x80000000, SZ_1G, MT_WRITEBACK_RW_ALLOC},
-    { "l1_3", 0xC0000000, 0xC0000000, SZ_1G, MT_WRITEBACK_RW_ALLOC},
-    { 0, 0, 0, 0, 0 }
-};
 
 uint32_t set_cache(bool state)
 {
@@ -97,12 +69,12 @@ hvmm_status_t pgtable_init()
     return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t set_pgtable()
+hvmm_status_t set_pgtable(struct memmap_desc *desc)
 {
     int i = 0;
 
-    while(vmm_memdesc[i].label != 0) {
-        write_pgentry(hyp_l1_pgtable, &vmm_memdesc[i], false);
+    while(desc[i].label != 0) {
+        write_pgentry(hyp_l1_pgtable, &desc[i], false);
         i++;
     }
 
