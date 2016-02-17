@@ -55,7 +55,7 @@ hvmm_status_t enable_mmu(void)
     return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t pgtable_init()
+hvmm_status_t pgtable_init() // Setup pagetable
 {
     int i, j;
 

@@ -1,11 +1,10 @@
+#include <asm/asm.h>
     .syntax unified
     .arch_extension sec
     .arch_extension virt
     .text
 
-    .align 5
-    .global __monitor_vector
-__monitor_vector:
+BEGIN_PROC(__monitor_vector)
     .word   0                       /* reset */
     nop                             /* und */
     b   smc_handler                 /* smc */
@@ -14,6 +13,7 @@ __monitor_vector:
     b   hvc_handler                 /* hvc */
     nop                             /* irq */
     nop                             /* fiq */
+END_PROC(__monitor_vector)
 
 smc_handler:
     // Configure SCR

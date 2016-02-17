@@ -1,5 +1,7 @@
-    .global __set_vcpu_context_first_time
-__set_vcpu_context_first_time:    @ r0 = vcpu_regs->core_regs
+#include <asm/asm.h>
+
+BEGIN_PROC(__set_vcpu_context_first_time)
+    @ r0 = vcpu_regs->core_regs
     ldmfd    r0!, {r1, r2}
     msr     spsr_hyp, r1    @ set spsr
     msr     elr_hyp, r2     @ set return address
