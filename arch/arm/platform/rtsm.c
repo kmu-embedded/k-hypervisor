@@ -10,6 +10,7 @@
 
 struct memmap_desc memdesc[] = {
     { "v2m_serial0", 0x1C090000, 0x1C090000, SZ_4K, MT_DEVICE },
+    { "wdt", 0x1C0F0000, 0x1C0F0000, SZ_4K, MT_DEVICE },
     { "gicd", 0x2c001000, 0x2c001000, SZ_4K, MT_DEVICE },
     { "gicc", 0x2c002000, 0x2c002000, SZ_4K, MT_DEVICE },
     { "gicc", 0x2c003000, 0x2c003000, SZ_4K, MT_DEVICE },
