@@ -39,12 +39,10 @@ hvmm_status_t enable_mmu(void)
     // TODO(wonseok): How to configure T0SZ?
     write_htcr(htcr);
     // FIXME(casionwoo) : Current printf can't support 64-bit, it should be fixed
-    printf("htcr: 0x%x%x\n", htcr);
 
     /* HTTBR : Hyp Translation Table Base Register */
     httbr |= (uint32_t) hyp_l1_pgtable;
     write_httbr(httbr);
-    printf("httbr: 0x%x%x\n", httbr);
 
     /* HSCTLR : Hyp System Control Register*/
     /* MMU, Alignment enable */
