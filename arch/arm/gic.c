@@ -17,7 +17,6 @@
 #define MIDR_MASK_PPN        (0x0FFF << 4)
 #define MIDR_PPN_CORTEXA15    (0xC0F << 4)
 
-
 #define GIC_INT_PRIORITY_DEFAULT_WORD    ((GIC_INT_PRIORITY_DEFAULT << 24) \
                                          |(GIC_INT_PRIORITY_DEFAULT << 16) \
                                          |(GIC_INT_PRIORITY_DEFAULT << 8) \
@@ -263,7 +262,7 @@ hvmm_status_t gic_init(void)
      * Let is use the PA for the time being
      */
     if (!cpu) {
-        result = gic_init_base((void *)CFG_GIC_BASE_PA);
+        result = gic_init_base((void *)0);
         if (result == HVMM_STATUS_SUCCESS)
             gic_dump_registers();
          /*

@@ -5,7 +5,6 @@
     .arch_extension virt
     .text
 
-    .align 5
 BEGIN_PROC(__start)
     @ Disable interrupts
     cpsid aif
