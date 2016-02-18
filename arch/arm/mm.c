@@ -73,7 +73,11 @@ hvmm_status_t set_pgtable(struct memmap_desc *desc)
     int i = 0;
 
     while(desc[i].label != 0) {
-        write_pgentry(hyp_l1_pgtable, &desc[i], false);
+        if(desc[i].size == 0x1000) {
+            write_pgentry_4k(hyp_l1_pgtable, &desc[i], false);
+        } else {
+            write_pgentry(hyp_l1_pgtable, &desc[i], false);
+        }
         i++;
     }
 
@@ -114,4 +118,33 @@ void write_pgentry(void *pgtable_base, struct memmap_desc *mem_desc, bool is_gue
             }
         }
     }
+}
+
+void write_pgentry_4k(void *pgtable_base, struct memmap_desc *mem_desc, bool is_guest)
+{
+    uint32_t l1_offset, l2_offset, l3_offset;
+    uint32_t l1_index, l2_index, l3_index;
+    uint32_t va, pa;
+    uint32_t size;
+
+    pgentry *l1_pgtable_base, *l2_pgtable_base, *l3_pgtable_base;
+
+    size = mem_desc->size;
+    if (size > 0x1000) {
+        debug_print("[%s] size is bigger than 4K\n");
+        while(1) ;
+    }
+    va = (uint32_t) mem_desc->va;
+    pa = (uint32_t) mem_desc->pa;
+
+    l1_pgtable_base = (pgentry *) pgtable_base;
+    l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
+    l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
+    l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
+
+    l1_pgtable_base[l1_index].table.valid = 1;
+    l2_pgtable_base = l1_pgtable_base[l1_index].table.base << PAGE_SHIFT;
+    l2_pgtable_base[l2_index].table.valid = 1;
+    l3_pgtable_base = l2_pgtable_base[l2_index].table.base << PAGE_SHIFT;
+    l3_pgtable_base[l3_index] = set_entry(pa, mem_desc->attr, (is_guest ? 3:0), size_4kb);
 }
