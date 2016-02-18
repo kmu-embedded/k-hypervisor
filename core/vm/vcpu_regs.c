@@ -1,4 +1,5 @@
 #include <vcpu_regs.h>
+#include <debug_print.h>
 #include <stdio.h>
 #include <armv7_p15.h>
 #include <scheduler.h>
@@ -265,17 +266,17 @@ void print_core_regs(struct core_regs *core_regs)
 {
     int i;
 
-    printf("cpsr: 0x%08x\n", core_regs->cpsr);
-    printf("cpsr mode(%x) : %s\n", core_regs->cpsr & CPSR_MODE_MASK, _modename(core_regs->cpsr & CPSR_MODE_MASK));
-    printf("  pc: 0x%08x\n", core_regs->pc);
-    printf("  lr: 0x%08x\n", core_regs->lr);
-    printf(" gpr:\n\r");
+    debug_print("cpsr: 0x%08x\n", core_regs->cpsr);
+    debug_print("cpsr mode(%x) : %s\n", core_regs->cpsr & CPSR_MODE_MASK, _modename(core_regs->cpsr & CPSR_MODE_MASK));
+    debug_print("  pc: 0x%08x\n", core_regs->pc);
+    debug_print("  lr: 0x%08x\n", core_regs->lr);
+    debug_print(" gpr:\n\r");
     for (i = 0; i < ARCH_REGS_NUM_GPR; i++) {
-        printf("     0x%08x\n", core_regs->gpr[i]);
+        debug_print("     0x%08x\n", core_regs->gpr[i]);
     }
 
-    printf("cntpct: %llu\n", read_cntpct());
-    printf("cnth_tval:0x%08x\n", read_cnthp_tval());
+    debug_print("cntpct: %llu\n", read_cntpct());
+    debug_print("cnth_tval:0x%08x\n", read_cnthp_tval());
 
 }
 
@@ -332,7 +333,7 @@ void print_vcpu_regs(struct vcpu_regs *vcpu_regs)
     print_core_regs(&vcpu_regs->core_regs);
 
     /* TODO(casionwoo) : Decide if print bellow count registers */
-    printf("cntpct: %llu\n", read_cntpct());
-    printf("cnth_tval:0x%08x\n", read_cnthp_tval());
+    debug_print("cntpct: %llu\n", read_cntpct());
+    debug_print("cnth_tval:0x%08x\n", read_cnthp_tval());
 }
 

@@ -1,4 +1,5 @@
 #include <vcpu.h>
+#include <debug_print.h>
 #include <timer.h>
 #include <smp.h>
 #include <stdio.h>
@@ -105,9 +106,9 @@ void print_all_vcpu()
 
 void print_vcpu(struct vcpu *vcpu)
 {
-    printf("ADDR  : 0x%p\n", vcpu);
-    printf("VCPUID  : %d\n", vcpu->vcpuid);
-    printf("VMID  : %d\n", vcpu->vmid);
-    printf("STATE  : %d\n", vcpu->state);
+    debug_print("ADDR  : 0x%p\n", vcpu);
+    debug_print("VCPUID  : %d\n", vcpu->vcpuid);
+    debug_print("VMID  : %d\n", vcpu->vmid);
+    debug_print("STATE  : %d\n", vcpu->state);
 }
 

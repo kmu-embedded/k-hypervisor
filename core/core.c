@@ -1,5 +1,7 @@
+#include <stdio.h>
+#include <debug_print.h>
+
 #include <core.h>
-//#include <memory.h>
 #include <interrupt.h>
 #include <timer.h>
 #include <vdev.h>
@@ -37,24 +39,24 @@ hvmm_status_t khypervisor_init()
     hvmm_status_t status;
 
     if ((status = interrupt_init()) == HVMM_STATUS_UNKNOWN_ERROR) {
-        printf("[%s] interrupt initialization failed\n", __func__);
+        debug_print("[%s] interrupt initialization failed\n", __func__);
         return status;
     }
 
     setup_timer();
     if ((status = timer_init(_timer_irq)) == HVMM_STATUS_UNKNOWN_ERROR) {
-        printf("[%s] timer initialization failed\n", __func__);
+        debug_print("[%s] timer initialization failed\n", __func__);
         return status;
     }
 
     if ((status = vdev_init()) == HVMM_STATUS_UNKNOWN_ERROR) {
-        printf("[%s] vdev initialization failed\n", __func__);
+        debug_print("[%s] vdev initialization failed\n", __func__);
         return status;
     }
 
     // FIXME: Currently, testing routines for vdev are failed
     if ((status = basic_tests_run(PLATFORM_BASIC_TESTS)) == HVMM_STATUS_UNKNOWN_ERROR) {
-        printf("[%s] basic testing failed\n", __func__);
+        debug_print("[%s] basic testing failed\n", __func__);
         //return status;
         status = HVMM_STATUS_SUCCESS;
     }

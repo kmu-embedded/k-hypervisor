@@ -1,4 +1,6 @@
-#define DEBUG
+#include <stdio.h>
+#include <debug_print.h>
+
 #include <hvmm_types.h>
 #include <vcpu.h>
 #include <vm.h>
@@ -189,7 +191,7 @@ void interrupt_service_routine(int irq, void *current_regs, void *pdata)
             _host_ops->end(irq);
         }
     } else
-        printf("interrupt:no pending irq:%x\n", irq);
+        debug_print("interrupt:no pending irq:%x\n", irq);
 }
 
 hvmm_status_t interrupt_init()
@@ -206,14 +208,14 @@ hvmm_status_t interrupt_init()
     if (_host_ops->init) {
         ret = _host_ops->init();
         if (ret)
-            printf("host initial failed:'%s'\n", "host_interrupt_ops");
+            debug_print("host initial failed:'%s'\n", "host_interrupt_ops");
     }
 
     /* guest_interrupt_init() */
     if (_guest_ops->init) {
         ret = _guest_ops->init();
         if (ret)
-            printf("guest initial failed:'%s'\n", "guest_interrupt_ops");
+            debug_print("guest initial failed:'%s'\n", "guest_interrupt_ops");
     }
 
     return ret;

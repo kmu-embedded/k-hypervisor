@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <debug_print.h>
 #include <guest_memory_hw.h>
 #include <armv7_p15.h>
 
@@ -65,7 +66,7 @@ static void guest_memory_stage2_enable(int enable)
 {
     uint32_t hcr;
     /* HCR.VM[0] = enable */
-    /* printf( "hcr:"); printf_hex32(hcr); printf("\n\r"); */
+    /* debug_print( "hcr:"); debug_print_hex32(hcr); debug_print("\n\r"); */
     hcr = read_hcr();
     if (enable)
         hcr |= (0x1);
@@ -96,9 +97,9 @@ static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, pgentry *ttbl)
      */
     vttbr = read_vttbr();
 #if 0 /* ignore message due to flood log message */
-    printf("current vttbr:");
-    printf_hex64(vttbr);
-    printf("\n\r");
+    debug_print("current vttbr:");
+    debug_print_hex64(vttbr);
+    debug_print("\n\r");
 #endif
     vttbr &= ~(VTTBR_VMID_MASK);
     vttbr |= ((uint64_t)vmid << VTTBR_VMID_SHIFT) & VTTBR_VMID_MASK;
@@ -107,9 +108,9 @@ static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, pgentry *ttbl)
     write_vttbr(vttbr);
     vttbr = read_vttbr();
 #if 0 /* ignore message due to flood log message */
-    printf("changed vttbr:");
-    printf_hex64(vttbr);
-    printf("\n\r");
+    debug_print("changed vttbr:");
+    debug_print_hex64(vttbr);
+    debug_print("\n\r");
 #endif
     return HVMM_STATUS_SUCCESS;
 }
@@ -165,14 +166,14 @@ hvmm_status_t memory_hw_create(struct vmem *vmem)
  */
 hvmm_status_t memory_hw_init(struct memmap_desc **memmap, char **_vmid_ttbl, vmid_t vmid)
 {
-    printf("[memory] memory_init: enter\n\r");
+    debug_print("[memory] memory_init: enter\n\r");
 
     // TODO(casionwoo) : When VM has pagetable, parameter of vmid will be removed.
     stage2_mm_init(memmap, _vmid_ttbl, vmid);
 
     guest_memory_init_mmu();
 
-    printf("[memory] memory_init: exit\n\r");
+    debug_print("[memory] memory_init: exit\n\r");
 
     return HVMM_STATUS_SUCCESS;
 }

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <debug_print.h>
 #include <armv7_p15.h>
 #include <hvmm_trace.h>
 #include <rtsm-config.h>
@@ -21,7 +22,7 @@ void guest_memory_init_mmu(void)
     write_vtcr(vtcr);
 
     vtcr = read_vtcr();
-    printf("vtcr: 0x%08x\n", vtcr);
+    debug_print("vtcr: 0x%08x\n", vtcr);
 
     HVMM_TRACE_EXIT();
 }

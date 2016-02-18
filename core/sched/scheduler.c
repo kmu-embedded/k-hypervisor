@@ -9,6 +9,7 @@
 #include <vgic.h>
 #include <timer.h>
 #include <stdio.h>
+#include <debug_print.h>
 #include <hvmm_trace.h>
 
 int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
@@ -80,12 +81,12 @@ hvmm_status_t guest_perform_switch(struct core_regs *regs)
          * If the scheduler is not already running, launch default
          * first guest. It occur in initial time.
          */
-        printf("context: launching the first guest\n");
+        debug_print("context: launching the first guest\n");
         result = perform_switch(0, _next_guest_vmid[cpu]);
         /* DOES NOT COME BACK HERE */
     } else if (_next_guest_vmid[cpu] != VMID_INVALID &&
             _current_guest_vmid[cpu] != _next_guest_vmid[cpu]) {
-        printf("[sched] curr:%x next:%x\n", _current_guest_vmid[cpu], _next_guest_vmid[cpu]);
+        debug_print("[sched] curr:%x next:%x\n", _current_guest_vmid[cpu], _next_guest_vmid[cpu]);
         /* Only if not from Hyp */
         result = perform_switch(regs, _next_guest_vmid[cpu]);
         _next_guest_vmid[cpu] = VMID_INVALID;
@@ -100,7 +101,7 @@ void guest_sched_start(void)
     struct vcpu *vcpu = 0;
     uint32_t cpu = smp_processor_id();
 
-    printf("[hyp] switch_to_initial_guest:\n");
+    debug_print("[hyp] switch_to_initial_guest:\n");
     /* Select the first guest context to switch to. */
     _current_guest_vmid[cpu] = VMID_INVALID;
     if (cpu)
@@ -141,7 +142,7 @@ vmid_t sched_policy_determ_next(void)
     vmid_t next = sched_rr.do_schedule();
 
     if (next == VMID_INVALID) {
-        printf("policy_determ result: VMID_INVALID\n");
+        debug_print("policy_determ result: VMID_INVALID\n");
         next = 0;
         hyp_abort_infinite();
     }

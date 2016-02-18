@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <debug_print.h>
 #include <interrupt.h>
 #include <rtsm-config.h>
 #include <gic.h>

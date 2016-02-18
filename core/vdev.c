@@ -1,7 +1,7 @@
 #include <vdev.h>
 #include <hvmm_trace.h>
-#define DEBUG
 #include <stdio.h>
+#include <debug_print.h>
 #include <smp.h>
 
 #define MAX_VDEV    256
@@ -31,7 +31,7 @@ hvmm_status_t vdev_register(int level, struct vdev_module *module)
     }
 
     if (result != HVMM_STATUS_SUCCESS) {
-        printf("vdev : Failed registering vdev '%s', max %d full\n",
+        debug_print("vdev : Failed registering vdev '%s', max %d full\n",
                 module->name, MAX_VDEV);
     }
 
@@ -55,12 +55,12 @@ int32_t vdev_find(int level, struct arch_vdev_trigger_info *info,
     for (i = 0; i < _vdev_size[level]; i++) {
         vdev = _vdev_module[level][i];
         if (!vdev) {
-            printf("vdev : Could not get module, level : %d, i : %d\n",
+            debug_print("vdev : Could not get module, level : %d, i : %d\n",
                     level, i);
             break;
         }
         if (!vdev->ops) {
-            printf("vdev : Could not get operation, level : %d, i : %d\n",
+            debug_print("vdev : Could not get operation, level : %d, i : %d\n",
                     level, i);
             break;
         }
@@ -82,13 +82,13 @@ int32_t vdev_read(int level, int num, struct arch_vdev_trigger_info *info,
     struct vdev_module *vdev = _vdev_module[level][num];
 
     if (!vdev) {
-        printf("vdev : Could not get module, level : %d, i : %d\n",
+        debug_print("vdev : Could not get module, level : %d, i : %d\n",
                 level, num);
         return VDEV_ERROR;
     }
 
     if (!vdev->ops) {
-        printf("vdev : Could not get operation, level : %d, i : %d\n",
+        debug_print("vdev : Could not get operation, level : %d, i : %d\n",
                 level, num);
         return VDEV_ERROR;
     }
@@ -106,13 +106,13 @@ int32_t vdev_write(int level, int num, struct arch_vdev_trigger_info *info,
     struct vdev_module *vdev = _vdev_module[level][num];
 
     if (!vdev) {
-        printf("vdev : Could not get module, level : %d, i : %d\n",
+        debug_print("vdev : Could not get module, level : %d, i : %d\n",
                 level, num);
         return VDEV_ERROR;
     }
 
     if (!vdev->ops) {
-        printf("vdev : Could not get operation, level : %d, i : %d\n",
+        debug_print("vdev : Could not get operation, level : %d, i : %d\n",
                 level, num);
         return VDEV_ERROR;
     }
@@ -130,13 +130,13 @@ hvmm_status_t vdev_post(int level, int num, struct arch_vdev_trigger_info *info,
     struct vdev_module *vdev = _vdev_module[level][num];
 
     if (!vdev) {
-        printf("vdev : Could not get module, level : %d, i : %d\n",
+        debug_print("vdev : Could not get module, level : %d, i : %d\n",
                 level, num);
         return HVMM_STATUS_UNKNOWN_ERROR;
     }
 
     if (!vdev->ops) {
-        printf("vdev : Could not get operation, level : %d, i : %d\n",
+        debug_print("vdev : Could not get operation, level : %d, i : %d\n",
                 level, num);
         return HVMM_STATUS_UNKNOWN_ERROR;
     }
@@ -162,7 +162,7 @@ hvmm_status_t vdev_save(vmid_t vmid)
 
             result = vdev->ops->save(vmid);
             if (result) {
-                printf("vdev : save error, name : %s\n", vdev->name);
+                debug_print("vdev : save error, name : %s\n", vdev->name);
                 return result;
             }
         }
@@ -186,7 +186,7 @@ hvmm_status_t vdev_restore(vmid_t vmid)
 
             result = vdev->ops->restore(vmid);
             if (result) {
-                printf("vdev : save error, name : %s\n", vdev->name);
+                debug_print("vdev : save error, name : %s\n", vdev->name);
                 return result;
             }
         }
@@ -218,7 +218,7 @@ hvmm_status_t vdev_init(void)
     if (!cpu) {
         for (fn = __vdev_module_high_start; fn < __vdev_module_high_end; fn++) {
             if (vdev_module_initcall(*fn)) {
-                printf("vdev : high initial call error\n");
+                debug_print("vdev : high initial call error\n");
                 return HVMM_STATUS_UNKNOWN_ERROR;
             }
             _vdev_size[VDEV_LEVEL_HIGH]++;
@@ -226,7 +226,7 @@ hvmm_status_t vdev_init(void)
 
         for (fn = __vdev_module_high_end; fn < __vdev_module_middle_end; fn++) {
             if (vdev_module_initcall(*fn)) {
-                printf("vdev : middle initial call error\n");
+                debug_print("vdev : middle initial call error\n");
                 return HVMM_STATUS_UNKNOWN_ERROR;
             }
             _vdev_size[VDEV_LEVEL_MIDDLE]++;
@@ -234,7 +234,7 @@ hvmm_status_t vdev_init(void)
 
         for (fn = __vdev_module_middle_end; fn < __vdev_module_low_end; fn++) {
             if (vdev_module_initcall(*fn)) {
-                printf("vdev : low initial call error\n");
+                debug_print("vdev : low initial call error\n");
                 return HVMM_STATUS_UNKNOWN_ERROR;
             }
             _vdev_size[VDEV_LEVEL_LOW]++;
@@ -245,7 +245,7 @@ hvmm_status_t vdev_init(void)
         for (j = 0; j < _vdev_size[i]; j++) {
             vdev = _vdev_module[i][j];
             if (!vdev->ops) {
-                printf("vdev : Could not get operation, level : %d, i : %d\n",
+                debug_print("vdev : Could not get operation, level : %d, i : %d\n",
                         i, j);
                 return HVMM_STATUS_UNKNOWN_ERROR;
             }
@@ -254,9 +254,9 @@ hvmm_status_t vdev_init(void)
                 continue;
 
             result = vdev->ops->init();
-            printf("vdev->name: %s\n", vdev->name);
+            debug_print("vdev->name: %s\n", vdev->name);
             if (result) {
-                printf("vdev : Initial error, name : %s\n", vdev->name);
+                debug_print("vdev : Initial error, name : %s\n", vdev->name);
                 return result;
             }
         }

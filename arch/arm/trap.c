@@ -5,8 +5,8 @@
 #include <vdev.h>
 #include <smp.h>
 
-#define DEBUG
 #include <stdio.h>
+#include <debug_print.h>
 #include <interrupt.h>
 /**\defgroup ARM
  * <pre> ARM registers.
@@ -74,18 +74,18 @@ static void _trap_dump_bregs(void)
 {
     uint32_t spsr, lr, sp;
 
-    printf(" - banked regs\n");
+    debug_print(" - banked regs\n");
     asm volatile(" mrs     %0, sp_usr\n\t" : "=r"(sp) : : "memory", "cc");
     asm volatile(" mrs     %0, lr_usr\n\t" : "=r"(lr) : : "memory", "cc");
-    printf(" - usr: sp:%x lr:%x\n", sp, lr);
+    debug_print(" - usr: sp:%x lr:%x\n", sp, lr);
     asm volatile(" mrs     %0, spsr_svc\n\t" : "=r"(spsr) : : "memory", "cc");
     asm volatile(" mrs     %0, sp_svc\n\t" : "=r"(sp) : : "memory", "cc");
     asm volatile(" mrs     %0, lr_svc\n\t" : "=r"(lr) : : "memory", "cc");
-    printf(" - svc: spsr:%x sp:%x lr:%x\n", spsr, sp, lr);
+    debug_print(" - svc: spsr:%x sp:%x lr:%x\n", spsr, sp, lr);
     asm volatile(" mrs     %0, spsr_irq\n\t" : "=r"(spsr) : : "memory", "cc");
     asm volatile(" mrs     %0, sp_irq\n\t" : "=r"(sp) : : "memory", "cc");
     asm volatile(" mrs     %0, lr_irq\n\t" : "=r"(lr) : : "memory", "cc");
-    printf(" - irq: spsr:%x sp:%x lr:%x\n", spsr, sp, lr);
+    debug_print(" - irq: spsr:%x sp:%x lr:%x\n", spsr, sp, lr);
 }
 
 /*
@@ -173,15 +173,15 @@ enum hyp_hvc_result _hyp_hvc_service(struct core_regs *regs)
         level = VDEV_LEVEL_LOW;
         break;
     default:
-        printf("[hyp] _hyp_hvc_service:unknown hsr.iss= %x\n", iss);
-        printf("[hyp] hsr.ec= %x\n", ec);
-        printf("[hyp] hsr= %x\n", hsr);
+        debug_print("[hyp] _hyp_hvc_service:unknown hsr.iss= %x\n", iss);
+        debug_print("[hyp] hsr.ec= %x\n", ec);
+        debug_print("[hyp] hsr= %x\n", hsr);
         goto trap_error;
     }
 
     vdev_num = vdev_find(level, &info, regs);
     if (vdev_num < 0) {
-        printf("[hvc] cann't search vdev number\n\r");
+        debug_print("[hvc] cann't search vdev number\n\r");
         goto trap_error;
     }
 
@@ -199,6 +199,6 @@ enum hyp_hvc_result _hyp_hvc_service(struct core_regs *regs)
     return HYP_RESULT_ERET;
 trap_error:
     _trap_dump_bregs();
-    printf("fipa is %x guest pc is %x\n", fipa, regs->pc);
+    debug_print("fipa is %x guest pc is %x\n", fipa, regs->pc);
     hyp_abort_infinite();
 }

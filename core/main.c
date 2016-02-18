@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <debug_print.h>
+
 #include <vm.h>
 #include <core.h>
 #include <scheduler.h>
@@ -21,7 +24,7 @@ static int cpu_init()
         goto error;
     }
 
-    printf("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
+    debug_print("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
 
     // TODO: Rest parts of cpu_init() will be moved per-core initialization.
     sched_init();
@@ -29,15 +32,15 @@ static int cpu_init()
     vm_setup();
     for (i = 0; i < NUM_GUESTS_STATIC; i++) {
         if ((vm[i] = vm_create(nr_vcpus)) == VM_CREATE_FAILED) {
-            printf("vm_create(vm[%d]) is failed\n", i);
+            debug_print("vm_create(vm[%d]) is failed\n", i);
             goto error;
         }
         if (vm_init(vm[i]) != HALTED) {
-            printf("vm_init(vm[%d]) is failed\n", i);
+            debug_print("vm_init(vm[%d]) is failed\n", i);
             goto error;
         }
         if (vm_start(vm[i]) != RUNNING) {
-            printf("vm_start(vm[%d]) is failed\n", i);
+            debug_print("vm_start(vm[%d]) is failed\n", i);
             goto error;
         }
     }
@@ -47,12 +50,12 @@ static int cpu_init()
      * TODO: Rename guest_sched_start to do_schedule or something others.
      *       do_schedule(vmid) or do_schedule(vcpu_id)
      */
-    printf("%s", BANNER_STRING); // TODO: make a print_banner();
+    debug_print("%s", BANNER_STRING); // TODO: make a print_banner();
     guest_sched_start();
 
     /* The code flow must not reach here */
 error:
-    printf("-------- [%s] ERROR: K-Hypervisor must not reach here\n", __func__);
+    debug_print("-------- [%s] ERROR: K-Hypervisor must not reach here\n", __func__);
     hyp_abort_infinite();
     return 0;
 }

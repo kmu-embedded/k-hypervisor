@@ -1,4 +1,5 @@
 #include <vmem.h>
+#include <debug_print.h>
 #include <gic_regs.h>
 
 // TODO(casionwoo) : These memory mapping variables should be removed after DTB implementation
