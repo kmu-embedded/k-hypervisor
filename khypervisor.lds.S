@@ -1,9 +1,9 @@
+#include <board/rtsm-config.h>
+
 OUTPUT_FORMAT("elf32-littlearm")
 OUTPUT_ARCH(arm)
 TARGET(binary)
 ENTRY(__start)
-
-#include <board/rtsm-config.h>
 
 INPUT(../guestimages/guest0.bin)
 GUEST0_STACK     = CFG_MEMMAP_GUEST0_OFFSET + GUEST_SIZE_MAX;
@@ -17,7 +17,6 @@ HEAP_SIZE   = 0x04000000;
 SECTIONS
 {
  . = CFG_MEMMAP_PHYS_START;
-
  /* Guest 0 */
  . = CFG_MEMMAP_GUEST0_OFFSET;
  _guest0_bin_start = .;
