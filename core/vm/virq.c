@@ -1,4 +1,5 @@
 #include <virq.h>
+#include <debug_print.h>
 #include <rtsm-config.h>
 
 #define DECLARE_VIRQ(name, _pirq, _virq) \
@@ -123,7 +124,7 @@ void virq_create(struct virq *virq, vmid_t vmid)
             break;
 
         default:
-            printf("virq_create error!\n");
+            debug_print("virq_create error!\n");
             break;
     }
 }

@@ -7,6 +7,7 @@
 #include <asm-arm_inline.h>
 
 #include <stdio.h>
+#include <debug_print.h>
 #include <board/rtsm-config.h>
 
 /* for test, surpress traces */
@@ -113,7 +114,7 @@ void vgic_slotpirq_init(void)
 void vgic_slotpirq_set(vmid_t vmid, uint32_t slot, uint32_t pirq)
 {
     if (vmid < NUM_GUESTS_STATIC) {
-        printf("vgic: setting vmid:%d slot:%d pirq:%d\n", vmid, slot, pirq);
+        debug_print("vgic: setting vmid:%d slot:%d pirq:%d\n", vmid, slot, pirq);
         _guest_pirqatslot[vmid][slot] = pirq;
     }
 }
@@ -123,7 +124,7 @@ uint32_t vgic_slotpirq_get(vmid_t vmid, uint32_t slot)
     uint32_t pirq = PIRQ_INVALID;
     if (vmid < NUM_GUESTS_STATIC) {
         pirq = _guest_pirqatslot[vmid][slot];
-        printf("vgic: reading vmid:%d slot:%d pirq:%d\n", vmid, slot, pirq);
+        debug_print("vgic: reading vmid:%d slot:%d pirq:%d\n", vmid, slot, pirq);
     }
     return pirq;
 }
@@ -136,10 +137,10 @@ void vgic_slotpirq_clear(vmid_t vmid, uint32_t slot)
 void vgic_slotvirq_set(vmid_t vmid, uint32_t slot, uint32_t virq)
 {
     if (vmid < NUM_GUESTS_STATIC) {
-        printf("vgic: setting vmid:%d slot:%d virq:%d\n", vmid, slot, virq);
+        debug_print("vgic: setting vmid:%d slot:%d virq:%d\n", vmid, slot, virq);
         _guest_virqatslot[vmid][slot] = virq;
     } else {
-        printf("vgic: not setting invalid vmid:%d slot:%d virq:%d\n",
+        debug_print("vgic: not setting invalid vmid:%d slot:%d virq:%d\n",
                 vmid, slot, virq);
     }
 }
@@ -152,7 +153,7 @@ uint32_t vgic_slotvirq_getslot(vmid_t vmid, uint32_t virq)
         for (i = 0; i < VGIC_NUM_MAX_SLOTS; i++) {
             if (_guest_virqatslot[vmid][i] == virq) {
                 slot = i;
-                printf("vgic: reading vmid:%d slot:%d virq:%d\n",
+                debug_print("vgic: reading vmid:%d slot:%d virq:%d\n",
                         vmid, slot, virq);
                 break;
             }
@@ -210,11 +211,11 @@ hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
                     break;
                 }
             }
-            printf("virq: queueing virq %d pirq %d to vmid %d %s\n",
+            debug_print("virq: queueing virq %d pirq %d to vmid %d %s\n",
                     virq, pirq, vmid,
                     result == HVMM_STATUS_SUCCESS ? "done" : "failed");
         } else {
-            printf("virq: rejected queueing duplicated virq %d pirq %d to "
+            debug_print("virq: rejected queueing duplicated virq %d pirq %d to "
                     "vmid %d %s\n", virq, pirq, vmid);
         }
         if ((result == HVMM_STATUS_SUCCESS) && (virq < 16) ) {
@@ -252,7 +253,7 @@ hvmm_status_t vgic_flush_virqs(vmid_t vmid)
         }
     }
     if (count > 0)
-        printf("virq: injected %d virqs to vmid %d\n", count, vmid);
+        debug_print("virq: injected %d virqs to vmid %d\n", count, vmid);
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -335,11 +336,11 @@ static void _vgic_dump_status(void)
      * Virtual Machine Control
      *  -
      */
-    printf("=== VGIC Status ===\n");
-    printf(" Initialized:");
-    printf(" %s\n", (VGIC_READY() ? "Yes" : "No"));
-    printf(" Num ListRegs: 0x%08x\n", _vgic.num_lr);
-    printf(" LR_MASK: 0x%llu\n", _vgic.valid_lr_mask);
+    debug_print("=== VGIC Status ===\n");
+    debug_print(" Initialized:");
+    debug_print(" %s\n", (VGIC_READY() ? "Yes" : "No"));
+    debug_print(" Num ListRegs: 0x%08x\n", _vgic.num_lr);
+    debug_print(" LR_MASK: 0x%llu\n", _vgic.valid_lr_mask);
 }
 
 /**
@@ -360,19 +361,19 @@ static void _vgic_dump_regs(void)
 #ifndef __VGIC_DISABLE_TRACE__
     int i;
     HVMM_TRACE_ENTER();
-    printf("  hcr: 0x%08x\n", _vgic.base[GICH_HCR]);
-    printf("  vtr: 0x%08x\n", _vgic.base[GICH_VTR]);
-    printf(" vmcr: 0x%08x\n", _vgic.base[GICH_VMCR]);
-    printf(" misr: 0x%08x\n", _vgic.base[GICH_MISR]);
-    printf("eisr0: 0x%08x\n", _vgic.base[GICH_EISR0]);
-    printf("eisr1: 0x%08x\n", _vgic.base[GICH_EISR1]);
-    printf("elsr0: 0x%08x\n", _vgic.base[GICH_ELSR0]);
-    printf("elsr1: 0x%08x\n", _vgic.base[GICH_ELSR1]);
-    printf("  apr: 0x%08x\n", _vgic.base[GICH_APR]);
-    printf("   LR:\n");
+    debug_print("  hcr: 0x%08x\n", _vgic.base[GICH_HCR]);
+    debug_print("  vtr: 0x%08x\n", _vgic.base[GICH_VTR]);
+    debug_print(" vmcr: 0x%08x\n", _vgic.base[GICH_VMCR]);
+    debug_print(" misr: 0x%08x\n", _vgic.base[GICH_MISR]);
+    debug_print("eisr0: 0x%08x\n", _vgic.base[GICH_EISR0]);
+    debug_print("eisr1: 0x%08x\n", _vgic.base[GICH_EISR1]);
+    debug_print("elsr0: 0x%08x\n", _vgic.base[GICH_ELSR0]);
+    debug_print("elsr1: 0x%08x\n", _vgic.base[GICH_ELSR1]);
+    debug_print("  apr: 0x%08x\n", _vgic.base[GICH_APR]);
+    debug_print("   LR:\n");
     for (i = 0; i < _vgic.num_lr; i++) {
         if (vgic_is_free_slot(i) != i) {
-            printf("0x%08x - %d\n", _vgic.base[GICH_LR + i], i);
+            debug_print("0x%08x - %d\n", _vgic.base[GICH_LR + i], i);
         }
     }
     HVMM_TRACE_EXIT();
@@ -400,9 +401,9 @@ static void _vgic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
             if (pirq != PIRQ_INVALID) {
                 gic_deactivate_irq(pirq);
                 vgic_slotpirq_clear(vmid, slot);
-                printf("vgic: deactivated pirq %d at slot %d\n", pirq, slot);
+                debug_print("vgic: deactivated pirq %d at slot %d\n", pirq, slot);
             } else {
-                printf("vgic: deactivated virq at slot %d\n", slot);
+                debug_print("vgic: deactivated virq at slot %d\n", slot);
             }
             vgic_slotvirq_clear(vmid, slot);
         }
@@ -416,9 +417,9 @@ static void _vgic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
             if (pirq != PIRQ_INVALID) {
                 gic_deactivate_irq(pirq);
                 vgic_slotpirq_clear(vmid, slot + 32);
-                printf("vgic: deactivated pirq %d at slot %d\n", pirq, slot);
+                debug_print("vgic: deactivated pirq %d at slot %d\n", pirq, slot);
             } else {
-                printf("vgic: deactivated virq at slot %d\n", slot);
+                debug_print("vgic: deactivated virq at slot %d\n", slot);
             }
             vgic_slotvirq_clear(vmid, slot);
         }
@@ -460,7 +461,7 @@ hvmm_status_t vgic_injection_enable(uint8_t enable)
         }
     }
     hcr = read_hcr();
-    printf(" updated hcr: %x\n", hcr);
+    debug_print(" updated hcr: %x\n", hcr);
     return HVMM_STATUS_SUCCESS;
 }
 
@@ -675,7 +676,7 @@ hvmm_status_t vgic_sgi(uint32_t cpu, enum gic_sgi sgi)
             result = vgic_flush_virqs(vmid);
             break;
         default:
-            printf("sgi: wrong sgi %d\n", sgi);
+            debug_print("sgi: wrong sgi %d\n", sgi);
             break;
     }
 

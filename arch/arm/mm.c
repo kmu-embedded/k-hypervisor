@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <debug_print.h>
 #include <armv7_p15.h>
 #include <hvmm_types.h>
 #include <stdbool.h>
@@ -38,7 +39,7 @@ hvmm_status_t enable_mmu(void)
     htcr |= WRITEBACK_CACHEABLE << HTCR_IRGN0_BIT;
     // TODO(wonseok): How to configure T0SZ?
     write_htcr(htcr);
-    // FIXME(casionwoo) : Current printf can't support 64-bit, it should be fixed
+    // FIXME(casionwoo) : Current debug_print can't support 64-bit, it should be fixed
 
     /* HTTBR : Hyp Translation Table Base Register */
     httbr |= (uint32_t) hyp_l1_pgtable;
@@ -96,6 +97,7 @@ void write_pgentry(void *pgtable_base, struct memmap_desc *mem_desc, bool is_gue
     l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
     for (l1_offset = 0; size > 0; l1_offset++ ) {
         l1_pgtable_base[l1_index + l1_offset].table.valid = 1;
+
         l2_pgtable_base = l1_pgtable_base[l1_index + l1_offset].table.base << PAGE_SHIFT;
         l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
 

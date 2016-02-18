@@ -1,4 +1,5 @@
 #include <vm.h>
+#include <debug_print.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -126,7 +127,7 @@ hvmm_status_t vm_save(vmid_t save_vmid)
     */
     struct vmcb *vm = vm_find(save_vmid);
     if (vm == NO_VM_FOUND) {
-        printf("[%s]: NO VM FOUND %d\n", __func__, save_vmid);
+        debug_print("[%s]: NO VM FOUND %d\n", __func__, save_vmid);
         return HVMM_STATUS_NOT_FOUND;
     }
 
@@ -146,7 +147,7 @@ hvmm_status_t vm_restore(vmid_t restore_vmid)
     */
     struct vmcb *vm = vm_find(restore_vmid);
     if (vm == NO_VM_FOUND) {
-        printf("[%s]: NO VM FOUND %d\n", __func__, restore_vmid);
+        debug_print("[%s]: NO VM FOUND %d\n", __func__, restore_vmid);
         return HVMM_STATUS_NOT_FOUND;
     }
 
@@ -180,8 +181,8 @@ void print_all_vm()
 
 void print_vm(struct vmcb *vm)
 {
-    printf("ADDR  : 0x%p\n", vm);
-    printf("VMID  : %d\n", vm->vmid);
-    printf("STATE : %d\n", vm->state);
+    debug_print("ADDR  : 0x%p\n", vm);
+    debug_print("VMID  : %d\n", vm->vmid);
+    debug_print("STATE : %d\n", vm->state);
 }
 

@@ -1,6 +1,7 @@
 #include <sched/scheduler_skeleton.h>
 #include <lib/bsd/list.h>
 #include <stdio.h>
+#include <debug_print.h>
 #include <stdbool.h>
 
 typedef enum {
@@ -53,21 +54,21 @@ void print_all_entries_rr(void)
         rq_entry = list_entry(current, struct rq_entry_rr, head);
         cur_vcpuid = rq_entry->vcpuid;
     }
-    printf("RR CURRENT: %d\n", cur_vcpuid);
+    debug_print("RR CURRENT: %d\n", cur_vcpuid);
 
     /* print registered vCPU list */
-    printf("RR REG_LIST Entries:");
+    debug_print("RR REG_LIST Entries:");
     list_for_each_entry(rq_entry, &registered_list_rr, registered_list_head) {
-        printf(" %d", rq_entry->vcpuid);
+        debug_print(" %d", rq_entry->vcpuid);
     }
-    printf("\n");
+    debug_print("\n");
 
     /* print attached vCPU list */
-    printf("RR RUNQUEUE Entries:");
+    debug_print("RR RUNQUEUE Entries:");
     list_for_each_entry(rq_entry, &runqueue_rr, head) {
-        printf(" %d", rq_entry->vcpuid);
+        debug_print(" %d", rq_entry->vcpuid);
     }
-    printf("\n");
+    debug_print("\n");
 }
 
 

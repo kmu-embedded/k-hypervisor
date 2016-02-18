@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <debug_print.h>
+
 #include <gic.h>
 #include <armv7_p15.h>
 #include <a15_cp15_sysregs.h>
@@ -45,21 +47,21 @@ static void gic_dump_registers(void)
     uint32_t midr;
     HVMM_TRACE_ENTER();
     midr = read_midr();
-    printf("midr: 0x%08x\n", midr);
+    debug_print("midr: 0x%08x\n", midr);
     if ((midr & MIDR_MASK_PPN) == MIDR_PPN_CORTEXA15) {
         uint32_t value;
-        printf("cbar: 0x%08x\n", _gic.base);
-        printf("ba_gicd: 0x%08x\n", (uint32_t)_gic.ba_gicd);
-        printf("ba_gicc: 0x%08x\n", (uint32_t)_gic.ba_gicc);
-        printf("ba_gich: 0x%08x\n", (uint32_t)_gic.ba_gich);
-        printf("ba_gicv: 0x%08x\n", (uint32_t)_gic.ba_gicv);
-        printf("ba_gicvi: 0x%08x\n", (uint32_t)_gic.ba_gicvi);
+        debug_print("cbar: 0x%08x\n", _gic.base);
+        debug_print("ba_gicd: 0x%08x\n", (uint32_t)_gic.ba_gicd);
+        debug_print("ba_gicc: 0x%08x\n", (uint32_t)_gic.ba_gicc);
+        debug_print("ba_gich: 0x%08x\n", (uint32_t)_gic.ba_gich);
+        debug_print("ba_gicv: 0x%08x\n", (uint32_t)_gic.ba_gicv);
+        debug_print("ba_gicvi: 0x%08x\n", (uint32_t)_gic.ba_gicvi);
         value = _gic.ba_gicd[GICD_CTLR];
-        printf("GICD_CTLR: 0x%08x\n", value);
+        debug_print("GICD_CTLR: 0x%08x\n", value);
         value = _gic.ba_gicd[GICD_TYPER];
-        printf("GICD_TYPER: 0x%08x\n", value);
+        debug_print("GICD_TYPER: 0x%08x\n", value);
         value = _gic.ba_gicd[GICD_IIDR];
-        printf("GICD_IIDR: 0x%08x\n", value);
+        debug_print("GICD_IIDR: 0x%08x\n", value);
     }
     HVMM_TRACE_EXIT();
 }
@@ -99,7 +101,7 @@ static hvmm_status_t gic_init_base(uint32_t *va_base)
     hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
     HVMM_TRACE_ENTER();
     midr = read_midr();
-    printf("midr: 0x%08x\n", midr);
+    debug_print("midr: 0x%08x\n", midr);
     /*
      * Note:
      * We currently support GICv2 with Cortex-A15 only.
@@ -113,7 +115,7 @@ static hvmm_status_t gic_init_base(uint32_t *va_base)
                     0x00000000FFFFFFFFULL);
         }
         _gic.base = (uint32_t) va_base;
-        printf("cbar: 0x%08x\n", _gic.base);
+        debug_print("cbar: 0x%08x\n", _gic.base);
         _gic.ba_gicd = (uint32_t *)(_gic.base + GIC_OFFSET_GICD);
         _gic.ba_gicc = (uint32_t *)(_gic.base + GIC_OFFSET_GICC);
         _gic.ba_gich = (uint32_t *)(_gic.base + GIC_OFFSET_GICH);
@@ -121,8 +123,8 @@ static hvmm_status_t gic_init_base(uint32_t *va_base)
         _gic.ba_gicvi = (uint32_t *)(_gic.base + GIC_OFFSET_GICVI);
         result = HVMM_STATUS_SUCCESS;
     } else {
-        printf("GICv2 Unsupported\n\r");
-        printf("midr.ppn:0x%08x\n", midr & MIDR_MASK_PPN);
+        debug_print("GICv2 Unsupported\n\r");
+        debug_print("midr.ppn:0x%08x\n", midr & MIDR_MASK_PPN);
         result = HVMM_STATUS_UNSUPPORTED_FEATURE;
     }
     HVMM_TRACE_EXIT();
@@ -151,9 +153,9 @@ static hvmm_status_t gic_init_dist(void)
     type = _gic.ba_gicd[GICD_TYPER];
     _gic.lines = 32 * ((type & GICD_TYPE_LINES_MASK) + 1);
     _gic.cpus = 1 + ((type & GICD_TYPE_CPUS_MASK) >> GICD_TYPE_CPUS_SHIFT);
-    printf("GIC: lines: 0x%08x\n", _gic.lines);
-    printf(" cpus: 0x%08x\n", _gic.cpus);
-    printf(" IID: 0x%08x\n", _gic.ba_gicd[GICD_IIDR]);
+    debug_print("GIC: lines: 0x%08x\n", _gic.lines);
+    debug_print(" cpus: 0x%08x\n", _gic.cpus);
+    debug_print(" IID: 0x%08x\n", _gic.ba_gicd[GICD_IIDR]);
     /* Interrupt polarity for SPIs (Global Interrupts) active-low */
     for (i = 32; i < _gic.lines; i += 16)
         _gic.ba_gicd[GICD_ICFGR + i / 16] = 0x0;
@@ -245,7 +247,7 @@ volatile uint32_t *gic_vgic_baseaddr(void)
 {
     if (_gic.initialized != GIC_SIGNATURE_INITIALIZED) {
         HVMM_TRACE_ENTER();
-        printf("gic: ERROR - not initialized\n\r");
+        debug_print("gic: ERROR - not initialized\n\r");
         HVMM_TRACE_EXIT();
     }
     return _gic.ba_gich;
@@ -318,7 +320,7 @@ hvmm_status_t gic_configure_irq(uint32_t irq,
             result = gic_enable_irq(irq);
         }
     } else {
-        printf("invalid irq: 0x%08x\n", irq);
+        debug_print("invalid irq: 0x%08x\n", irq);
         result = HVMM_STATUS_UNSUPPORTED_FEATURE;
     }
     HVMM_TRACE_EXIT();

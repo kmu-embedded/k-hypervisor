@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <debug_print.h>
 #include <interrupt.h>
 #include <gic.h>
 #include <vgic.h>
@@ -11,11 +12,11 @@ static hvmm_status_t host_interrupt_init(void)
     {
         uint32_t hcr;
         hcr = read_hcr();
-        printf("hcr: 0x%08x\n", hcr);
+        debug_print("hcr: 0x%08x\n", hcr);
         hcr |= HCR_IMO | HCR_FMO;
         write_hcr(hcr);
         hcr = read_hcr();
-        printf("hcr: 0x%08x\n", hcr);
+        debug_print("hcr: 0x%08x\n", hcr);
     }
 
     /* Physical Interrupt: GIC Distributor & CPU Interface */

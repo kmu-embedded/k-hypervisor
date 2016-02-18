@@ -6,6 +6,7 @@
  */
 
 #include <stdio.h>
+#include <debug_print.h>
 #include <stdint.h>
 #include <rtsm-config.h>
 #include <hvmm_trace.h>
