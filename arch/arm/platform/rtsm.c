@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <memory.h>
 #include <armv7_p15.h>
-#include <rtsm-config.h> // FOR SZ_4K
+#include <rtsm-config.h>
 
 struct memmap_desc memdesc[] = {
     { "v2m_serial0", 0x1C090000, 0x1C090000, SZ_4K, MT_DEVICE },
@@ -20,7 +20,10 @@ struct memmap_desc memdesc[] = {
     { "gich", 0x2c004000, 0x2c004000, SZ_4K, MT_DEVICE },
     { "gicv", 0x2c005000, 0x2c005000, SZ_4K, MT_DEVICE },
     { "gicvi", 0x2c006000, 0x2c006000, SZ_4K, MT_DEVICE },
-    { "l1_3", 0xF0000000, 0xF0000000, SZ_256M, MT_WRITEBACK_RW_ALLOC},
+    { "atags_0", 0x80000000, 0x80000000, 0x00500000, MT_WRITEBACK_RW_ALLOC },
+    { "atags_1", 0x90000000, 0x90000000, 0x00500000, MT_WRITEBACK_RW_ALLOC },
+    { "atags_2", 0xA0000000, 0xA0000000, 0x00500000, MT_WRITEBACK_RW_ALLOC },
+    { "hyp", 0xF0000000, 0xF0000000, SZ_256M, MT_WRITEBACK_RW_ALLOC},
     { 0, 0, 0, 0, 0 }
 };
 

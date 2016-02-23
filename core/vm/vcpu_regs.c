@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <armv7_p15.h>
 #include <scheduler.h>
-#include <rtsm-config.h>
+#include <board/rtsm-config.h>
 
 #define CPSR_MODE_USER  0x10
 #define CPSR_MODE_FIQ   0x11
@@ -28,6 +28,7 @@
 static void core_regs_init(struct core_regs *core_regs)
 {
     int i = 0;
+    uint32_t *atag_ptr;
 
     /* TODO(casionwoo) : Why PC should be this value */
     core_regs->pc = CFG_GUEST_START_ADDRESS;
@@ -37,6 +38,13 @@ static void core_regs_init(struct core_regs *core_regs)
     for (i = 0; i < ARCH_REGS_NUM_GPR ; i++) {
         core_regs->gpr[i] = 0;
     }
+
+    /*
+     * R1 : Machine Number
+     * R2 : Atags Address
+     */
+    core_regs->gpr[1] = MAHINE_TYPE;
+    core_regs->gpr[2] = CFG_GUEST_ATAGS_START_ADDRESS;
 }
 
 static void cop_regs_init(struct cop_regs *cop_regs)
@@ -284,10 +292,7 @@ hvmm_status_t vcpu_regs_init(struct vcpu_regs *vcpu_regs)
 {
     struct context_regs *context_regs = &vcpu_regs->context_regs;
 
-    // TODO(casionwoo) : What is the meanning of bellow line
-    // Initialize loader status for reboot
-    // core_regs->gpr[10] = 0;
-
+    // TODO(casionwoo) : Initialize loader status for reboot
     core_regs_init(&vcpu_regs->core_regs);
     cop_regs_init(&context_regs->cop_regs);
     banked_regs_init(&context_regs->banked_regs);
