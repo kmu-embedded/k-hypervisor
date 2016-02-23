@@ -18,6 +18,7 @@ SECTIONS
 {
  . = CFG_MEMMAP_PHYS_START;
  /* Guest 0 */
+ . = CFG_MEMMAP_GUEST0_ATAGS_OFFSET;
  . = CFG_MEMMAP_GUEST0_OFFSET;
  _guest0_bin_start = .;
  .guest0 : { ../guestimages/guest0.bin}
@@ -31,6 +32,7 @@ SECTIONS
  . = ALIGN(4);
 
  /* Guest 1*/
+ . = CFG_MEMMAP_GUEST1_ATAGS_OFFSET;
  . = CFG_MEMMAP_GUEST1_OFFSET;
  _guest1_bin_start = .;
  .guest1 : { ../guestimages/guest1.bin }
@@ -44,6 +46,7 @@ SECTIONS
  . = ALIGN(4);
 
  /* Guest 2 */
+ . = CFG_MEMMAP_GUEST2_ATAGS_OFFSET;
  . = CFG_MEMMAP_GUEST2_OFFSET;
  _guest2_bin_start = .;
  .guest2 : { ../guestimages/guest2.bin }
