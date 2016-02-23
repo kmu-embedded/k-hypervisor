@@ -4,10 +4,10 @@
 
 // TODO(casionwoo) : These memory mapping variables should be removed after DTB implementation
 
-extern uint32_t _guest0_bin_start;
-extern uint32_t _guest1_bin_start;
-extern uint32_t _guest2_bin_start;
-
+//extern uint32_t _guest0_bin_start;
+//extern uint32_t _guest1_bin_start;
+//extern uint32_t _guest2_bin_start;
+//
 struct memmap_desc vm_md_empty[] = {
     { 0, 0, 0, 0,  0 },
 };
@@ -86,7 +86,7 @@ struct memmap_desc vm2_device_md[] = {
  * @brief Memory map for VM0 image .
  */
 struct memmap_desc vm0_memory_md[] = {
-    {"start", CFG_GUEST_START_ADDRESS, 0, 0x10000000, MEMATTR_NORMAL_WB_CACHEABLE },
+    {"start", CFG_GUEST_ATAGS_START_ADDRESS, 0, 0x10000000, MEMATTR_NORMAL_WB_CACHEABLE },
     {0, 0, 0, 0,  0},
 };
 
@@ -95,13 +95,13 @@ struct memmap_desc vm0_memory_md[] = {
  */
 struct memmap_desc vm1_memory_md[] = {
     /* 256MB */
-    {"start", CFG_GUEST_START_ADDRESS, 0, 0x10000000, MEMATTR_NORMAL_WB_CACHEABLE },
+    {"start", CFG_GUEST_ATAGS_START_ADDRESS, 0, 0x10000000, MEMATTR_NORMAL_WB_CACHEABLE },
     {0, 0, 0, 0,  0},
 };
 
 struct memmap_desc vm2_memory_md[] = {
     /* 256MB */
-    {"start", CFG_GUEST_START_ADDRESS, 0, 0x10000000, MEMATTR_NORMAL_WB_CACHEABLE },
+    {"start", CFG_GUEST_ATAGS_START_ADDRESS, 0, 0x10000000, MEMATTR_NORMAL_WB_CACHEABLE },
     {0, 0, 0, 0,  0},
 };
 
@@ -141,11 +141,11 @@ void set_memmap(struct vmem *vmem, vmid_t vmid)
      */
 
     if(vmid == 0) {
-        vm0_memory_md[0].pa = (uint64_t)((uint32_t) &_guest0_bin_start);
+        vm0_memory_md[0].pa = (uint64_t)((uint32_t) CFG_MEMMAP_GUEST0_ATAGS_OFFSET);
     }else if(vmid == 1) {
-        vm1_memory_md[0].pa = (uint64_t)((uint32_t) &_guest1_bin_start);
+        vm1_memory_md[0].pa = (uint64_t)((uint32_t) CFG_MEMMAP_GUEST1_ATAGS_OFFSET);
     }else if(vmid == 2) {
-        vm2_memory_md[0].pa = (uint64_t)((uint32_t) &_guest2_bin_start);
+        vm2_memory_md[0].pa = (uint64_t)((uint32_t) CFG_MEMMAP_GUEST2_ATAGS_OFFSET);
     }
 
     if(vmid == 0) {

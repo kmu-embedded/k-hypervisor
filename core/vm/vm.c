@@ -2,6 +2,7 @@
 #include <debug_print.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <atags.h>
 
 void print_vm(struct vmcb *vm);
 
@@ -14,6 +15,7 @@ hvmm_status_t vm_setup()
     vm_count = 0;
 
     vcpu_setup();
+    atags_setup();
 
     return HVMM_STATUS_SUCCESS;
 }
