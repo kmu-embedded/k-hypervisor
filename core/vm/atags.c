@@ -4,7 +4,6 @@
 static void setup_core_tag(void *address, long pagesize)
 {
     /* Initialise parameters to start at given address */
-    printf("address : %x\n", address);
     _params = (struct atag *)address;
     /* start with the core tag */
     _params->hdr.tag = ATAG_CORE;
@@ -146,9 +145,7 @@ void atags_setup(void)
     int i;
 
     for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        printf("%s, %dth atags setup __START__ ADDRESS : %x\n", __func__, i, CFG_MEMMAP_GUEST0_ATAGS_OFFSET + (i * CFG_MEMMAP_GUEST_SIZE));
         linuxloader_setup_atags(CFG_MEMMAP_GUEST0_ATAGS_OFFSET + (i * CFG_MEMMAP_GUEST_SIZE));
-        printf("%s, %dth atags setup __FINISH__\n", __func__, i);
     }
 }
 
