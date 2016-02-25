@@ -7,49 +7,32 @@
 #define GIC_OFFSET_GICH     0x4000
 #define GIC_OFFSET_GICV    0x6000
 
-/* Distributor */
-#define GICD_CTLR   0x000
-#define GICD_TYPER  (0x004/4)
-#define GICD_IIDR   (0x008/4)
-#define GICD_IGROUPR    (0x080/4)
-#define GICD_ISENABLER    (0x100/4)
-#define GICD_ICENABLER    (0x180/4)
-#define GICD_ISPENDR    (0x200/4)
-#define GICD_ICPENDR    (0x280/4)
-#define GICD_IPRIORITYR    (0x400/4)
-#define GICD_ITARGETSR    (0x800/4)
-#define GICD_ICFGR    (0xC00/4)
+/* Distributor Registers */
+#define GICD_CTLR		0x000			/* v1 ICDDCR */
+#define GICD_TYPER		0x004			/* v1 ICDICTR */
+#define GICD_IIDR		0x008			/* v1 ICDIIDR */
+#define GICD_IGROUPR(n)		(0x0080 + ((n) * 4))	/* v1 ICDISER */
+#define GICD_ISENABLER(n)	(0x0100 + ((n) * 4))	/* v1 ICDISER */
+#define GICD_ICENABLER(n)	(0x0180 + ((n) * 4))	/* v1 ICDICER */
+#define GICD_ISPENDR(n)		(0x0200 + ((n) * 4))	/* v1 ICDISPR */
+#define GICD_ICPENDR(n)		(0x0280 + ((n) * 4))	/* v1 ICDICPR */
+#define GICD_ICACTIVER(n)	(0x0380 + ((n) * 4))	/* v1 ICDABR */
+#define GICD_IPRIORITYR(n)	(0x0400 + ((n) * 4))	/* v1 ICDIPR */
+#define GICD_ITARGETSR(n)	(0x0800 + ((n) * 4))	/* v1 ICDIPTR */
+#define GICD_ICFGR(n)		(0x0C00 + ((n) * 4))	/* v1 ICDICFR */
+#define GICD_SGIR(n)		(0x0F00 + ((n) * 4))	/* v1 ICDSGIR */
 
-#define GICD_SGIR   (0xF00/4)
-#define GICD_CPENDSGIR  (0xF10/4)
-#define GICD_SPENDSGIR  (0xF20/4)
-
-/* Distributor offset */
-#define GICD_OFFSET_CTLR   0x000
-#define GICD_OFFSET_TYPER  0x004
-#define GICD_OFFSET_IIDR   0x008
-#define GICD_OFFSET_IGROUPR    0x080
-#define GICD_OFFSET_ISENABLER    0x100
-#define GICD_OFFSET_ICENABLER    0x180
-#define GICD_OFFSET_ISPENDR    0x200
-#define GICD_OFFSET_ICPENDR    0x280
-#define GICD_OFFSET_ISCACTIVER    0x300
-#define GICD_OFFSET_IPRIORITYR    0x400
-#define GICD_OFFSET_ITARGETSR    0x800
-#define GICD_OFFSET_ICFGR    0xC00
-#define GICD_OFFSET_CPENDGIR    0xF10
-
-#define GICD_OFFSET_SGIR    0xF00
-#define GICD_OFFSET_CPENDSGIR   0xF10
-#define GICD_OFFSET_SPENDSGIR   0xF20
-
-/* CPU Interface */
-#define GICC_CTLR    (0x0000/4)
-#define GICC_PMR    (0x0004/4)
-#define GICC_BPR    (0x0008/4)
-#define GICC_IAR    (0x000C/4)
-#define GICC_EOIR    (0x0010/4)
-#define GICC_DIR    (0x1000/4)
+/* CPU Registers */
+#define GICC_CTLR		0x0000			/* v1 ICCICR */
+#define GICC_PMR		0x0004			/* v1 ICCPMR */
+#define GICC_BPR		0x0008			/* v1 ICCBPR */
+#define GICC_IAR		0x000C			/* v1 ICCIAR */
+#define GICC_EOIR		0x0010			/* v1 ICCEOIR */
+#define GICC_RPR		0x0014			/* v1 ICCRPR */
+#define GICC_HPPIR		0x0018			/* v1 ICCHPIR */
+#define GICC_ABPR		0x001C			/* v1 ICCABPR */
+#define GICC_IIDR		0x00FC			/* v1 ICCIIDR*/
+#define GICC_DIR      0x1000
 
 /* Virtual Interface Control */
 #define GICH_HCR    (0x00/4)

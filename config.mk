@@ -48,6 +48,7 @@ INCLUDES		+= -I$(ROOT)/$(ARCH)/$(ARM)/platform
 
 INCLUDES		+= -I$(ROOT)/$(INC)/asm
 
+
 CC			= $(CROSS_COMPILE)gcc
 LD			= $(CROSS_COMPILE)ld
 NM			= $(CROSS_COMPILE)nm
