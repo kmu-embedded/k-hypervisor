@@ -40,6 +40,8 @@ const int32_t interrupt_check_guest_irq(uint32_t pirq)
     return HOST_IRQ;
 }
 
+#if 0
+// unused function
 const uint32_t interrupt_pirq_to_virq(vmid_t vmid, uint32_t pirq)
 {
     struct vmcb *vm = vm_find(vmid);
@@ -47,6 +49,7 @@ const uint32_t interrupt_pirq_to_virq(vmid_t vmid, uint32_t pirq)
 
     return map[pirq].virq;
 }
+#endif
 
 const uint32_t interrupt_virq_to_pirq(vmid_t vmid, uint32_t virq)
 {
@@ -81,7 +84,7 @@ hvmm_status_t interrupt_guest_inject(vmid_t vmid, uint32_t virq, uint32_t pirq,
     return ret;
 }
 
-hvmm_status_t interrupt_request(uint32_t irq, interrupt_handler_t handler)
+hvmm_status_t register_irq_handler(uint32_t irq, interrupt_handler_t handler)
 {
     uint32_t cpu = smp_processor_id();
 
@@ -94,6 +97,8 @@ hvmm_status_t interrupt_request(uint32_t irq, interrupt_handler_t handler)
     return HVMM_STATUS_SUCCESS;
 }
 
+#if 0
+// Unused function
 hvmm_status_t interrupt_host_enable(uint32_t irq)
 {
     hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
@@ -104,6 +109,7 @@ hvmm_status_t interrupt_host_enable(uint32_t irq)
 
     return ret;
 }
+#endif
 
 hvmm_status_t interrupt_host_disable(uint32_t irq)
 {
@@ -139,6 +145,8 @@ hvmm_status_t interrupt_guest_enable(vmid_t vmid, uint32_t irq)
     return ret;
 }
 
+#if 0
+// unused function
 hvmm_status_t interrupt_guest_disable(vmid_t vmid, uint32_t irq)
 {
     hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
@@ -150,6 +158,7 @@ hvmm_status_t interrupt_guest_disable(vmid_t vmid, uint32_t irq)
 
     return ret;
 }
+#endif
 
 static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
 {
@@ -164,6 +173,7 @@ static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
     }
 }
 
+// The function as below will be moved into hvc_irq function.
 void interrupt_service_routine(int irq, void *current_regs, void *pdata)
 {
     struct arch_regs *regs = (struct arch_regs *)current_regs;

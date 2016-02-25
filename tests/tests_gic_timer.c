@@ -87,7 +87,7 @@ hvmm_status_t hvmm_tests_gic_timer(void)
      */
     HVMM_TRACE_ENTER();
     /* handler */
-    interrupt_request(30, &interrupt_nsptimer);
+    register_irq_handler(30, &interrupt_nsptimer);
     /* configure and enable interrupt */
     interrupt_host_configure(30);
     /* start timer */

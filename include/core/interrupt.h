@@ -110,7 +110,7 @@ extern struct interrupt_module _interrupt_module;
  */
 
 hvmm_status_t interrupt_init();
-hvmm_status_t interrupt_request(uint32_t irq, interrupt_handler_t handler);
+hvmm_status_t register_irq_handler(uint32_t irq, interrupt_handler_t handler);
 hvmm_status_t interrupt_host_enable(uint32_t irq);
 hvmm_status_t interrupt_host_disable(uint32_t irq);
 hvmm_status_t interrupt_host_configure(uint32_t irq);

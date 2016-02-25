@@ -19,7 +19,7 @@ struct memmap_desc memdesc[] = {
     { "gicc", 0x2c003000, 0x2c003000, SZ_4K, MT_DEVICE },
     { "gich", 0x2c004000, 0x2c004000, SZ_4K, MT_DEVICE },
     { "gicv", 0x2c005000, 0x2c005000, SZ_4K, MT_DEVICE },
-    { "gicvi", 0x2c006000, 0x2c006000, SZ_4K, MT_DEVICE },
+    { "gicv", 0x2c006000, 0x2c006000, SZ_4K, MT_DEVICE },
     { "atags_0", 0x80000000, 0x80000000, 0x00500000, MT_WRITEBACK_RW_ALLOC },
     { "atags_1", 0x90000000, 0x90000000, 0x00500000, MT_WRITEBACK_RW_ALLOC },
     { "atags_2", 0xA0000000, 0xA0000000, 0x00500000, MT_WRITEBACK_RW_ALLOC },

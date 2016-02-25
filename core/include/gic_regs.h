@@ -5,8 +5,7 @@
 #define GIC_OFFSET_GICD     0x1000
 #define GIC_OFFSET_GICC     0x2000
 #define GIC_OFFSET_GICH     0x4000
-#define GIC_OFFSET_GICV     0x5000
-#define GIC_OFFSET_GICVI    0x6000
+#define GIC_OFFSET_GICV    0x6000
 
 /* Distributor */
 #define GICD_CTLR   0x000

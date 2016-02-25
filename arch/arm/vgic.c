@@ -552,10 +552,10 @@ static hvmm_status_t _vgic_maintenance_irq_enable(uint8_t enable)
     uint32_t irq = VGIC_MAINTENANCE_INTERRUPT_IRQ;
     HVMM_TRACE_ENTER();
     if (enable) {
-        interrupt_request(irq, &_vgic_isr_maintenance_irq);
+        register_irq_handler(irq, &_vgic_isr_maintenance_irq);
         interrupt_host_configure(irq);
     } else {
-        interrupt_request(irq, 0);
+        register_irq_handler(irq, 0);
         interrupt_host_disable(irq);
     }
     HVMM_TRACE_EXIT();
