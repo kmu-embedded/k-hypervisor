@@ -81,7 +81,7 @@ static void timer_handler(int irq, void *pregs, void *pdata)
 
 static hvmm_status_t timer_requset_irq(uint32_t irq)
 {
-    if (interrupt_request(irq, &timer_handler))
+    if (register_irq_handler(irq, &timer_handler))
         return HVMM_STATUS_UNSUPPORTED_FEATURE;
 
     return interrupt_host_configure(irq);
