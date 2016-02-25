@@ -3,6 +3,8 @@ include  ../../config.mk
 ROOT_PATH	= ../..
 OBJS_DIR	= $(ROOT_PATH)/$(BUILD)/core/vdev
 
+INCLUDES += $(PWD)
+
 CC		= $(CROSS_COMPILE)gcc
 
 CPPFLAGS	= $(CONFIG_FLAG) $(INCLUDES) -ffreestanding -nostdlib -nodefaultlibs -nostartfiles $(DEBUG_FLAG)
