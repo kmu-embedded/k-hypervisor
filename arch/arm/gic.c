@@ -7,102 +7,14 @@
 #include <smp.h>
 #include <vcpu.h>
 #include <hvmm_trace.h>
+
 #include <gic_regs.h>
-#include <hvmm_types.h>
-
-#include <board/rtsm-config.h>
-
-#define GIC_SIGNATURE_INITIALIZED   0x5108EAD7
-
-/**
- * @brief Registers for Generic Interrupt Controller(GIC)
- */
-struct gic_hw_info {
-    uint64_t base;        /**< GIC base address */
-    uint32_t gich;              /**< Virtual interface control (common)*/
-    uint32_t nr_irqs;           /**< The Maximum number of interrupts */
-    uint32_t nr_cpus;           /**< The number of implemented CPU interfaces */
-    uint32_t initialized;       /**< Check whether initializing GIC. */
-};
-
-static struct gic_hw_info gic_hw;
+#include <asm_io.h>
 
 #define gicd_read(offset)           getl(gic_hw.base + GICD_OFFSET + offset)
 #define gicd_write(offset, value)   putl(value, gic_hw.base + GICD_OFFSET + offset)
 #define gicc_read(offset)           getl(gic_hw.base + GICC_OFFSET + offset)
 #define gicc_write(offset, value)   putl(value, gic_hw.base + GICC_OFFSET + offset)
-
-
-static hvmm_status_t gicd_init(void)
-{
-    int i;
-    uint32_t cpumask;
-    HVMM_TRACE_ENTER();
-
-    /* Disable Distributor */
-    gicd_write(GICD_CTLR, 0x0);
-
-    gic_hw.nr_irqs = 32 * ((gicd_read(GICD_TYPER) & GICD_TYPE_LINES_MASK) + 1);
-    gic_hw.nr_cpus = 1 + ((gicd_read(GICD_TYPER) & GICD_TYPE_CPUS_MASK) >> GICD_TYPE_CPUS_SHIFT);
-
-    debug_print("GIC: nr_irqs: 0x%08x\n", gic_hw.nr_irqs);
-    debug_print(" nr_cpus: 0x%08x\n", gic_hw.nr_cpus);
-
-    // Set interrupt configuration do not work.
-    for (i = 32; i < gic_hw.nr_irqs; i += 16) {
-        debug_print("BEFORE: GICD_ICFGR(%d): 0x%08x\n", i >> 4, gicd_read(GICD_ICFGR(i >> 4)));
-        gicd_write(GICD_ICFGR(i >> 4), 0x0);
-        debug_print("AFTER: GICD_ICFGR(%d): 0x%08x\n", i >> 4, gicd_read(GICD_ICFGR(i >> 4)));
-    }
-
-    /* Disable all global interrupts. */
-    for (i = 0; i < gic_hw.nr_irqs; i += 32) {
-        debug_print("BEFORE: GICD_ICENABLER(%d): 0x%08x\n", i >> 5, gicd_read(GICD_ICENABLER(i >> 5)));
-        gicd_write(GICD_ICENABLER(i >> 5), 0xffffffff);
-        debug_print("AFTER: GICD_ICENABLER(%d): 0x%08x\n", i >> 5, gicd_read(GICD_ICENABLER(i >> 5)));
-    }
-
-    // We set priority 0xa0 for each but real value is a 0xd0, Why?
-    /* Set priority as default for all interrupts */
-    for (i = 0; i < gic_hw.nr_irqs; i += 4) {
-        debug_print("BEFORE: GICD_IPRIORITYR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_IPRIORITYR(i >> 2)));
-        gicd_write(GICD_IPRIORITYR(i >> 2), 0xa0a0a0a0);
-        debug_print("AFTER: GICD_IPRIORITYR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_IPRIORITYR(i >> 2)));
-    }
-
-    /* Route all global IRQs to this CPU? */
-    cpumask = 1 << smp_processor_id();
-    cpumask |= cpumask << 8;
-    cpumask |= cpumask << 16;
-    for (i = 32; i < gic_hw.nr_irqs; i += 4) {
-        debug_print("BEFORE: GICD_ITARGETSR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_ITARGETSR(i >> 2)));
-        gicd_write(GICD_ITARGETSR(i >> 2), cpumask);
-        debug_print("AFTER: GICD_ITARGETSR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_ITARGETSR(i >> 2)));
-    }
-
-    /* Enable Distributor */
-    gicd_write(GICD_CTLR, 0x1);
-
-    HVMM_TRACE_EXIT();
-    return HVMM_STATUS_SUCCESS;
-}
-
-static hvmm_status_t gicc_init(void)
-{
-    hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
-    int i;
-
-    /* No Priority Masking: the lowest value as the threshold : 255 */
-    // We set 0xff but, real value is 0xf8
-    gicc_write(GICC_PMR, 0xff);
-    // BPR doesn't work, changed BPR to ABPR, The result is the same
-    gicc_write(GICC_ABPR, 0x0);
-
-    /* Enable signaling of interrupts and GICC_EOIR only drops priority */
-    gicc_write(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
-    result = HVMM_STATUS_SUCCESS;
-    return result;
-}
 
 static uint64_t get_periphbase(void)
 {
@@ -124,6 +36,7 @@ static uint64_t get_periphbase(void)
 hvmm_status_t gic_init(void)
 {
     HVMM_TRACE_ENTER();
+    int i;
 
     // This code will be moved other parts, not here. */
     /* Get GICv2 base address */
@@ -136,8 +49,51 @@ hvmm_status_t gic_init(void)
         gic_hw.base = 0x2C000000;
     }
 
-    gicd_init();
-    gicc_init();
+    gic_hw.nr_irqs = 32 * ((gicd_read(GICD_TYPER) & GICD_TYPE_LINES_MASK) + 1);
+    gic_hw.nr_cpus = 1 + ((gicd_read(GICD_TYPER) & GICD_TYPE_CPUS_MASK) >> GICD_TYPE_CPUS_SHIFT);
+
+    gicc_write(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
+    gicd_write(GICD_CTLR, 0x1);
+
+    /* No Priority Masking: the lowest value as the threshold : 255 */
+    // We set 0xff but, real value is 0xf8
+    gicc_write(GICC_PMR, 0xff);
+
+    debug_print("GIC: nr_irqs: 0x%08x\n", gic_hw.nr_irqs);
+    debug_print(" nr_cpus: 0x%08x\n", gic_hw.nr_cpus);
+
+    // Set interrupt configuration do not work.
+    for (i = 32; i < gic_hw.nr_irqs; i += 16) {
+        debug_print("BEFORE: GICD_ICFGR(%d): 0x%08x\n", i >> 4, gicd_read(GICD_ICFGR(i >> 4)));
+        gicd_write(GICD_ICFGR(i >> 4), 0x0);
+        debug_print("AFTER: GICD_ICFGR(%d): 0x%08x\n", i >> 4, gicd_read(GICD_ICFGR(i >> 4)));
+    }
+
+    /* Disable all global interrupts. */
+    for (i = 0; i < gic_hw.nr_irqs; i += 32) {
+        debug_print("BEFORE: GICD_ICENABLER(%d): 0x%08x\n", i >> 5, gicd_read(GICD_ICENABLER(i >> 5)));
+        gicd_write(GICD_ISENABLER(i >> 5), 0xffffffff);
+        uint32_t valid = gicd_read(GICD_ISENABLER(i >> 5));
+        gicd_write(GICD_ICENABLER(i >> 5), valid);
+        debug_print("AFTER: GICD_ICENABLER(%d): 0x%08x\n", i >> 5, gicd_read(GICD_ICENABLER(i >> 5)));
+    }
+
+    // We set priority 0xa0 for each but real value is a 0xd0, Why?
+    /* Set priority as default for all interrupts */
+    for (i = 0; i < gic_hw.nr_irqs; i += 4) {
+        debug_print("BEFORE: GICD_IPRIORITYR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_IPRIORITYR(i >> 2)));
+        gicd_write(GICD_IPRIORITYR(i >> 2), 0xa0a0a0a0);
+        debug_print("AFTER: GICD_IPRIORITYR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_IPRIORITYR(i >> 2)));
+    }
+
+    /* Route all global IRQs to CPU0 */
+    for (i = 32; i < gic_hw.nr_irqs; i += 4) {
+        debug_print("BEFORE: GICD_ITARGETSR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_ITARGETSR(i >> 2)));
+        gicd_write(GICD_ITARGETSR(i >> 2), 1 << 0 | 1 << 8 | 1 << 16 | 1 << 24);
+        debug_print("AFTER: GICD_ITARGETSR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_ITARGETSR(i >> 2)));
+    }
+
+    // TODO(casionwoo): Set SGI and PPIs
 
     gic_hw.initialized = GIC_SIGNATURE_INITIALIZED;
 
@@ -146,7 +102,7 @@ hvmm_status_t gic_init(void)
 }
 
 hvmm_status_t gic_configure_irq(uint32_t irq,
-                enum gic_int_polarity polarity,  uint8_t cpumask,
+                enum gic_irq_polarity polarity,  uint8_t cpumask,
                 uint8_t priority)
 {
     hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
