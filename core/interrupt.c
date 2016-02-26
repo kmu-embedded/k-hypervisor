@@ -16,8 +16,6 @@
     (pirq >= VIRQ_MIN_VALID_PIRQ && pirq < VIRQ_NUM_MAX_PIRQS)
 
 static struct interrupt_ops *_guest_ops;
-static struct interrupt_ops *_host_ops;
-extern struct interrupt_ops _host_interrupt_ops;
 extern struct interrupt_ops _guest_interrupt_ops;
 
 /**< IRQ handler */
@@ -40,17 +38,6 @@ const int32_t interrupt_check_guest_irq(uint32_t pirq)
     return HOST_IRQ;
 }
 
-#if 0
-// unused function
-const uint32_t interrupt_pirq_to_virq(vmid_t vmid, uint32_t pirq)
-{
-    struct vmcb *vm = vm_find(vmid);
-    struct virqmap_entry *map = vm->virq.guest_virqmap->map;
-
-    return map[pirq].virq;
-}
-#endif
-
 const uint32_t interrupt_virq_to_pirq(vmid_t vmid, uint32_t virq)
 {
     struct vmcb *vm = vm_find(vmid);
@@ -72,14 +59,11 @@ const uint32_t interrupt_pirq_to_enabled_virq(vmid_t vmid, uint32_t pirq)
     return virq;
 }
 
-hvmm_status_t interrupt_guest_inject(vmid_t vmid, uint32_t virq, uint32_t pirq,
-                uint8_t hw)
+hvmm_status_t interrupt_guest_inject(vmid_t vmid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
     hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
 
-    /* guest_interrupt_inject() */
-    if (_guest_ops->inject)
-        ret = _guest_ops->inject(vmid, virq, pirq, hw);
+    virq_inject(vmid, virq, pirq, hw);
 
     return ret;
 }
@@ -97,28 +81,10 @@ hvmm_status_t register_irq_handler(uint32_t irq, interrupt_handler_t handler)
     return HVMM_STATUS_SUCCESS;
 }
 
-#if 0
-// Unused function
-hvmm_status_t interrupt_host_enable(uint32_t irq)
-{
-    hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
-
-    /* host_interrupt_enable() */
-    if (_host_ops->enable)
-        ret = _host_ops->enable(irq);
-
-    return ret;
-}
-#endif
-
 hvmm_status_t interrupt_host_disable(uint32_t irq)
 {
     hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
-
-    /* host_interrupt_disable() */
-    if (_host_ops->disable)
-        ret = _host_ops->disable(irq);
-
+    ret = gic_disable_irq(irq);
     return ret;
 }
 
@@ -126,9 +92,7 @@ hvmm_status_t interrupt_host_configure(uint32_t irq)
 {
     hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
 
-    /* host_interrupt_configure() */
-    if (_host_ops->configure)
-        ret = _host_ops->configure(irq);
+    ret = gic_configure_irq(irq, GIC_INT_POLARITY_LEVEL, gic_cpumask_current(), GIC_INT_PRIORITY_DEFAULT);
 
     return ret;
 }
@@ -144,21 +108,6 @@ hvmm_status_t interrupt_guest_enable(vmid_t vmid, uint32_t irq)
 
     return ret;
 }
-
-#if 0
-// unused function
-hvmm_status_t interrupt_guest_disable(vmid_t vmid, uint32_t irq)
-{
-    hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
-
-    struct vmcb *vm = vm_find(vmid);
-    struct virqmap_entry *map = vm->virq.guest_virqmap->map;
-
-    map[irq].enabled = GUEST_IRQ_DISABLE;
-
-    return ret;
-}
-#endif
 
 static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
 {
@@ -185,8 +134,8 @@ void interrupt_service_routine(int irq, void *current_regs, void *pdata)
 
             /* IRQ INJECTION */
             /* priority drop only for hanlding irq in guest */
-            /* guest_interrupt_end() */
-            _guest_ops->end(irq);
+            //_guest_ops->end(irq);
+            gic_completion_irq(irq);
             interrupt_inject_enabled_guest(NUM_GUESTS_STATIC, irq);
         } else {
             /* host irq */
@@ -197,12 +146,15 @@ void interrupt_service_routine(int irq, void *current_regs, void *pdata)
                 if (_host_spi_handlers[irq])
                     _host_spi_handlers[irq](irq, regs, 0);
             }
-            /* host_interrupt_end() */
-            _host_ops->end(irq);
+            gic_completion_irq(irq);
+            gic_deactivate_irq(irq);
         }
     } else
         debug_print("interrupt:no pending irq:%x\n", irq);
 }
+
+// TODO(casionwoo): Will be moved into vgic.c?
+//static struct vgic_status _vgic_status[NUM_GUESTS_STATIC];
 
 hvmm_status_t interrupt_init()
 {
@@ -210,23 +162,17 @@ hvmm_status_t interrupt_init()
     uint32_t cpu = smp_processor_id();
 
     if (!cpu) {
-        _host_ops = &_host_interrupt_ops;
         _guest_ops = &_guest_interrupt_ops;
     }
 
-    /* host_interrupt_init() */
-    if (_host_ops->init) {
-        ret = _host_ops->init();
-        if (ret)
-            debug_print("host initial failed:'%s'\n", "host_interrupt_ops");
-    }
+    gic_init();
+    write_hcr(HCR_IMO | HCR_FMO);
 
-    /* guest_interrupt_init() */
-    if (_guest_ops->init) {
-        ret = _guest_ops->init();
-        if (ret)
-            debug_print("guest initial failed:'%s'\n", "guest_interrupt_ops");
-    }
+    /* Virtual Interrupt: GIC Virtual Interface Control */
+    ret = vgic_init();
+    if (ret == HVMM_STATUS_SUCCESS)
+        ret = vgic_enable(1);
+    virq_table_init();
 
     return ret;
 }
