@@ -132,7 +132,7 @@ handler_F00(uint32_t write, uint32_t offset, uint32_t *pvalue,
         enum vdev_access_size access_size);
 
 static struct vdev_memory_map _vdev_gicd_info = { .base =
-        CFG_GIC_BASE_PA | GIC_OFFSET_GICD, .size = 4096, };
+        CFG_GIC_BASE_PA | GICD_OFFSET, .size = 4096, };
 static struct gicd_regs _regs[NUM_GUESTS_STATIC];
 static struct gicd_regs_banked _regs_banked[NUM_GUESTS_STATIC];
 
@@ -168,34 +168,39 @@ static hvmm_status_t handler_000(uint32_t write, uint32_t offset,
     /* TYPER;             RO*/
     /* IIDR;              RO*/
     /* IGROUPR[32];       0x080 ~ 0x0FF */
+    printf("%s[%d]\n", __func__, __LINE__);
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     vmid_t vmid = guest_current_vmid();
     struct gicd_regs *regs = &_regs[vmid];
     struct gicd_regs_banked *regs_banked = &_regs_banked[vmid];
     uint32_t woffset = offset / 4;
     switch (woffset) {
-    case GICD_CTLR: /* RW */
+    case __GICD_CTLR: /* RW */
+        printf("%s[%d]\n", __func__, __LINE__);
         if (write)
             regs->CTLR = *pvalue;
         else
             *pvalue = regs->CTLR;
         result = HVMM_STATUS_SUCCESS;
         break;
-    case GICD_TYPER: /* RO */
+    case __GICD_TYPER: /* RO */
+        printf("%s[%d]\n", __func__, __LINE__);
         if (write == 0) {
             *pvalue = regs->TYPER;
             result = HVMM_STATUS_SUCCESS;
         }
         break;
-    case GICD_IIDR: /* RO */
+    case __GICD_IIDR: /* RO */
+        printf("%s[%d]\n", __func__, __LINE__);
         if (write == 0) {
             *pvalue = regs->IIDR;
             result = HVMM_STATUS_SUCCESS;
         }
         break;
     default: { /* RW GICD_IGROUPR */
-        int igroup = woffset - GICD_IGROUPR;
+        int igroup = woffset - __GICD_IGROUPR;
         if ((igroup == 0) && (igroup < VGICD_NUM_IGROUPR)) {
+            printf("%s[%d]\n", __func__, __LINE__);
             if (write)
                 regs_banked->IGROUPR = *pvalue;
             else
@@ -203,6 +208,7 @@ static hvmm_status_t handler_000(uint32_t write, uint32_t offset,
 
             result = HVMM_STATUS_SUCCESS;
         } else if ((igroup > 0) && (igroup < VGICD_NUM_IGROUPR)) {
+            printf("%s[%d]\n", __func__, __LINE__);
             if (write)
                 regs->IGROUPR[igroup] = *pvalue;
             else
@@ -272,85 +278,85 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write,
         result = HVMM_STATUS_SUCCESS;
         return result;
     }
-    if (((offset >> 2) - GICD_ISENABLER) == 0 ||
-        ((offset >> 2) - GICD_ICENABLER) == 0) {
+    if (((offset >> 2) - __GICD_ISENABLER) == 0 ||
+        ((offset >> 2) - __GICD_ICENABLER) == 0) {
         preg_s = &(regs_banked->ISCENABLER);
         preg_c = &(regs_banked->ISCENABLER);
     } else {
-        preg_s = &(regs->ISCENABLER[(offset >> 2) - GICD_ISENABLER]);
-        preg_c = &(regs->ISCENABLER[(offset >> 2) - GICD_ICENABLER]);
+        preg_s = &(regs->ISCENABLER[(offset >> 2) - __GICD_ISENABLER]);
+        preg_c = &(regs->ISCENABLER[(offset >> 2) - __GICD_ICENABLER]);
     }
     if (access_size == VDEV_ACCESS_WORD) {
-        if ((offset >> 2) < (GICD_ISENABLER + VGICD_NUM_IENABLER)) {
+        if ((offset >> 2) < (__GICD_ISENABLER + VGICD_NUM_IENABLER)) {
             /* ISENABLER */
             if (write) {
                 *preg_s |= *pvalue;
                 vgicd_changed_istatus(vmid, *preg_s,
-                        (offset >> 2) - GICD_ISENABLER);
+                        (offset >> 2) - __GICD_ISENABLER);
             } else
                 *pvalue = *preg_s;
 
             result = HVMM_STATUS_SUCCESS;
-        } else if ((offset >> 2) >= GICD_ICENABLER
+        } else if ((offset >> 2) >= __GICD_ICENABLER
                 && (offset >> 2)
-                        < (GICD_ICENABLER + VGICD_NUM_IENABLER)) {
+                        < (__GICD_ICENABLER + VGICD_NUM_IENABLER)) {
             /* ICENABLER */
             if (write) {
                 *preg_c &= ~(*pvalue);
                 vgicd_changed_istatus(vmid, *preg_c,
-                        (offset >> 2) - GICD_ICENABLER);
+                        (offset >> 2) - __GICD_ICENABLER);
             } else
                 *pvalue = *preg_c;
 
             result = HVMM_STATUS_SUCCESS;
         }
     } else if (access_size == VDEV_ACCESS_HWORD) {
-        if ((offset >> 2) < (GICD_ISENABLER + VGICD_NUM_IENABLER)) {
+        if ((offset >> 2) < (__GICD_ISENABLER + VGICD_NUM_IENABLER)) {
             uint16_t *preg_s16 = (uint16_t *) preg_s;
             preg_s16 += (offset & 0x3) >> 1;
             if (write) {
                 *preg_s16 |= (uint16_t) (*pvalue & 0xFFFF);
                 vgicd_changed_istatus(vmid, *preg_s,
-                        (offset >> 2) - GICD_ISENABLER);
+                        (offset >> 2) - __GICD_ISENABLER);
             } else
                 *pvalue = (uint32_t) *preg_s16;
 
             result = HVMM_STATUS_SUCCESS;
-        } else if ((offset >> 2) >= GICD_ICENABLER
+        } else if ((offset >> 2) >= __GICD_ICENABLER
                 && (offset >> 2)
-                        < (GICD_ICENABLER + VGICD_NUM_IENABLER)) {
+                        < (__GICD_ICENABLER + VGICD_NUM_IENABLER)) {
             uint16_t *preg_c16 = (uint16_t *) preg_c;
             preg_c16 += (offset & 0x3) >> 1;
             if (write) {
                 *preg_c16 &= ~((uint16_t) (*pvalue & 0xFFFF));
                 vgicd_changed_istatus(vmid, *preg_c,
-                        (offset >> 2) - GICD_ICENABLER);
+                        (offset >> 2) - __GICD_ICENABLER);
             } else
                 *pvalue = (uint32_t) *preg_c16;
 
             result = HVMM_STATUS_SUCCESS;
         }
     } else if (access_size == VDEV_ACCESS_BYTE) {
-        if ((offset >> 2) < (GICD_ISENABLER + VGICD_NUM_IENABLER)) {
+        if ((offset >> 2) < (__GICD_ISENABLER + VGICD_NUM_IENABLER)) {
             uint8_t *preg_s8 = (uint8_t *) preg_s;
             preg_s8 += (offset & 0x3);
             if (write) {
                 *preg_s8 |= (uint8_t) (*pvalue & 0xFF);
                 vgicd_changed_istatus(vmid, *preg_s,
-                        (offset >> 2) - GICD_ISENABLER);
+                        (offset >> 2) - __GICD_ISENABLER);
             } else
                 *pvalue = (uint32_t) *preg_s8;
 
             result = HVMM_STATUS_SUCCESS;
-        } else if ((offset >> 2) >= GICD_ICENABLER
+        } else if ((offset >> 2) >= __GICD_ICENABLER
                 && (offset >> 2)
-                        < (GICD_ICENABLER + VGICD_NUM_IENABLER)) {
+                        < (__GICD_ICENABLER + VGICD_NUM_IENABLER)) {
             uint8_t *preg_c8 = (uint8_t *) preg_c;
             preg_c8 += (offset & 0x3);
             if (write) {
                 *preg_c8 &= ~((uint8_t) (*pvalue & 0xFF));
                 vgicd_changed_istatus(vmid, *preg_c,
-                        (offset >> 2) - GICD_ICENABLER);
+                        (offset >> 2) - __GICD_ICENABLER);
             } else
                 *pvalue = (uint32_t) *preg_c8;
 
@@ -369,27 +375,27 @@ static hvmm_status_t handler_ISCPENDR(uint32_t write, uint32_t offset,
     struct gicd_regs_banked *regs_banked = &_regs_banked[vmid];
     uint32_t *preg_s;
     uint32_t *preg_c;
-    if(((offset >> 2) - GICD_ISPENDR) == 0 ||
-       ((offset >> 2) - GICD_ICPENDR) == 0) {
+    if(((offset >> 2) - __GICD_ISPENDR) == 0 ||
+       ((offset >> 2) - __GICD_ICPENDR) == 0) {
         preg_s = &(regs_banked->ISCPENDR);
         preg_c = &(regs_banked->ISCPENDR);
     }
     else {
-        preg_s = &(regs->ISCPENDR[(offset >> 2) - GICD_ISPENDR]);
-        preg_c = &(regs->ISCPENDR[(offset >> 2) - GICD_ICPENDR]);
+        preg_s = &(regs->ISCPENDR[(offset >> 2) - __GICD_ISPENDR]);
+        preg_c = &(regs->ISCPENDR[(offset >> 2) - __GICD_ICPENDR]);
     }
     offset >>= 2;
     if (access_size == VDEV_ACCESS_WORD) {
-        if ((offset >> 2) < (GICD_ISPENDR + VGICD_NUM_IENABLER)) {
+        if ((offset >> 2) < (__GICD_ISPENDR + VGICD_NUM_IENABLER)) {
             /* ISPEND */
             if (write)
                 *preg_s |= *pvalue;
             else
                 *pvalue = *preg_s;
             result = HVMM_STATUS_SUCCESS;
-        } else if ((offset >> 2) >= GICD_ICPENDR
+        } else if ((offset >> 2) >= __GICD_ICPENDR
                 && (offset >> 2)
-                        < (GICD_ICPENDR + VGICD_NUM_IENABLER)) {
+                        < (__GICD_ICPENDR + VGICD_NUM_IENABLER)) {
             /* ICPEND */
             if (write)
                 *preg_c &= ~(*pvalue);
@@ -425,10 +431,10 @@ static hvmm_status_t handler_IPRIORITYR(uint32_t write,
     regs_banked = &_regs_banked[vmid];
     /* FIXME: Support 8/16/32bit access */
     offset >>= 2;
-    if((offset - GICD_IPRIORITYR) < VGICD_BANKED_NUM_IPRIORITYR)
+    if((offset - __GICD_IPRIORITYR) < VGICD_BANKED_NUM_IPRIORITYR)
         preg = &(regs_banked->ICFGR);
     else
-        preg = &(regs->IPRIORITYR[offset - GICD_IPRIORITYR]);
+        preg = &(regs->IPRIORITYR[offset - __GICD_IPRIORITYR]);
 
     if (write)
         *preg = *pvalue;
@@ -451,15 +457,15 @@ static hvmm_status_t handler_ITARGETSR(uint32_t write,
     vmid = guest_current_vmid();
     regs = &_regs[vmid];
     regs_banked = &_regs_banked[vmid];
-    if (((offset >> 2) - GICD_ITARGETSR) < VGICD_BANKED_NUM_ITARGETSR)
-        preg = &(regs_banked->ITARGETSR[(offset >> 2) - GICD_ITARGETSR]);
+    if (((offset >> 2) - __GICD_ITARGETSR) < VGICD_BANKED_NUM_ITARGETSR)
+        preg = &(regs_banked->ITARGETSR[(offset >> 2) - __GICD_ITARGETSR]);
     else
-        preg = &(regs->ITARGETSR[(offset >> 2) - GICD_ITARGETSR]);
+        preg = &(regs->ITARGETSR[(offset >> 2) - __GICD_ITARGETSR]);
 
     if (access_size == VDEV_ACCESS_WORD) {
         offset >>= 2;
         if (write) {
-            if (offset > (GICD_ITARGETSR + 7)) {
+            if (offset > (__GICD_ITARGETSR + 7)) {
                 /* RO: ITARGETSR0 ~ 7 */
                 *preg = *pvalue;
             }
@@ -470,7 +476,7 @@ static hvmm_status_t handler_ITARGETSR(uint32_t write,
         uint16_t *preg16 = (uint16_t *) preg;
         preg16 += (offset & 0x3) >> 1;
         if (write) {
-            if ((offset >> 2) > (GICD_ITARGETSR + 7))
+            if ((offset >> 2) > (__GICD_ITARGETSR + 7))
                 *preg16 = (uint16_t) (*pvalue & 0xFFFF);
         } else
             *pvalue = (uint32_t) *preg16;
@@ -478,7 +484,7 @@ static hvmm_status_t handler_ITARGETSR(uint32_t write,
         uint8_t *preg8 = (uint8_t *) preg;
         preg8 += (offset & 0x3);
         if (write) {
-            if ((offset >> 2) > (GICD_ITARGETSR + 7))
+            if ((offset >> 2) > (__GICD_ITARGETSR + 7))
                 *preg8 = (uint8_t) (*pvalue & 0xFF);
         } else
             *pvalue = (uint32_t) *preg8;
@@ -500,10 +506,10 @@ static hvmm_status_t handler_ICFGR(uint32_t write, uint32_t offset,
     regs_banked = &_regs_banked[vmid];
     /* FIXME: Support 8/16/32bit access */
     offset >>= 2;
-    if ((offset - GICD_ICFGR) == 1)
+    if ((offset - __GICD_ICFGR) == 1)
         preg = &(regs_banked->ICFGR);
     else
-        preg = &(regs->ICFGR[offset - GICD_ICFGR]);
+        preg = &(regs->ICFGR[offset - __GICD_ICFGR]);
 
     if (write)
         *preg = *pvalue;
@@ -544,15 +550,15 @@ static hvmm_status_t handler_F00(uint32_t write, uint32_t offset,
 
     vmid = guest_current_vmid();
 
-    if(((offset >> 2) == GICD_CPENDSGIR) ||
-       ((offset >> 2) == GICD_SPENDSGIR)) {
+    if(((offset >> 2) == __GICD_CPENDSGIR) ||
+       ((offset >> 2) == __GICD_SPENDSGIR)) {
         regs_banked = &_regs_banked[vmid];
-        preg_s = &(regs_banked->CPENDSGIR[(offset >> 2) - GICD_SPENDSGIR]);
-        preg_c = &(regs_banked->CPENDSGIR[(offset >> 2) - GICD_CPENDSGIR]);
+        preg_s = &(regs_banked->CPENDSGIR[(offset >> 2) - __GICD_SPENDSGIR]);
+        preg_c = &(regs_banked->CPENDSGIR[(offset >> 2) - __GICD_CPENDSGIR]);
     }
     offset >>= 2;
 
-    if (offset == GICD_SGIR) {
+    if (offset == __GICD_SGIR) {
         // Filter Mask
         switch(*pvalue & GICD_SGIR_TARGET_LIST_FILTER_MASK)
         {
@@ -584,14 +590,14 @@ static hvmm_status_t handler_F00(uint32_t write, uint32_t offset,
             }
             target = target>>1;
         }
-    } else if (offset == GICD_CPENDSGIR) {
+    } else if (offset == __GICD_CPENDSGIR) {
         if (write) {
             if (*pvalue)
                 *preg_c |= ~(*pvalue);
         } else // read
             *pvalue = *preg_c;
         result = HVMM_STATUS_SUCCESS;
-    } else if (offset == GICD_SPENDSGIR) {
+    } else if (offset == __GICD_SPENDSGIR) {
         if (write) {
             if (*pvalue)
                 *preg_s |= *pvalue;
@@ -679,13 +685,13 @@ static hvmm_status_t vdev_gicd_reset_values(void)
 
         _regs[i].CTLR =
                 (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                        + GIC_OFFSET_GICD)));
+                        + GICD_OFFSET)));
         _regs[i].TYPER =
                 (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                        + GIC_OFFSET_GICD + GICD_OFFSET_TYPER)));
+                        + GICD_OFFSET + __GICD_OFFSET_TYPER)));
         _regs[i].IIDR =
                 (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                        + GIC_OFFSET_GICD + 0x8)));
+                        + GICD_OFFSET + 0x8)));
         printf("vdev init:'%s' vmid:%d, gicd TYPER:%x\n", __func__, i,
                 _regs[i].TYPER);
         printf("vdev init:'%s' vmid:%d, gicd IIDR:%x\n", __func__, i,
@@ -694,11 +700,11 @@ static hvmm_status_t vdev_gicd_reset_values(void)
             if (!j) {
                 _regs_banked[vmid].IGROUPR =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + inc_address)));
+                            + GICD_OFFSET + inc_address)));
             } else {
                 _regs[i].IGROUPR[j] =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + inc_address)));
+                            + GICD_OFFSET + inc_address)));
             }
             inc_address += 0x00000004;
         }
@@ -708,12 +714,12 @@ static hvmm_status_t vdev_gicd_reset_values(void)
             if (!j) {
                 _regs_banked[vmid].ISCENABLER = 
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + GICD_OFFSET_ICENABLER
+                            + GICD_OFFSET + __GICD_OFFSET_ICENABLER
                             + inc_address)));
             } else {
                 _regs[i].ISCENABLER[j] =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + GICD_OFFSET_ICENABLER
+                            + GICD_OFFSET + __GICD_OFFSET_ICENABLER
                             + inc_address)));
             }
             old_vgicd_status[i][(inc_address) >> 2] =
@@ -725,12 +731,12 @@ static hvmm_status_t vdev_gicd_reset_values(void)
             if (!j) {
                 _regs_banked[vmid].ISCPENDR =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + GICD_OFFSET_ICPENDR
+                            + GICD_OFFSET + __GICD_OFFSET_ICPENDR
                             + inc_address)));
             } else {
                 _regs[i].ISCPENDR[j] =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + GICD_OFFSET_ICPENDR
+                            + GICD_OFFSET + __GICD_OFFSET_ICPENDR
                             + inc_address)));
             }
             inc_address += 0x00000004;
@@ -741,12 +747,12 @@ static hvmm_status_t vdev_gicd_reset_values(void)
             if (!j) {
                 _regs_banked[vmid].ISCACTIVER =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + GICD_OFFSET_ISCACTIVER
+                            + GICD_OFFSET + __GICD_OFFSET_ISCACTIVER
                             + inc_address)));
             } else {
                 _regs[i].ISCACTIVER[j] =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + GICD_OFFSET_ISCACTIVER
+                            + GICD_OFFSET + __GICD_OFFSET_ISCACTIVER
                             + inc_address)));
             }
 
@@ -758,12 +764,12 @@ static hvmm_status_t vdev_gicd_reset_values(void)
             if (j < VGICD_BANKED_NUM_IPRIORITYR) {
                 _regs_banked[vmid].IPRIORITYR[j] =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + GICD_OFFSET_IPRIORITYR
+                            + GICD_OFFSET + __GICD_OFFSET_IPRIORITYR
                             + inc_address)));
             } else {
                 _regs[i].IPRIORITYR[j] =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + GICD_OFFSET_IPRIORITYR
+                            + GICD_OFFSET + __GICD_OFFSET_IPRIORITYR
                             + inc_address)));
             }
 
@@ -775,12 +781,12 @@ static hvmm_status_t vdev_gicd_reset_values(void)
             if (j < VGICD_BANKED_NUM_ITARGETSR) {
                 _regs_banked[vmid].ITARGETSR[j] =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + GICD_OFFSET_ITARGETSR
+                            + GICD_OFFSET + __GICD_OFFSET_ITARGETSR
                             + inc_address)));
             } else {
                 _regs[i].ITARGETSR[j] = 
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + GICD_OFFSET_ITARGETSR
+                            + GICD_OFFSET + __GICD_OFFSET_ITARGETSR
                             + inc_address)));
             }
             inc_address += 0x00000004;
@@ -791,12 +797,12 @@ static hvmm_status_t vdev_gicd_reset_values(void)
             if (j == 1) {
                 _regs_banked[vmid].ICFGR = 
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + GICD_OFFSET_ICFGR
+                            + GICD_OFFSET + __GICD_OFFSET_ICFGR
                             + inc_address)));
             } else {
                 _regs[i].ICFGR[j] =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + GICD_OFFSET_ICFGR
+                            + GICD_OFFSET + __GICD_OFFSET_ICFGR
                             + inc_address)));
             }
             inc_address += 0x00000004;
@@ -804,13 +810,13 @@ static hvmm_status_t vdev_gicd_reset_values(void)
 
         _regs[i].SGIR =
                 (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-+                        + GIC_OFFSET_GICD + GICD_OFFSET_SGIR)));
++                        + GICD_OFFSET + __GICD_OFFSET_SGIR)));
 
         inc_address = 0x00000000;
         for (j = 0; j < VGICD_BANKED_NUM_CPENDSGIR; j++) {
             _regs_banked[vmid].CPENDSGIR[j] =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
-                            + GIC_OFFSET_GICD + GICD_OFFSET_CPENDGIR
+                            + GICD_OFFSET + __GICD_OFFSET_CPENDGIR
                             + inc_address)));
             inc_address += 0x00000004;
         }

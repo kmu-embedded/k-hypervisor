@@ -2,15 +2,15 @@
 #define __GIC_REGS_H__
 
 /* Offsets from GIC Base Address */
-#define GIC_OFFSET_GICD     0x1000
-#define GIC_OFFSET_GICC     0x2000
-#define GIC_OFFSET_GICH     0x4000
-#define GIC_OFFSET_GICV    0x6000
+#define GICD_OFFSET     0x1000
+#define GICC_OFFSET     0x2000
+#define GICH_OFFSET     0x4000
+#define GICV_OFFSET    0x6000
 
 /* Distributor Registers */
-#define GICD_CTLR		0x000			/* v1 ICDDCR */
-#define GICD_TYPER		0x004			/* v1 ICDICTR */
-#define GICD_IIDR		0x008			/* v1 ICDIIDR */
+#define GICD_CTLR		    0x000			/* v1 ICDDCR */
+#define GICD_TYPER		    0x004			/* v1 ICDICTR */
+#define GICD_IIDR		    0x008			/* v1 ICDIIDR */
 #define GICD_IGROUPR(n)		(0x0080 + ((n) * 4))	/* v1 ICDISER */
 #define GICD_ISENABLER(n)	(0x0100 + ((n) * 4))	/* v1 ICDISER */
 #define GICD_ICENABLER(n)	(0x0180 + ((n) * 4))	/* v1 ICDICER */
@@ -23,16 +23,17 @@
 #define GICD_SGIR(n)		(0x0F00 + ((n) * 4))	/* v1 ICDSGIR */
 
 /* CPU Registers */
-#define GICC_CTLR		0x0000			/* v1 ICCICR */
-#define GICC_PMR		0x0004			/* v1 ICCPMR */
-#define GICC_BPR		0x0008			/* v1 ICCBPR */
-#define GICC_IAR		0x000C			/* v1 ICCIAR */
-#define GICC_EOIR		0x0010			/* v1 ICCEOIR */
-#define GICC_RPR		0x0014			/* v1 ICCRPR */
-#define GICC_HPPIR		0x0018			/* v1 ICCHPIR */
-#define GICC_ABPR		0x001C			/* v1 ICCABPR */
-#define GICC_IIDR		0x00FC			/* v1 ICCIIDR*/
-#define GICC_DIR      0x1000
+#define GICC_CTLR		    0x0000			/* v1 ICCICR */
+#define GICC_PMR		    0x0004			/* v1 ICCPMR */
+#define GICC_BPR		    0x0008			/* v1 ICCBPR */
+#define GICC_IAR		    0x000C			/* v1 ICCIAR */
+#define GICC_EOIR		    0x0010			/* v1 ICCEOIR */
+#define GICC_RPR		    0x0014			/* v1 ICCRPR */
+#define GICC_HPPIR		    0x0018			/* v1 ICCHPIR */
+#define GICC_ABPR		    0x001C			/* v1 ICCABPR */
+#define GICC_IIDR		    0x00FC			/* v1 ICCIIDR*/
+#define GICC_DIR            0x1000
+
 
 /* Virtual Interface Control */
 #define GICH_HCR    (0x00/4)
@@ -66,7 +67,7 @@
 /* CPU Interface Register Fields */
 #define GICC_CTL_ENABLE     0x1
 #define GICC_CTL_EOI        (0x1 << 9)
-#define GICC_IAR_INTID_MASK    0x03ff
+#define GICC_IAR_MASK    0x03ff
 
 /* Virtual Interface Control */
 #define GICH_HCR_EN             0x1
