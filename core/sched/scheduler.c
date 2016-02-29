@@ -113,7 +113,7 @@ void guest_sched_start(void)
     guest_perform_switch(&vcpu->vcpu_regs.core_regs);
 }
 
-vmid_t guest_current_vmid(void)
+vmid_t get_current_vcpuid(void)
 {
     uint32_t cpu = smp_processor_id();
 
