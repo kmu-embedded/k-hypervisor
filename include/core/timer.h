@@ -38,13 +38,10 @@ extern struct timer_module _timer_module;
  */
 hvmm_status_t timer_init(uint32_t irq);
 hvmm_status_t timer_set(struct timer_val *timer, uint32_t host);
-
-void set_timer_cnt(void);
-uint64_t get_timer_savecnt(void);
-uint64_t get_timer_curcnt(void);
-uint64_t get_timer_cnt(void);
-uint32_t get_timer_interval_us(uint64_t after, uint64_t before);
-
 hvmm_status_t timer_stop(void);
 hvmm_status_t timer_start(void);
+
+uint64_t timer_usec2count(uint64_t time_us);
+uint64_t timer_count2usec(uint64_t count);
+uint64_t timer_get_syscnt(void);
 #endif
