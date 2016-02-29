@@ -22,12 +22,12 @@ int sched_vcpu_attach(int vcpuid);
 int sched_vcpu_detach();
 void do_schedule(void *pdata);
 
-vmid_t sched_policy_determ_next(void);
+vcpuid_t sched_policy_determ_next(void);
 
 void sched_start(void);
 vcpuid_t get_current_vcpuid(void);
 
 hvmm_status_t sched_perform_switch(struct core_regs *regs);
-hvmm_status_t sched_switchto(vmid_t vmid);
+hvmm_status_t sched_switchto(vcpuid_t vcpuid);
 
 #endif /* __SCHEDULER_H__ */

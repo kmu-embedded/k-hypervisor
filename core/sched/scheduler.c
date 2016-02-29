@@ -22,7 +22,7 @@ void sched_init()
     struct timer_val timer;
 
     /* 100Mhz -> 1 count == 10ns at RTSM_VE_CA15, fast model */
-    timer.interval_us = GUEST_SCHED_TICK;
+    timer.interval_us = SCHED_TICK;
     timer.callback = &do_schedule;
 
     timer_set(&timer, HOST_TIMER);

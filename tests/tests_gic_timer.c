@@ -120,7 +120,7 @@ hvmm_status_t hvmm_tests_vgic(void)
      *      -> This should handle completion of deactivation and further
      *         injection if there is any pending virtual IRQ
      */
-    timer.interval_us = GUEST_SCHED_TICK;
+    timer.interval_us = SCHED_TICK;
     timer.callback = &callback_test_timer;
     timer_set(&timer, HOST_TIMER);
 
