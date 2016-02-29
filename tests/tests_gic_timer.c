@@ -46,7 +46,7 @@ void interrupt_nsptimer(int irq, void *pregs, void *pdata)
 //        vcpu_dump_regs(regs);
 //        vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
 //        print_core_regs(regs);
-        guest_switchto(sched_policy_determ_next());
+        sched_switchto(sched_policy_determ_next());
     }
     HVMM_TRACE_EXIT();
     printf("=======================================\n\r");

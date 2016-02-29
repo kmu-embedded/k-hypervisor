@@ -25,10 +25,10 @@ void do_schedule(void *pdata);
 
 vmid_t sched_policy_determ_next(void);
 
-void guest_sched_start(void);
-vmid_t get_current_vcpuid(void);
+void sched_start(void);
+vcpuid_t get_current_vcpuid(void);
 
-hvmm_status_t guest_perform_switch(struct core_regs *regs);
-hvmm_status_t guest_switchto(vmid_t vmid);
+hvmm_status_t sched_perform_switch(struct core_regs *regs);
+hvmm_status_t sched_switchto(vmid_t vmid);
 
 #endif /* __SCHEDULER_H__ */

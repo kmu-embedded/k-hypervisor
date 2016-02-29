@@ -51,7 +51,7 @@ static int cpu_init()
      *       do_schedule(vmid) or do_schedule(vcpu_id)
      */
     debug_print("%s", BANNER_STRING); // TODO: make a print_banner();
-    guest_sched_start();
+    sched_start();
 
     /* The code flow must not reach here */
 error:

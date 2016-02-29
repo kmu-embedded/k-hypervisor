@@ -38,7 +38,7 @@ hvmm_status_t _hyp_irq(struct core_regs *regs)
 
     irq = gic_get_irq_number();
     interrupt_service_routine(irq, (void *)regs, 0);
-    guest_perform_switch(regs);
+    sched_perform_switch(regs);
     return HVMM_STATUS_SUCCESS;
 }
 
@@ -194,11 +194,11 @@ enum hyp_hvc_result _hyp_hvc_service(struct core_regs *regs)
     }
     vdev_post(level, vdev_num, &info, regs);
 
-    guest_perform_switch(regs);
+    sched_perform_switch(regs);
 
     return HYP_RESULT_ERET;
 trap_error:
     _trap_dump_bregs();
-    debug_print("fipa is %x guest pc is %x\n", fipa, regs->pc);
+    debug_print("fipa is %x vcpu pc is %x\n", fipa, regs->pc);
     hyp_abort_infinite();
 }
