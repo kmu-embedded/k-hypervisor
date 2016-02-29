@@ -114,6 +114,8 @@ static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
     int i;
     uint32_t virq;
 
+    // FIXME(casionwoo) : Inject virq to only running vcpu
+
     for (i = 0; i < num_of_guests; i++) {
         virq = interrupt_pirq_to_enabled_virq(i, irq);
         if (virq == VIRQ_INVALID)
