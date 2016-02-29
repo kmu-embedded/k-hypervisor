@@ -16,17 +16,40 @@
 #include <core/interrupt.h>
 #include <arch/armv7/smp.h>
 
-static timer_callback_t _host_callback[2];
-static timer_callback_t _guest_callback[2];
+static timer_callback_t _host_callback[NUM_CPUS];
+static timer_callback_t _guest_callback[NUM_CPUS];
 
 static struct timer_ops *_ops;
 
 /*
- * Converts from microseconds to system counter.
+ * Converts time unit from/to microseconds to/from system counter count.
  */
-static inline uint64_t timer_t2c(uint64_t time_us)
+static inline uint64_t _usec2count(uint64_t time_us)
 {
     return time_us * COUNT_PER_USEC;
+}
+static inline uint64_t _count2usec(uint64_t count)
+{
+    return count / COUNT_PER_USEC;
+}
+static inline uint64_t _get_syscnt(void)
+{
+    return read_cntpct();
+}
+
+uint64_t timer_usec2count(uint64_t time_us)
+{
+    return _usec2count(time_us);
+}
+
+uint64_t timer_count2usec(uint64_t count)
+{
+    return _count2usec(count);
+}
+
+uint64_t timer_get_syscnt(void)
+{
+    return _get_syscnt();
 }
 
 /*
@@ -60,7 +83,7 @@ static hvmm_status_t timer_set_interval(uint32_t interval_us)
 {
     /* timer_set_tval() */
     if (_ops->set_interval)
-        return _ops->set_interval(timer_t2c(interval_us));
+        return _ops->set_interval(_usec2count(interval_us));
 
     return HVMM_STATUS_UNSUPPORTED_FEATURE;
 }
@@ -126,26 +149,8 @@ hvmm_status_t timer_init(uint32_t irq)
     if (_ops->init)
         _ops->init();
 
+    /* TODO: (igkang) timer related call - check return value */
     timer_requset_irq(irq);
 
     return HVMM_STATUS_SUCCESS;
-}
-uint64_t savecnt;
-
-void set_timer_cnt(void)
-{
-    savecnt = read_cntpct();
-}
-
-uint64_t get_timer_savecnt(void)
-{
-    return savecnt;
-}
-uint64_t get_timer_curcnt(void)
-{
-    return read_cntpct();
-}
-uint32_t get_timer_interval_us(uint64_t after, uint64_t before)
-{
-    return (uint32_t)(after - before) / COUNT_PER_USEC;
 }

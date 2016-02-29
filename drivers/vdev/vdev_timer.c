@@ -152,4 +152,4 @@ hvmm_status_t vdev_vtimer_init()
 
     return result;
 }
-vdev_module_low_init(vdev_vtimer_init);
+// vdev_module_low_init(vdev_vtimer_init);
