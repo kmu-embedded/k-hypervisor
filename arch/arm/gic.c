@@ -13,8 +13,12 @@
 
 #define gicd_read(offset)           getl(gic_hw.base + GICD_OFFSET + offset)
 #define gicd_write(offset, value)   putl(value, gic_hw.base + GICD_OFFSET + offset)
+
 #define gicc_read(offset)           getl(gic_hw.base + GICC_OFFSET + offset)
 #define gicc_write(offset, value)   putl(value, gic_hw.base + GICC_OFFSET + offset)
+
+#define gich_read(offset)           getl(gic_hw.base + GICH_OFFSET + offset)
+#define gich_write(offset, value)   putl(value, gic_hw.base + GICH_OFFSET + offset)
 
 static uint64_t get_periphbase(void)
 {
@@ -126,7 +130,7 @@ hvmm_status_t gic_configure_irq(uint32_t irq,
             gicd_write(GICD_IPRIORITYR(irq >> 2), priority);
 
             /* enable forwarding */
-            result = gic_enable_irq(irq);
+            result = enable_irq(irq);
         }
     } else {
         debug_print("invalid irq: 0x%08x\n", irq);
@@ -154,7 +158,7 @@ hvmm_status_t gic_set_sgi(const uint32_t target, uint32_t sgi)
 }
 
 /* API functions */
-hvmm_status_t gic_enable_irq(uint32_t irq)
+hvmm_status_t enable_irq(uint32_t irq)
 {
     gicd_write(GICD_ISENABLER(irq >> 5), 1UL << (irq & 0x1F));
     return HVMM_STATUS_SUCCESS;

@@ -247,12 +247,14 @@ static void vgicd_changed_istatus(vmid_t vmid, uint32_t istatus,
             if (istatus & (1 << bit)) {
                 printf("[%s : %d] enabled irq num is %d\n", __func__,
                         __LINE__, bit + minirq);
-                interrupt_host_configure(pirq);
+                //interrupt_host_configure(pirq);
+                gic_configure_irq(pirq, GIC_INT_POLARITY_LEVEL, gic_cpumask_current(), GIC_INT_PRIORITY_DEFAULT);
                 interrupt_guest_enable(vmid, pirq);
             } else {
                 printf("[%s : %d] disabled irq num is %d\n", __func__,
                         __LINE__, bit + minirq);
-                interrupt_host_disable(pirq);
+                //interrupt_host_disable(pirq);
+                gic_disable_irq(pirq);
             }
         } else {
             printf("WARNING: Ignoring virq %d for guest %d has "
