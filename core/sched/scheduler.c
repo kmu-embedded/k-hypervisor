@@ -1,19 +1,15 @@
 #include <scheduler.h>
 #include <sched/scheduler_skeleton.h>
 #include <context_switch_to.h>
-#include <interrupt.h>
-#include <vmem.h>
-#include <vdev.h>
-#include <armv7_p15.h>
-#include <timer.h>
-#include <vgic.h>
 #include <timer.h>
 #include <stdio.h>
 #include <debug_print.h>
 #include <hvmm_trace.h>
+#include <board/rtsm-config.h>
+#include <smp.h>
 
-vcpuid_t _current_vcpuid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
-vcpuid_t _next_vcpuid[NUM_CPUS];// = {VMID_INVALID, };
+vcpuid_t _current_vcpuid[NUM_CPUS] = {VMID_INVALID, VMID_INVALID};
+vcpuid_t _next_vcpuid[NUM_CPUS] = {VMID_INVALID, VMID_INVALID};
 
 /* TODO:(igkang) make sched functions run based on phisical CPU-assigned policy
  *
