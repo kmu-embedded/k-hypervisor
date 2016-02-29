@@ -34,7 +34,7 @@ static hvmm_status_t vdev_vtimer_access_handler(uint32_t write,
             write ? "write" : "read",
             offset, write ? *pvalue : (uint32_t) pvalue);
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    unsigned int vmid = guest_current_vmid();
+    unsigned int vmid = get_current_vcpuid();
     if (!write) {
         /* READ */
         switch (offset) {
@@ -98,7 +98,7 @@ static int32_t vdev_vtimer_check(struct arch_vdev_trigger_info *info,
 
 void callback_timer(void *pdata)
 {
-    vmid_t vmid = guest_current_vmid();
+    vmid_t vmid = get_current_vcpuid();
 
     if (_timer_status[vmid] == 0)
         interrupt_guest_inject(vmid, VTIMER_IRQ, 0, INJECT_SW);
@@ -115,7 +115,7 @@ static hvmm_status_t vdev_vtimer_reset(void)
             _timer_status[i] = 1;
     }
 
-    timer.interval_us = GUEST_SCHED_TICK;
+    timer.interval_us = SCHED_TICK;
     timer.callback = &callback_timer;
 
     timer_set(&timer, GUEST_TIMER);

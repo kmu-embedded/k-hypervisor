@@ -75,7 +75,7 @@ static void timer_handler(int irq, void *pregs, void *pdata)
         _host_callback[cpu](pregs);
     if (_guest_callback[cpu])
         _guest_callback[cpu](pregs);
-    timer_set_interval(GUEST_SCHED_TICK);
+    timer_set_interval(SCHED_TICK);
     timer_start();
 }
 

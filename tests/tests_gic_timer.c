@@ -46,7 +46,7 @@ void interrupt_nsptimer(int irq, void *pregs, void *pdata)
 //        vcpu_dump_regs(regs);
 //        vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
 //        print_core_regs(regs);
-        guest_switchto(sched_policy_determ_next());
+        sched_switchto(sched_policy_determ_next());
     }
     HVMM_TRACE_EXIT();
     printf("=======================================\n\r");
@@ -100,7 +100,7 @@ void callback_test_timer(void *pdata)
 {
     vmid_t vmid;
     HVMM_TRACE_ENTER();
-    vmid = guest_current_vmid();
+    vmid = get_current_vcpuid();
     printf("Injecting IRQ 30 to Guest:%d\n", vmid);
 
     /* SW VIRQ, No PIRQ */
@@ -120,7 +120,7 @@ hvmm_status_t hvmm_tests_vgic(void)
      *      -> This should handle completion of deactivation and further
      *         injection if there is any pending virtual IRQ
      */
-    timer.interval_us = GUEST_SCHED_TICK;
+    timer.interval_us = SCHED_TICK;
     timer.callback = &callback_test_timer;
     timer_set(&timer, HOST_TIMER);
 

@@ -4,7 +4,6 @@
 #include <hvmm_types.h>
 #include <vcpu_regs.h>
 #include <vcpu.h>
-//#include <board/rtsm-config.h>
 
 #define GUEST_VERBOSE_ALL       0xFF
 #define GUEST_VERBOSE_LEVEL_0   0x01
@@ -23,12 +22,12 @@ int sched_vcpu_attach(int vcpuid);
 int sched_vcpu_detach();
 void do_schedule(void *pdata);
 
-vmid_t sched_policy_determ_next(void);
+vcpuid_t sched_policy_determ_next(void);
 
-void guest_sched_start(void);
-vmid_t guest_current_vmid(void);
+void sched_start(void);
+vcpuid_t get_current_vcpuid(void);
 
-hvmm_status_t guest_perform_switch(struct core_regs *regs);
-hvmm_status_t guest_switchto(vmid_t vmid);
+hvmm_status_t sched_perform_switch(struct core_regs *regs);
+hvmm_status_t sched_switchto(vcpuid_t vcpuid);
 
 #endif /* __SCHEDULER_H__ */

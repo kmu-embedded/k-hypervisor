@@ -7,7 +7,7 @@ static int32_t vdev_hvc_yield_write(struct arch_vdev_trigger_info *info,
                         struct core_regs *regs)
 {
     printf("[hyp] _hyp_hvc_service:yield\n\r");
-    guest_switchto(sched_policy_determ_next());
+    sched_switchto(sched_policy_determ_next());
     return 0;
 }
 
