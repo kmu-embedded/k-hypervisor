@@ -629,6 +629,7 @@ hvmm_status_t vgic_save_status(struct vgic_status *status)
 {
     hvmm_status_t result = HVMM_STATUS_SUCCESS;
     int i;
+
     for (i = 0; i < _vgic.num_lr; i++)
         status->lr[i] = _vgic.base[GICH_LR + i];
     status->hcr = _vgic.base[GICH_HCR];

@@ -15,8 +15,8 @@
 #define VALID_PIRQ(pirq) \
     (pirq >= VIRQ_MIN_VALID_PIRQ && pirq < VIRQ_NUM_MAX_PIRQS)
 
-static struct interrupt_ops *_guest_ops;
-extern struct interrupt_ops _guest_interrupt_ops;
+//static struct interrupt_ops *_guest_ops;
+//extern struct interrupt_ops _guest_interrupt_ops;
 
 /**< IRQ handler */
 static interrupt_handler_t _host_ppi_handlers[NUM_CPUS][MAX_PPI_IRQS];
@@ -161,10 +161,11 @@ hvmm_status_t interrupt_init()
     hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
     uint32_t cpu = smp_processor_id();
 
+#if 0
     if (!cpu) {
         _guest_ops = &_guest_interrupt_ops;
     }
-
+#endif
     gic_init();
     write_hcr(HCR_IMO | HCR_FMO);
 
