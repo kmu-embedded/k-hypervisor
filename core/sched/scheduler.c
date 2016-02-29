@@ -2,14 +2,14 @@
 #include <sched/scheduler_skeleton.h>
 #include <context_switch_to.h>
 #include <timer.h>
-#include <stdio.h>
+#include <stdlib.h>
 #include <debug_print.h>
 #include <hvmm_trace.h>
 #include <board/rtsm-config.h>
 #include <smp.h>
 
-vcpuid_t _current_vcpuid[NUM_CPUS] = {VCPUID_INVALID, VCPUID_INVALID};
-vcpuid_t _next_vcpuid[NUM_CPUS] = {VCPUID_INVALID, VCPUID_INVALID};
+vcpuid_t _current_vcpuid[NUM_CPUS];
+vcpuid_t _next_vcpuid[NUM_CPUS];
 
 /* TODO:(igkang) make sched functions run based on phisical CPU-assigned policy
  *
@@ -19,6 +19,7 @@ vcpuid_t _next_vcpuid[NUM_CPUS] = {VCPUID_INVALID, VCPUID_INVALID};
 
 void sched_init()
 {
+    vcpuid_t vcpuid;
     struct timer_val timer;
 
     /* 100Mhz -> 1 count == 10ns at RTSM_VE_CA15, fast model */
@@ -26,6 +27,12 @@ void sched_init()
     timer.callback = &do_schedule;
 
     timer_set(&timer, HOST_TIMER);
+
+    /* Initialize array of _current_vcpuid, _next_vcpuid */
+    for (vcpuid = 0; vcpuid < NUM_CPUS; vcpuid++) {
+        _current_vcpuid[vcpuid] = VCPUID_INVALID;
+        _next_vcpuid[vcpuid] = VCPUID_INVALID;
+    }
 
     /* Check scheduler config */
     /* Allocate memory for system-wide data */
@@ -90,15 +97,12 @@ hvmm_status_t sched_perform_switch(struct core_regs *regs)
 /* Switch to the first vcpu */
 void sched_start(void)
 {
-    struct vcpu *vcpu = 0;
+    struct vcpu *vcpu = NULL;
     uint32_t cpu = smp_processor_id();
 
-    debug_print("[hyp] switch_to_initial_vcpu:\n");
     /* Select the first vcpu context to switch to. */
-    if (cpu)
-        vcpu = vcpu_find(2);
-    else
-        vcpu = vcpu_find(0);
+    vcpu = vcpu_find(sched_rr.do_schedule());
+    debug_print("[hyp] switch_to_initial_vcpuid : %d\n", vcpu->vcpuid);
 
     sched_switchto(vcpu->vcpuid);
     sched_perform_switch(&vcpu->vcpu_regs.core_regs);
