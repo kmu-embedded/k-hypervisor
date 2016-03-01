@@ -120,9 +120,22 @@ void write_pgentry(void *pgtable_base, struct memmap_desc *mem_desc, bool is_gue
     }
 }
 
+void write_hyp_pgentry(uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size)
+{
+    bool is_guest = false;
+    uint32_t l1_index, l2_index, l3_index;
+
+    l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
+    l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
+    l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
+
+    hyp_l1_pgtable[l1_index].table.valid = 1;
+    hyp_l2_pgtable[l1_index][l2_index].table.valid = 1;
+    hyp_l3_pgtable[l1_index][l2_index][l3_index] = set_entry(pa, mem_attr, (is_guest ? 3:0), size_4kb);
+}
+
 void write_pgentry_4k(void *pgtable_base, struct memmap_desc *mem_desc, bool is_guest)
 {
-    uint32_t l1_offset, l2_offset, l3_offset;
     uint32_t l1_index, l2_index, l3_index;
     uint32_t va, pa;
     uint32_t size;
