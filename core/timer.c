@@ -18,6 +18,8 @@
 
 static timer_callback_t _host_callback[NUM_CPUS];
 static timer_callback_t _guest_callback[NUM_CPUS];
+static uint32_t _host_tickcount[NUM_CPUS];
+static uint32_t _guest_tickcount[NUM_CPUS];
 
 static struct timer_ops *_ops;
 
@@ -96,11 +98,13 @@ static void timer_handler(int irq, void *pregs, void *pdata)
     uint32_t cpu = smp_processor_id();
 
     timer_stop();
-    if (_host_callback[cpu])
-        _host_callback[cpu](pregs);
-    if (_guest_callback[cpu])
-        _guest_callback[cpu](pregs);
-    timer_set_interval(GUEST_SCHED_TICK);
+    if (_host_callback[cpu] && --_host_tickcount[cpu] == 0)
+        _host_callback[cpu](pregs, &_host_tickcount[cpu]);
+    if (_guest_callback[cpu] && --_guest_tickcount[cpu] == 0)
+        _guest_callback[cpu](pregs, &_guest_tickcount[cpu]);
+
+    /* FIXME:(igkang) hardcoded */
+    timer_set_interval(50);
     timer_start();
 }
 
@@ -111,20 +115,24 @@ static void timer_requset_irq(uint32_t irq)
     gic_enable_irq(irq);
 }
 
-static hvmm_status_t timer_host_set_callback(timer_callback_t func)
+static hvmm_status_t timer_host_set_callback(timer_callback_t func, uint32_t interval_us)
 {
     uint32_t cpu = smp_processor_id();
 
     _host_callback[cpu] = func;
+    _host_tickcount[cpu] = interval_us / 50;
+    /* FIXME:(igkang) hardcoded */
 
     return HVMM_STATUS_SUCCESS;
 }
 
-static hvmm_status_t timer_guest_set_callback(timer_callback_t func)
+static hvmm_status_t timer_guest_set_callback(timer_callback_t func, uint32_t interval_us)
 {
     uint32_t cpu = smp_processor_id();
 
     _guest_callback[cpu] = func;
+    _guest_tickcount[cpu] = interval_us / 50;
+    /* FIXME:(igkang) hardcoded */
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -133,11 +141,14 @@ hvmm_status_t timer_set(struct timer_val *timer, uint32_t host)
 {
     if (host) {
         timer_stop();
-        timer_host_set_callback(timer->callback);
-        timer_set_interval(timer->interval_us);
+        timer_host_set_callback(timer->callback, timer->interval_us);
+        /* FIXME:(igkang) hardcoded */
+        timer_set_interval(50);
         timer_start();
     } else
-        timer_guest_set_callback(timer->callback);
+        timer_guest_set_callback(timer->callback, timer->interval_us);
+
+    /* TODO:(igkang) add code to handle guest_callback count (for vdev)  */
 
     return HVMM_STATUS_SUCCESS;
 }

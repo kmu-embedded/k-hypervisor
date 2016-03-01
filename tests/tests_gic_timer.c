@@ -97,7 +97,7 @@ hvmm_status_t hvmm_tests_gic_timer(void)
     return HVMM_STATUS_SUCCESS;
 }
 
-void callback_test_timer(void *pdata)
+void callback_test_timer(void *pdata, uint32_t *delay_tick)
 {
     vmid_t vmid;
     HVMM_TRACE_ENTER();
@@ -106,6 +106,10 @@ void callback_test_timer(void *pdata)
 
     /* SW VIRQ, No PIRQ */
     virq_inject(vmid, 30, 0, INJECT_SW);
+
+    /* FIXME:(igkang) hardcoded */
+    *delay_tick = 1 * GUEST_SCHED_TICK / 50;
+
     HVMM_TRACE_EXIT();
 }
 

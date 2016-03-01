@@ -228,7 +228,7 @@ int sched_vcpu_detach()
  * @param
  * @return
  */
-void do_schedule(void *pdata)
+void do_schedule(void *pdata, uint32_t *delay_tick)
 {
     /* TODO:(igkang) function type(return/param) should be renewed */
     int next_vcpuid;
@@ -238,6 +238,10 @@ void do_schedule(void *pdata)
     /* determine next vcpu to be run
      * by calling scheduler.do_schedule() */
     next_vcpuid = sched_rr.do_schedule();
+
+    /* FIXME:(igkang) hardcoded */
+    /* set timer for next scheduler work */
+    *delay_tick = 1 * GUEST_SCHED_TICK / 50;
 
     /* update vCPU's running time */
 

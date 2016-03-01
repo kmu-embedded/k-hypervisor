@@ -96,13 +96,16 @@ static int32_t vdev_vtimer_check(struct arch_vdev_trigger_info *info,
     return VDEV_NOT_FOUND;
 }
 
-void callback_timer(void *pdata)
+void callback_timer(void *pdata, uint32_t *delay_tick)
 {
     vmid_t vmid = guest_current_vmid();
 
     if (_timer_status[vmid] == 0)
-        // TODO(igxactly): make '0' parameter as named constant.
+        // TODO:(igkang) make '0' parameter as named constant.
         virq_inject(vmid, VTIMER_IRQ, 0, INJECT_SW);
+
+    /* FIXME:(igkang) hardcoded */
+    *delay_tick = 1 * GUEST_SCHED_TICK / 50;
 }
 
 static hvmm_status_t vdev_vtimer_reset(void)

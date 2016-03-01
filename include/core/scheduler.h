@@ -23,7 +23,7 @@ int sched_vcpu_register(int vcpuid);
 int sched_vcpu_unregister();
 int sched_vcpu_attach(int vcpuid);
 int sched_vcpu_detach();
-void do_schedule(void *pdata);
+void do_schedule(void *pdata, uint32_t *delay_tick);
 
 vmid_t sched_policy_determ_next(void);
 
