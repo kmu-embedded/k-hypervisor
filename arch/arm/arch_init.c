@@ -48,34 +48,11 @@ void irq_init()
     virq_table_init();
 }
 
-#include <mm.h>             //memmeap_desc
-#include <size.h>           // SZ_4K
-#include <lpae.h>           // MT_DEVICE
-
-struct memmap_desc memdesc[] = {
-    { "gicd", 0x2c001000, 0x2c001000, SZ_4K, MT_DEVICE },
-    // TODO(wonseok): Size of GICC is 0x2000(SZ_8K).
-    { "gicc", 0x2c002000, 0x2c002000, SZ_4K, MT_DEVICE },
-    { "gicc", 0x2c003000, 0x2c003000, SZ_4K, MT_DEVICE },
-
-    { "gich", 0x2c004000, 0x2c004000, SZ_4K, MT_DEVICE },
-    { "gich", 0x2c005000, 0x2c005000, SZ_4K, MT_DEVICE },
-    { "gicv", 0x2c006000, 0x2c006000, SZ_4K, MT_DEVICE },
-
-    // TODO(casionwoo): Recude the size of atags.
-    // FIXME(casionwoo): Make atags configurable.
-    { "atags_0", 0x80000000, 0x80000000, 0x00500000, MT_WRITEBACK_RW_ALLOC },
-    { "atags_1", 0x90000000, 0x90000000, 0x00500000, MT_WRITEBACK_RW_ALLOC },
-    { "atags_2", 0xA0000000, 0xA0000000, 0x00500000, MT_WRITEBACK_RW_ALLOC },
-    { 0, 0, 0, 0, 0 }
-};
+#include <mm.h>
 
 void mm_init()
 {
     uint8_t cpu_id = smp_processor_id();
-    /* mm_init() must execute for each CPUs. */
-    // TODO(wonseok) split memory and devices from memdesc.
-    set_pgtable(&memdesc);
 
     enable_mmu();
 
