@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdint.h>
-#include <drivers/pl01x.h>
+#include <libc_init.h>
 
 extern int __fgetc();
-/* Put character for elf-loader */
+/* Put character for khypervisor */
+__fgetc_p __libc_getc;
+
 int
 __fgetc()
 {
-	return pl01x_getc();
+	return __libc_getc;
 }
 

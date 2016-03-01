@@ -1,7 +1,8 @@
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__
 
-#include <pl01x.h>
+void platform_init();
+void console_init();
+void dev_init();
 
-void init_platform();
-#endif // __PLATFORM_H__
+#endif

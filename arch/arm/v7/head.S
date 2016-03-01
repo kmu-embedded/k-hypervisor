@@ -9,7 +9,7 @@ BEGIN_PROC(__start)
     @ Disable interrupts
     cpsid aif
 
-    @ Check whether or no currnt cpu mode is in secure state.
+    @ Check whether or not current cpu mode is in secure state.
     mrc p15, 0, r0, c1, c1, 0   @ Read Secure Configuration Register
     teq r0, #0x1
     beq __error_ns
@@ -31,6 +31,8 @@ BEGIN_PROC(__start)
 
     @ TLBIALLH: flust instruction and data TLBs. r0 will be ignored.
     mcr p15, 4, r0, c8, c7, 0
+
+    @ TODO(wonseok): Initialize BSS Section.
 
     @ Initialize CPU
     @ mrc	p15, 0, r4, c0, c0, 5		@ MPIDR (ARMv7 only)
@@ -90,8 +92,8 @@ BEGIN_PROC(__start)
     hvc #0  @ -> trap_hyp_entry
 
     /* Replace the NSHyp vector table for khypervisor */
-    ldr r0, = __hvc_vector
-    mcr p15, 4, r0, c12, c0, 0
+    @ldr r0, = __hvc_vector
+    @mcr p15, 4, r0, c12, c0, 0
 
     bl main
 

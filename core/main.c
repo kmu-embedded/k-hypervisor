@@ -7,22 +7,44 @@
 #include <version.h>
 #include <hvmm_trace.h>
 
+#include <assert.h>
+#include <rtsm-config.h>
+
+#include <arch_init.h>
 #include <platform.h>
 
 static vmid_t vm[NUM_GUESTS_STATIC];
 
-static int cpu_init()
+#define PLATFORM_BASIC_TESTS 4
+int main(void)
 {
-    hvmm_status_t status;
-    unsigned char nr_vcpus = 1; // TODO: It will be read from configuration file.
     int i;
+    unsigned char nr_vcpus = 1; // TODO: It will be read from configuration file.
 
-    // FIXME: Split khypervisor_init into per-core initialization and
-    //        system-level initializatin to support SMP.
-    status = khypervisor_init();
-    if (status != HVMM_STATUS_SUCCESS) {
-        goto error;
-    }
+    // Setup some basic operations such as BSS init., cache invalidate, etc.
+    cpu_init();
+
+    // Create page tables for each levels with 4kb unit (default page size).
+    pgtable_init();
+
+    // Add mapping for machine
+    platform_init();
+
+    // enable mmu and configure malloc
+    mm_init();
+
+    console_init();
+
+    irq_init();
+
+    // FIXME: Register entire devices initialization code into dev_init().
+    dev_init(); /* we don't have */
+
+    vdev_init(); /* Already we have */
+
+    timer_init(26);
+
+    basic_tests_run(PLATFORM_BASIC_TESTS);
 
     debug_print("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
 
@@ -57,14 +79,5 @@ static int cpu_init()
 error:
     debug_print("-------- [%s] ERROR: K-Hypervisor must not reach here\n", __func__);
     hyp_abort_infinite();
-    return 0;
-}
-
-// C Entry point
-int main(void)
-{
-    init_platform();
-    cpu_init();
-
     return 0;
 }

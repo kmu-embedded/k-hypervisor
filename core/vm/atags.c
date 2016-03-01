@@ -1,5 +1,5 @@
 #include <atags.h>
-#include <board/rtsm-config.h>
+#include <size.h>
 
 static void setup_core_tag(void *address, long pagesize)
 {

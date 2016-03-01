@@ -4,7 +4,7 @@
 #include <hvmm_types.h>
 #include <stdint.h>
 #include <guest_memory_hw.h>
-#include <rtsm-config.h>
+#include <size.h>
 
 // TODO(casionwoo) : This declaration will be moved to hvmm_types.h
 typedef uint32_t uint32ptr_t;
