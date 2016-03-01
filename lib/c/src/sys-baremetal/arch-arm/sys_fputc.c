@@ -79,14 +79,16 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <drivers/pl01x.h>
+#include <libc_init.h>
 
 extern int __fputc(int c, FILE *stream);
-/* Put character for elf-loader */
+/* Put character for khypervisor */
+__fputc_p __libc_putc;
+
 int
 __fputc(int c, FILE *stream)
 {
-    pl01x_putc(c);
+    __libc_putc(c);
 
 	return(0);
 }

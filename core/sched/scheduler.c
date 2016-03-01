@@ -12,6 +12,8 @@
 #include <debug_print.h>
 #include <hvmm_trace.h>
 
+#include <rtsm-config.h>
+
 int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
 int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
 

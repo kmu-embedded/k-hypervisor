@@ -9,6 +9,8 @@
 #include <interrupt.h>
 #include <smp.h>
 
+#include <rtsm-config.h>
+
 #define VIRQ_MIN_VALID_PIRQ 16
 #define VIRQ_NUM_MAX_PIRQS  MAX_IRQS
 
@@ -161,11 +163,6 @@ hvmm_status_t interrupt_init()
     hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
     uint32_t cpu = smp_processor_id();
 
-#if 0
-    if (!cpu) {
-        _guest_ops = &_guest_interrupt_ops;
-    }
-#endif
     gic_init();
     write_hcr(HCR_IMO | HCR_FMO);
 

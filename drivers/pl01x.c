@@ -1,4 +1,3 @@
-#include <rtsm-config.h>
 #include <pl01x.h>
 #include <asm_io.h>
 
