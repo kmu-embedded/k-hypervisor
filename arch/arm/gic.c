@@ -20,13 +20,11 @@
 #define gich_read(offset)           getl(gic_hw.base + GICH_OFFSET + offset)
 #define gich_write(offset, value)   putl(value, gic_hw.base + GICH_OFFSET + offset)
 
-static uint64_t get_periphbase(void)
+uint64_t get_periphbase(void)
 {
     uint32_t periphbase = 0x0;
     uint32_t cbar = (uint64_t) read_cbar();
     uint8_t upper_periphbase = cbar & 0xFF;
-
-    printf("%s[%d]: value of cbar: 0x%08x\n", __func__, __LINE__, cbar);
 
     if (upper_periphbase != 0) {
         periphbase |= (upper_periphbase << 32);

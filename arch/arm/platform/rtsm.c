@@ -7,13 +7,20 @@
 #include <mm.h>
 #include <size.h>
 #include <lpae.h>
+#include <gic_regs.h>
 
-struct memmap_desc kernel_memory[] = {
-    { "kernel", 0xF0000000, 0xF0000000, SZ_256M, MT_WRITEBACK_RW_ALLOC},
-    { 0, 0, 0, 0, 0 }
-};
 void platform_init()
 {
+    uint32_t gic_base = (uint32_t)(get_periphbase() & 0x000000FFFFFFFFFFULL);
+    if (gic_base == 0x0) {
+        gic_base = 0x2C000000;
+    }
+
+    write_hyp_pgentry(gic_base + GICD_OFFSET, gic_base + GICD_OFFSET, MT_DEVICE, SZ_4K);
+    write_hyp_pgentry(gic_base + GICC_OFFSET, gic_base + GICC_OFFSET, MT_DEVICE, SZ_8K);
+    write_hyp_pgentry(gic_base + GICH_OFFSET, gic_base + GICH_OFFSET, MT_DEVICE, SZ_4K);
+    write_hyp_pgentry(gic_base + GICV_OFFSET, gic_base + GICV_OFFSET, MT_DEVICE, SZ_4K);
+
     // add_device_mapping()
     // serial devices
     write_hyp_pgentry(0x1C090000, 0x1C090000, MT_DEVICE, SZ_4K);
@@ -21,10 +28,11 @@ void platform_init()
     write_hyp_pgentry(0x1C0B0000, 0x1C0B0000, MT_DEVICE, SZ_4K);
     write_hyp_pgentry(0x1C0C0000, 0x1C0C0000, MT_DEVICE, SZ_4K);
 
-    // TODO(wonseok): add GIC memory using cbar
-
-    // hypervisor memory
-    set_pgtable(&kernel_memory);
+    // TODO(wonseok):
+    write_hyp_pgentry(0xF0000000, 0xF0000000, MT_WRITEBACK_RW_ALLOC, SZ_256M);
+    write_hyp_pgentry(0x80000000, 0x80000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
+    write_hyp_pgentry(0x90000000, 0x90000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
+    write_hyp_pgentry(0xA0000000, 0xA0000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
 }
 
 void console_init()
@@ -39,4 +47,5 @@ void console_init()
 
 void dev_init()
 {
+    // init .text.dev section like vdev.
 }

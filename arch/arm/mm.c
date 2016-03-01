@@ -124,14 +124,24 @@ void write_hyp_pgentry(uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size
 {
     bool is_guest = false;
     uint32_t l1_index, l2_index, l3_index;
+    uint32_t i, nr_loop;
+    nr_loop = size / SZ_4K;
 
-    l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
-    l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
-    l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
+    while(1) {
+        if (nr_loop == 0) {
+            break;
+        }
+        l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
+        l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
+        l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
 
-    hyp_l1_pgtable[l1_index].table.valid = 1;
-    hyp_l2_pgtable[l1_index][l2_index].table.valid = 1;
-    hyp_l3_pgtable[l1_index][l2_index][l3_index] = set_entry(pa, mem_attr, (is_guest ? 3:0), size_4kb);
+        hyp_l1_pgtable[l1_index].table.valid = 1;
+        hyp_l2_pgtable[l1_index][l2_index].table.valid = 1;
+        hyp_l3_pgtable[l1_index][l2_index][l3_index] = set_entry(pa, mem_attr, (is_guest ? 3:0), size_4kb);
+        va += SZ_4K;
+        pa += SZ_4K;
+        nr_loop--;
+    }
 }
 
 void write_pgentry_4k(void *pgtable_base, struct memmap_desc *mem_desc, bool is_guest)
