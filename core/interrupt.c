@@ -17,9 +17,6 @@
 #define VALID_PIRQ(pirq) \
     (pirq >= VIRQ_MIN_VALID_PIRQ && pirq < VIRQ_NUM_MAX_PIRQS)
 
-//static struct interrupt_ops *_guest_ops;
-//extern struct interrupt_ops _guest_interrupt_ops;
-
 /**< IRQ handler */
 static interrupt_handler_t _host_ppi_handlers[NUM_CPUS][MAX_PPI_IRQS];
 static interrupt_handler_t _host_spi_handlers[MAX_IRQS];
@@ -136,7 +133,6 @@ void interrupt_service_routine(int irq, void *current_regs, void *pdata)
 
             /* IRQ INJECTION */
             /* priority drop only for hanlding irq in guest */
-            //_guest_ops->end(irq);
             gic_completion_irq(irq);
             interrupt_inject_enabled_guest(NUM_GUESTS_STATIC, irq);
         } else {
