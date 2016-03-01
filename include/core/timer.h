@@ -8,7 +8,7 @@
 #define GUEST_TIMER 0
 #define HOST_TIMER 1
 
-typedef void(*timer_callback_t)(void *pdata);
+typedef void(*timer_callback_t)(void *pdata, uint32_t *delay_tick);
 
 struct timer_val {
     uint32_t interval_us;
