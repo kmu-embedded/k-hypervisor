@@ -3,12 +3,9 @@
 
 #include <hvmm_types.h>
 #include <stdint.h>
-#include <smp.h>
 #include <core/interrupt.h>
 
-
 #define GIC_NUM_MAX_IRQS    1024
-#define gic_cpumask_current()    (1u << smp_processor_id())
 #define GIC_INT_PRIORITY_DEFAULT        0xa0
 
 struct gic_hw_info {
@@ -18,8 +15,8 @@ struct gic_hw_info {
     uint32_t nr_cpus;           /**< The number of implemented CPU interfaces */
     uint32_t initialized;       /**< Check whether initializing GIC. */
 };
-static struct gic_hw_info gic_hw;
 
+#define gic_cpumask_current()    (1u << smp_processor_id())
 #define GIC_SIGNATURE_INITIALIZED   0x5108EAD7
 
 enum gic_irq_polarity {

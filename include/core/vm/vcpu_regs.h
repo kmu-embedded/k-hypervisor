@@ -2,6 +2,7 @@
 #define __VCPU_REGS_H__
 
 #include <hvmm_types.h>
+#include <stdint.h>
 
 #define ARCH_REGS_NUM_GPR    13
 

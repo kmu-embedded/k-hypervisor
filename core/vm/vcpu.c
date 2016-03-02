@@ -1,7 +1,7 @@
 #include <core/vm/vcpu.h>
 #include <debug_print.h>
 #include <core/timer.h>
-#include <smp.h>
+#include <arch/armv7/smp.h>
 #include <stdio.h>
 #include <core/scheduler.h>
 #include <stdlib.h>

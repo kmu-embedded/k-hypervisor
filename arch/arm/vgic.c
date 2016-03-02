@@ -2,10 +2,8 @@
 #include <hvmm_trace.h>
 #include <arch/armv7.h>
 
-#include <gic_regs.h>
+#include <arch/gic_regs.h>
 #include <core/scheduler.h>
-#include <asm-arm_inline.h>
-
 #include <stdio.h>
 #include <debug_print.h>
 

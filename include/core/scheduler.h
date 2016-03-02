@@ -4,7 +4,7 @@
 #include "vm/vcpu.h"
 
 #include <hvmm_types.h>
-#include <vcpu_regs.h>
+#include "vm/vcpu_regs.h"
 
 //#include <board/rtsm-config.h>
 

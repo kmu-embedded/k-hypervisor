@@ -1,7 +1,7 @@
 #ifndef __TRAP_H__
 #define __TRAP_H__
 
-#include <vcpu_regs.h>
+#include <core/vm/vcpu_regs.h>
 
 /* HSR Exception Class. */
 #define TRAP_EC_ZERO_UNKNOWN        0x00

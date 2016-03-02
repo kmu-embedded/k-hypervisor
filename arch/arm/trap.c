@@ -1,7 +1,7 @@
 #include <hvmm_trace.h>
-#include <gic-v2.h>
-#include <trap.h>
-#include <smp.h>
+#include "gic-v2.h"
+#include "trap.h"
+#include <arch/armv7/smp.h>
 
 #include <stdio.h>
 #include <debug_print.h>

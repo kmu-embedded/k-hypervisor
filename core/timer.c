@@ -14,7 +14,7 @@
 
 #include <core/timer.h>
 #include <core/interrupt.h>
-#include <smp.h>
+#include <arch/armv7/smp.h>
 
 static timer_callback_t _host_callback[2];
 static timer_callback_t _guest_callback[2];

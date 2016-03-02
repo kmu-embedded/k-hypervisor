@@ -1,7 +1,6 @@
 #include <core/vdev.h>
 #define DEBUG
 #include <stdio.h>
-#include <asm-arm_inline.h>
 
 static int32_t vdev_hvc_stay_write(struct arch_vdev_trigger_info *info,
                         struct core_regs *regs)

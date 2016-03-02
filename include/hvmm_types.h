@@ -1,7 +1,6 @@
 #ifndef __HVMM_TYPES_H__
 #define __HVMM_TYPES_H__
 
-#include <stdint.h>
 #define VMID_INVALID    0xFF
 #define VCPU_INVALID    0xFF
 

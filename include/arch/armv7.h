@@ -7,5 +7,7 @@
 #include "armv7/sysctrl.h"
 #include "armv7/vmsa.h"
 #include "armv7/generic_timer.h"
+#include "armv7/arm_inline.h"
+#include "armv7/smp.h"
 
 #endif /* armv7.h */

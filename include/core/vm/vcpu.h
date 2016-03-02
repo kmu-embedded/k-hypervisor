@@ -2,8 +2,9 @@
 #define __VCPU_H__
 
 #include <hvmm_types.h>
-#include <vcpu_regs.h>
 #include <lib/bsd/list.h>
+
+#include "vcpu_regs.h"
 
 #define VCPU_CREATE_FAILED    NULL
 #define VCPU_NOT_EXISTED      NULL

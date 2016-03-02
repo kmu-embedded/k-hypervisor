@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <libc_init.h>  //for malloc_init
-#include <smp.h>    //smp_processor_id()
+#include <arch/armv7/smp.h>    //smp_processor_id()
 #include <assert.h>
 #include <asm/asm.h>
 

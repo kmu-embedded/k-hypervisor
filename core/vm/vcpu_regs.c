@@ -1,4 +1,4 @@
-#include <vcpu_regs.h>
+#include <core/vm/vcpu_regs.h>
 #include <debug_print.h>
 #include <stdio.h>
 #include <arch/armv7.h>

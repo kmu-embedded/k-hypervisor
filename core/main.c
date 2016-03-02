@@ -3,9 +3,7 @@
 #include <debug_print.h>
 
 #include <core/vm.h>
-#include <core/core.h>
 #include <core/scheduler.h>
-#include <version.h>
 #include <hvmm_trace.h>
 
 #include <assert.h>
