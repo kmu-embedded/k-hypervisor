@@ -78,4 +78,6 @@ $name
 
 #endif
 
+#define SECTION(x) __attribute__((section(x)))
+
 #endif /* __L4__ARM__ASM_H__ */

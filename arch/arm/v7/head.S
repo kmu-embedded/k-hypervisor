@@ -3,7 +3,7 @@
     .syntax	unified
     .arch_extension sec
     .arch_extension virt
-    .text
+    .section .init.head
 
 BEGIN_PROC(__start)
     @ Disable interrupts

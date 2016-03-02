@@ -3,6 +3,7 @@
 #include <libc_init.h>  //for malloc_init
 #include <smp.h>    //smp_processor_id()
 #include <assert.h>
+#include <asm/asm.h>
 
 #define read_hvbar()        ({ uint32_t rval; asm volatile(\
                             "mrc     p15, 4, %0, c12, c0, 0\n\t" \
@@ -16,7 +17,7 @@
 
 extern uint32_t __hvc_vector;
 
-void cpu_init()
+void SECTION(".init.arch") cpu_init()
 {
     /* Read current processor id. */
     uint8_t cpu_id = smp_processor_id();
@@ -38,7 +39,7 @@ void cpu_init()
     // TODO(casionwoo): add cache operation in arch/arm
 }
 
-void irq_init()
+void SECTION(".init.arch") irq_init()
 {
     // TODO(casionwoo): add a init function of irq handler table for hypervisor.
     gic_init();
@@ -50,7 +51,7 @@ void irq_init()
 
 #include <mm.h>
 
-void mm_init()
+void SECTION(".init.arch") mm_init()
 {
     uint8_t cpu_id = smp_processor_id();
 

@@ -2,7 +2,7 @@
     .syntax unified
     .arch_extension sec
     .arch_extension virt
-    .text
+    .section .text.head
 
 BEGIN_PROC(__monitor_vector)
     .word   0                       /* reset */
@@ -47,8 +47,8 @@ hvc_handler:
     mov pc, lr
 
     .align 5
-    .global __hvc_vector
-__hvc_vector:
+    .section .text.vector
+BEGIN_PROC(__hvc_vector)
     .word   0                   /* reset */
     nop                         /* undef */
     nop                         /* svc */
@@ -57,6 +57,7 @@ __hvc_vector:
     b    hvc_trap_handler       /* hvc */
     b    hvc_irq_handler        /* irq */
     nop                         /* fiq */
+END_PROC(__hvc_vector)
 
 hvc_trap_handler:
     @ Push registers

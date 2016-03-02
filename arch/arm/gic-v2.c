@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <debug_print.h>
 
-#include <gic.h>
+#include <gic-v2.h>
 #include <armv7_p15.h>
 #include <a15_cp15_sysregs.h>
 #include <smp.h>

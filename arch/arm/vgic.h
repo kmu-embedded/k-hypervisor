@@ -2,7 +2,7 @@
 #define __VGIC_H__
 #include <stdint.h>
 #include <hvmm_types.h>
-#include "gic.h"
+#include <gic-v2.h>
 
 #define VGIC_NUM_MAX_SLOTS              64
 #define VGIC_SLOT_NOTFOUND              (0xFFFFFFFF)

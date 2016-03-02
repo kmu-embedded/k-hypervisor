@@ -1,5 +1,5 @@
 #include <hvmm_trace.h>
-#include <gic.h>
+#include <gic-v2.h>
 #include <trap.h>
 #include <scheduler.h>
 #include <vdev.h>
