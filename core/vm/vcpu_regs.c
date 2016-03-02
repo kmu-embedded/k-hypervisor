@@ -1,9 +1,9 @@
 #include <vcpu_regs.h>
 #include <debug_print.h>
 #include <stdio.h>
-#include <armv7_p15.h>
-#include <scheduler.h>
-#include <board/rtsm-config.h>
+#include <arch/armv7.h>
+#include <core/scheduler.h>
+#include <rtsm-config.h>
 
 #define CPSR_MODE_USER  0x10
 #define CPSR_MODE_FIQ   0x11

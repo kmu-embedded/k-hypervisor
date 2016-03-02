@@ -2,14 +2,14 @@
 #include <debug_print.h>
 
 #include <gic-v2.h>
-#include <armv7_p15.h>
 #include <a15_cp15_sysregs.h>
 #include <smp.h>
-#include <vcpu.h>
+#include <core/vm/vcpu.h>
 #include <hvmm_trace.h>
 
 #include <gic_regs.h>
 #include <asm_io.h>
+#include <arch/armv7.h>
 
 #define gicd_read(offset)           getl(gic_hw.base + GICD_OFFSET + offset)
 #define gicd_write(offset, value)   putl(value, gic_hw.base + GICD_OFFSET + offset)

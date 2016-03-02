@@ -2,9 +2,10 @@
 #define __VIRQ_H__
 
 #include <hvmm_types.h>
-#include <stdint.h>
-#include <vgic.h>
-#include <interrupt.h>
+//#include <stdint.h>
+// TODO(wonseok): make it neat.
+#include "../../../arch/arm/vgic.h"
+#include <core/interrupt.h>
 
 struct virq {
     struct vgic_status vgic_status;

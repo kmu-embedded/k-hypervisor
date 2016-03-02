@@ -1,9 +1,9 @@
 #define DEBUG
 #include <stdio.h>
-#include <vcpu.h>
-#include <trap.h>
-#include <vdev.h>
-#include <armv7_p15.h>
+#include <core/vm/vcpu.h>
+#include "../../arch/arm/trap.h"
+#include <core/vdev.h>
+#include <arch/armv7.h>
 
 /* Common in EC, HSR[31:30] zero */
 #define EC_ZERO_CV_BIT 0x01000000

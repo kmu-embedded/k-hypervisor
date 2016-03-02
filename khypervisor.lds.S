@@ -1,4 +1,4 @@
-#include <board/rtsm-config.h>
+#include <rtsm-config.h>
 
 OUTPUT_FORMAT("elf32-littlearm")
 OUTPUT_ARCH(arm)

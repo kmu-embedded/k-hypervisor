@@ -9,9 +9,11 @@
 #include <debug_print.h>
 #include <stdint.h>
 #include <rtsm-config.h>
+
 #include <hvmm_trace.h>
-#include <timer.h>
-#include <interrupt.h>
+
+#include <core/timer.h>
+#include <core/interrupt.h>
 #include <smp.h>
 
 static timer_callback_t _host_callback[2];

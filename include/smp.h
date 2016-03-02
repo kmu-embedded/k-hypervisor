@@ -1,9 +1,8 @@
 #ifndef __SMP_H__
 #define __SMP_H__
 
-#include "stdint.h"
-#include "armv7_p15.h"
 #include <asm-arm_inline.h>
+#include "arch/armv7.h"
 
 #define MPIDR_MASK 0xFFFFFF
 #define MPIDR_CPUID_MASK 0xFF

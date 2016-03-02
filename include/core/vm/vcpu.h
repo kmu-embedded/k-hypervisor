@@ -3,7 +3,7 @@
 
 #include <hvmm_types.h>
 #include <vcpu_regs.h>
-#include <list.h>
+#include <lib/bsd/list.h>
 
 #define VCPU_CREATE_FAILED    NULL
 #define VCPU_NOT_EXISTED      NULL

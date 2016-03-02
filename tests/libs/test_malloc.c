@@ -1,7 +1,7 @@
 #include "test_malloc.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <null.h>
+#include <lib/bsd/null.h>
 
 void malloc_simple()
 {

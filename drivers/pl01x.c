@@ -1,4 +1,4 @@
-#include <pl01x.h>
+#include <drivers/pl01x.h>
 #include <asm_io.h>
 
 void pl01x_putc(const char c)

@@ -1,4 +1,5 @@
-#include <arch_init.h>
+#include "arch_init.h"
+
 #include <stdint.h>
 #include <libc_init.h>  //for malloc_init
 #include <smp.h>    //smp_processor_id()

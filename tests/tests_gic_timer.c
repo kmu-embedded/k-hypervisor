@@ -1,13 +1,13 @@
 #include <stdio.h>
-#include <gic-v2.h>
-#include <vgic.h>
-#include <vcpu.h>
-#include "hvmm_trace.h"
-#include "armv7_p15.h"
-#include "timer.h"
-#include "scheduler.h"
+#include "../arch/arm/gic-v2.h"
+#include "../arch/arm/vgic.h"
+#include <core/vm/vcpu.h>
+#include <hvmm_trace.h>
+#include <arch/armv7.h>
+#include <core/timer.h>
+#include <core/scheduler.h>
 #include <rtsm-config.h>
-#include <interrupt.h>
+#include <core/interrupt.h>
 
 static void test_start_timer(void)
 {

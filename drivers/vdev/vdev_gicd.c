@@ -1,9 +1,9 @@
-#include <gic-v2.h>
+#include "../../arch/arm/gic-v2.h"
 #include <gic_regs.h>
-#include <vdev.h>
+#include <core/vdev.h>
 #include <asm-arm_inline.h>
-#include <scheduler.h>
-#include <vgic.h>
+#include <core/scheduler.h>
+#include "../../arch/arm/vgic.h"
 #include <rtsm-config.h>
 
 #define DEBUG

@@ -1,13 +1,15 @@
-#include <scheduler.h>
-#include <sched/scheduler_skeleton.h>
-#include <context_switch_to.h>
-#include <interrupt.h>
-#include <vmem.h>
-#include <vdev.h>
-#include <armv7_p15.h>
-#include <timer.h>
-#include <vgic.h>
-#include <timer.h>
+#include <core/scheduler.h>
+#include <core/sched/scheduler_skeleton.h>
+#include <core/context_switch_to.h>
+#include <core/interrupt.h>
+#include <core/vm/vmem.h>
+#include <core/vdev.h>
+#include <arch/armv7.h>
+#include <core/timer.h>
+// TODO(wonseok): make it neat.
+#include "../../arch/arm/vgic.h"
+#include <core/timer.h>
+
 #include <stdio.h>
 #include <debug_print.h>
 #include <hvmm_trace.h>

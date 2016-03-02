@@ -1,9 +1,10 @@
 #ifndef __VMEM_H__
 #define __VMEM_H__
 
+#include "guest_memory_hw.h"
+
 #include <hvmm_types.h>
 #include <stdint.h>
-#include <guest_memory_hw.h>
 #include <size.h>
 
 // TODO(casionwoo) : This declaration will be moved to hvmm_types.h

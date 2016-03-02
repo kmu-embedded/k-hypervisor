@@ -1,4 +1,4 @@
-#include <sched/scheduler_skeleton.h>
+#include <core/sched/scheduler_skeleton.h>
 #include <lib/bsd/list.h>
 #include <stdio.h>
 #include <debug_print.h>

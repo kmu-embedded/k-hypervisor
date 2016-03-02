@@ -1,4 +1,4 @@
-#include <vdev.h>
+#include <core/vdev.h>
 #define DEBUG
 #include <stdio.h>
 #include <asm-arm_inline.h>
