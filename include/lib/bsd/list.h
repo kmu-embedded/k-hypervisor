@@ -44,11 +44,10 @@
 #ifndef _LINUX_LIST_H_
 #define _LINUX_LIST_H_
 
-#include "null.h"
+#include <stddef.h>
 #include "queue.h"
 #include "container_of.h"
 
-//#include <linux/kernel.h>
 #define false   0
 #define true    1
 /*
