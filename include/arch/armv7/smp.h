@@ -1,8 +1,8 @@
 #ifndef __SMP_H__
 #define __SMP_H__
 
-#include <asm-arm_inline.h>
 #include "arch/armv7.h"
+#include "arm_inline.h"
 
 #define MPIDR_MASK 0xFFFFFF
 #define MPIDR_CPUID_MASK 0xFF
@@ -17,7 +17,7 @@
  *   - MPIDR[7:2] - Reserved, Read as zero
  * @return The current CPU ID.
  */
-static inline uint32_t smp_processor_id(void)
+static inline unsigned int smp_processor_id(void)
 {
     return read_mpidr() & MPIDR_MASK & MPIDR_CPUID_MASK;
 }

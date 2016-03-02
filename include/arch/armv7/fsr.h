@@ -2,7 +2,7 @@
 #define __FSR_H__
 
 /* Definition of Fault Status Registers */
-#define read_hdfar()            ({ uint32_t rval; asm volatile(\
+#define read_hdfar()            ({ unsigned int rval; asm volatile(\
                                 " mrc     p15, 4, %0, c6, c0, 0\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })
 
@@ -10,7 +10,7 @@
                                 " mcr     p15, 4, %0, c6, c0, 0\n\t" \
                                 : : "r" ((val)) : "memory", "cc")
 
-#define read_hifar()            ({ uint32_t rval; asm volatile(\
+#define read_hifar()            ({ unsigned int rval; asm volatile(\
                                 " mrc     p15, 4, %0, c6, c0, 2\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })
 
@@ -18,7 +18,7 @@
                                 " mcr     p15, 4, %0, c6, c0, 2\n\t" \
                                 : : "r" ((val)) : "memory", "cc")
 
-#define read_hpfar()            ({ uint32_t rval; asm volatile(\
+#define read_hpfar()            ({ unsigned int rval; asm volatile(\
                                 " mrc     p15, 4, %0, c6, c0, 4\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })
 

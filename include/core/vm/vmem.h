@@ -7,9 +7,6 @@
 #include <stdint.h>
 #include <size.h>
 
-// TODO(casionwoo) : This declaration will be moved to hvmm_types.h
-typedef uint32_t uint32ptr_t;
-
 struct vmem {
     struct memmap_desc **memmap;
     uint32ptr_t pgtable_base;

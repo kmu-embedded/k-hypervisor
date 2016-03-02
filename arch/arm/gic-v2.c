@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include <debug_print.h>
 
-#include <gic-v2.h>
-#include <a15_cp15_sysregs.h>
-#include <smp.h>
+#include "gic-v2.h"
+#include <arch/armv7/smp.h>
 #include <core/vm/vcpu.h>
 #include <hvmm_trace.h>
 
-#include <gic_regs.h>
-#include <asm_io.h>
+#include <arch/gic_regs.h>
 #include <arch/armv7.h>
+#include <io.h>
+
+static struct gic_hw_info gic_hw;
 
 #define gicd_read(offset)           getl(gic_hw.base + GICD_OFFSET + offset)
 #define gicd_write(offset, value)   putl(value, gic_hw.base + GICD_OFFSET + offset)

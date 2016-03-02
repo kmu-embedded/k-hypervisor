@@ -2,6 +2,7 @@
 #define __TESTS__
 
 #include <hvmm_types.h>
+#include <stdint.h>
 
 /* Enable/Disable Test Items */
 

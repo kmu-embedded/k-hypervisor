@@ -2,6 +2,7 @@
 #define __MM_H__
 
 #include <hvmm_types.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 struct memmap_desc {

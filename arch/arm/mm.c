@@ -8,7 +8,6 @@
 
 #include <mm.h>
 #include <lpae.h>
-#include <gic_regs.h>
 
 static pgentry hyp_l1_pgtable[L1_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 static pgentry hyp_l2_pgtable[L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));

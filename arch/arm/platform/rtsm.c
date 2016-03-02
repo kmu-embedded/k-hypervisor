@@ -9,7 +9,7 @@
 #include "../lpae.h"
 
 #include <size.h>
-#include <gic_regs.h>
+#include <arch/gic_regs.h>
 #include <asm/asm.h>
 
 void SECTION(".init.platform") platform_init()

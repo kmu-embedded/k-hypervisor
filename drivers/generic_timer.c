@@ -1,6 +1,6 @@
 #include <arch/armv7.h>
 #include <core/timer.h>
-#include <asm-arm_inline.h>
+#include <arch/armv7/arm_inline.h>
 #include <hvmm_trace.h>
 #include <core/interrupt.h>
 #include <rtsm-config.h>

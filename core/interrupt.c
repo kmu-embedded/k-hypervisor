@@ -6,7 +6,7 @@
 #include <core/vm/virq.h>
 #include <hvmm_trace.h>
 #include <core/interrupt.h>
-#include <smp.h>
+#include <arch/armv7/smp.h>
 
 #include <rtsm-config.h>
 #include <core/vm/vcpu.h>
