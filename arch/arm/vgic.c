@@ -1,7 +1,7 @@
 #include <vgic.h>
 #include <hvmm_trace.h>
 #include <armv7_p15.h>
-#include <gic.h>
+//#include <gic.h>
 #include <gic_regs.h>
 #include <scheduler.h>
 #include <asm-arm_inline.h>

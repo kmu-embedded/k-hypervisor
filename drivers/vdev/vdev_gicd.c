@@ -1,4 +1,4 @@
-#include <gic.h>
+#include <gic-v2.h>
 #include <gic_regs.h>
 #include <vdev.h>
 #include <asm-arm_inline.h>

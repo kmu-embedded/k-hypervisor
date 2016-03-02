@@ -54,7 +54,8 @@ hvmm_status_t enable_mmu(void)
     return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t pgtable_init() // Setup pagetable
+#include <asm/asm.h>
+hvmm_status_t SECTION(".init.arch") pgtable_init() // Setup pagetable
 {
     int i, j;
 

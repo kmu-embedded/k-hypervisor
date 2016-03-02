@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <gic.h>
+#include <gic-v2.h>
 #include <vgic.h>
 #include <vcpu.h>
 #include "hvmm_trace.h"

@@ -1,11 +1,12 @@
 #include "tests_vdev.h"
+#include <hvmm_types.h>
 
-#include <gic_regs.h>
-#include <asm-arm_inline.h>
-#include <gic.h>
-#include <stdio.h>
+//#include <gic_regs.h>
+//#include <asm-arm_inline.h>
+//#include <gic.h>
+//#include <stdio.h>
 
-#include <rtsm-config.h>
+//#include <rtsm-config.h>
 
 hvmm_status_t hvmm_tests_vdev(void)
 {

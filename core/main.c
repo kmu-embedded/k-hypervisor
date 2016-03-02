@@ -1,3 +1,4 @@
+#include <asm/asm.h>
 #include <stdio.h>
 #include <debug_print.h>
 
@@ -16,7 +17,7 @@
 static vmid_t vm[NUM_GUESTS_STATIC];
 
 #define PLATFORM_BASIC_TESTS 4
-int main(void)
+void SECTION(".init") main(void)
 {
     int i;
     unsigned char nr_vcpus = 1; // TODO: It will be read from configuration file.
@@ -79,5 +80,4 @@ int main(void)
 error:
     debug_print("-------- [%s] ERROR: K-Hypervisor must not reach here\n", __func__);
     hyp_abort_infinite();
-    return 0;
 }
