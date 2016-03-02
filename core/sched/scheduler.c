@@ -1,6 +1,6 @@
 #include <core/scheduler.h>
 #include <core/sched/scheduler_skeleton.h>
-#include <core/context_switch_to.h>
+#include <core/context_switch.h>
 #include <core/interrupt.h>
 #include <core/vm/vmem.h>
 #include <core/vdev.h>
@@ -55,7 +55,7 @@ void sched_init()
  *   - guest_switchto
  *
  * and outside of scheduler.c
- *   - context_switch_to
+ *   - do_context_switch
  */
 static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
 {
@@ -70,7 +70,7 @@ static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
 
     currentcurrent = _current_guest_vmid[cpu];
     _current_guest_vmid[cpu] = next_vmid;
-    context_switch_to(currentcurrent, next_vmid, regs);
+    do_context_switch(currentcurrent, next_vmid, regs);
 
     return result;
 }

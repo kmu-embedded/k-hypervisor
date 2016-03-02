@@ -1,10 +1,10 @@
 #include <hvmm_types.h>
-#include <core/context_switch_to.h>
+#include <core/context_switch.h>
 #include <core/vm.h>
 #include <core/vm/vcpu.h>
 #include <core/interrupt.h>
 
-hvmm_status_t context_switch_to(vcpuid_t current_id, vcpuid_t next_id, struct core_regs *current_regs)
+hvmm_status_t do_context_switch(vcpuid_t current_id, vcpuid_t next_id, struct core_regs *current_regs)
 {
     struct vcpu *current = vcpu_find(current_id);
     struct vcpu *next = vcpu_find(next_id);
