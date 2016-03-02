@@ -11,6 +11,7 @@
 
 #include "../arch/arm/arch_init.h"
 #include <platform.h>
+#include <core/vdev.h>
 
 static vmid_t vm[NUM_GUESTS_STATIC];
 

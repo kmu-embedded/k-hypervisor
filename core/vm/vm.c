@@ -1,7 +1,7 @@
 #include <core/vm.h>
 #include <debug_print.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 #include <atags.h>
 
 void print_vm(struct vmcb *vm);

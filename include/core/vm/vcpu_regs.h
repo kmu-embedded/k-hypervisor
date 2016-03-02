@@ -49,19 +49,10 @@ struct context_regs {
     struct banked_regs banked_regs;
 };
 
-/* Defines the architecture specific registers */
-#if 0
+/* Defines the architecture core registers */
 struct core_regs {
-    uint32_t gpr[ARCH_REGS_NUM_GPR]; /* R0 - R12 */
-    uint32_t lr;
-    uint32_t pc; /* Program Counter */
-    uint32_t cpsr; /* CPSR */
-} __attribute((packed));
-#endif
-
-struct core_regs {
-    uint32_t cpsr; /* CPSR */
-    uint32_t pc; /* Program Counter */
+    uint32_t cpsr; 	/* CPSR */
+    uint32_t pc; 	/* Program Counter */
     uint32_t lr;
     uint32_t gpr[ARCH_REGS_NUM_GPR]; /* R0 - R12 */
 } __attribute((packed));

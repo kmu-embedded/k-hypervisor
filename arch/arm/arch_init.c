@@ -40,6 +40,9 @@ void SECTION(".init.arch") cpu_init()
     // TODO(casionwoo): add cache operation in arch/arm
 }
 
+#include "gic-v2.h"
+#include "vgic.h"
+
 void SECTION(".init.arch") irq_init()
 {
     // TODO(casionwoo): add a init function of irq handler table for hypervisor.
