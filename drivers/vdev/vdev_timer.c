@@ -1,10 +1,10 @@
-#include <vdev.h>
+#include <core/vdev.h>
 #define DEBUG
 #include <stdio.h>
-#include <timer.h>
-#include <interrupt.h>
+#include <core/timer.h>
+#include <core/interrupt.h>
 #include <smp.h>
-#include <scheduler.h>
+#include <core/scheduler.h>
 #include <rtsm-config.h>
 
 #define VTIMER_BASE_ADDR 0x3FFFE000

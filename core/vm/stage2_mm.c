@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <debug_print.h>
-#include <armv7_p15.h>
+#include <arch/armv7.h>
 #include <hvmm_trace.h>
 #include <rtsm-config.h>
 #include <stdbool.h>
 
-#include <vtcr.h>
-#include <mm.h>
-#include <vmem.h>
-#include <lpae.h>
+// TODO(wonseok): make it neat.
+#include "../../arch/arm/mm.h"
+#include <core/vm/vmem.h>
+#include "../../arch/arm/lpae.h"
 
 void guest_memory_init_mmu(void)
 {

@@ -1,4 +1,4 @@
-#include <virq.h>
+#include <core/vm/virq.h>
 #include <debug_print.h>
 #include <rtsm-config.h>
 

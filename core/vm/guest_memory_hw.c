@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <debug_print.h>
-#include <guest_memory_hw.h>
-#include <armv7_p15.h>
+#include <core/vm/guest_memory_hw.h>
+#include <arch/armv7.h>
 
-#include <lpae.h>
+#include "../../arch/arm/lpae.h"
 
 #define L2_ENTRY_MASK 0x1FF
 

@@ -4,7 +4,7 @@
 #include <hvmm_types.h>
 #include <stdint.h>
 #include <smp.h>
-#include <interrupt.h>
+#include <core/interrupt.h>
 
 
 #define GIC_NUM_MAX_IRQS    1024

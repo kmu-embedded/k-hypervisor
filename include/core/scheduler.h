@@ -1,9 +1,11 @@
 #ifndef __SCHEDULER_H__
 #define __SCHEDULER_H__
 
+#include "vm/vcpu.h"
+
 #include <hvmm_types.h>
 #include <vcpu_regs.h>
-#include <vcpu.h>
+
 //#include <board/rtsm-config.h>
 
 #define GUEST_VERBOSE_ALL       0xFF

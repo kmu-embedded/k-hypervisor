@@ -2,11 +2,13 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <libc_init.h>
-#include <pl01x.h>
+#include <drivers/pl01x.h>
 
-#include <mm.h>
+// TODO(wonseok): moved header files from arch/arm to proper dir.
+#include "../mm.h"
+#include "../lpae.h"
+
 #include <size.h>
-#include <lpae.h>
 #include <gic_regs.h>
 #include <asm/asm.h>
 

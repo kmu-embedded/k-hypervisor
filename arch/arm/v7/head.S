@@ -1,5 +1,5 @@
 #include <asm/asm.h>
-#include <board/rtsm-config.h>
+#include <rtsm-config.h>
     .syntax	unified
     .arch_extension sec
     .arch_extension virt

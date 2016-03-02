@@ -1,7 +1,7 @@
-#include <vdev.h>
+#include <core/vdev.h>
 #define DEBUG
 #include <stdio.h>
-#include <scheduler.h>
+#include <core/scheduler.h>
 #include <rtsm-config.h>
 
 #define SAMPLE_BASE_ADDR 0x3FFFF000

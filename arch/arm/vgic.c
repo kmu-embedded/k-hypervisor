@@ -1,14 +1,15 @@
 #include <vgic.h>
 #include <hvmm_trace.h>
-#include <armv7_p15.h>
-//#include <gic.h>
+#include <arch/armv7.h>
+
 #include <gic_regs.h>
-#include <scheduler.h>
+#include <core/scheduler.h>
 #include <asm-arm_inline.h>
 
 #include <stdio.h>
 #include <debug_print.h>
-#include <board/rtsm-config.h>
+
+#include <rtsm-config.h>
 
 /* for test, surpress traces */
 #define __VGIC_DISABLE_TRACE__

@@ -1,4 +1,4 @@
-#include <vm.h>
+#include <core/vm.h>
 #include <debug_print.h>
 #include <stdio.h>
 #include <stdlib.h>

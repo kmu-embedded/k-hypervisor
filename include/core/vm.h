@@ -1,10 +1,10 @@
 #ifndef __VM_H__
 #define __VM_H__
 
-#include <list.h>
-#include <vcpu.h>
-#include <vmem.h>
-#include <virq.h>
+#include <lib/bsd/list.h>
+#include "vm/vcpu.h"
+#include "vm/vmem.h"
+#include "vm/virq.h"
 #include <hvmm_types.h>
 
 #define SIZE_OF_NAME        32

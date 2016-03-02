@@ -2,14 +2,15 @@
 #include <debug_print.h>
 
 #include <hvmm_types.h>
-#include <vcpu.h>
-#include <vm.h>
-#include <virq.h>
+#include <core/vm.h>
+#include <core/vm/virq.h>
 #include <hvmm_trace.h>
-#include <interrupt.h>
+#include <core/interrupt.h>
 #include <smp.h>
 
 #include <rtsm-config.h>
+#include <core/vm/vcpu.h>
+
 
 #define VIRQ_MIN_VALID_PIRQ 16
 #define VIRQ_NUM_MAX_PIRQS  MAX_IRQS

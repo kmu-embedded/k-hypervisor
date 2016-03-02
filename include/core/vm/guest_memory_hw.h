@@ -1,12 +1,15 @@
 #ifndef __GUEST_MEMORY_HW__
 #define __GUEST_MEMORY_HW__
 
+#include "vmem.h"
+
 #include <hvmm_types.h>
-#include <mm.h>
-#include <vmem.h>
+
+// TODO(wonseok): make it neat.
+#include "../../../arch/arm/mm.h"
 
 /**
- * @brief Enum values of the stage2 memory attribute.
+ * memory attribute for stage-2 address translation.
  *
  * \ref Memory_attribute "Memory attribute configuration"
  * We only support type of memory attributes as below:
@@ -19,16 +22,6 @@ enum memattr {
     MEMATTR_NORMAL_WB_CACHEABLE     = 0xF,  // 11_11
 };
 
-/**
- * @brief Memory map descriptor.
- *
- * Memory map information descriptor.
- * - label Name of the descriptor.
- * - va Intermediate physical address(IPA).
- * - pa Physical address.
- * - size Size of this memory area.
- * - attr Memory attribute value.
- */
 hvmm_status_t memory_hw_create(struct vmem *vmem);
 hvmm_status_t memory_hw_init(struct memmap_desc **memmap, char **_vmid_ttbl, vmid_t vmid);
 hvmm_status_t memory_hw_save(void);

@@ -1,5 +1,7 @@
 include ../../config.mk
 
+INCLUDES	+= -I./
+
 ROOT_PATH	= ../..
 OBJS_DIR	= $(ROOT_PATH)/$(BUILD)/arch/arm
 

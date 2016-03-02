@@ -2,16 +2,16 @@
 #include <stdio.h>
 #include <debug_print.h>
 
-#include <vm.h>
-#include <core.h>
-#include <scheduler.h>
+#include <core/vm.h>
+#include <core/core.h>
+#include <core/scheduler.h>
 #include <version.h>
 #include <hvmm_trace.h>
 
 #include <assert.h>
 #include <rtsm-config.h>
 
-#include <arch_init.h>
+#include "../arch/arm/arch_init.h"
 #include <platform.h>
 
 static vmid_t vm[NUM_GUESTS_STATIC];

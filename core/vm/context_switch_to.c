@@ -1,8 +1,8 @@
 #include <hvmm_types.h>
-#include <context_switch_to.h>
-#include <vm.h>
-#include <vcpu.h>
-#include <interrupt.h>
+#include <core/context_switch_to.h>
+#include <core/vm.h>
+#include <core/vm/vcpu.h>
+#include <core/interrupt.h>
 
 hvmm_status_t context_switch_to(vcpuid_t current_id, vcpuid_t next_id, struct core_regs *current_regs)
 {

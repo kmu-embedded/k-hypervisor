@@ -2,7 +2,7 @@
 #define __ATAGS_H__
 
 #include <stdlib.h>
-#include <board/rtsm-config.h>
+#include <rtsm-config.h>
 
 /* list of possible tags */
 #define ATAG_NONE       0x00000000

@@ -23,30 +23,9 @@ MKDIR			= mkdir
 BUILD			= build
 MAKE			= make
 
-INCLUDES		=  -I$(ROOT)/
-INCLUDES		+= -I$(ROOT)/$(INC)
-INCLUDES		+= -I$(ROOT)/$(INC)/board
-INCLUDES		+= -I$(ROOT)/$(INC)/$(LIB)/bsd
-INCLUDES		+= -I$(ROOT)/$(INC)/$(LIB)
-INCLUDES		+= -I$(ROOT)/$(INC)/$(CORE)
-INCLUDES		+= -I$(ROOT)/$(INC)/$(DRV)
-INCLUDES		+= -I$(ROOT)/$(INC)/$(ARCH)/$(ARM)
-
-INCLUDES		+= -I$(ROOT)/$(ARCH)/$(ARM)
-
-INCLUDES		+= -I$(ROOT)/$(CORE)/libhw
-INCLUDES		+= -I$(ROOT)/$(CORE)
-INCLUDES		+= -I$(ROOT)/$(CORE)/$(INC)
-
-INCLUDES		+= -I$(ROOT)/$(LIB)
-INCLUDES		+= -I$(ROOT)/$(LIB)/c/include
-
-INCLUDES		+= -I$(ROOT)/$(TESTS)
-INCLUDES		+= -I$(ROOT)/$(TESTS)/libs
-
-INCLUDES		+= -I$(ROOT)/$(ARCH)/$(ARM)/platform
-
-INCLUDES		+= -I$(ROOT)/$(INC)/asm
+INCLUDES		= -I$(ROOT)/include
+INCLUDES		+= -I$(ROOT)/lib/c/include
+INCLUDES		+= -I$(ROOT)/arch/arm/platform
 
 
 CC			= $(CROSS_COMPILE)gcc

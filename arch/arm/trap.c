@@ -1,37 +1,21 @@
 #include <hvmm_trace.h>
 #include <gic-v2.h>
 #include <trap.h>
-#include <scheduler.h>
-#include <vdev.h>
 #include <smp.h>
 
 #include <stdio.h>
 #include <debug_print.h>
-#include <interrupt.h>
-/**\defgroup ARM
- * <pre> ARM registers.
- * ARM registers include 13 general purpose registers r0-r12, 1 Stack Pointer,
- * 1 Link Register (LR), 1 Program Counter (PC).
- */
 
-/**@brief Handles data abort exception taken in Hyp mode.
- * This function uses current ARM registers to dump.
- * @param regs ARM registers for current virtual machine.
- * \ref ARM
- * @return Returns HVMM_STATUS_UNKNOWN_ERROR only.
- */
+#include <core/interrupt.h>
+#include <core/scheduler.h>
+#include <core/vdev.h>
+
 hvmm_status_t _hyp_dabort(struct core_regs *regs)
 {
     hyp_abort_infinite();
     return HVMM_STATUS_UNKNOWN_ERROR;
 }
 
-/**@brief Handles IRQ exception when interrupt is occured by a device.
- * This funcntion calls gic interrupt, context switch.
- * @param regs ARM registers for current virtual machine.
- * \ref ARM
- * @return Returns HVMM_STATUS_SUCCESS only.
- */
 hvmm_status_t _hyp_irq(struct core_regs *regs)
 {
     uint32_t irq;
@@ -42,34 +26,17 @@ hvmm_status_t _hyp_irq(struct core_regs *regs)
     return HVMM_STATUS_SUCCESS;
 }
 
-/**@brief Handles undefined, hypervisor, prefetch abort as unhandled exception.
- * Also this function dumps state of the virtual machine registers, We don't
- * support these exceptions now.
- * @param regs ARM registers for current virtual machine.
- * \ref ARM
- * @return Returns HVMM_STATUS_UNKNOWN_ERROR only.
- */
 hvmm_status_t _hyp_unhandled(struct core_regs *regs)
 {
-//    vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
-//    print_core_regs(regs);
     hyp_abort_infinite();
     return HVMM_STATUS_UNKNOWN_ERROR;
 }
 
-/**@brief Indirects _hyp_hvc_service function in file.
- * @param regs ARM registers for current virtual machine.
- * \ref ARM
- * @return Returns the result is the same as _hyp_hvc_service().
- * @todo Within the near future, this function will be deleted.
- */
 enum hyp_hvc_result _hyp_hvc(struct core_regs *regs)
 {
     return _hyp_hvc_service(regs);
 }
 
-/**@brief Shows temporary banked registers for debugging.
- */
 static void _trap_dump_bregs(void)
 {
     uint32_t spsr, lr, sp;
@@ -88,44 +55,6 @@ static void _trap_dump_bregs(void)
     debug_print(" - irq: spsr:%x sp:%x lr:%x\n", spsr, sp, lr);
 }
 
-/*
- * hvc #imm handler
- *
- * HYP Syndrome Register(HSR)
- * EC[31:26] is an exception class for the exception that is taken to HYP mode
- * IL[25] is an instruction length for the trapped insruction that is
- * 16 bit or 32 bit
- * ISS[24:0] is an instruction-specific syndrome for the instruction
- * information included. It depends on EC field.
- * END OF HSR DESCRIPTION FROM ARM DDI0406_C ARCHITECTURE MANUAL
- */
-
-/**@brief Handles every exceptions taken from a mode other than Hyp mode.
- * <pre> Exception class
- *     Unknown reason
- *     Trapped WFI or WFE instruction
- *     Trapped MCR or MRC access to CP15
- *     Trapped MCRR or MRRC access to CP15
- *     Trapped MCR or MRC access to CP14
- *     Trapped LDC or STC access to CP14
- *     HCPTR-trapped access to CP0-CP13
- *     Trapped MRC or VMRS access to CP10, for ID group traps
- *     Trapped BXJ instruction
- *     Trapped MRRC access to CP14
- *     Supervisor Call exception routed to Hyp mode
- *     Hypervisor Call
- *     Trapped SMC instruction
- *     Prefetch Abort routed to Hyp mode
- *     Prefetch Abort taken from Hyp mode
- *     Data Abort routed to Hyp mode
- *     Data Abort taken from Hyp mode
- *</pre>
- * @param regs ARM registers for current virtual machine.
- * \ref ARM
- * @return Returns the result of exceptions.
- * If hypervisor can b handled the exception then it returns HYP_RESULT_ERET.
- * If not, hypervisor should be stopped into trap_error in handler.
- */
 enum hyp_hvc_result _hyp_hvc_service(struct core_regs *regs)
 {
     int32_t vdev_num = -1;

@@ -1,9 +1,9 @@
-#include <vcpu.h>
+#include <core/vm/vcpu.h>
 #include <debug_print.h>
-#include <timer.h>
+#include <core/timer.h>
 #include <smp.h>
 #include <stdio.h>
-#include <scheduler.h>
+#include <core/scheduler.h>
 #include <stdlib.h>
 
 static struct list_head vcpu_list;

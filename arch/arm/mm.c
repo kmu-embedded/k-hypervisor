@@ -1,16 +1,13 @@
 #include <stdio.h>
 #include <debug_print.h>
-#include <armv7_p15.h>
+#include <arch/armv7.h>
 #include <hvmm_types.h>
 #include <stdbool.h>
 #include <rtsm-config.h>
-#include <guest_memory_hw.h>
+#include <core/vm/guest_memory_hw.h>
 
 #include <mm.h>
 #include <lpae.h>
-
-#include <armv7/hsctlr.h>
-#include <armv7/htcr.h>
 #include <gic_regs.h>
 
 static pgentry hyp_l1_pgtable[L1_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
