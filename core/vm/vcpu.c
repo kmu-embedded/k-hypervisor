@@ -4,7 +4,7 @@
 #include <arch/armv7/smp.h>
 #include <stdio.h>
 #include <core/scheduler.h>
-#include <stdlib.h>
+#include <string.h>
 
 static struct list_head vcpu_list;
 static int nr_vcpus;

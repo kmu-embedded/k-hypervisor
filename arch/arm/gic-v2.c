@@ -23,12 +23,12 @@ static struct gic_hw_info gic_hw;
 
 uint64_t get_periphbase(void)
 {
-    uint32_t periphbase = 0x0;
-    uint32_t cbar = (uint64_t) read_cbar();
+    uint64_t periphbase = 0UL;
+    uint32_t cbar = read_cbar();
     uint8_t upper_periphbase = cbar & 0xFF;
 
-    if (upper_periphbase != 0) {
-        periphbase |= (upper_periphbase << 32);
+    if (upper_periphbase != 0x0) {
+        periphbase |= upper_periphbase << 32;
         cbar &= ~(0xFF);
     }
     periphbase |= cbar;
