@@ -46,8 +46,8 @@ void SECTION(".init.platform") console_init()
     pl01x_init(115200, 24000000);
 
     // Register putc and getc for printf and sscanf.
-    __libc_putc = &pl01x_putc;
-    __libc_getc = &pl01x_getc;
+    //__libc_putc = &pl01x_putc;
+    //__libc_getc = &pl01x_getc;
 }
 
 void SECTION(".init.platform") dev_init()

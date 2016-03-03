@@ -30,7 +30,7 @@
 #define NUM_CPUS       2
 #else
 #define NUM_GUESTS_STATIC       3
-#define NUM_CPUS       1
+#define NUM_CPUS       2
 #endif
 #define NUM_GUESTS_CPU0_STATIC       2
 #define NUM_GUESTS_CPU1_STATIC       2
