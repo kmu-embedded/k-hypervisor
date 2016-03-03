@@ -75,24 +75,28 @@ SECTIONS
         *(.data)
     }
 
-    . = ALIGN(4);
+    . = ALIGN(0x1000);
     PROVIDE(__begin_bss = .);
     .bss : {
         *(.bss)
+        . = ALIGN(4);
     }
     PROVIDE(__end_bss = .);
 
-    . = ALIGN(4);
+    . = ALIGN(0x1000);
     PROVIDE(__begin_heap = .);
     .heap : {
         *(.heap)
-            . = . + HEAP_SIZE;
+        . = . + HEAP_SIZE;
+        . = ALIGN(4);
     }
     PROVIDE(__end_heap = .);
 
+    . = ALIGN(0x1000);
+
     .stack : {
         __start_stack__ = .;
-        . += 0x00100000;
+        . = . + (HYP_STACK_SIZE * NR_CPUS);
         . = ALIGN(4);
         __end_stack = .;
     }

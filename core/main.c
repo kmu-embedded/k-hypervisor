@@ -12,14 +12,18 @@
 #include "../arch/arm/arch_init.h"
 #include <platform.h>
 #include <core/vdev.h>
+#include <arch/armv7.h>
 
 static vmid_t vm[NUM_GUESTS_STATIC];
+uint8_t secondary_smp_pen;
 
 #define PLATFORM_BASIC_TESTS 4
-void SECTION(".init") main(void)
+static void SECTION(".init") primary_core_init(void)
 {
     int i;
-    unsigned char nr_vcpus = 1; // TODO: It will be read from configuration file.
+    uint8_t nr_vcpus = 1; // TODO: It will be read from configuration file.
+
+    irq_disable();
 
     // Setup some basic operations such as BSS init., cache invalidate, etc.
     cpu_init();
@@ -36,6 +40,11 @@ void SECTION(".init") main(void)
     console_init();
 
     irq_init();
+
+#ifdef __CONFIG_SMP__
+    printf("wake up...other CPUs\n");
+    secondary_smp_pen = 1;
+#endif
 
     // FIXME: Register entire devices initialization code into dev_init().
     dev_init(); /* we don't have */
@@ -72,11 +81,34 @@ void SECTION(".init") main(void)
      * TODO: Rename guest_sched_start to do_schedule or something others.
      *       do_schedule(vmid) or do_schedule(vcpu_id)
      */
-    debug_print("%s", BANNER_STRING); // TODO: make a print_banner();
+    // TODO: make a print_banner().
     guest_sched_start();
 
     /* The code flow must not reach here */
 error:
     debug_print("-------- [%s] ERROR: K-Hypervisor must not reach here\n", __func__);
     hyp_abort_infinite();
+}
+
+#ifdef __CONFIG_SMP__
+static void SECTION(".init") secondary_core_init()
+{
+    irq_disable();
+    cpu_init();
+    mm_init();
+    printf("%s[%d]: cpuid is %d\n", __func__, __LINE__, smp_processor_id());
+    hyp_abort_infinite();
+}
+#endif
+
+void SECTION(".init") main(void)
+{
+#ifdef __CONFIG_SMP__
+    uint8_t cpuid = smp_processor_id();
+
+    if (cpuid)
+        secondary_core_init();
+    else
+#endif
+        primary_core_init();
 }
