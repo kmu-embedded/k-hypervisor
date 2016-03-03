@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include "gic-v2.h"
 
-#include <hvmm_types.h>
 
 #define VGIC_NUM_MAX_SLOTS              64
 #define VGIC_SLOT_NOTFOUND              (0xFFFFFFFF)

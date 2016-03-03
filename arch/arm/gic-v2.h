@@ -44,5 +44,4 @@ uint32_t gic_get_irq_number(void);
 
 hvmm_status_t gic_set_sgi(const uint32_t target, uint32_t sgi);
 
-
 #endif

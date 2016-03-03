@@ -9,6 +9,12 @@ BEGIN_PROC(__start)
     @ Disable interrupts
     cpsid aif
 
+    @ is primary CPU?
+    mrc	p15, 0, r4, c0, c0, 5		@ MPIDR (ARMv7 only)
+    and	r4, r4, #15			@ CPU number
+    tst r0, #0x0
+    bne __error
+
     @ Check whether or not current cpu mode is in secure state.
     mrc p15, 0, r0, c1, c1, 0   @ Read Secure Configuration Register
     teq r0, #0x1
@@ -25,19 +31,6 @@ BEGIN_PROC(__start)
     tst r0, #0x00010000         @ Compare the value in ID_PFR[12] to 1 or 0.
     beq __error_ge
 
-    @ DCIMVAC: Invalidate data cache.
-    mov r0, #0
-    mcr p15, 0, r0, c7, c6, 1
-
-    @ TLBIALLH: flust instruction and data TLBs. r0 will be ignored.
-    mcr p15, 4, r0, c8, c7, 0
-
-    @ TODO(wonseok): Initialize BSS Section.
-
-    @ Initialize CPU
-    @ mrc	p15, 0, r4, c0, c0, 5		@ MPIDR (ARMv7 only)
-    @ and	r4, r4, #15			@ CPU number
-
     /*
      * We assume that the CPU mode is SVC in secure world at this point.
      */
@@ -45,7 +38,7 @@ BEGIN_PROC(__start)
 
     @ Set all interrupts to be non-secure: Set GICD_IGROUPRn to 0xffffffff
     @ Get the number of GICD_IGROUPRn == GICD_TYPER.ITLinesNumber + 1.
-    ldr	r0, = CFG_GIC_BASE_PA+0x1000	@ GICD base
+    ldr	r0, = CFG_GICD_BASE_PA	@ GICD base
     ldr	r1, [r0, #0x04]			@ Type Register
     cmp	r4, #0
     andeq	r1, r1, #0x1f
@@ -55,14 +48,14 @@ BEGIN_PROC(__start)
 2:
     str	r3, [r2]
     sub	r1, r1, #1
-    add	r2, r2, #4			@ Next security register
+    add	r2, r2, #4			    @ Next security register
     cmp	r1, #-1
     bne	2b
 
     @ Set GIC priority for sharing IRQ between NS and Secure worlds
     @ Before the Normal world can access the register, the Secure
     @ world MUST write a value greater than 0x80 to it.
-    ldr	r0, = CFG_GIC_BASE_PA+0x2000	@ GICC base
+    ldr	r0, = CFG_GICC_BASE_PA	@ GICC base
     mov	r1, #0x80
     str	r1, [r0, #0x4]			@ GIC ICCPMR
 
@@ -72,17 +65,15 @@ BEGIN_PROC(__start)
     orr	r0, r0, r1
     mcr	p15, 0, r0, c1, c1, 2
 
-    @ Check current CPU ID.
-    mrc p15, 0, r0, c0, c0, 5       @ MPIDR (ARMv7 only)
-    @ CPU number, taking multicluster into account
-    bfc r0, #24, #8
-    cmp r0, #0              @ primary CPU?
-    beq 2f
-    b __error
-
 2:
-    // TODO(elsdy): We will be added Secondary CPU initialization, here. Because the above procedure
-    // do not need to execute for every core.
+    @ DCIMVAC: invalidate data cache.
+    mov r0, #0
+    mcr p15, 0, r0, c7, c6, 1
+
+    @ TLBIALLH: flust instruction and data TLBs. r0 will be ignored.
+    mcr p15, 4, r0, c8, c7, 0
+
+    @ TODO(wonseok): Initialize BSS Section.
 
     /* Initialize vector for monitor mode to enter NSHyp mode */
     ldr r1, = __monitor_vector
