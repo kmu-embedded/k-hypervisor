@@ -34,6 +34,8 @@ static void SECTION(".init") primary_core_init(void)
     // Add mapping for machine
     platform_init();
 
+    libc_init();
+
     // enable mmu and configure malloc
     mm_init();
 
