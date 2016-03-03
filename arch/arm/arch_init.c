@@ -13,25 +13,10 @@
                             "mcr     p15, 4, %0, c12, c0, 0\n\t" \
                             : : "r" ((val)) : "memory", "cc")
 
-#define disable_irq()       asm volatile(\
-                            "cpsid  aif\n\t" : : : "memory", "cc")
-
 extern uint32_t __hvc_vector;
 
 void SECTION(".init.arch") cpu_init()
 {
-    /* Read current processor id. */
-    uint8_t cpu_id = smp_processor_id();
-
-    // TODO(wonseok): disable irq.
-    disable_irq();
-
-    if (cpu_id == 0) {
-        /* The below sections should be initialized at once. */
-        // TODO(wonseok): Initialize BSS section.
-        // BSS section initialization in ASM
-    }
-
     // Set vector table base address in HVBAR
     write_hvbar(&__hvc_vector);
     assert(read_hvbar() == &__hvc_vector);
@@ -47,10 +32,10 @@ void SECTION(".init.arch") irq_init()
 {
     // TODO(casionwoo): add a init function of irq handler table for hypervisor.
     gic_init();
-    write_hcr(HCR_IMO | HCR_FMO);
     vgic_init();
-    vgic_enable(1);
     virq_table_init();
+    vgic_enable(1);
+    write_hcr(HCR_IMO | HCR_FMO);
 }
 
 #include <mm.h>
