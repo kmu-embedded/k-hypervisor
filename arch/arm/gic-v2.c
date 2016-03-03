@@ -21,21 +21,6 @@ static struct gic_hw_info gic_hw;
 #define gich_read(offset)           getl(gic_hw.base + GICH_OFFSET + offset)
 #define gich_write(offset, value)   putl(value, gic_hw.base + GICH_OFFSET + offset)
 
-uint64_t get_periphbase(void)
-{
-    uint64_t periphbase = 0UL;
-    uint32_t cbar = read_cbar();
-    uint8_t upper_periphbase = cbar & 0xFF;
-
-    if (upper_periphbase != 0x0) {
-        periphbase |= upper_periphbase << 32;
-        cbar &= ~(0xFF);
-    }
-    periphbase |= cbar;
-
-    return periphbase;
-}
-
 hvmm_status_t gic_init(void)
 {
     HVMM_TRACE_ENTER();

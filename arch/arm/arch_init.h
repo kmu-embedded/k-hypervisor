@@ -1,5 +1,5 @@
-#ifndef __INIT_H__
-#define __INIT_H__
+#ifndef __ARCH_INIT_H__
+#define __ARCH_INIT_H__
 
 void cpu_init();
 void irq_init();

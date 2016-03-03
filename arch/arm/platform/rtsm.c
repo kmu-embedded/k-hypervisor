@@ -12,6 +12,8 @@
 #include <arch/gic_regs.h>
 #include <asm/asm.h>
 
+#include <arch/armv7.h>
+
 void SECTION(".init.platform") platform_init()
 {
     uint32_t gic_base = (uint32_t)(get_periphbase() & 0x000000FFFFFFFFFFULL);

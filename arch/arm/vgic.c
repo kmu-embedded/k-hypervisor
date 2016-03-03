@@ -1,10 +1,12 @@
-#include <vgic.h>
-#include <hvmm_trace.h>
-#include <arch/armv7.h>
+#include "vgic.h"
+#include <stdio.h>
 
+#include <hvmm_trace.h>
+#include <hvmm_types.h>
+
+#include <arch/armv7.h>
 #include <arch/gic_regs.h>
 #include <core/scheduler.h>
-#include <stdio.h>
 #include <debug_print.h>
 
 #include <rtsm-config.h>

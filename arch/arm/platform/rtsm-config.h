@@ -25,7 +25,9 @@
 /*
  *  SOC param
  */
-#define CFG_GIC_BASE_PA   0x2c000000
+#define CFG_GIC_BASE_PA   0x2C000000
+#define CFG_GICD_BASE_PA   0x2C001000
+#define CFG_GICC_BASE_PA   0x2C002000
 
 #define CFG_MACHINE_NUMBER 2272
 
