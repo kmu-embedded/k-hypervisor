@@ -65,6 +65,16 @@ BEGIN_PROC(__start)
     orr	r0, r0, r1
     mcr	p15, 0, r0, c1, c1, 2
 
+    @ Initialize BSS Section.
+    ldr r0, =__begin_bss
+    ldr r1, =__end_bss
+
+    mov r2, #0
+1:
+    str r2, [r0], #4
+    cmp r0, r1
+    blo 1b
+
 2:
     @ DCIMVAC: invalidate data cache.
     mov r0, #0
@@ -72,8 +82,6 @@ BEGIN_PROC(__start)
 
     @ TLBIALLH: flust instruction and data TLBs. r0 will be ignored.
     mcr p15, 4, r0, c8, c7, 0
-
-    @ TODO(wonseok): Initialize BSS Section.
 
     /* Initialize vector for monitor mode to enter NSHyp mode */
     ldr r1, = __monitor_vector
