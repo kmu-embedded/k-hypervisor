@@ -42,11 +42,5 @@ void SECTION(".init.arch") irq_init()
 
 void SECTION(".init.arch") mm_init()
 {
-    uint8_t cpu_id = smp_processor_id();
-
     enable_mmu();
-
-    if (cpu_id == 0) {
-        __malloc_init(); // Do not need to initialize for all cores.
-    }
 }
