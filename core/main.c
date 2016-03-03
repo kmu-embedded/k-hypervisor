@@ -96,8 +96,13 @@ error:
 static void SECTION(".init") secondary_core_init()
 {
     irq_disable();
+
+    // Setup some basic operations such as BSS init., cache invalidate, etc.
     cpu_init();
+
+    // enable mmu and configure malloc
     mm_init();
+
     printf("%s[%d]: cpuid is %d\n", __func__, __LINE__, smp_processor_id());
     hyp_abort_infinite();
 }

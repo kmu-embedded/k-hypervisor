@@ -95,6 +95,7 @@ hvmm_status_t gic_configure_irq(uint32_t irq,
 {
     hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
     HVMM_TRACE_ENTER();
+
     if (irq < gic_hw.nr_irqs) {
         uint32_t icfg;
         volatile uint8_t *reg8;
@@ -110,7 +111,8 @@ hvmm_status_t gic_configure_irq(uint32_t irq,
                 icfg |= (2u << (2 * (irq % 16)));
 
             gicd_write(GICD_ICFGR(irq >> 4), icfg);
-            gicd_write(GICD_ITARGETSR(irq >> 2), cpumask);
+            // FIXME(casionwoo): If set cpumask, sp804 doesn't work.
+            //gicd_write(GICD_ITARGETSR(irq >> 2), cpumask);
             gicd_write(GICD_IPRIORITYR(irq >> 2), priority);
 
             /* enable forwarding */

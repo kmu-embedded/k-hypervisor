@@ -143,10 +143,14 @@ static struct gicd_handler_entry _handler_map[0x10] = {
 { 0x02, handler_ISCPENDR }, /* ISPENDR, ICPENDR */
 { 0x03, handler_ISCACTIVER }, /* ISACTIVER */
 { 0x04, handler_IPRIORITYR }, /* IPRIORITYR */
-{ 0x05, handler_IPRIORITYR }, { 0x06, handler_IPRIORITYR }, { 0x07,
-        handler_IPRIORITYR }, { 0x08, handler_ITARGETSR }, /* ITARGETSR */
-{ 0x09, handler_ITARGETSR }, { 0x0A, handler_ITARGETSR }, { 0x0B,
-        handler_ITARGETSR }, { 0x0C, handler_ICFGR }, /* ICFGR */
+{ 0x05, handler_IPRIORITYR },
+{ 0x06, handler_IPRIORITYR },
+{ 0x07, handler_IPRIORITYR },
+{ 0x08, handler_ITARGETSR }, /* ITARGETSR */
+{ 0x09, handler_ITARGETSR },
+{ 0x0A, handler_ITARGETSR },
+{ 0x0B, handler_ITARGETSR },
+{ 0x0C, handler_ICFGR }, /* ICFGR */
 { 0x0D, handler_PPISPISR_CA15 }, /* PPISPISR */
 { 0x0E, handler_NSACR }, /* NSACR */
 { 0x0F, handler_F00 }, /* SGIR, CPENDSGIR, SPENDGIR, ICPIDR2 */
@@ -245,15 +249,11 @@ static void vgicd_changed_istatus(vmid_t vmid, uint32_t istatus,
         if (pirq != PIRQ_INVALID) {
             /* changed bit */
             if (istatus & (1 << bit)) {
-                printf("[%s : %d] enabled irq num is %d\n", __func__,
-                        __LINE__, bit + minirq);
-                //interrupt_host_configure(pirq);
+                printf("[%s : %d] enabled irq num is %d\n", __func__, __LINE__, bit + minirq);
                 gic_configure_irq(pirq, GIC_INT_POLARITY_LEVEL, gic_cpumask_current(), GIC_INT_PRIORITY_DEFAULT);
                 interrupt_guest_enable(vmid, pirq);
             } else {
-                printf("[%s : %d] disabled irq num is %d\n", __func__,
-                        __LINE__, bit + minirq);
-                //interrupt_host_disable(pirq);
+                printf("[%s : %d] disabled irq num is %d\n", __func__, __LINE__, bit + minirq);
                 gic_disable_irq(pirq);
             }
         } else {
@@ -623,8 +623,7 @@ static hvmm_status_t vdev_gicd_access_handler(uint32_t write,
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     uint8_t offsetidx = (uint8_t) ((offset & 0xF00) >> 8);
     printf("offset_idx : %d\n", offsetidx);
-    result = _handler_map[offsetidx].handler(write, offset, pvalue,
-            access_size);
+    result = _handler_map[offsetidx].handler(write, offset, pvalue, access_size);
     return result;
 }
 
@@ -714,7 +713,7 @@ static hvmm_status_t vdev_gicd_reset_values(void)
         inc_address = 0x00000000;
         for (j = 0; j < VGICE_NUM_ISCENABLER; j++) {
             if (!j) {
-                _regs_banked[vmid].ISCENABLER = 
+                _regs_banked[vmid].ISCENABLER =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
                             + GICD_OFFSET + __GICD_OFFSET_ICENABLER
                             + inc_address)));
@@ -786,7 +785,7 @@ static hvmm_status_t vdev_gicd_reset_values(void)
                             + GICD_OFFSET + __GICD_OFFSET_ITARGETSR
                             + inc_address)));
             } else {
-                _regs[i].ITARGETSR[j] = 
+                _regs[i].ITARGETSR[j] =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
                             + GICD_OFFSET + __GICD_OFFSET_ITARGETSR
                             + inc_address)));
@@ -797,7 +796,7 @@ static hvmm_status_t vdev_gicd_reset_values(void)
         inc_address = 0x00000000;
         for (j = 0; j < VGICE_NUM_ICFGR; j++) {
             if (j == 1) {
-                _regs_banked[vmid].ICFGR = 
+                _regs_banked[vmid].ICFGR =
                     (uint32_t) (*((volatile unsigned int*) (CFG_GIC_BASE_PA
                             + GICD_OFFSET + __GICD_OFFSET_ICFGR
                             + inc_address)));

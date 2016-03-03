@@ -16,7 +16,7 @@ struct gic_hw_info {
     uint32_t initialized;       /**< Check whether initializing GIC. */
 };
 
-#define gic_cpumask_current()    (1u << smp_processor_id())
+#define gic_cpumask_current()    (smp_processor_id())
 #define GIC_SIGNATURE_INITIALIZED   0x5108EAD7
 
 enum gic_irq_polarity {
