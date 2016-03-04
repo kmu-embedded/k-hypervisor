@@ -106,6 +106,10 @@ static void SECTION(".init") secondary_core_init()
 
     printf("%s[%d]: cpuid is %d\n", __func__, __LINE__, smp_processor_id());
     write_hcr(HCR_IMO | HCR_FMO);
+
+    // TODO(igxactly): add sched_init().
+    // TODO(casionwoo): add vm_init().
+    // TODO(igxactly): add start_sched().
     hyp_abort_infinite();
 }
 #endif
