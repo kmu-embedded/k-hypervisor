@@ -250,8 +250,9 @@ static void vgicd_changed_istatus(vmid_t vmid, uint32_t istatus,
             /* changed bit */
             if (istatus & (1 << bit)) {
                 printf("[%s : %d] enabled irq num is %d\n", __func__, __LINE__, bit + minirq);
-                gic_configure_irq(pirq, GIC_INT_POLARITY_LEVEL, gic_cpumask_current(), GIC_INT_PRIORITY_DEFAULT);
+                gic_configure_irq(pirq, IRQ_LEVEL_TRIGGERED);
                 interrupt_guest_enable(vmid, pirq);
+                gic_enable_irq(pirq);
             } else {
                 printf("[%s : %d] disabled irq num is %d\n", __func__, __LINE__, bit + minirq);
                 gic_disable_irq(pirq);

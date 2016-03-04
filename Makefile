@@ -2,9 +2,9 @@ include config.mk
 
 ARCH_DIRS		= $(ROOT)/$(ARCH) $(ROOT)/$(ARCH)/$(VERSION) $(ROOT)/$(ARCH)/platform
 CORE_DIRS		= $(ROOT)/$(CORE) $(ROOT)/$(CORE)/sched $(ROOT)/$(CORE)/vm
-DRIVERS_DIRS		= $(ROOT)/$(DRV) $(ROOT)/$(DRV)/vdev
+DRIVERS_DIRS	= $(ROOT)/$(DRV) $(ROOT)/$(DRV)/vdev
 LIB_DIRS		= $(ROOT)/$(LIB)/c/src $(ROOT)/$(LIB)/c/src/arch-arm $(ROOT)/$(LIB)/c/src/sys-baremetal	\
-			  $(ROOT)/$(LIB)/c/src/sys-baremetal/arch-arm
+			  		$(ROOT)/$(LIB)/c/src/sys-baremetal/arch-arm
 TESTS_DIRS		= $(ROOT)/$(TESTS) $(ROOT)/$(TESTS)/libs
 
 BIN				= $(BUILD_DIR)/$(TARGET).bin

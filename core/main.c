@@ -102,8 +102,10 @@ static void SECTION(".init") secondary_core_init()
 
     // enable mmu and configure malloc
     mm_init();
+    printf("hcr 0x%08x h\n", read_hcr());
 
     printf("%s[%d]: cpuid is %d\n", __func__, __LINE__, smp_processor_id());
+    write_hcr(HCR_IMO | HCR_FMO);
     hyp_abort_infinite();
 }
 #endif

@@ -84,7 +84,8 @@ static void timer_handler(int irq, void *pregs, void *pdata)
 static void timer_requset_irq(uint32_t irq)
 {
     register_irq_handler(irq, &timer_handler);
-    interrupt_host_configure(irq);
+    gic_configure_irq(irq, 0);  // 0 is level sensitive.
+    gic_enable_irq(irq);
 }
 
 static hvmm_status_t timer_host_set_callback(timer_callback_t func)

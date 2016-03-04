@@ -25,13 +25,10 @@
 #define CFG_GICC_BASE_PA   0x2C002000
 
 #define USEC 1000000
-#ifdef _SMP_
-#define NUM_GUESTS_STATIC       4
-#define NUM_CPUS       2
-#else
+
 #define NUM_GUESTS_STATIC       3
-#define NUM_CPUS       2
-#endif
+#define NUM_CPUS       1
+
 #define NUM_GUESTS_CPU0_STATIC       2
 #define NUM_GUESTS_CPU1_STATIC       2
 #define COUNT_PER_USEC (CFG_CNTFRQ/USEC)
