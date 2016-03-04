@@ -87,28 +87,33 @@ void gic_init(void)
     gic_hw.initialized = GIC_SIGNATURE_INITIALIZED;
 }
 
-void gic_configure_irq(uint32_t irq,
-                enum gic_irq_polarity polarity,  uint8_t cpumask,
-                uint8_t priority)
+void gic_configure_irq(uint32_t irq, uint8_t polarity)
 {
     if (irq < gic_hw.nr_irqs) {
-        uint32_t icfg;
-        volatile uint8_t *reg8;
-        /* disable forwarding */
-        gic_disable_irq(irq);
-        /* polarity: level or edge */
-        icfg = gicd_read(GICD_ICFGR(irq >> 4));
+        uint32_t reg;
+        uint32_t mask;
 
-        if (polarity == GIC_INT_POLARITY_LEVEL)
-            icfg &= ~(2u << (2 * (irq % 16)));
-        else
-            icfg |= (2u << (2 * (irq % 16)));
+        //gic_disable_irq(irq);
 
-        gicd_write(GICD_ICFGR(irq >> 4), icfg);
-        gicd_write(GICD_IPRIORITYR(irq >> 2), priority);
+        reg = gicd_read(GICD_ICFGR(irq >> 4));
+        mask = (reg >> 2*(irq % 16)) & 0x3;
+
+        if (polarity == IRQ_LEVEL_TRIGGERED) {
+            mask &= 0;
+            mask |= IRQ_LEVEL_TRIGGERED << 0;
+            //reg &= ~(2u << (2 * (irq % 16)));
+        } else { /* IRQ_EDGE_TRIGGERED */
+            mask &= 0;
+            mask |= IRQ_EDGE_TRIGGERED << 0;
+            //reg |= (2u << (2 * (irq % 16)));
+        }
+
+        reg = reg & ~(0x3 << 2*(irq % 16));
+        reg = reg | (mask << 2*(irq % 16));
+        gicd_write(GICD_ICFGR(irq >> 4), reg);
 
         /* enable forwarding */
-        enable_irq(irq);
+        //enable_irq(irq);
     } else {
         debug_print("invalid irq: 0x%08x\n", irq);
     }
@@ -131,7 +136,7 @@ void gic_set_sgi(const uint32_t target, uint32_t sgi)
 }
 
 /* API functions */
-void enable_irq(uint32_t irq)
+void gic_enable_irq(uint32_t irq)
 {
     gicd_write(GICD_ISENABLER(irq >> 5), 1UL << (irq & 0x1F));
 }

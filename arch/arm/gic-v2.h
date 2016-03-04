@@ -15,13 +15,14 @@ struct gic_hw_info {
     uint32_t initialized;       /**< Check whether initializing GIC. */
 };
 
-#define gic_cpumask_current()    (1u << smp_processor_id())
 #define GIC_SIGNATURE_INITIALIZED   0x5108EAD7
 
-enum gic_irq_polarity {
-    GIC_INT_POLARITY_LEVEL = 0,
-    GIC_INT_POLARITY_EDGE = 1
-};
+#define IRQ_LEVEL_TRIGGERED     0
+#define IRQ_EDGE_TRIGGERED      1
+#define IRQ_N_N_MODEL           0
+#define IRQ_1_N_MODEL           1   /* every SPIs must be set 1:N model */
+
+#define gic_cpumask_current()    (1u << smp_processor_id())
 
 enum gic_sgi {
     GIC_SGI_SLOT_CHECK = 1,
@@ -35,9 +36,7 @@ void gic_completion_irq(uint32_t irq);
 
 uint32_t *gic_vgic_baseaddr(void);
 
-void gic_configure_irq(uint32_t irq,
-                enum gic_irq_polarity polarity, uint8_t cpumask,
-                uint8_t priority);
+void gic_configure_irq(uint32_t irq, uint8_t polarity);
 
 uint32_t gic_get_irq_number(void);
 

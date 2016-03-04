@@ -74,6 +74,7 @@ void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
         _host_spi_handlers[irq] = handler;
 }
 
+#if 0
 void interrupt_host_disable(uint32_t irq)
 {
     gic_disable_irq(irq);
@@ -81,8 +82,10 @@ void interrupt_host_disable(uint32_t irq)
 
 void interrupt_host_configure(uint32_t irq)
 {
-    gic_configure_irq(irq, GIC_INT_POLARITY_LEVEL, gic_cpumask_current(), GIC_INT_PRIORITY_DEFAULT);
+    gic_configure_irq(irq, GIC_INT_POLARITY_LEVEL);
+    gic_enable_irq(irq);
 }
+#endif
 
 void interrupt_guest_enable(vmid_t vmid, uint32_t irq)
 {
