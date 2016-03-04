@@ -4,7 +4,6 @@
 #include <hvmm_types.h>
 #include <core/vm.h>
 #include <core/vm/virq.h>
-#include <hvmm_trace.h>
 #include <core/interrupt.h>
 #include <arch/armv7/smp.h>
 
@@ -59,16 +58,12 @@ const uint32_t interrupt_pirq_to_enabled_virq(vmid_t vmid, uint32_t pirq)
     return virq;
 }
 
-hvmm_status_t interrupt_guest_inject(vmid_t vmid, uint32_t virq, uint32_t pirq, uint8_t hw)
+void interrupt_guest_inject(vmid_t vmid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
-    hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
-
     virq_inject(vmid, virq, pirq, hw);
-
-    return ret;
 }
 
-hvmm_status_t register_irq_handler(uint32_t irq, interrupt_handler_t handler)
+void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
 {
     uint32_t cpu = smp_processor_id();
 
@@ -77,36 +72,24 @@ hvmm_status_t register_irq_handler(uint32_t irq, interrupt_handler_t handler)
 
     else
         _host_spi_handlers[irq] = handler;
-
-    return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t interrupt_host_disable(uint32_t irq)
+void interrupt_host_disable(uint32_t irq)
 {
-    hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
-    ret = gic_disable_irq(irq);
-    return ret;
+    gic_disable_irq(irq);
 }
 
-hvmm_status_t interrupt_host_configure(uint32_t irq)
+void interrupt_host_configure(uint32_t irq)
 {
-    hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
-
-    ret = gic_configure_irq(irq, GIC_INT_POLARITY_LEVEL, gic_cpumask_current(), GIC_INT_PRIORITY_DEFAULT);
-
-    return ret;
+    gic_configure_irq(irq, GIC_INT_POLARITY_LEVEL, gic_cpumask_current(), GIC_INT_PRIORITY_DEFAULT);
 }
 
-hvmm_status_t interrupt_guest_enable(vmid_t vmid, uint32_t irq)
+void interrupt_guest_enable(vmid_t vmid, uint32_t irq)
 {
-    hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
-
     struct vmcb *vm = vm_find(vmid);
     struct virqmap_entry *map = vm->virq.guest_virqmap->map;
 
     map[irq].enabled = GUEST_IRQ_ENABLE;
-
-    return ret;
 }
 
 static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
@@ -155,19 +138,16 @@ void interrupt_service_routine(int irq, void *current_regs, void *pdata)
 // TODO(casionwoo): Will be moved into vgic.c?
 //static struct vgic_status _vgic_status[NUM_GUESTS_STATIC];
 
-hvmm_status_t interrupt_init()
+void interrupt_init()
 {
-    hvmm_status_t ret = HVMM_STATUS_UNKNOWN_ERROR;
     uint32_t cpu = smp_processor_id();
 
     gic_init();
     write_hcr(HCR_IMO | HCR_FMO);
 
     /* Virtual Interrupt: GIC Virtual Interface Control */
-    ret = vgic_init();
-    if (ret == HVMM_STATUS_SUCCESS)
-        ret = vgic_enable(1);
+    vgic_init();
+    vgic_enable(1);
     virq_table_init();
 
-    return ret;
 }

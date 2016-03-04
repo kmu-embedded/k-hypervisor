@@ -1,7 +1,6 @@
 #ifndef __GIC_H__
 #define __GIC_H__
 
-#include <hvmm_types.h>
 #include <stdint.h>
 #include <core/interrupt.h>
 
@@ -16,7 +15,7 @@ struct gic_hw_info {
     uint32_t initialized;       /**< Check whether initializing GIC. */
 };
 
-#define gic_cpumask_current()    (smp_processor_id())
+#define gic_cpumask_current()    (1u << smp_processor_id())
 #define GIC_SIGNATURE_INITIALIZED   0x5108EAD7
 
 enum gic_irq_polarity {
@@ -28,20 +27,20 @@ enum gic_sgi {
     GIC_SGI_SLOT_CHECK = 1,
 };
 
-hvmm_status_t gic_enable_irq(uint32_t irq);
-hvmm_status_t gic_disable_irq(uint32_t irq);
-hvmm_status_t gic_init(void);
-hvmm_status_t gic_deactivate_irq(uint32_t irq);
-hvmm_status_t gic_completion_irq(uint32_t irq);
+void gic_enable_irq(uint32_t irq);
+void gic_disable_irq(uint32_t irq);
+void gic_init(void);
+void gic_deactivate_irq(uint32_t irq);
+void gic_completion_irq(uint32_t irq);
 
 uint32_t *gic_vgic_baseaddr(void);
 
-hvmm_status_t gic_configure_irq(uint32_t irq,
+void gic_configure_irq(uint32_t irq,
                 enum gic_irq_polarity polarity, uint8_t cpumask,
                 uint8_t priority);
 
 uint32_t gic_get_irq_number(void);
 
-hvmm_status_t gic_set_sgi(const uint32_t target, uint32_t sgi);
+void gic_set_sgi(const uint32_t target, uint32_t sgi);
 
 #endif
