@@ -105,9 +105,6 @@ void gic_configure_irq(uint32_t irq,
             icfg |= (2u << (2 * (irq % 16)));
 
         gicd_write(GICD_ICFGR(irq >> 4), icfg);
-#ifndef __CONFIG_SMP__
-        gicd_write(GICD_ITARGETSR(irq >> 2), cpumask);
-#endif
         gicd_write(GICD_IPRIORITYR(irq >> 2), priority);
 
         /* enable forwarding */
