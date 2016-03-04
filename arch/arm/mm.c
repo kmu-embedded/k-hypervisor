@@ -11,40 +11,49 @@ static pgentry hyp_l1_pgtable[L1_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)
 static pgentry hyp_l2_pgtable[L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 static pgentry hyp_l3_pgtable[L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 
-
 uint32_t set_cache(bool state)
 {
     return ( state ? (HSCTLR_I | HSCTLR_C) : 0 );
 }
 
-void enable_mmu(void)
+/* Set Hyp Memory Attribute Indirection Registers 0 and 1 */
+void set_hmair(void)
 {
-    uint32_t htcr = 0, hsctlr = 0;
-    uint64_t httbr = 0;
-
-    /* Configure Memory Attributes */
     write_hmair0(HMAIR0_VALUE);
     write_hmair1(HMAIR1_VALUE);
+}
 
-    /* HTCR: Hyp Translation Control Register */
+/* Set Hyp Translation Control Register(HTCR)*/
+void set_htcr(void)
+{
+    uint32_t htcr = 0;
+
     /* Shareability, Outer Cacheability, Inner Cacheability */
     htcr |= INNER_SHAREABLE << HTCR_SH0_BIT;
-    htcr |= WRITEBACK_CACHEABLE << HTCR_ORGN0_BIT;
     htcr |= WRITEBACK_CACHEABLE << HTCR_IRGN0_BIT;
+    htcr |= WRITEBACK_CACHEABLE << HTCR_ORGN0_BIT;
+
     // TODO(wonseok): How to configure T0SZ?
     write_htcr(htcr);
+}
 
-    /* HTTBR : Hyp Translation Table Base Register */
-    httbr |= (uint32_t) hyp_l1_pgtable;
-    write_httbr(httbr);
+/* Set Hyp Translation Table Base Register(HTTBR) */
+void set_httbr()
+{
+    write_httbr((uint32_t) hyp_l1_pgtable);
+}
 
-    /* HSCTLR : Hyp System Control Register*/
+/* Set Hyp System Control Register(HSCTLR) */
+void enable_mmu(void)
+{
+    uint32_t hsctlr = 0;
     /* MMU, Alignment enable */
-    hsctlr = (HSCTLR_A | HSCTLR_M);
-    hsctlr |= set_cache(true); /* I-Cache, D-Cache init from hsctlr*/
+    hsctlr |= (HSCTLR_A | HSCTLR_M);
+#ifndef __DISABLE_CACHE__
+    hsctlr |= (HSCTLR_I | HSCTLR_C);
+#else
     write_hsctlr(hsctlr);
-
-    return HVMM_STATUS_SUCCESS;
+#endif
 }
 
 #include <asm/asm.h>

@@ -42,5 +42,8 @@ void SECTION(".init.arch") irq_init()
 
 void SECTION(".init.arch") mm_init()
 {
+    set_hmair();
+    set_htcr();
+    set_httbr();
     enable_mmu();
 }
