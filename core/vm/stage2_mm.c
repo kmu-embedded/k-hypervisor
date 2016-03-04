@@ -52,10 +52,10 @@ void stage2_mm_create(uint32ptr_t *pgtable_base)
     init_pgtable(pgtable_base);
 }
 
-void stage2_mm_init(struct memmap_desc **mdlist, char **_vmid_ttbl, vmid_t vmid)
+void stage2_mm_init(struct memdesc_t **mdlist, char **_vmid_ttbl, vmid_t vmid)
 {
     int i, j;
-    struct memmap_desc *memmap;
+    struct memdesc_t *memmap;
 
     for (i = 0; mdlist[i]; i++) {
         if (mdlist[i]->label == 0)

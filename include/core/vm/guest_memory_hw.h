@@ -23,7 +23,7 @@ enum memattr {
 };
 
 hvmm_status_t memory_hw_create(struct vmem *vmem);
-hvmm_status_t memory_hw_init(struct memmap_desc **memmap, char **_vmid_ttbl, vmid_t vmid);
+hvmm_status_t memory_hw_init(struct memdesc_t **memmap, char **_vmid_ttbl, vmid_t vmid);
 hvmm_status_t memory_hw_save(void);
 hvmm_status_t memory_hw_restore(vmid_t vmid, char **_vmid_ttbl);
 
