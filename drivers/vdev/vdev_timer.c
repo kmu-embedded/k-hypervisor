@@ -101,7 +101,8 @@ void callback_timer(void *pdata)
     vmid_t vmid = guest_current_vmid();
 
     if (_timer_status[vmid] == 0)
-        interrupt_guest_inject(vmid, VTIMER_IRQ, 0, INJECT_SW);
+        // TODO(igxactly): make '0' parameter as named constant.
+        virq_inject(vmid, VTIMER_IRQ, 0, INJECT_SW);
 }
 
 static hvmm_status_t vdev_vtimer_reset(void)
