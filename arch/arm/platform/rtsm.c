@@ -26,14 +26,12 @@ void SECTION(".init.platform") platform_init()
     write_hyp_pgentry(gic_base + GICH_OFFSET, gic_base + GICH_OFFSET, MT_DEVICE, SZ_4K);
     write_hyp_pgentry(gic_base + GICV_OFFSET, gic_base + GICV_OFFSET, MT_DEVICE, SZ_8K);
 
-    // add_device_mapping()
-    // serial devices
+    // add mapping for serial devices
     write_hyp_pgentry(0x1C090000, 0x1C090000, MT_DEVICE, SZ_4K);
     write_hyp_pgentry(0x1C0A0000, 0x1C0A0000, MT_DEVICE, SZ_4K);
     write_hyp_pgentry(0x1C0B0000, 0x1C0B0000, MT_DEVICE, SZ_4K);
     write_hyp_pgentry(0x1C0C0000, 0x1C0C0000, MT_DEVICE, SZ_4K);
 
-    // TODO(wonseok):
     write_hyp_pgentry(0xF0000000, 0xF0000000, MT_WRITEBACK_RW_ALLOC, SZ_256M);
     write_hyp_pgentry(0x80000000, 0x80000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
     write_hyp_pgentry(0x90000000, 0x90000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
@@ -44,10 +42,6 @@ void SECTION(".init.platform") console_init()
 {
     // TODO(wonseok): add general initialization for console devices.
     pl01x_init(115200, 24000000);
-
-    // Register putc and getc for printf and sscanf.
-    //__libc_putc = &pl01x_putc;
-    //__libc_getc = &pl01x_getc;
 }
 
 void SECTION(".init.platform") dev_init()

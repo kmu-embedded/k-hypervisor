@@ -9,6 +9,7 @@
 #include <arch/gic_regs.h>
 #include <arch/armv7.h>
 #include <io.h>
+#include <asm/asm.h>
 
 static struct gic_hw_info gic_hw;
 
@@ -21,7 +22,7 @@ static struct gic_hw_info gic_hw;
 #define gich_read(offset)           getl(gic_hw.base + GICH_OFFSET + offset)
 #define gich_write(offset, value)   putl(value, gic_hw.base + GICH_OFFSET + offset)
 
-void gic_init(void)
+void SECTION(".init") gic_init(void)
 {
     int i;
 
