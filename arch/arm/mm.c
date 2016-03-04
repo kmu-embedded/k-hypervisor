@@ -6,20 +6,21 @@
 
 #include <mm.h>
 #include <lpae.h>
+#include <asm/asm.h>
 
 static pgentry hyp_l1_pgtable[L1_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 static pgentry hyp_l2_pgtable[L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 static pgentry hyp_l3_pgtable[L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
 
 /* Set Hyp Memory Attribute Indirection Registers 0 and 1 */
-void SECTION(".init.mm") set_hmair(void)
+void SECTION(".init") set_hmair(void)
 {
     write_hmair0(HMAIR0_VALUE);
     write_hmair1(HMAIR1_VALUE);
 }
 
 /* Set Hyp Translation Control Register(HTCR)*/
-void SECTION(".init.mm") set_htcr(void)
+void SECTION(".init") set_htcr(void)
 {
     uint32_t htcr = 0;
 
@@ -33,13 +34,13 @@ void SECTION(".init.mm") set_htcr(void)
 }
 
 /* Set Hyp Translation Table Base Register(HTTBR) */
-void SECTION(".init.mm") set_httbr(void)
+void SECTION(".init") set_httbr(void)
 {
     write_httbr((uint32_t) hyp_l1_pgtable);
 }
 
 /* Set Hyp System Control Register(HSCTLR) */
-void SECTION(".init.mm") enable_mmu(void)
+void SECTION(".init") enable_mmu(void)
 {
     uint32_t hsctlr = 0;
     /* MMU, Alignment enable */
@@ -52,7 +53,7 @@ void SECTION(".init.mm") enable_mmu(void)
 }
 
 #include <asm/asm.h>
-void SECTION(".init.mm") pgtable_init()
+void SECTION(".init") pgtable_init()
 {
     int i, j;
     for(i = 0; i < 4; i++) {
@@ -63,7 +64,7 @@ void SECTION(".init.mm") pgtable_init()
     }
 }
 
-void SECTION(".init.mm")
+void SECTION(".init")
 write_hyp_pgentry(uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size)
 {
     uint32_t l1_index, l2_index, l3_index;
