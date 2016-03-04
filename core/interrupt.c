@@ -58,10 +58,12 @@ const uint32_t interrupt_pirq_to_enabled_virq(vmid_t vmid, uint32_t pirq)
     return virq;
 }
 
+#if 0
 void interrupt_guest_inject(vmid_t vmid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
     virq_inject(vmid, virq, pirq, hw);
 }
+#endif
 
 void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
 {
@@ -73,19 +75,6 @@ void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
     else
         _host_spi_handlers[irq] = handler;
 }
-
-#if 0
-void interrupt_host_disable(uint32_t irq)
-{
-    gic_disable_irq(irq);
-}
-
-void interrupt_host_configure(uint32_t irq)
-{
-    gic_configure_irq(irq, GIC_INT_POLARITY_LEVEL);
-    gic_enable_irq(irq);
-}
-#endif
 
 void interrupt_guest_enable(vmid_t vmid, uint32_t irq)
 {
@@ -104,7 +93,7 @@ static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
         virq = interrupt_pirq_to_enabled_virq(i, irq);
         if (virq == VIRQ_INVALID)
             continue;
-        interrupt_guest_inject(i, virq, irq, INJECT_HW);
+        virq_inject(i, virq, irq, INJECT_HW);
     }
 }
 

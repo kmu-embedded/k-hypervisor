@@ -105,7 +105,7 @@ void callback_test_timer(void *pdata)
     printf("Injecting IRQ 30 to Guest:%d\n", vmid);
 
     /* SW VIRQ, No PIRQ */
-    interrupt_guest_inject(vmid, 30, 0, INJECT_SW);
+    virq_inject(vmid, 30, 0, INJECT_SW);
     HVMM_TRACE_EXIT();
 }
 
