@@ -21,9 +21,8 @@ static struct gic_hw_info gic_hw;
 #define gich_read(offset)           getl(gic_hw.base + GICH_OFFSET + offset)
 #define gich_write(offset, value)   putl(value, gic_hw.base + GICH_OFFSET + offset)
 
-hvmm_status_t gic_init(void)
+void gic_init(void)
 {
-    HVMM_TRACE_ENTER();
     int i;
 
     // This code will be moved other parts, not here. */
@@ -74,56 +73,48 @@ hvmm_status_t gic_init(void)
         debug_print("AFTER: GICD_IPRIORITYR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_IPRIORITYR(i >> 2)));
     }
 
-    /* Route all global IRQs to CPU0 */
+#ifndef __CONFIG_SMP__
+    // NOTE: GIC_ITRAGETSR is read-only on multiprocessor environment.
     for (i = 32; i < gic_hw.nr_irqs; i += 4) {
         debug_print("BEFORE: GICD_ITARGETSR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_ITARGETSR(i >> 2)));
         gicd_write(GICD_ITARGETSR(i >> 2), 1 << 0 | 1 << 8 | 1 << 16 | 1 << 24);
         debug_print("AFTER: GICD_ITARGETSR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_ITARGETSR(i >> 2)));
     }
+#endif
 
     // TODO(casionwoo): Set SGI and PPIs
 
     gic_hw.initialized = GIC_SIGNATURE_INITIALIZED;
-
-    HVMM_TRACE_EXIT();
-    return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t gic_configure_irq(uint32_t irq,
+void gic_configure_irq(uint32_t irq,
                 enum gic_irq_polarity polarity,  uint8_t cpumask,
                 uint8_t priority)
 {
-    hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
-    HVMM_TRACE_ENTER();
-
     if (irq < gic_hw.nr_irqs) {
         uint32_t icfg;
         volatile uint8_t *reg8;
         /* disable forwarding */
-        result = gic_disable_irq(irq);
-        if (result == HVMM_STATUS_SUCCESS) {
-            /* polarity: level or edge */
-            icfg = gicd_read(GICD_ICFGR(irq >> 4));
+        gic_disable_irq(irq);
+        /* polarity: level or edge */
+        icfg = gicd_read(GICD_ICFGR(irq >> 4));
 
-            if (polarity == GIC_INT_POLARITY_LEVEL)
-                icfg &= ~(2u << (2 * (irq % 16)));
-            else
-                icfg |= (2u << (2 * (irq % 16)));
+        if (polarity == GIC_INT_POLARITY_LEVEL)
+            icfg &= ~(2u << (2 * (irq % 16)));
+        else
+            icfg |= (2u << (2 * (irq % 16)));
 
-            gicd_write(GICD_ICFGR(irq >> 4), icfg);
-            // FIXME(casionwoo): If set cpumask, sp804 doesn't work.
-            //gicd_write(GICD_ITARGETSR(irq >> 2), cpumask);
-            gicd_write(GICD_IPRIORITYR(irq >> 2), priority);
+        gicd_write(GICD_ICFGR(irq >> 4), icfg);
+#ifndef __CONFIG_SMP__
+        gicd_write(GICD_ITARGETSR(irq >> 2), cpumask);
+#endif
+        gicd_write(GICD_IPRIORITYR(irq >> 2), priority);
 
-            /* enable forwarding */
-            result = enable_irq(irq);
-        }
+        /* enable forwarding */
+        enable_irq(irq);
     } else {
         debug_print("invalid irq: 0x%08x\n", irq);
-        result = HVMM_STATUS_UNSUPPORTED_FEATURE;
     }
-    HVMM_TRACE_EXIT();
-    return result;
 }
 
 uint32_t gic_get_irq_number(void)
@@ -131,41 +122,36 @@ uint32_t gic_get_irq_number(void)
     return gicc_read(GICC_IAR) & GICC_IAR_MASK;
 }
 
-hvmm_status_t gic_set_sgi(const uint32_t target, uint32_t sgi)
+void gic_set_sgi(const uint32_t target, uint32_t sgi)
 {
     if(!(sgi < 16))
-        return HVMM_STATUS_BAD_ACCESS;
+        return ;
 
     gicd_write(GICD_SGIR(0), GICD_SGIR_TARGET_LIST |
                             (target << GICD_SGIR_CPU_TARGET_LIST_OFFSET) |
                             (sgi & GICD_SGIR_SGI_INT_ID_MASK));
 
-    return HVMM_STATUS_SUCCESS;
 }
 
 /* API functions */
-hvmm_status_t enable_irq(uint32_t irq)
+void enable_irq(uint32_t irq)
 {
     gicd_write(GICD_ISENABLER(irq >> 5), 1UL << (irq & 0x1F));
-    return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t gic_disable_irq(uint32_t irq)
+void gic_disable_irq(uint32_t irq)
 {
     gicd_write(GICD_ICENABLER(irq >> 5), 1UL << (irq & 0x1F));
-    return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t gic_completion_irq(uint32_t irq)
+void gic_completion_irq(uint32_t irq)
 {
     gicc_write(GICC_EOIR, irq);
-    return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t gic_deactivate_irq(uint32_t irq)
+void gic_deactivate_irq(uint32_t irq)
 {
     gicc_write(GICC_DIR, irq);
-    return HVMM_STATUS_SUCCESS;
 }
 
 uint32_t *gic_vgic_baseaddr(void)

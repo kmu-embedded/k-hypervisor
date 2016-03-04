@@ -1,8 +1,6 @@
-#include <stdio.h>
+#include <stdbool.h>
 #include <debug_print.h>
 #include <arch/armv7.h>
-#include <hvmm_types.h>
-#include <stdbool.h>
 #include <rtsm-config.h>
 #include <core/vm/guest_memory_hw.h>
 
@@ -19,14 +17,14 @@ uint32_t set_cache(bool state)
     return ( state ? (HSCTLR_I | HSCTLR_C) : 0 );
 }
 
-hvmm_status_t enable_mmu(void)
+void enable_mmu(void)
 {
     uint32_t htcr = 0, hsctlr = 0;
     uint64_t httbr = 0;
 
     /* Configure Memory Attributes */
-    write_hmair0(MAIR0_VALUE);
-    write_hmair1(MAIR1_VALUE);
+    write_hmair0(HMAIR0_VALUE);
+    write_hmair1(HMAIR1_VALUE);
 
     /* HTCR: Hyp Translation Control Register */
     /* Shareability, Outer Cacheability, Inner Cacheability */
@@ -35,7 +33,6 @@ hvmm_status_t enable_mmu(void)
     htcr |= WRITEBACK_CACHEABLE << HTCR_IRGN0_BIT;
     // TODO(wonseok): How to configure T0SZ?
     write_htcr(htcr);
-    // FIXME(casionwoo) : Current debug_print can't support 64-bit, it should be fixed
 
     /* HTTBR : Hyp Translation Table Base Register */
     httbr |= (uint32_t) hyp_l1_pgtable;
@@ -51,21 +48,18 @@ hvmm_status_t enable_mmu(void)
 }
 
 #include <asm/asm.h>
-hvmm_status_t SECTION(".init.arch") pgtable_init() // Setup pagetable
+void SECTION(".init.arch") pgtable_init()
 {
     int i, j;
-
     for(i = 0; i < 4; i++) {
         hyp_l1_pgtable[i] = set_table((uint32_t) hyp_l2_pgtable[i], 0);
         for(j = 0; j < 512; j++) {
             hyp_l2_pgtable[i][j] = set_table((uint32_t) hyp_l3_pgtable[i][j], 0);
         }
     }
-
-    return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t set_pgtable(struct memmap_desc *desc)
+void set_pgtable(struct memmap_desc *desc)
 {
     int i = 0;
 
@@ -77,8 +71,6 @@ hvmm_status_t set_pgtable(struct memmap_desc *desc)
         }
         i++;
     }
-
-    return HVMM_STATUS_SUCCESS;
 }
 
 void write_pgentry(void *pgtable_base, struct memmap_desc *mem_desc, bool is_guest)

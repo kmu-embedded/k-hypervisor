@@ -144,8 +144,8 @@ typedef enum {
  * |MAIR1| 0000 0000 | 1111 1111 | 1100 1100 | 1011 1011 |
  */
 
-#define MAIR0_VALUE 0x88440400
-#define MAIR1_VALUE 0x00FFCCBB
+#define HMAIR0_VALUE 0x88440400
+#define HMAIR1_VALUE 0x00FFCCBB
 
 typedef enum {
     MT_STRONGLY_ORDERED,    // 0

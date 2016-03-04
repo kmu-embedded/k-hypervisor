@@ -81,12 +81,10 @@ static void timer_handler(int irq, void *pregs, void *pdata)
     timer_start();
 }
 
-static hvmm_status_t timer_requset_irq(uint32_t irq)
+static void timer_requset_irq(uint32_t irq)
 {
-    if (register_irq_handler(irq, &timer_handler))
-        return HVMM_STATUS_UNSUPPORTED_FEATURE;
-
-    return interrupt_host_configure(irq);
+    register_irq_handler(irq, &timer_handler);
+    interrupt_host_configure(irq);
 }
 
 static hvmm_status_t timer_host_set_callback(timer_callback_t func)
