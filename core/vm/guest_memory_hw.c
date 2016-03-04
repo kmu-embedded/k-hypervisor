@@ -164,7 +164,7 @@ hvmm_status_t memory_hw_create(struct vmem *vmem)
  *
  * @return HVMM_STATUS_SUCCESS, Always success.
  */
-hvmm_status_t memory_hw_init(struct memmap_desc **memmap, char **_vmid_ttbl, vmid_t vmid)
+hvmm_status_t memory_hw_init(struct memdesc_t **memmap, char **_vmid_ttbl, vmid_t vmid)
 {
     debug_print("[memory] memory_init: enter\n\r");
 

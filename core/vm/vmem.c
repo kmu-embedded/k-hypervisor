@@ -8,12 +8,12 @@
 //extern uint32_t _guest1_bin_start;
 //extern uint32_t _guest2_bin_start;
 //
-struct memmap_desc vm_md_empty[] = {
+struct memdesc_t vm_md_empty[] = {
     { 0, 0, 0, 0,  0 },
 };
 
 /*  label, ipa, pa, size, attr */
-struct memmap_desc vm0_device_md[] = {
+struct memdesc_t vm0_device_md[] = {
     { "sysreg", 0x1C010000, 0x1C010000, SZ_4K, MEMATTR_DEVICE_MEMORY },
     { "sysctl", 0x1C020000, 0x1C020000, SZ_4K, MEMATTR_DEVICE_MEMORY },
     { "aaci", 0x1C040000, 0x1C040000, SZ_4K, MEMATTR_DEVICE_MEMORY },
@@ -36,7 +36,7 @@ struct memmap_desc vm0_device_md[] = {
     { 0, 0, 0, 0, 0 }
 };
 
-struct memmap_desc vm1_device_md[] = {
+struct memdesc_t vm1_device_md[] = {
     { "sysreg", 0x1C010000, 0x1C010000, SZ_4K, MEMATTR_DEVICE_MEMORY },
     { "sysctl", 0x1C020000, 0x1C020000, SZ_4K, MEMATTR_DEVICE_MEMORY },
     { "aaci", 0x1C040000, 0x1C040000, SZ_4K, MEMATTR_DEVICE_MEMORY },
@@ -59,7 +59,7 @@ struct memmap_desc vm1_device_md[] = {
     { 0, 0, 0, 0, 0 }
 };
 
-struct memmap_desc vm2_device_md[] = {
+struct memdesc_t vm2_device_md[] = {
     { "sysreg", 0x1C010000, 0x1C010000, SZ_4K, MEMATTR_DEVICE_MEMORY },
     { "sysctl", 0x1C020000, 0x1C020000, SZ_4K, MEMATTR_DEVICE_MEMORY },
     { "aaci", 0x1C040000, 0x1C040000, SZ_4K, MEMATTR_DEVICE_MEMORY },
@@ -85,7 +85,7 @@ struct memmap_desc vm2_device_md[] = {
 /**
  * @brief Memory map for VM0 image .
  */
-struct memmap_desc vm0_memory_md[] = {
+struct memdesc_t vm0_memory_md[] = {
     {"start", CFG_GUEST_ATAGS_START_ADDRESS, 0, 0x10000000, MEMATTR_NORMAL_WB_CACHEABLE },
     {0, 0, 0, 0,  0},
 };
@@ -93,20 +93,20 @@ struct memmap_desc vm0_memory_md[] = {
 /**
  * @brief Memory map for VM1 image.
  */
-struct memmap_desc vm1_memory_md[] = {
+struct memdesc_t vm1_memory_md[] = {
     /* 256MB */
     {"start", CFG_GUEST_ATAGS_START_ADDRESS, 0, 0x10000000, MEMATTR_NORMAL_WB_CACHEABLE },
     {0, 0, 0, 0,  0},
 };
 
-struct memmap_desc vm2_memory_md[] = {
+struct memdesc_t vm2_memory_md[] = {
     /* 256MB */
     {"start", CFG_GUEST_ATAGS_START_ADDRESS, 0, 0x10000000, MEMATTR_NORMAL_WB_CACHEABLE },
     {0, 0, 0, 0,  0},
 };
 
 /* Memory Map for VM 0 */
-struct memmap_desc *vm0_mdlist[] = {
+struct memdesc_t *vm0_mdlist[] = {
     vm0_device_md,   /* 0x0000_0000 */
     vm_md_empty,     /* 0x4000_0000 */
     vm0_memory_md,
@@ -115,7 +115,7 @@ struct memmap_desc *vm0_mdlist[] = {
 };
 
 /* Memory Map for VM 1 */
-struct memmap_desc *vm1_mdlist[] = {
+struct memdesc_t *vm1_mdlist[] = {
     vm1_device_md,
     vm_md_empty,
     vm1_memory_md,
@@ -124,7 +124,7 @@ struct memmap_desc *vm1_mdlist[] = {
 };
 
 /* Memory Map for VM 2 */
-struct memmap_desc *vm2_mdlist[] = {
+struct memdesc_t *vm2_mdlist[] = {
     vm2_device_md,
     vm_md_empty,
     vm2_memory_md,

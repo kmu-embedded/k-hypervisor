@@ -8,7 +8,7 @@
 #include <size.h>
 
 struct vmem {
-    struct memmap_desc **memmap;
+    struct memdesc_t **memmap;
     uint32ptr_t pgtable_base;
 };
 
