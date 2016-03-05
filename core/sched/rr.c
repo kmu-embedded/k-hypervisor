@@ -19,7 +19,6 @@ struct rq_entry_rr {
 
     /* TODO:(igkang) set field types to abstract types */
     int vcpuid; //vcpuid_t
-    unsigned int tick; //tick_t
     unsigned int tick_reset_val; //tick_t
     state_rr state;
 };
@@ -127,10 +126,10 @@ int sched_rr_vcpu_register(int vcpuid)
     INIT_LIST_HEAD(&new_entry->registered_list_head);
     INIT_LIST_HEAD(&new_entry->head);
 
-    /* FIXME:(igkang) should use function parameter's value for tick_reset_val init. */
     new_entry->vcpuid = vcpuid;
+
+    /* FIXME:(igkang) Hardcoded. should use function parameter's value for tick_reset_val init. */
     new_entry->tick_reset_val = 5;
-    new_entry->tick = new_entry->tick_reset_val;
 
     new_entry->state = DETACHED;
 
@@ -231,7 +230,7 @@ int sched_rr_vcpu_detach()
  * @param
  * @return next_vcpuid
  */
-int sched_rr_do_schedule()
+int sched_rr_do_schedule(uint32_t *delay_tick)
 {
     uint32_t cpu = smp_processor_id();
     /* TODO:(igkang) change type to bool */
@@ -255,20 +254,13 @@ int sched_rr_do_schedule()
         /* check & decrease tick. if tick was <= 0 let's switch */
         current_entry = list_entry(current[cpu], struct rq_entry_rr, head);
 
-        /* if tick is still left */
-        if (current_entry->tick) {
-            current_entry->tick--;
-        } else { /* tick's over */
-            is_switching_needed = true;
+        /* tick's over */
+        is_switching_needed = true;
 
-            /* reset tick for next scheduling */
-            current_entry->tick = current_entry->tick_reset_val;
-
-            /* put current entry back to runqueue_rr */
-            current_entry->state = WAITING;
-            list_add_tail(current[cpu], &runqueue_rr[cpu]);
-            current[cpu] = NULL;
-        }
+        /* put current entry back to runqueue_rr */
+        current_entry->state = WAITING;
+        list_add_tail(current[cpu], &runqueue_rr[cpu]);
+        current[cpu] = NULL;
     }
 
     /* update scheduling-related data (like tick) */
@@ -278,7 +270,9 @@ int sched_rr_do_schedule()
         list_del_init(current[cpu]);
 
         next_entry = list_entry(current[cpu], struct rq_entry_rr, head);
-        next_entry->tick -= 1;
+
+        /* FIXME:(igkang) hardcoded */
+        *delay_tick = next_entry->tick_reset_val * GUEST_SCHED_TICK;
     }
 
     /* vcpu of current entry will be the next vcpu */

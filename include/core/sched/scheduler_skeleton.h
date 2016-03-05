@@ -1,7 +1,7 @@
 #ifndef _SCHEDULER_SKELETON_H_
 #define _SCHEDULER_SKELETON_H_
 
-#include <stddef.h>
+#include <stdint.h>
 
 struct scheduler {
     unsigned int sched_id;
@@ -11,7 +11,7 @@ struct scheduler {
     int (*unregister_vcpu)(void);
     int (*attach_vcpu)(int);
     int (*detach_vcpu)(void);
-    int (*do_schedule)(void);
+    int (*do_schedule)(uint32_t *);
 };
 
 extern const struct scheduler sched_rr;
