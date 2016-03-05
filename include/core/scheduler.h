@@ -25,7 +25,9 @@ int sched_vcpu_attach(int vcpuid);
 int sched_vcpu_detach();
 void do_schedule(void *pdata, uint32_t *delay_tick);
 
+#if 0
 vmid_t sched_policy_determ_next(void);
+#endif
 
 void guest_sched_start(void);
 vmid_t guest_current_vmid(void);

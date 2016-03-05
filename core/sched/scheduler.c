@@ -35,7 +35,7 @@ void sched_init()
     struct timer_val timer;
 
     /* 100Mhz -> 1 count == 10ns at RTSM_VE_CA15, fast model */
-    timer.interval_us = GUEST_SCHED_TICK;
+    timer.interval_us = 5 * GUEST_SCHED_TICK; /* FIXME:(igkang) hardcoded */
     timer.callback = &do_schedule;
 
     timer_set(&timer, HOST_TIMER);
@@ -147,6 +147,7 @@ hvmm_status_t guest_switchto(vmid_t vmid)
     return result;
 }
 
+#if 0
 vmid_t sched_policy_determ_next(void)
 {
     uint32_t cpu = smp_processor_id();
@@ -162,6 +163,7 @@ vmid_t sched_policy_determ_next(void)
 
     return next;
 }
+#endif
 
 /**
  * Register a vCPU to a scheduler
@@ -251,11 +253,11 @@ void do_schedule(void *pdata, uint32_t *delay_tick)
 
     /* determine next vcpu to be run
      * by calling scheduler.do_schedule() */
-    next_vcpuid = _policy[cpu]->do_schedule();
+    next_vcpuid = _policy[cpu]->do_schedule(delay_tick);
 
     /* FIXME:(igkang) hardcoded */
     /* set timer for next scheduler work */
-    *delay_tick = 1 * GUEST_SCHED_TICK / 50;
+    // *delay_tick = 1 * GUEST_SCHED_TICK / 50;
 
     /* update vCPU's running time */
 

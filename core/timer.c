@@ -107,10 +107,14 @@ static void timer_handler(int irq, void *pregs, void *pdata)
     uint32_t cpu = smp_processor_id();
 
     timer_stop();
-    if (_host_callback[cpu] && --_host_tickcount[cpu] == 0)
+    if (_host_callback[cpu] && --_host_tickcount[cpu] == 0) {
         _host_callback[cpu](pregs, &_host_tickcount[cpu]);
-    if (_guest_callback[cpu] && --_guest_tickcount[cpu] == 0)
+        _host_tickcount[cpu] /= TICK_PERIOD_US;
+    }
+    if (_guest_callback[cpu] && --_guest_tickcount[cpu] == 0) {
         _guest_callback[cpu](pregs, &_guest_tickcount[cpu]);
+        _guest_tickcount[cpu] /= TICK_PERIOD_US;
+    }
 
     timer_set_absolute(TICK_PERIOD_US);
     timer_start();
