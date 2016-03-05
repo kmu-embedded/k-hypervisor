@@ -85,7 +85,16 @@ static hvmm_status_t timer_set_interval(uint32_t interval_us)
 {
     /* timer_set_tval() */
     if (_ops->set_interval)
-        return _ops->set_interval(_usec2count(interval_us));
+        return _ops->set_interval((uint32_t)_usec2count(interval_us));
+
+    return HVMM_STATUS_UNSUPPORTED_FEATURE;
+}
+
+static hvmm_status_t timer_set_absolute(uint64_t absolute_us)
+{
+    /* timer_set_tval() */
+    if (_ops->set_interval)
+        return _ops->set_absolute(_usec2count(absolute_us));
 
     return HVMM_STATUS_UNSUPPORTED_FEATURE;
 }
@@ -103,8 +112,7 @@ static void timer_handler(int irq, void *pregs, void *pdata)
     if (_guest_callback[cpu] && --_guest_tickcount[cpu] == 0)
         _guest_callback[cpu](pregs, &_guest_tickcount[cpu]);
 
-    /* FIXME:(igkang) hardcoded */
-    timer_set_interval(50);
+    timer_set_absolute(TICK_PERIOD_US);
     timer_start();
 }
 
@@ -120,7 +128,7 @@ static hvmm_status_t timer_host_set_callback(timer_callback_t func, uint32_t int
     uint32_t cpu = smp_processor_id();
 
     _host_callback[cpu] = func;
-    _host_tickcount[cpu] = interval_us / 50;
+    _host_tickcount[cpu] = interval_us / TICK_PERIOD_US;
     /* FIXME:(igkang) hardcoded */
 
     return HVMM_STATUS_SUCCESS;
@@ -131,7 +139,7 @@ static hvmm_status_t timer_guest_set_callback(timer_callback_t func, uint32_t in
     uint32_t cpu = smp_processor_id();
 
     _guest_callback[cpu] = func;
-    _guest_tickcount[cpu] = interval_us / 50;
+    _guest_tickcount[cpu] = interval_us / TICK_PERIOD_US;
     /* FIXME:(igkang) hardcoded */
 
     return HVMM_STATUS_SUCCESS;
@@ -142,8 +150,7 @@ hvmm_status_t timer_set(struct timer_val *timer, uint32_t host)
     if (host) {
         timer_stop();
         timer_host_set_callback(timer->callback, timer->interval_us);
-        /* FIXME:(igkang) hardcoded */
-        timer_set_interval(50);
+        timer_set_interval(TICK_PERIOD_US);
         timer_start();
     } else
         timer_guest_set_callback(timer->callback, timer->interval_us);
