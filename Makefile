@@ -13,7 +13,8 @@ OUTPUT			= $(TARGET).axf
 MAP				= $(PROJECT).map
 
 
-all:	ARCH CORE DRIVERS LIB TESTS \
+#all:	ARCH CORE DRIVERS LIB TESTS
+all:	ARCH CORE DRIVERS LIB \
 	$(OUTPUT) $(MAP)
 
 ARCH:
@@ -58,8 +59,6 @@ $(OUTPUT): $(MACHINE).lds $(OBJS)
 		$(BUILD)/$(CORE)/*.o	\
 		$(BUILD)/$(CORE)/sched/*.o	\
 		$(BUILD)/$(CORE)/vdev/*.o	\
-		$(BUILD)/$(TESTS)/*.o		\
-		$(BUILD)/$(TESTS)/libs/*.o	\
 		$(BUILD)/$(DRV)/*.o		\
 		$(BUILD)/$(LIB)/c/src/*.o	\
 		$(BUILD)/$(LIB)/c/src/arch-arm/*.o	\
@@ -80,6 +79,6 @@ force: ;
 Makefile: ;
 
 clean:
-	rm -rf $(ROOT)/$(BUILD) 
+	rm -rf $(ROOT)/$(BUILD)
 
 .PHONY: all clean config.mk

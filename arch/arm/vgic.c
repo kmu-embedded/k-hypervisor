@@ -18,17 +18,6 @@
 #define VGIC_SIMULATE_HWVIRQ
 #endif
 
-#ifdef __VGIC_DISABLE_TRACE__
-#ifdef HVMM_TRACE_ENTER
-#undef HVMM_TRACE_ENTER
-#undef HVMM_TRACE_EXIT
-#undef HVMM_TRACE_HEX32
-#define HVMM_TRACE_ENTER()
-#define HVMM_TRACE_EXIT()
-#define HVMM_TRACE_HEX32(a, b)
-#endif
-#endif
-
 /* Cortex-A15: 25 (PPI6) */
 #define VGIC_MAINTENANCE_INTERRUPT_IRQ  25
 
@@ -592,7 +581,6 @@ hvmm_status_t vgic_init(void)
     hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
     uint32_t cpu = smp_processor_id();
 
-    HVMM_TRACE_ENTER();
     if (!cpu) {
         _vgic.base = gic_vgic_baseaddr();
         _vgic.num_lr = (_vgic.base[GICH_VTR] & GICH_VTR_LISTREGS_MASK) + 1;
@@ -608,7 +596,6 @@ hvmm_status_t vgic_init(void)
     }
 
     result = HVMM_STATUS_SUCCESS;
-    HVMM_TRACE_EXIT();
 
     return result;
 }
