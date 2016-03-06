@@ -172,7 +172,7 @@ typedef enum {
 } cachebility; //cacheability;
 
 
-pgentry set_table(uint32_t paddr, uint32_t valid);
+pgentry set_table(uint32_t paddr);
 pgentry set_entry(uint32_t paddr, uint8_t mem_attr, uint8_t ap, pgsize_t size);
 
 #endif /* __LPAED_H__ */

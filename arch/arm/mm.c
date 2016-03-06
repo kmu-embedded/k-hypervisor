@@ -8,9 +8,9 @@
 #include <lpae.h>
 #include <asm/asm.h>
 
-static pgentry hyp_l1_pgtable[L1_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
-static pgentry hyp_l2_pgtable[L1_ENTRY][L2_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
-static pgentry hyp_l3_pgtable[L1_ENTRY][L2_ENTRY][L3_ENTRY] __attribute((__aligned__(LPAE_PAGE_SIZE)));
+static unsigned int l1_pgtable;
+static unsigned int l2_pgtable;
+static unsigned int l3_pgtable;
 
 /* Set Hyp Memory Attribute Indirection Registers 0 and 1 */
 void SECTION(".init") set_hmair(void)
@@ -36,7 +36,7 @@ void SECTION(".init") set_htcr(void)
 /* Set Hyp Translation Table Base Register(HTTBR) */
 void SECTION(".init") set_httbr(void)
 {
-    write_httbr((uint32_t) hyp_l1_pgtable);
+    write_httbr((uint32_t) l1_pgtable);
 }
 
 /* Set Hyp System Control Register(HSCTLR) */
@@ -53,13 +53,38 @@ void SECTION(".init") enable_mmu(void)
 }
 
 #include <asm/asm.h>
+#include <io.h>
+void inline write64(uint64_t value, uint32_t addr)
+{
+    uint32_t upper = 0, lower = 0;
+    upper = (value & 0xFFFFFFFF00000000UL) >> 32;
+    lower = (value & 0x00000000FFFFFFFFUL);
+    writel(lower, addr);
+    writel(upper, addr + 0x4);
+}
+
+uint64_t inline read64(uint32_t addr)
+{
+    uint64_t result = 0x0UL;
+    result |= readl(addr);
+    result |= readl(addr + 0x4) << 32;
+    return result;
+}
+
+extern unsigned int __pgtable_start;
+extern unsigned int __pgtable_end;
+
 void SECTION(".init") pgtable_init()
 {
     int i, j;
+    l1_pgtable = &__pgtable_start;
+    l2_pgtable = l1_pgtable + 0x1000;
+    l3_pgtable = l2_pgtable + 0x4000;
+
     for(i = 0; i < 4; i++) {
-        hyp_l1_pgtable[i] = set_table((uint32_t) hyp_l2_pgtable[i], 0);
+        write64(set_table((uint32_t) l2_pgtable + (i * 0x1000)).raw, l1_pgtable + (i * 8));
         for(j = 0; j < 512; j++) {
-            hyp_l2_pgtable[i][j] = set_table((uint32_t) hyp_l3_pgtable[i][j], 0);
+            write64(set_table((uint32_t) l3_pgtable + (i * 0x200000) + (j * 0x1000)).raw, l2_pgtable + (i * 0x1000) + (j * 8));
         }
     }
 }
@@ -69,6 +94,7 @@ write_hyp_pgentry(uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size)
 {
     uint32_t l1_index, l2_index, l3_index;
     uint32_t i, nr_loop;
+    pgentry entry;
     nr_loop = size / SZ_4K;
 
     for (i = 0; i < nr_loop; i++) {
@@ -76,11 +102,34 @@ write_hyp_pgentry(uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size)
         l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
         l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
 
-        hyp_l1_pgtable[l1_index].table.valid = 1;
-        hyp_l2_pgtable[l1_index][l2_index].table.valid = 1;
-        hyp_l3_pgtable[l1_index][l2_index][l3_index] = set_entry(pa, mem_attr, 0, size_4kb);
+        write64(read64(l1_pgtable + (l1_index * 8)) | 0x1, l1_pgtable + (l1_index * 8));
+        write64(read64(l2_pgtable + (l1_index * 0x1000) + (l2_index * 8)), l2_pgtable + (l1_index * 0x1000) + (l2_index * 8));
+
+        entry = set_entry(pa, mem_attr, 0, size_4kb);
+        write64(entry.raw, l3_pgtable + (l1_index * 0x200000) + (l2_index * 0x1000) + (l3_index * 8));
+
         va += SZ_4K;
         pa += SZ_4K;
+    }
+}
+
+/* Caution: It may take over 30 minuites */
+void SECTION(".init") hyp_memtest(uint32_t base, uint32_t size)
+{
+    int i, j, k;
+    uint32_t result;
+    uint32_t addr;
+    uint32_t offset = 0x0;
+
+#if 0
+    for(i = 0; i < (size/4); i++) {
+        addr = base + i * 4;
+        result = readl(addr);
+    }
+#endif
+    for(i = 0; i < 512 * 512; i++) {
+        result = read64(l3_pgtable + 0x600000 + (i * 8));
+        printf("va: %x, pgentry: %x\n", base + (i * 0x1000), result);
     }
 }
 
