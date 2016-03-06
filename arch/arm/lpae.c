@@ -2,12 +2,13 @@
 #include <lpae.h>
 #include <mm.h>
 
-pgentry set_table(uint32_t paddr, uint32_t valid)
+//pgentry set_table(uint32_t paddr, uint32_t valid)
+pgentry set_table(uint32_t paddr)
 {
     pgentry entry;
 
     entry.raw = 0;
-    entry.table.valid = valid;
+    entry.table.valid = 0;
     entry.table.type = 1;
     entry.table.base = paddr >> PAGE_SHIFT;
 

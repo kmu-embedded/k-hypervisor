@@ -28,18 +28,18 @@ static void SECTION(".init") primary_core_init(void)
     // Setup some basic operations such as BSS init., cache invalidate, etc.
     cpu_init();
 
+    console_init();
+
+    libc_init();
+
     // Create page tables for each levels with 4kb unit (default page size).
     pgtable_init();
 
     // Add mapping for machine
     platform_init();
 
-    libc_init();
-
     // enable mmu and configure malloc
     mm_init();
-
-    console_init();
 
     irq_init();
 

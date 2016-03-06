@@ -13,4 +13,13 @@
 #define readw(a)     ({ uint16_t vl = getw(a); vl; })
 #define writeb(v, a) ({ uint8_t vl = v; putb(vl, a); })
 #define readb(a)     ({ uint8_t vl = getb(a); vl; })
+
+#if 0
+void inline write64(uint64_t value, uint64_t addr) {
+    uint32_t upper, lower;
+    upper = (value & 0xFFFFFFFF00000000UL) >> 32;
+    lower = (value & 0x00000000FFFFFFFFUL);
+}
+#endif
+
 #endif

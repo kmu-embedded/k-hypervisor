@@ -76,6 +76,17 @@ SECTIONS
     }
 
     . = ALIGN(0x1000);
+    PROVIDE(__pgtable_start = .);
+    .pgtable : {
+        *(.pgtable)
+        . = . + 0x1000;
+        . = . + 0x4000;
+        . = . + 0x800000;
+        . = ALIGN(4);
+    }
+    PROVIDE(__pgtable_end = .);
+
+    . = ALIGN(0x1000);
     PROVIDE(__begin_bss = .);
     .bss : {
         *(.bss)
