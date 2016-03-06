@@ -55,8 +55,6 @@ static void SECTION(".init") primary_core_init(void)
 
     timer_init(26);
 
-    basic_tests_run(PLATFORM_BASIC_TESTS);
-
     debug_print("[%s : %d] Starting...Main CPU\n", __func__, __LINE__);
 
     // TODO: Rest parts of cpu_init() will be moved per-core initialization.
