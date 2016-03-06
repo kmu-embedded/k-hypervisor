@@ -27,27 +27,8 @@ struct list_head *current[NUM_CPUS];
 struct list_head runqueue_rr[NUM_CPUS];
 struct list_head registered_list_rr[NUM_CPUS];
 
-/* TODO:(igkang) modify code to use dynamic allocation */
-#define MAX_VCPUS 8 /* TODO:(igkang) Replace this macro with project-wide macro */
-#if 0
-struct rq_entry_rr rq_entry_pool_rr[MAX_VCPUS];
-int pool_front = 0;
-int pool_rear = 0;
-#endif
-
 /* Function definitions goes here */
 /* !! Funtions called by primary functions goes here !! */
-
-#if 0
-struct rq_entry_rr *alloc_rq_entry_rr()
-{
-    if (pool_rear < MAX_VCPUS)
-        return &rq_entry_pool_rr[pool_rear++];
-
-    else
-        return (struct rq_entry_rr *) NULL;
-}
-#endif
 
 #if 0
 void print_all_entries_rr(void)
@@ -242,7 +223,7 @@ int sched_rr_do_schedule(uint32_t *delay_tick)
      *      then attach them to runqueue_rr */
     /* TODO:(igkang) write code to attach pending attach requests */
 
-    /* TODO:(igkang) improve logical code structure to make it more readable */
+    /* TODO:(igkang) improve logical code structure to make it easier to read */
     /* determine next vcpu to be run
      *  - if there is an detach-pending vcpu than detach it. */
     if (current[cpu] == NULL) { /* No vCPU is running */
