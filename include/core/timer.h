@@ -1,14 +1,21 @@
 #ifndef __TIMER_H__
 #define __TIMER_H__
 
-#include "hvmm_types.h"
-#include "stdint.h"
+#include <hvmm_types.h>
+#include <stdint.h>
 
 
 #define GUEST_TIMER 0
 #define HOST_TIMER 1
 
 typedef void(*timer_callback_t)(void *pdata, uint32_t *delay_tick);
+
+typedef enum {
+    TIMEUNIT_NSEC,
+    TIMEUNIT_USEC,
+    TIMEUNIT_MSEC,
+    TIMEUNIT_SEC
+} time_unit;
 
 struct timer_val {
     uint32_t interval_us;
@@ -42,7 +49,7 @@ hvmm_status_t timer_set(struct timer_val *timer, uint32_t host);
 hvmm_status_t timer_stop(void);
 hvmm_status_t timer_start(void);
 
-uint64_t timer_usec2count(uint64_t time_us);
-uint64_t timer_count2usec(uint64_t count);
-uint64_t timer_get_syscnt(void);
+uint64_t timer_time_to_count(uint64_t time, time_unit unit);
+uint64_t timer_count_to_time(uint64_t count, time_unit unit);
+uint64_t timer_get_systemcounter_value(void);
 #endif
