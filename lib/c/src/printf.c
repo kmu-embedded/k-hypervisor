@@ -92,6 +92,11 @@ Author: Ben Leslie <benjl@cse.unsw.edu.au>
 static DEFINE_SPINLOCK(PRINTF_LOCK);
 #endif
 
+#ifdef __CONFIG_MUTEX__
+#include <arch/armv7/mutex.h>
+static DEFINE_MUTEX(PRINT_MUTEX);
+#endif
+
 int
 printf(const char *format, ...)
 {
@@ -103,11 +108,21 @@ printf(const char *format, ...)
     smp_spin_lock(&PRINTF_LOCK, flags);
 #endif
 
+#ifdef __CONFIG_MUTEX__
+    lock_mutex(&PRINT_MUTEX);
+#endif
+
 	va_start(ap, format);
 	ret = vfprintf(stdout, format, ap);
 	va_end(ap);
+
+#ifdef __CONFIG_MUTEX__
+    unlock_mutex(&PRINT_MUTEX);
+#endif
+
 #ifdef __CONFIG_SMP__
     smp_spin_unlock(&PRINTF_LOCK, flags);
 #endif
+
 	return ret;
 }

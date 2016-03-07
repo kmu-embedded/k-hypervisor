@@ -84,6 +84,7 @@ void interrupt_guest_enable(vmid_t vmid, uint32_t irq)
     map[irq].enabled = GUEST_IRQ_ENABLE;
 }
 
+#define __UART_IRQ_DEBUG__
 static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
 {
     int i;
@@ -93,6 +94,10 @@ static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
         virq = interrupt_pirq_to_enabled_virq(i, irq);
         if (virq == VIRQ_INVALID)
             continue;
+#ifdef __UART_IRQ_DEBUG__
+        if (irq != 34)
+            printf("vmid %d: pirq %d virq %d\n", i, irq, virq);
+#endif
         virq_inject(i, virq, irq, INJECT_HW);
     }
 }
