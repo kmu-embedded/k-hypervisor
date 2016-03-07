@@ -152,6 +152,10 @@ static hvmm_status_t timer_set_absolute(uint64_t absolute_us)
     return HVMM_STATUS_UNSUPPORTED_FEATURE;
 }
 
+#ifdef __TEST_TIMER__
+static uint64_t saved_syscnt[NR_CPUS] = {0,};
+#endif
+
 /*
  * This method handles all timer IRQ.
  */
@@ -159,6 +163,12 @@ static hvmm_status_t timer_set_absolute(uint64_t absolute_us)
 static void timer_handler(int irq, void *pregs, void *pdata)
 {
     uint32_t pcpu = smp_processor_id();
+
+#ifdef __TEST_TIMER__
+    uint64_t new_syscnt = get_systemcounter_value();
+    printf("time diff: %luns\n", (uint32_t)count_to_ten_ns(new_syscnt - saved_syscnt[pcpu]) * 10u);
+    saved_syscnt[pcpu] = new_syscnt;
+#endif
 
     timer_stop();
 
