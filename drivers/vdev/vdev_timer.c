@@ -111,7 +111,7 @@ void callback_timer(void *pdata, uint32_t *delay_tick)
 static hvmm_status_t vdev_vtimer_reset(void)
 {
     int i;
-    struct timer_val timer;
+    struct timer timer;
     uint32_t cpu = smp_processor_id();
 
     if (!cpu) {
@@ -119,7 +119,7 @@ static hvmm_status_t vdev_vtimer_reset(void)
             _timer_status[i] = 1;
     }
 
-    timer.interval_us = TICKTIME_1MS;
+    timer.interval = TICKTIME_1MS;
     timer.callback = &callback_timer;
 
     timer_set(&timer, GUEST_TIMER);
