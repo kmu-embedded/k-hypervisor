@@ -8,16 +8,16 @@
 #include <core/timer.h>
 // TODO(wonseok): make it neat.
 #include "../../arch/arm/vgic.h"
-#include <core/timer.h>
-
 #include <stdio.h>
+#include <stdlib.h>
 #include <debug_print.h>
 #include <hvmm_trace.h>
 
 #include <rtsm-config.h>
 
-int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
-int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
+int _current_guest_vmid[NR_CPUS];// = {VMID_INVALID, VMID_INVALID};
+int _next_guest_vmid[NR_CPUS];// = {VMID_INVALID, };
+const struct scheduler *_policy[NR_CPUS];
 
 /* TODO:(igkang) rename sched functions
  *   - remove the word 'guest'
@@ -31,10 +31,11 @@ int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
 
 void sched_init()
 {
+    uint32_t pcpu = smp_processor_id();
     struct timer_val timer;
 
     /* 100Mhz -> 1 count == 10ns at RTSM_VE_CA15, fast model */
-    timer.interval_us = GUEST_SCHED_TICK;
+    timer.interval_us = 5 * TICKTIME_1MS; /* FIXME:(igkang) hardcoded */
     timer.callback = &do_schedule;
 
     timer_set(&timer, HOST_TIMER);
@@ -43,7 +44,13 @@ void sched_init()
     /* Allocate memory for system-wide data */
     /* Initialize data */
     // call sched_policy.init() for each policy implementation
-    sched_rr.init();
+    _current_guest_vmid[pcpu] = VMID_INVALID;
+    _next_guest_vmid[pcpu] = VMID_INVALID;
+
+    /* TODO:(igkang) choose policy based on config */
+    _policy[pcpu] = &sched_rr;
+
+    _policy[pcpu]->init();
 }
 
 /* TODO:(igkang) context switching related fucntions should be redesigned
@@ -62,14 +69,14 @@ static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
     /* _curreng_guest_vmid -> next_vmid */
 
     hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
-    uint32_t cpu = smp_processor_id();
+    uint32_t pcpu = smp_processor_id();
     vcpuid_t currentcurrent = VCPU_INVALID;
 
-    if (_current_guest_vmid[cpu] == next_vmid)
+    if (_current_guest_vmid[pcpu] == next_vmid)
         return HVMM_STATUS_IGNORED;
 
-    currentcurrent = _current_guest_vmid[cpu];
-    _current_guest_vmid[cpu] = next_vmid;
+    currentcurrent = _current_guest_vmid[pcpu];
+    _current_guest_vmid[pcpu] = next_vmid;
     do_context_switch(currentcurrent, next_vmid, regs);
 
     return result;
@@ -78,22 +85,22 @@ static hvmm_status_t perform_switch(struct core_regs *regs, vmid_t next_vmid)
 hvmm_status_t guest_perform_switch(struct core_regs *regs)
 {
     hvmm_status_t result = HVMM_STATUS_IGNORED;
-    uint32_t cpu = smp_processor_id();
+    uint32_t pcpu = smp_processor_id();
 
-    if (_current_guest_vmid[cpu] == VMID_INVALID) {
+    if (_current_guest_vmid[pcpu] == VMID_INVALID) {
         /*
          * If the scheduler is not already running, launch default
          * first guest. It occur in initial time.
          */
         debug_print("context: launching the first guest\n");
-        result = perform_switch(0, _next_guest_vmid[cpu]);
+        result = perform_switch(0, _next_guest_vmid[pcpu]);
         /* DOES NOT COME BACK HERE */
-    } else if (_next_guest_vmid[cpu] != VMID_INVALID &&
-            _current_guest_vmid[cpu] != _next_guest_vmid[cpu]) {
-        debug_print("[sched] curr:%x next:%x\n", _current_guest_vmid[cpu], _next_guest_vmid[cpu]);
+    } else if (_next_guest_vmid[pcpu] != VMID_INVALID &&
+            _current_guest_vmid[pcpu] != _next_guest_vmid[pcpu]) {
+        debug_print("[sched] curr:%x next:%x\n", _current_guest_vmid[pcpu], _next_guest_vmid[pcpu]);
         /* Only if not from Hyp */
-        result = perform_switch(regs, _next_guest_vmid[cpu]);
-        _next_guest_vmid[cpu] = VMID_INVALID;
+        result = perform_switch(regs, _next_guest_vmid[pcpu]);
+        _next_guest_vmid[pcpu] = VMID_INVALID;
     }
 
     return result;
@@ -103,12 +110,12 @@ hvmm_status_t guest_perform_switch(struct core_regs *regs)
 void guest_sched_start(void)
 {
     struct vcpu *vcpu = 0;
-    uint32_t cpu = smp_processor_id();
+    uint32_t pcpu = smp_processor_id();
 
     debug_print("[hyp] switch_to_initial_guest:\n");
     /* Select the first guest context to switch to. */
-    _current_guest_vmid[cpu] = VMID_INVALID;
-    if (cpu)
+    _current_guest_vmid[pcpu] = VMID_INVALID;
+    if (pcpu)
         vcpu = vcpu_find(2);
     else
         vcpu = vcpu_find(0);
@@ -119,31 +126,34 @@ void guest_sched_start(void)
 
 vmid_t guest_current_vmid(void)
 {
-    uint32_t cpu = smp_processor_id();
+    uint32_t pcpu = smp_processor_id();
 
     /* TODO:(igkang) let this function use API of policy implementation,
      *   instead of globally defined array */
 
-    return _current_guest_vmid[cpu];
+    return _current_guest_vmid[pcpu];
 }
 
 hvmm_status_t guest_switchto(vmid_t vmid)
 {
     hvmm_status_t result = HVMM_STATUS_IGNORED;
-    uint32_t cpu = smp_processor_id();
+    uint32_t pcpu = smp_processor_id();
 
     /* TODO:(igkang) check about below comment */
     /* valid and not current vmid, switch */
-    _next_guest_vmid[cpu] = vmid;
+    _next_guest_vmid[pcpu] = vmid;
     result = HVMM_STATUS_SUCCESS;
 
     return result;
 }
 
+#if 0
 vmid_t sched_policy_determ_next(void)
 {
+    uint32_t pcpu = smp_processor_id();
+
     /* FIXME:(igkang) Hardcoded for rr */
-    vmid_t next = sched_rr.do_schedule();
+    vmid_t next = _policy[pcpu]->do_schedule();
 
     if (next == VMID_INVALID) {
         debug_print("policy_determ result: VMID_INVALID\n");
@@ -153,6 +163,7 @@ vmid_t sched_policy_determ_next(void)
 
     return next;
 }
+#endif
 
 /**
  * Register a vCPU to a scheduler
@@ -165,10 +176,11 @@ vmid_t sched_policy_determ_next(void)
  * @param pcpuid ID of physical CPU
  * @return
  */
-int sched_vcpu_register(int vcpuid)
+int sched_vcpu_register(vcpuid_t vcpuid)
 {
+    uint32_t pcpu = smp_processor_id();
     /* call scheduler.register_vcpu() */
-    sched_rr.register_vcpu(vcpuid);
+    _policy[pcpu]->register_vcpu(vcpuid);
 
     return 0;
 }
@@ -182,10 +194,11 @@ int sched_vcpu_register(int vcpuid)
  * @param vcpuid ID of vCPU
  * @return
  */
-int sched_vcpu_unregister()
+int sched_vcpu_unregister(vcpuid_t vcpuid)
 {
+    uint32_t pcpu = smp_processor_id();
     /* call scheduler.unregister_vcpu() */
-    sched_rr.unregister_vcpu();
+    _policy[pcpu]->unregister_vcpu(vcpuid);
 
     return 0;
 }
@@ -199,10 +212,11 @@ int sched_vcpu_unregister()
  * @param vcpuid ID of vCPU
  * @return
  */
-int sched_vcpu_attach(int vcpuid)
+int sched_vcpu_attach(vcpuid_t vcpuid)
 {
+    uint32_t pcpu = smp_processor_id();
     /* call scheduler.attach_vcpu() */
-    sched_rr.attach_vcpu(vcpuid);
+    _policy[pcpu]->attach_vcpu(vcpuid);
 
     return 0;
 }
@@ -214,10 +228,11 @@ int sched_vcpu_attach(int vcpuid)
  * @param vcpuid ID of vCPU
  * @return
  */
-int sched_vcpu_detach()
+int sched_vcpu_detach(vcpuid_t vcpuid)
 {
+    uint32_t pcpu = smp_processor_id();
     /* call scheduler.detach_vcpu() */
-    sched_rr.detach_vcpu();
+    _policy[pcpu]->detach_vcpu(vcpuid);
 
     return 0;
 }
@@ -228,8 +243,9 @@ int sched_vcpu_detach()
  * @param
  * @return
  */
-void do_schedule(void *pdata)
+void do_schedule(void *pdata, uint32_t *delay_tick)
 {
+    uint32_t pcpu = smp_processor_id();
     /* TODO:(igkang) function type(return/param) should be renewed */
     int next_vcpuid;
 
@@ -237,7 +253,11 @@ void do_schedule(void *pdata)
 
     /* determine next vcpu to be run
      * by calling scheduler.do_schedule() */
-    next_vcpuid = sched_rr.do_schedule();
+    next_vcpuid = _policy[pcpu]->do_schedule(delay_tick);
+
+    /* FIXME:(igkang) hardcoded */
+    /* set timer for next scheduler work */
+    // *delay_tick = 1 * TICKTIME_1MS / 50;
 
     /* update vCPU's running time */
 

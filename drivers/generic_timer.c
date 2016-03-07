@@ -183,6 +183,22 @@ static hvmm_status_t generic_timer_set_tval(enum generic_timer_type timer_type,
     return result;
 }
 
+static hvmm_status_t generic_timer_set_cval(enum generic_timer_type timer_type,
+        uint64_t cval)
+{
+    hvmm_status_t result = HVMM_STATUS_UNSUPPORTED_FEATURE;
+
+    if (timer_type == GENERIC_TIMER_HYP) {
+        generic_timer_reg_write64(GENERIC_TIMER_REG_HYP_CVAL, cval);
+        result = HVMM_STATUS_SUCCESS;
+    } else if (timer_type == GENERIC_TIMER_VIR) {
+        generic_timer_reg_write64(GENERIC_TIMER_REG_VIRT_CVAL, cval);
+        result = HVMM_STATUS_SUCCESS;
+    }
+
+    return result;
+}
+
 /** @brief Enables the timer interrupt such as hypervisor timer event
  *  by PL2 Physical Timer Control register(VMSA : CNTHP_CTL)
  *  The Timer output signal is not masked.
@@ -247,11 +263,18 @@ static hvmm_status_t timer_enable()
     return generic_timer_enable(GENERIC_TIMER_HYP);
 }
 
-static hvmm_status_t timer_set_tval(uint64_t tval)
+static hvmm_status_t timer_set_tval(uint32_t tval)
 {
     return generic_timer_set_tval(GENERIC_TIMER_HYP, tval);
 }
 
+static hvmm_status_t timer_set_cval(uint64_t cval)
+{
+    uint64_t previous_cval; /* FIXME:(igkang) this calculation have to be moved to timer.c */
+    previous_cval = generic_timer_reg_read64(GENERIC_TIMER_REG_HYP_CVAL);
+    cval = previous_cval + cval;
+    return generic_timer_set_cval(GENERIC_TIMER_HYP, cval);
+}
 
 /** @brief dump at time.
  *  @todo have to write dump with meaningful printing.
@@ -267,6 +290,7 @@ struct timer_ops _timer_ops = {
     .enable = timer_enable,
     .disable = timer_disable,
     .set_interval = timer_set_tval,
+    .set_absolute = timer_set_cval,
     .dump = timer_dump,
 };
 
