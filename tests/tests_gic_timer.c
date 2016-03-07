@@ -101,7 +101,7 @@ void callback_test_timer(void *pdata, uint32_t *delay_tick)
 {
     vmid_t vmid;
     HVMM_TRACE_ENTER();
-    vmid = guest_current_vmid();
+    vmid = get_current_vcpuid();
     printf("Injecting IRQ 30 to Guest:%d\n", vmid);
 
     /* SW VIRQ, No PIRQ */

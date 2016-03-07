@@ -172,7 +172,7 @@ hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
      * we save interrupt in _guest_virqs due to preventing loss of
      * the interrupt.
      */
-    if (vmid == guest_current_vmid()) {
+    if (vmid == get_current_vcpuid()) {
         uint32_t slot;
         if (hw) {
             slot = vgic_inject_virq_hw(virq,
@@ -385,7 +385,7 @@ static void _vgic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
         uint32_t slot;
         uint32_t pirq;
         vmid_t vmid;
-        vmid = guest_current_vmid();
+        vmid = get_current_vcpuid();
         while (eisr) {
             slot = (31 - asm_clz(eisr));
             eisr &= ~(1 << slot);
@@ -659,7 +659,7 @@ hvmm_status_t vgic_sgi(uint32_t cpu, enum gic_sgi sgi)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     vmid_t vmid;
-    vmid = guest_current_vmid();
+    vmid = get_current_vcpuid();
 
     if(cpu != vmid)
         return result;
