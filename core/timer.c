@@ -21,6 +21,7 @@ static uint32_t __guest_tickcount[NR_CPUS];
 
 static struct timer_ops *__ops;
 
+/* TODO:(igkang) Conditional timeunit function definition based on CFG_CNTFRQ */
 /*
  * Converts time unit from/to microseconds to/from system counter count.
  */
@@ -29,9 +30,9 @@ static inline uint64_t us_to_count(uint64_t time_in_us)
     return time_in_us * COUNT_PER_USEC;
 }
 
-static inline uint64_t ns_to_count(uint64_t time_in_ns)
+static inline uint64_t ten_ns_to_count(uint64_t time_in_ten_ns)
 {
-    return time_in_ns * (COUNT_PER_USEC / 1000);
+    return time_in_ten_ns * (COUNT_PER_USEC / 100);
 }
 
 static inline uint64_t ms_to_count(uint64_t time_in_ms)
@@ -49,9 +50,9 @@ static inline uint64_t count_to_us(uint64_t count)
     return count / COUNT_PER_USEC;
 }
 
-static inline uint64_t count_to_ns(uint64_t count)
+static inline uint64_t count_to_ten_ns(uint64_t count)
 {
-    return count / (COUNT_PER_USEC / 1000);
+    return count / (COUNT_PER_USEC / 100);
 }
 
 static inline uint64_t count_to_ms(uint64_t count)
@@ -66,7 +67,7 @@ static inline uint64_t count_to_sec(uint64_t count)
 
 static inline uint64_t get_systemcounter_value(void)
 {
-    return read_cntpct();
+    return read_cntpct(); /* FIXME:(igkang) Need to be rewritten using indirect call through API */
 }
 
 uint64_t timer_time_to_count(uint64_t time, time_unit_t unit)
@@ -75,7 +76,7 @@ uint64_t timer_time_to_count(uint64_t time, time_unit_t unit)
         case TIMEUNIT_USEC:
             return us_to_count(time);
         case TIMEUNIT_NSEC:
-            return ns_to_count(time);
+            return ten_ns_to_count(time);
         case TIMEUNIT_MSEC:
             return ms_to_count(time);
         case TIMEUNIT_SEC:
@@ -91,7 +92,7 @@ uint64_t timer_count_to_time(uint64_t count, time_unit_t unit)
         case TIMEUNIT_USEC:
             return count_to_us(count);
         case TIMEUNIT_NSEC:
-            return count_to_ns(count);
+            return count_to_ten_ns(count);
         case TIMEUNIT_MSEC:
             return count_to_ms(count);
         case TIMEUNIT_SEC:
@@ -151,6 +152,10 @@ static hvmm_status_t timer_set_absolute(uint64_t absolute_us)
     return HVMM_STATUS_UNSUPPORTED_FEATURE;
 }
 
+#ifdef __TEST_TIMER__
+static uint64_t saved_syscnt[NR_CPUS] = {0,};
+#endif
+
 /*
  * This method handles all timer IRQ.
  */
@@ -158,6 +163,12 @@ static hvmm_status_t timer_set_absolute(uint64_t absolute_us)
 static void timer_handler(int irq, void *pregs, void *pdata)
 {
     uint32_t pcpu = smp_processor_id();
+
+#ifdef __TEST_TIMER__
+    uint64_t new_syscnt = get_systemcounter_value();
+    printf("time diff: %luns\n", (uint32_t)count_to_ten_ns(new_syscnt - saved_syscnt[pcpu]) * 10u);
+    saved_syscnt[pcpu] = new_syscnt;
+#endif
 
     timer_stop();
 
