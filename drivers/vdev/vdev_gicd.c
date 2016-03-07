@@ -174,7 +174,7 @@ static hvmm_status_t handler_000(uint32_t write, uint32_t offset,
     /* IGROUPR[32];       0x080 ~ 0x0FF */
     printf("%s[%d]\n", __func__, __LINE__);
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vmid_t vmid = guest_current_vmid();
+    vmid_t vmid = get_current_vcpuid();
     struct gicd_regs *regs = &_regs[vmid];
     struct gicd_regs_banked *regs_banked = &_regs_banked[vmid];
     uint32_t woffset = offset / 4;
@@ -272,7 +272,7 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write,
         enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vmid_t vmid = guest_current_vmid();
+    vmid_t vmid = get_current_vcpuid();
     struct gicd_regs *regs = &_regs[vmid];
     struct gicd_regs_banked *regs_banked = &_regs_banked[vmid];
     uint32_t *preg_s;
@@ -374,7 +374,7 @@ static hvmm_status_t handler_ISCPENDR(uint32_t write, uint32_t offset,
         uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vmid_t vmid = guest_current_vmid();
+    vmid_t vmid = get_current_vcpuid();
     struct gicd_regs *regs = &_regs[vmid];
     struct gicd_regs_banked *regs_banked = &_regs_banked[vmid];
     uint32_t *preg_s;
@@ -430,7 +430,7 @@ static hvmm_status_t handler_IPRIORITYR(uint32_t write,
     struct gicd_regs *regs;
     struct gicd_regs_banked *regs_banked;
     uint32_t *preg;
-    vmid = guest_current_vmid();
+    vmid = get_current_vcpuid();
     regs = &_regs[vmid];
     regs_banked = &_regs_banked[vmid];
     /* FIXME: Support 8/16/32bit access */
@@ -458,7 +458,7 @@ static hvmm_status_t handler_ITARGETSR(uint32_t write,
     struct gicd_regs *regs;
     struct gicd_regs_banked *regs_banked;
     uint32_t *preg;
-    vmid = guest_current_vmid();
+    vmid = get_current_vcpuid();
     regs = &_regs[vmid];
     regs_banked = &_regs_banked[vmid];
     if (((offset >> 2) - __GICD_ITARGETSR) < VGICD_BANKED_NUM_ITARGETSR)
@@ -505,7 +505,7 @@ static hvmm_status_t handler_ICFGR(uint32_t write, uint32_t offset,
     struct gicd_regs *regs;
     struct gicd_regs_banked *regs_banked;
     uint32_t *preg;
-    vmid = guest_current_vmid();
+    vmid = get_current_vcpuid();
     regs = &_regs[vmid];
     regs_banked = &_regs_banked[vmid];
     /* FIXME: Support 8/16/32bit access */
@@ -552,7 +552,7 @@ static hvmm_status_t handler_F00(uint32_t write, uint32_t offset,
     uint32_t *preg_s;
     uint32_t *preg_c;
 
-    vmid = guest_current_vmid();
+    vmid = get_current_vcpuid();
 
     if(((offset >> 2) == __GICD_CPENDSGIR) ||
        ((offset >> 2) == __GICD_SPENDSGIR)) {

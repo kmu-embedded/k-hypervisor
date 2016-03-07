@@ -26,7 +26,7 @@ static hvmm_status_t vdev_sample_access_handler(uint32_t write, uint32_t offset,
             write ? "write" : "read", offset,
             write ? *pvalue : (uint32_t) pvalue);
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    unsigned int vmid = guest_current_vmid();
+    unsigned int vmid = get_current_vcpuid();
     if (!write) {
         /* READ */
         switch (offset) {

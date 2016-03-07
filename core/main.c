@@ -82,7 +82,7 @@ static void SECTION(".init") primary_core_init(void)
      *       do_schedule(vmid) or do_schedule(vcpu_id)
      */
     // TODO: make a print_banner().
-    guest_sched_start();
+    sched_start();
 
     /* The code flow must not reach here */
 error:
