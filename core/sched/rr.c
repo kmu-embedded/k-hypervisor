@@ -28,39 +28,6 @@ struct list_head runqueue_rr[NUM_CPUS];
 struct list_head registered_list_rr[NUM_CPUS];
 
 /* Function definitions goes here */
-/* !! Funtions called by primary functions goes here !! */
-
-#if 0
-void print_all_entries_rr(void)
-{
-    struct rq_entry_rr *rq_entry;
-    int cur_vcpuid = -1;
-
-    /* print current running vCPU */
-    if (current != NULL) {
-        rq_entry = list_entry(current, struct rq_entry_rr, head);
-        cur_vcpuid = rq_entry->vcpuid;
-    }
-    debug_print("RR CURRENT: %d\n", cur_vcpuid);
-
-    /* print registered vCPU list */
-    debug_print("RR REG_LIST Entries:");
-    list_for_each_entry(rq_entry, &registered_list_rr, registered_list_head) {
-        debug_print(" %d", rq_entry->vcpuid);
-    }
-    debug_print("\n");
-
-    /* print attached vCPU list */
-    debug_print("RR RUNQUEUE Entries:");
-    list_for_each_entry(rq_entry, &runqueue_rr, head) {
-        debug_print(" %d", rq_entry->vcpuid);
-    }
-    debug_print("\n");
-}
-#endif
-
-
-/* !! Primary function impmentation goes here !! */
 
 /**
  * Scheduler related data initialization
@@ -253,7 +220,7 @@ int sched_rr_do_schedule(uint32_t *delay_tick)
         next_entry = list_entry(current[cpu], struct rq_entry_rr, head);
 
         /* FIXME:(igkang) hardcoded */
-        *delay_tick = next_entry->tick_reset_val * GUEST_SCHED_TICK;
+        *delay_tick = next_entry->tick_reset_val * TICKTIME_1MS;
     }
 
     /* vcpu of current entry will be the next vcpu */

@@ -105,7 +105,7 @@ void callback_timer(void *pdata, uint32_t *delay_tick)
         virq_inject(vmid, VTIMER_IRQ, 0, INJECT_SW);
 
     /* FIXME:(igkang) hardcoded */
-    *delay_tick = 1 * GUEST_SCHED_TICK / 50;
+    *delay_tick = 1 * TICKTIME_1MS / 50;
 }
 
 static hvmm_status_t vdev_vtimer_reset(void)
@@ -119,7 +119,7 @@ static hvmm_status_t vdev_vtimer_reset(void)
             _timer_status[i] = 1;
     }
 
-    timer.interval_us = GUEST_SCHED_TICK;
+    timer.interval_us = TICKTIME_1MS;
     timer.callback = &callback_timer;
 
     timer_set(&timer, GUEST_TIMER);

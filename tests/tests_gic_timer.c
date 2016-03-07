@@ -108,7 +108,7 @@ void callback_test_timer(void *pdata, uint32_t *delay_tick)
     virq_inject(vmid, 30, 0, INJECT_SW);
 
     /* FIXME:(igkang) hardcoded */
-    *delay_tick = 1 * GUEST_SCHED_TICK / 50;
+    *delay_tick = 1 * TICKTIME_1MS / 50;
 
     HVMM_TRACE_EXIT();
 }
@@ -125,7 +125,7 @@ hvmm_status_t hvmm_tests_vgic(void)
      *      -> This should handle completion of deactivation and further
      *         injection if there is any pending virtual IRQ
      */
-    timer.interval_us = GUEST_SCHED_TICK;
+    timer.interval_us = TICKTIME_1MS;
     timer.callback = &callback_test_timer;
     timer_set(&timer, HOST_TIMER);
 
