@@ -36,4 +36,5 @@ OBJCOPY		= $(CROSS_COMPILE)objcopy
 
 CPPFLAGS	= $(CONFIG_FLAG) -ffreestanding -nostdlib -nodefaultlibs -nostartfiles $(DEBUG_FLAG)
 CPPFLAGS	+= -Wall
+CPPFLAGS	+= -D__CONFIG_MUTEX__
 #CPPFLAGS	+= -D__CONFIG_SMP__

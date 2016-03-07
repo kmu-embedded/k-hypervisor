@@ -9,6 +9,7 @@
 #include "armv7/generic_timer.h"
 #include "armv7/arm_inline.h"
 #include "armv7/smp.h"
+#include "armv7/mutex.h"
 
 // FIXME: Move get_periphbase() to proper location.
 static inline unsigned long long get_periphbase(void)

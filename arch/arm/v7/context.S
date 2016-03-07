@@ -11,4 +11,4 @@ BEGIN_PROC(__set_vcpu_context_first_time)
     clrex
     eret
     @ TODO(wonseok): make macro for asm fuction.
-.type __set_vcpu_context_first_time, %function
+//.type __set_vcpu_context_first_time, %function

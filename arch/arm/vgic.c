@@ -157,10 +157,13 @@ void vgic_slotvirq_clear(vmid_t vmid, uint32_t slot)
     vgic_slotvirq_set(vmid, slot, VIRQ_INVALID);
 }
 
+// Test mutex
+static DEFINE_MUTEX(VIRQ_MUTEX);
 hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
                 uint32_t pirq, uint8_t hw)
 {
     hvmm_status_t result = HVMM_STATUS_BUSY;
+    lock_mutex(&VIRQ_MUTEX);
     int i;
     struct virq_entry *q = &_guest_virqs[vmid][0];
 
@@ -212,6 +215,7 @@ hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
             gic_set_sgi(1<<vmid, GIC_SGI_SLOT_CHECK);
         }
     }
+    unlock_mutex(&VIRQ_MUTEX);
     return result;
 }
 hvmm_status_t vgic_flush_virqs(vmid_t vmid)

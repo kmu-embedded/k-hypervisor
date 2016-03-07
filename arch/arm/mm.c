@@ -78,6 +78,7 @@ void SECTION(".init") pgtable_init()
 {
     int i, j;
     uint32_t l1_offset, l2_offset, l3_offset;
+
     l1_pgtable = &__pgtable_start;
     l2_pgtable = l1_pgtable + 0x1000;
     l3_pgtable = l2_pgtable + 0x4000;
