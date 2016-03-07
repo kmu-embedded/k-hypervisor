@@ -23,9 +23,9 @@ struct rq_entry_rr {
     state_rr state;
 };
 
-struct list_head *current[NUM_CPUS];
-struct list_head runqueue_rr[NUM_CPUS];
-struct list_head registered_list_rr[NUM_CPUS];
+struct list_head *current[NR_CPUS];
+struct list_head runqueue_rr[NR_CPUS];
+struct list_head registered_list_rr[NR_CPUS];
 
 /* Function definitions goes here */
 

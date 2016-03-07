@@ -18,7 +18,7 @@
     (pirq >= VIRQ_MIN_VALID_PIRQ && pirq < VIRQ_NUM_MAX_PIRQS)
 
 /**< IRQ handler */
-static interrupt_handler_t _host_ppi_handlers[NUM_CPUS][MAX_PPI_IRQS];
+static interrupt_handler_t _host_ppi_handlers[NR_CPUS][MAX_PPI_IRQS];
 static interrupt_handler_t _host_spi_handlers[MAX_IRQS];
 
 const int32_t interrupt_check_guest_irq(uint32_t pirq)
