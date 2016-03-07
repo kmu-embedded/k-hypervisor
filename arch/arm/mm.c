@@ -57,7 +57,7 @@ void SECTION(".init") enable_mmu(void)
 void inline write64(uint64_t value, uint32_t addr)
 {
     uint32_t upper = 0, lower = 0;
-    upper = (value & 0xFFFFFFFF00000000UL) >> 32;
+    upper = (value >> 32) & 0xFFFFFFFF;
     lower = (value & 0x00000000FFFFFFFFUL);
     writel(lower, addr);
     writel(upper, addr + 0x4);
@@ -77,14 +77,20 @@ extern unsigned int __pgtable_end;
 void SECTION(".init") pgtable_init()
 {
     int i, j;
+    uint32_t l1_offset, l2_offset, l3_offset;
     l1_pgtable = &__pgtable_start;
     l2_pgtable = l1_pgtable + 0x1000;
     l3_pgtable = l2_pgtable + 0x4000;
 
     for(i = 0; i < 4; i++) {
-        write64(set_table((uint32_t) l2_pgtable + (i * 0x1000)).raw, l1_pgtable + (i * 8));
+        l1_offset = i << 3;
+        l2_offset = (i << 9) << 3;
+        write64(set_table(l2_pgtable + l2_offset).raw, l1_pgtable + l1_offset);
+
         for(j = 0; j < 512; j++) {
-            write64(set_table((uint32_t) l3_pgtable + (i * 0x200000) + (j * 0x1000)).raw, l2_pgtable + (i * 0x1000) + (j * 8));
+            l3_offset = ((i << 18) + j << 9) << 3;
+            write64(set_table(l3_pgtable + l3_offset).raw, l2_pgtable + l2_offset);
+
         }
     }
 }
@@ -93,44 +99,32 @@ void SECTION(".init")
 write_hyp_pgentry(uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size)
 {
     uint32_t l1_index, l2_index, l3_index;
-    uint32_t i, nr_loop;
-    pgentry entry;
-    nr_loop = size / SZ_4K;
+    int i;
 
-    for (i = 0; i < nr_loop; i++) {
+    for (i = 0; i < (size/SZ_4K); i++) {
         l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
         l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
         l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
 
-        write64(read64(l1_pgtable + (l1_index * 8)) | 0x1, l1_pgtable + (l1_index * 8));
-        write64(read64(l2_pgtable + (l1_index * 0x1000) + (l2_index * 8)), l2_pgtable + (l1_index * 0x1000) + (l2_index * 8));
+        // set l1 entry to valid
+        write64(read64(l1_pgtable + (l1_index << 3)) | 0x1, l1_pgtable + (l1_index << 3));
 
-        entry = set_entry(pa, mem_attr, 0, size_4kb);
-        write64(entry.raw, l3_pgtable + (l1_index * 0x200000) + (l2_index * 0x1000) + (l3_index * 8));
+        // set l2 entry to valid
+        write64(read64(l2_pgtable + (((l1_index << 9) + l2_index) << 3 )) | 0x1,
+                l2_pgtable + (((l1_index << 9) + l2_index) << 3));
+
+        // write page table
+        write64(set_entry(pa, mem_attr, 0, size_4kb).raw,
+                l3_pgtable + (((l1_index << 18) + (l2_index << 9) + l3_index) << 3));
 
         va += SZ_4K;
         pa += SZ_4K;
     }
 }
 
-/* Caution: It may take over 30 minuites */
 void SECTION(".init") hyp_memtest(uint32_t base, uint32_t size)
 {
-    int i, j, k;
-    uint32_t result;
-    uint32_t addr;
-    uint32_t offset = 0x0;
-
-#if 0
-    for(i = 0; i < (size/4); i++) {
-        addr = base + i * 4;
-        result = readl(addr);
-    }
-#endif
-    for(i = 0; i < 512 * 512; i++) {
-        result = read64(l3_pgtable + 0x600000 + (i * 8));
-        printf("va: %x, pgentry: %x\n", base + (i * 0x1000), result);
-    }
+    // TODO(casionwoo): implement pagetable walk by manually
 }
 
 void write_pgentry(void *pgtable_base, struct memdesc_t *mem_desc, bool is_guest)
