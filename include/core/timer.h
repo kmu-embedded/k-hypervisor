@@ -15,10 +15,11 @@ typedef enum {
     TIMEUNIT_USEC,
     TIMEUNIT_MSEC,
     TIMEUNIT_SEC
-} time_unit;
+} time_unit_t;
 
-struct timer_val {
-    uint32_t interval_us;
+struct timer {
+    uint32_t interval;
+    time_unit_t time_unit;
     timer_callback_t callback;
 };
 
@@ -45,11 +46,11 @@ extern struct timer_module _timer_module;
  * prior to calls to other functions of Timer module.
  */
 hvmm_status_t timer_init(uint32_t irq);
-hvmm_status_t timer_set(struct timer_val *timer, uint32_t host);
+hvmm_status_t timer_set(struct timer *timer, uint32_t host);
 hvmm_status_t timer_stop(void);
 hvmm_status_t timer_start(void);
 
-uint64_t timer_time_to_count(uint64_t time, time_unit unit);
-uint64_t timer_count_to_time(uint64_t count, time_unit unit);
+uint64_t timer_time_to_count(uint64_t time, time_unit_t unit);
+uint64_t timer_count_to_time(uint64_t count, time_unit_t unit);
 uint64_t timer_get_systemcounter_value(void);
 #endif

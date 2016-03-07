@@ -2,7 +2,7 @@
 #define __HVMM_TYPES_H__
 
 #define VMID_INVALID    0xFF
-#define VCPU_INVALID    0xFF
+#define VCPUID_INVALID    0xFF
 
 #define PIRQ_INVALID    0xFFFFFFFF
 #define VIRQ_INVALID    PIRQ_INVALID

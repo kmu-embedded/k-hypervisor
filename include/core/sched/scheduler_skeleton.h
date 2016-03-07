@@ -4,8 +4,9 @@
 #include <stdint.h>
 #include <core/vm/vcpu.h>
 
+typedef uint32_t sched_id_t;
 struct scheduler {
-    unsigned int sched_id;
+    sched_id_t  id;
 
     int (*init)(void);
     int (*register_vcpu)(vcpuid_t);
