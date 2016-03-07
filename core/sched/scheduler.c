@@ -176,7 +176,7 @@ vmid_t sched_policy_determ_next(void)
  * @param pcpuid ID of physical CPU
  * @return
  */
-int sched_vcpu_register(int vcpuid)
+int sched_vcpu_register(vcpuid_t vcpuid)
 {
     uint32_t pcpu = smp_processor_id();
     /* call scheduler.register_vcpu() */
@@ -194,11 +194,11 @@ int sched_vcpu_register(int vcpuid)
  * @param vcpuid ID of vCPU
  * @return
  */
-int sched_vcpu_unregister()
+int sched_vcpu_unregister(vcpuid_t vcpuid)
 {
     uint32_t pcpu = smp_processor_id();
     /* call scheduler.unregister_vcpu() */
-    _policy[pcpu]->unregister_vcpu();
+    _policy[pcpu]->unregister_vcpu(vcpuid);
 
     return 0;
 }
@@ -212,7 +212,7 @@ int sched_vcpu_unregister()
  * @param vcpuid ID of vCPU
  * @return
  */
-int sched_vcpu_attach(int vcpuid)
+int sched_vcpu_attach(vcpuid_t vcpuid)
 {
     uint32_t pcpu = smp_processor_id();
     /* call scheduler.attach_vcpu() */
@@ -228,11 +228,11 @@ int sched_vcpu_attach(int vcpuid)
  * @param vcpuid ID of vCPU
  * @return
  */
-int sched_vcpu_detach()
+int sched_vcpu_detach(vcpuid_t vcpuid)
 {
     uint32_t pcpu = smp_processor_id();
     /* call scheduler.detach_vcpu() */
-    _policy[pcpu]->detach_vcpu();
+    _policy[pcpu]->detach_vcpu(vcpuid);
 
     return 0;
 }

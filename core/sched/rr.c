@@ -18,8 +18,8 @@ struct rq_entry_rr {
     struct list_head registered_list_head;
 
     /* TODO:(igkang) set field types to abstract types */
-    int vcpuid; //vcpuid_t
-    unsigned int tick_reset_val; //tick_t
+    vcpuid_t vcpuid;
+    uint32_t tick_reset_val; //tick_t
     state_rr state;
 };
 
@@ -60,7 +60,7 @@ int sched_rr_init()
  * @param vcpu A vCPU
  * @return
  */
-int sched_rr_vcpu_register(int vcpuid)
+int sched_rr_vcpu_register(vcpuid_t vcpuid)
 {
     uint32_t cpu = smp_processor_id();
     struct rq_entry_rr *new_entry;
@@ -97,7 +97,7 @@ int sched_rr_vcpu_register(int vcpuid)
  * @param vcpu A vCPU
  * @return
  */
-int sched_rr_vcpu_unregister()
+int sched_rr_vcpu_unregister(vcpuid_t vcpuid)
 {
     uint32_t cpu = smp_processor_id();
     /* Check if vcpu is registered */
@@ -124,7 +124,7 @@ int sched_rr_vcpu_unregister()
  * @param
  * @return
  */
-int sched_rr_vcpu_attach(int vcpuid)
+int sched_rr_vcpu_attach(vcpuid_t vcpuid)
 {
     uint32_t cpu = smp_processor_id();
     struct rq_entry_rr *entry = NULL;
@@ -160,7 +160,7 @@ int sched_rr_vcpu_attach(int vcpuid)
  * @param
  * @return
  */
-int sched_rr_vcpu_detach()
+int sched_rr_vcpu_detach(vcpuid_t vcpuid)
 {
     uint32_t cpu = smp_processor_id();
     /* Check if vcpu is attached */

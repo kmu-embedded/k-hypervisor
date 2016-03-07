@@ -1,10 +1,9 @@
 #ifndef __SCHEDULER_H__
 #define __SCHEDULER_H__
 
-#include "vm/vcpu.h"
-
 #include <hvmm_types.h>
-#include "vm/vcpu_regs.h"
+#include <core/vm/vcpu.h>
+#include <core/vm/vcpu_regs.h>
 
 //#include <board/rtsm-config.h>
 
@@ -19,9 +18,9 @@
 #define GUEST_VERBOSE_LEVEL_7   0x80
 
 void sched_init();
-int sched_vcpu_register(int vcpuid);
+int sched_vcpu_register(vcpuid_t vcpuid);
 int sched_vcpu_unregister();
-int sched_vcpu_attach(int vcpuid);
+int sched_vcpu_attach(vcpuid_t vcpuid);
 int sched_vcpu_detach();
 void do_schedule(void *pdata, uint32_t *delay_tick);
 
