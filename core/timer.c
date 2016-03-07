@@ -14,10 +14,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
-static timer_callback_t _host_callback[NUM_CPUS];
-static timer_callback_t _guest_callback[NUM_CPUS];
-static uint32_t _host_tickcount[NUM_CPUS];
-static uint32_t _guest_tickcount[NUM_CPUS];
+static timer_callback_t _host_callback[NR_CPUS];
+static timer_callback_t _guest_callback[NR_CPUS];
+static uint32_t _host_tickcount[NR_CPUS];
+static uint32_t _guest_tickcount[NR_CPUS];
 
 static struct timer_ops *_ops;
 

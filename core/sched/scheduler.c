@@ -15,9 +15,9 @@
 
 #include <rtsm-config.h>
 
-int _current_guest_vmid[NUM_CPUS];// = {VMID_INVALID, VMID_INVALID};
-int _next_guest_vmid[NUM_CPUS];// = {VMID_INVALID, };
-const struct scheduler *_policy[NUM_CPUS];
+int _current_guest_vmid[NR_CPUS];// = {VMID_INVALID, VMID_INVALID};
+int _next_guest_vmid[NR_CPUS];// = {VMID_INVALID, };
+const struct scheduler *_policy[NR_CPUS];
 
 /* TODO:(igkang) rename sched functions
  *   - remove the word 'guest'
