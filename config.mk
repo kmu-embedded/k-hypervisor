@@ -38,3 +38,4 @@ CPPFLAGS	= $(CONFIG_FLAG) -ffreestanding -nostdlib -nodefaultlibs -nostartfiles 
 CPPFLAGS	+= -Wall
 CPPFLAGS	+= -D__CONFIG_MUTEX__
 #CPPFLAGS	+= -D__CONFIG_SMP__
+#CPPFLAGS	+= -D__TEST_TIMER__
