@@ -5,28 +5,105 @@
  * Responsible: Inkyu Han
  */
 
-#include <stdio.h>
-#include <debug_print.h>
-#include <stdint.h>
 #include <rtsm-config.h>
-
 #include <hvmm_trace.h>
-
-#include <core/timer.h>
-#include <core/interrupt.h>
 #include <arch/armv7/smp.h>
+#include <core/interrupt.h>
+#include <debug_print.h>
+#include <core/timer.h>
+#include <stdio.h>
+#include <stdint.h>
 
-static timer_callback_t _host_callback[2];
-static timer_callback_t _guest_callback[2];
+static timer_callback_t _host_callback[NR_CPUS];
+static timer_callback_t _guest_callback[NR_CPUS];
+static uint32_t _host_tickcount[NR_CPUS];
+static uint32_t _guest_tickcount[NR_CPUS];
 
 static struct timer_ops *_ops;
 
 /*
- * Converts from microseconds to system counter.
+ * Converts time unit from/to microseconds to/from system counter count.
  */
-static inline uint64_t timer_t2c(uint64_t time_us)
+static inline uint64_t us_to_count(uint64_t time_us)
 {
     return time_us * COUNT_PER_USEC;
+}
+
+static inline uint64_t ns_to_count(uint64_t time_ns)
+{
+    return time_ns * (COUNT_PER_USEC / 1000);
+}
+
+static inline uint64_t ms_to_count(uint64_t time_ms)
+{
+    return time_ms * (COUNT_PER_USEC * 1000);
+}
+
+static inline uint64_t sec_to_count(uint64_t time_sec)
+{
+    return time_sec * (COUNT_PER_USEC * 1000 * 1000);
+}
+
+static inline uint64_t count_to_us(uint64_t count)
+{
+    return count / COUNT_PER_USEC;
+}
+
+static inline uint64_t count_to_ns(uint64_t count)
+{
+    return count / (COUNT_PER_USEC / 1000);
+}
+
+static inline uint64_t count_to_ms(uint64_t count)
+{
+    return count / (COUNT_PER_USEC * 1000);
+}
+
+static inline uint64_t count_to_sec(uint64_t count)
+{
+    return count / (COUNT_PER_USEC * 1000 * 1000);
+}
+
+static inline uint64_t get_systemcounter_value(void)
+{
+    return read_cntpct();
+}
+
+uint64_t timer_time_to_count(uint64_t time, time_unit unit)
+{
+    switch (unit) {
+        case TIMEUNIT_USEC:
+            return us_to_count(time);
+        case TIMEUNIT_NSEC:
+            return ns_to_count(time);
+        case TIMEUNIT_MSEC:
+            return ms_to_count(time);
+        case TIMEUNIT_SEC:
+            return sec_to_count(time);
+        default:
+            return 0; /* error */
+    }
+}
+
+uint64_t timer_count_to_time(uint64_t count, time_unit unit)
+{
+    switch (unit) {
+        case TIMEUNIT_USEC:
+            return count_to_us(count);
+        case TIMEUNIT_NSEC:
+            return count_to_ns(count);
+        case TIMEUNIT_MSEC:
+            return count_to_ms(count);
+        case TIMEUNIT_SEC:
+            return count_to_sec(count);
+        default:
+            return 0; /* error */
+    }
+}
+
+uint64_t timer_get_systemcounter_value(void)
+{
+    return get_systemcounter_value();
 }
 
 /*
@@ -60,7 +137,16 @@ static hvmm_status_t timer_set_interval(uint32_t interval_us)
 {
     /* timer_set_tval() */
     if (_ops->set_interval)
-        return _ops->set_interval(timer_t2c(interval_us));
+        return _ops->set_interval((uint32_t)us_to_count(interval_us));
+
+    return HVMM_STATUS_UNSUPPORTED_FEATURE;
+}
+
+static hvmm_status_t timer_set_absolute(uint64_t absolute_us)
+{
+    /* timer_set_tval() */
+    if (_ops->set_interval)
+        return _ops->set_absolute(us_to_count(absolute_us));
 
     return HVMM_STATUS_UNSUPPORTED_FEATURE;
 }
@@ -70,14 +156,19 @@ static hvmm_status_t timer_set_interval(uint32_t interval_us)
  */
 static void timer_handler(int irq, void *pregs, void *pdata)
 {
-    uint32_t cpu = smp_processor_id();
+    uint32_t pcpu = smp_processor_id();
 
     timer_stop();
-    if (_host_callback[cpu])
-        _host_callback[cpu](pregs);
-    if (_guest_callback[cpu])
-        _guest_callback[cpu](pregs);
-    timer_set_interval(GUEST_SCHED_TICK);
+    if (_host_callback[pcpu] && --_host_tickcount[pcpu] == 0) {
+        _host_callback[pcpu](pregs, &_host_tickcount[pcpu]);
+        _host_tickcount[pcpu] /= TICK_PERIOD_US;
+    }
+    if (_guest_callback[pcpu] && --_guest_tickcount[pcpu] == 0) {
+        _guest_callback[pcpu](pregs, &_guest_tickcount[pcpu]);
+        _guest_tickcount[pcpu] /= TICK_PERIOD_US;
+    }
+
+    timer_set_absolute(TICK_PERIOD_US);
     timer_start();
 }
 
@@ -88,20 +179,24 @@ static void timer_requset_irq(uint32_t irq)
     gic_enable_irq(irq);
 }
 
-static hvmm_status_t timer_host_set_callback(timer_callback_t func)
+static hvmm_status_t timer_host_set_callback(timer_callback_t func, uint32_t interval_us)
 {
-    uint32_t cpu = smp_processor_id();
+    uint32_t pcpu = smp_processor_id();
 
-    _host_callback[cpu] = func;
+    _host_callback[pcpu] = func;
+    _host_tickcount[pcpu] = interval_us / TICK_PERIOD_US;
+    /* FIXME:(igkang) hardcoded */
 
     return HVMM_STATUS_SUCCESS;
 }
 
-static hvmm_status_t timer_guest_set_callback(timer_callback_t func)
+static hvmm_status_t timer_guest_set_callback(timer_callback_t func, uint32_t interval_us)
 {
-    uint32_t cpu = smp_processor_id();
+    uint32_t pcpu = smp_processor_id();
 
-    _guest_callback[cpu] = func;
+    _guest_callback[pcpu] = func;
+    _guest_tickcount[pcpu] = interval_us / TICK_PERIOD_US;
+    /* FIXME:(igkang) hardcoded */
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -110,11 +205,13 @@ hvmm_status_t timer_set(struct timer_val *timer, uint32_t host)
 {
     if (host) {
         timer_stop();
-        timer_host_set_callback(timer->callback);
-        timer_set_interval(timer->interval_us);
+        timer_host_set_callback(timer->callback, timer->interval_us);
+        timer_set_interval(TICK_PERIOD_US);
         timer_start();
     } else
-        timer_guest_set_callback(timer->callback);
+        timer_guest_set_callback(timer->callback, timer->interval_us);
+
+    /* TODO:(igkang) add code to handle guest_callback count (for vdev)  */
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -126,26 +223,8 @@ hvmm_status_t timer_init(uint32_t irq)
     if (_ops->init)
         _ops->init();
 
+    /* TODO: (igkang) timer related call - check return value */
     timer_requset_irq(irq);
 
     return HVMM_STATUS_SUCCESS;
-}
-uint64_t savecnt;
-
-void set_timer_cnt(void)
-{
-    savecnt = read_cntpct();
-}
-
-uint64_t get_timer_savecnt(void)
-{
-    return savecnt;
-}
-uint64_t get_timer_curcnt(void)
-{
-    return read_cntpct();
-}
-uint32_t get_timer_interval_us(uint64_t after, uint64_t before)
-{
-    return (uint32_t)(after - before) / COUNT_PER_USEC;
 }

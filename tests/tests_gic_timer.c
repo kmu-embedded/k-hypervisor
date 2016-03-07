@@ -46,7 +46,7 @@ void interrupt_nsptimer(int irq, void *pregs, void *pdata)
 //        vcpu_dump_regs(regs);
 //        vcpu_regs_dump(GUEST_VERBOSE_ALL, regs);
 //        print_core_regs(regs);
-        guest_switchto(sched_policy_determ_next());
+        /* FIXME:(igkang) sched */ // guest_switchto(sched_policy_determ_next());
     }
     HVMM_TRACE_EXIT();
     printf("=======================================\n\r");
@@ -97,7 +97,7 @@ hvmm_status_t hvmm_tests_gic_timer(void)
     return HVMM_STATUS_SUCCESS;
 }
 
-void callback_test_timer(void *pdata)
+void callback_test_timer(void *pdata, uint32_t *delay_tick)
 {
     vmid_t vmid;
     HVMM_TRACE_ENTER();
@@ -106,6 +106,10 @@ void callback_test_timer(void *pdata)
 
     /* SW VIRQ, No PIRQ */
     virq_inject(vmid, 30, 0, INJECT_SW);
+
+    /* FIXME:(igkang) hardcoded */
+    *delay_tick = 1 * TICKTIME_1MS / 50;
+
     HVMM_TRACE_EXIT();
 }
 
@@ -121,7 +125,7 @@ hvmm_status_t hvmm_tests_vgic(void)
      *      -> This should handle completion of deactivation and further
      *         injection if there is any pending virtual IRQ
      */
-    timer.interval_us = GUEST_SCHED_TICK;
+    timer.interval_us = TICKTIME_1MS;
     timer.callback = &callback_test_timer;
     timer_set(&timer, HOST_TIMER);
 
