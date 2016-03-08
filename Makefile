@@ -58,8 +58,9 @@ $(OUTPUT): $(MACHINE).lds $(OBJS)
 		$(BUILD)/$(ARCH)/$(VERSION)/*.o	\
 		$(BUILD)/$(CORE)/*.o	\
 		$(BUILD)/$(CORE)/sched/*.o	\
-		$(BUILD)/$(CORE)/vdev/*.o	\
+		$(BUILD)/$(CORE)/vm/*.o	\
 		$(BUILD)/$(DRV)/*.o		\
+		$(BUILD)/$(DRV)/vdev/*.o	\
 		$(BUILD)/$(LIB)/c/src/*.o	\
 		$(BUILD)/$(LIB)/c/src/arch-arm/*.o	\
 		$(BUILD)/$(LIB)/c/src/sys-baremetal/arch-arm/*.o	\
@@ -79,6 +80,7 @@ force: ;
 Makefile: ;
 
 clean:
-	rm -rf $(ROOT)/$(BUILD)
+	find . -name '*.o' -exec rm {} \;
+	rm *.axf *.lds *.map
 
 .PHONY: all clean config.mk

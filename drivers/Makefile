@@ -1,23 +1,18 @@
 include  ../config.mk
 
 ROOT_PATH	= ..
-OBJS_DIR	= $(ROOT_PATH)/$(BUILD)/drivers
+#OBJS_DIR	= $(ROOT_PATH)/$(BUILD)/drivers
 
-CC		= $(CROSS_COMPILE)gcc
-
-CPPFLAGS	= $(CONFIG_FLAG) $(INCLUDES) -ffreestanding -nostdlib -nodefaultlibs -nostartfiles $(DEBUG_FLAG)
-CPPFLAGS	+= -Wall
-
-C_FILES		= $(wildcard $(CURDIR)/*.c)
-OBJS		= $(C_FILES:$(CURDIR)/%.c=$(OBJS_DIR)/%.o)
+SRCS		= $(wildcard *.c)
+OBJS		= $(SRCS:%.c=%.o)
 
 all: $(OBJS)
 
-$(OBJS_DIR)/%.o: $(CURDIR)/%.c
-	@`[ -d $(OBJS_DIR) ] || $(MKDIR) -p $(OBJS_DIR)`
-	$(CC) $(CPPFLAGS) -c $(INCLUDES) $< -o $@
+%.o: %.c
+	#@`[ -d $(OBJS_DIR) ] || $(MKDIR) -p $(OBJS_DIR)`
+	$(CC) $(CPPFLAGS) $(INCLUDES) -c $< -o $@
 
-clean:
-	rm -f $(OBJS_DIR)
+#clean:
+#	rm -f $(OBJS_DIR)
 
-.PHONY: clean
+#.PHONY: clean
