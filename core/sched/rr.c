@@ -203,16 +203,14 @@ int sched_rr_do_schedule(uint32_t *delay_tick)
     } else { /* There's a vCPU currently running */
         struct rq_entry_rr *current_entry = NULL;
 
-        /* check & decrease tick. if tick was <= 0 let's switch */
-        current_entry = list_entry(current[cpu], struct rq_entry_rr, head);
-
-        /* tick's over */
-        is_switching_needed = true;
-
         /* put current entry back to runqueue_rr */
+        current_entry = list_entry(current[cpu], struct rq_entry_rr, head);
         current_entry->state = WAITING;
         list_add_tail(current[cpu], &runqueue_rr[cpu]);
+
+        /* let's switch as tick is over */
         current[cpu] = NULL;
+        is_switching_needed = true;
     }
 
     /* update scheduling-related data (like tick) */
@@ -223,7 +221,7 @@ int sched_rr_do_schedule(uint32_t *delay_tick)
 
         next_entry = list_entry(current[cpu], struct rq_entry_rr, head);
 
-        /* FIXME:(igkang) hardcoded */
+        /* FIXME:(igkang) hardcoded expression */
         *delay_tick = next_entry->tick_reset_val * TICKTIME_1MS;
     }
 

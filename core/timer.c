@@ -220,7 +220,7 @@ hvmm_status_t timer_set(struct timer *timer, uint32_t host)
     if (host) {
         timer_stop();
         timer__host_set_callback(timer->callback, timer->interval);
-        timer_set_interval(TICK_PERIOD_US);
+        timer_set_absolute(TICK_PERIOD_US);
         timer_start();
     } else
         timer__guest_set_callback(timer->callback, timer->interval);

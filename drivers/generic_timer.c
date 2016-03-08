@@ -268,11 +268,18 @@ static hvmm_status_t timer_set_tval(uint32_t tval)
     return generic_timer_set_tval(GENERIC_TIMER_HYP, tval);
 }
 
+uint32_t have_set_cval_ever_called[NR_CPUS] = {0};
 static hvmm_status_t timer_set_cval(uint64_t cval)
 {
     uint64_t previous_cval; /* FIXME:(igkang) this calculation have to be moved to timer.c */
-    previous_cval = generic_timer_reg_read64(GENERIC_TIMER_REG_HYP_CVAL);
-    cval = previous_cval + cval;
+
+    if (have_set_cval_ever_called[NR_CPUS]) {
+        previous_cval = generic_timer_reg_read64(GENERIC_TIMER_REG_HYP_CVAL);
+        cval = previous_cval + cval;
+    } else { /* when if this is the very first call of timer_set_cval */
+        previous_cval = generic_timer_pcounter_read();
+        cval = previous_cval + cval;
+    }
     return generic_timer_set_cval(GENERIC_TIMER_HYP, cval);
 }
 
