@@ -1,19 +1,15 @@
+#include <arch/armv7.h>
+#include <rtsm-config.h>
+#include <core/timer.h>
+#include <core/interrupt.h>
+#include <core/context_switch.h>
 #include <core/scheduler.h>
 #include <core/sched/scheduler_skeleton.h>
-#include <core/context_switch.h>
-#include <core/interrupt.h>
-#include <core/vm/vmem.h>
-#include <core/vdev.h>
-#include <arch/armv7.h>
-#include <core/timer.h>
-// TODO(wonseok): make it neat.
-#include "../../arch/arm/vgic.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <debug_print.h>
-#include <hvmm_trace.h>
 
-#include <rtsm-config.h>
+#include <hvmm_trace.h>
+#include <debug_print.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #ifdef CONFIG_C99
 #include <lib/c99/util_list.h>
@@ -64,50 +60,48 @@ void sched_init()
  *
  * in scheduler.c
  *   - perform_switch
- *   - perform_switch
- *   - sched__policy_determ_next
  *   - switchto
- *
  * and outside of scheduler.c
  *   - do_context_switch
  */
-static hvmm_status_t perform_switch(struct core_regs *regs, vcpuid_t next_vcpuid)
-{
-    /* _curreng_vcpuid -> next_vcpuid */
-
-    hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
-    uint32_t pcpu = smp_processor_id();
-    vcpuid_t currentcurrent = VCPUID_INVALID;
-
-    if (__current_vcpuid[pcpu] == next_vcpuid) {
-        return HVMM_STATUS_IGNORED;
-    }
-
-    currentcurrent = __current_vcpuid[pcpu];
-    __current_vcpuid[pcpu] = next_vcpuid;
-    do_context_switch(currentcurrent, next_vcpuid, regs);
-
-    return result;
-}
 
 hvmm_status_t sched_perform_switch(struct core_regs *regs)
 {
-    hvmm_status_t result = HVMM_STATUS_IGNORED;
+    hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
     uint32_t pcpu = smp_processor_id();
+    struct core_regs *param_regs = regs;
 
+    /*
+     * If the scheduler is not already running, launch default
+     * first guest. It occur in initial time.
+     */
     if (__current_vcpuid[pcpu] == VCPUID_INVALID) {
-        /*
-         * If the scheduler is not already running, launch default
-         * first guest. It occur in initial time.
-         */
         debug_print("context: launching the first guest\n");
-        result = perform_switch(0, __next_vcpuid[pcpu]);
-        /* DOES NOT COME BACK HERE */
-    } else if (__next_vcpuid[pcpu] != VCPUID_INVALID && __current_vcpuid[pcpu] != __next_vcpuid[pcpu]) {
+        param_regs = NULL;
+    }
+
+    /* Only if not from Hyp */
+    if (__next_vcpuid[pcpu] != VCPUID_INVALID) {
+        vcpuid_t previous = VCPUID_INVALID;
+        vcpuid_t next = VCPUID_INVALID;
+
         debug_print("[sched] curr:%x next:%x\n", __current_vcpuid[pcpu], __next_vcpuid[pcpu]);
-        /* Only if not from Hyp */
-        result = perform_switch(regs, __next_vcpuid[pcpu]);
+
+        /* __current_vcpuid[pcpu] -> __next_vcpuid[pcpu] */
+        if (__current_vcpuid[pcpu] == __next_vcpuid[pcpu])
+            return HVMM_STATUS_IGNORED;
+
+        /* We do the things in this way before do_context_switch()
+         *      as we will not come back here on the first context switching */
+        previous = __current_vcpuid[pcpu];
+        next = __next_vcpuid[pcpu];
+        __current_vcpuid[pcpu] = __next_vcpuid[pcpu];
         __next_vcpuid[pcpu] = VCPUID_INVALID;
+
+        do_context_switch(previous, next, param_regs);
+        /* MUST NOT COME BACK HERE IF regs == NULL */
+
+        return HVMM_STATUS_SUCCESS;
     }
 
     return result;
@@ -283,4 +277,5 @@ void do_schedule(void *pdata, uint32_t *delay_tick)
      * cause context switch */
 
     switch_to(next_vcpuid);
+    sched_perform_switch(pdata);
 }
