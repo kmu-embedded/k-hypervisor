@@ -129,6 +129,7 @@ int sched_rr_vcpu_attach(vcpuid_t vcpuid)
     uint32_t cpu = smp_processor_id();
     struct rq_entry_rr *entry = NULL;
     struct rq_entry_rr *entry_to_be_attached = NULL;
+    struct rq_entry_rr *new_entry;
 
     /* To find entry in registered entry list */
     list_for_each_entry(entry, &registered_list_rr[cpu], registered_list_head) {
@@ -150,6 +151,9 @@ int sched_rr_vcpu_attach(vcpuid_t vcpuid)
 
     /* Add it to runqueue */
     list_add_tail(&entry_to_be_attached->head, &runqueue_rr[cpu]);
+
+    new_entry = (struct running_vcpus_entry_t *) malloc(sizeof(struct running_vcpus_entry_t));
+    list_add_tail(&new_entry->head, &__running_vcpus[NR_CPUS]);
 
     return 0;
 }

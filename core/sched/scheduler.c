@@ -14,10 +14,14 @@
 #include <hvmm_trace.h>
 
 #include <rtsm-config.h>
+#include <lib/bsd/list.h>
 
 vcpuid_t __current_vcpuid[NR_CPUS];// = {VCPUID_INVALID, VCPUID_INVALID};
 vcpuid_t __next_vcpuid[NR_CPUS];// = {VCPUID_INVALID, };
 const struct scheduler *__policy[NR_CPUS];
+
+/* TODO:(igkang) redesign runqueue & registered list structure for external external access */
+struct list_head __running_vcpus[NR_CPUS];
 
 /* TODO:(igkang) rename sched functions
  *   - remove the word 'guest'
@@ -46,6 +50,8 @@ void sched_init()
     // call sched__policy.init() for each policy implementation
     __current_vcpuid[pcpu] = VCPUID_INVALID;
     __next_vcpuid[pcpu] = VCPUID_INVALID;
+
+    INIT_LIST_HEAD(&__running_vcpus[pcpu]);
 
     /* TODO:(igkang) choose policy based on config */
     __policy[pcpu] = &sched_rr;
