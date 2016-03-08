@@ -29,31 +29,21 @@ const struct scheduler *__policy[NR_CPUS];
 struct list_head __running_vcpus[NR_CPUS];
 
 hvmm_status_t switch_to(vcpuid_t vcpuid);
-/* TODO:(igkang) rename sched functions
- *   - remove the word 'guest'
- */
 
 /* TODO:(igkang) make sched functions run based on phisical CPU-assigned policy
- *
- *   - add pcpu sched mapping
- *   - modify functions parameters to use pCPU ID
+ *   - [v] add pcpu sched mapping
+ *   - [ ] modify functions parameters to use pCPU ID
  */
 
 void sched_init()
 {
     uint32_t pcpu = smp_processor_id();
-    struct timer timer;
-
-    /* 100Mhz -> 1 count == 10ns at RTSM_VE_CA15, fast model */
-    timer.interval = 5 * TICKTIME_1MS; /* FIXME:(igkang) hardcoded */
-    timer.callback = &do_schedule;
-
-    timer_set(&timer, HOST_TIMER);
 
     /* Check scheduler config */
+
     /* Allocate memory for system-wide data */
+
     /* Initialize data */
-    // call sched__policy.init() for each policy implementation
     __current_vcpuid[pcpu] = VCPUID_INVALID;
     __next_vcpuid[pcpu] = VCPUID_INVALID;
 
@@ -66,6 +56,7 @@ void sched_init()
     /* TODO:(igkang) choose policy based on config */
     __policy[pcpu] = &sched_rr;
 
+    // call sched__policy.init() for each policy implementation
     __policy[pcpu]->init();
 }
 
@@ -127,19 +118,17 @@ void sched_start(void)
 {
     struct vcpu *vcpu = 0;
     uint32_t pcpu = smp_processor_id();
-    //struct timer timer;
+    struct timer timer;
 
     debug_print("[hyp] switch_to_initial_guest:\n");
+
     /* Select the first guest context to switch to. */
-    __current_vcpuid[pcpu] = VCPUID_INVALID;
-    if (pcpu) {
-        vcpu = vcpu_find(2);
-    } else {
-        vcpu = vcpu_find(0);
-    }
+    vcpu = vcpu_find(__policy[pcpu]->do_schedule(&timer.interval));
+    timer.callback = &do_schedule;
+    timer_set(&timer, HOST_TIMER);
 
     switch_to(vcpu->vcpuid);
-    sched_perform_switch(&vcpu->vcpu_regs.core_regs);
+    sched_perform_switch(NULL);
 }
 
 vcpuid_t get_current_vcpuid(void)
