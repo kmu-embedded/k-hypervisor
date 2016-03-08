@@ -16,6 +16,12 @@ struct scheduler {
     int (*do_schedule)(uint32_t *);
 };
 
+struct running_vcpus_entry_t {
+    struct list_head head;
+    vcpuid_t vcpuid;
+};
+
 extern const struct scheduler sched_rr;
+extern struct list_head __running_vcpus[];
 
 #endif /* _SCHEDULER_SKELETON_H_ */
