@@ -163,7 +163,6 @@ hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
                 uint32_t pirq, uint8_t hw)
 {
     hvmm_status_t result = HVMM_STATUS_BUSY;
-    lock_mutex(&VIRQ_MUTEX);
     int i;
     struct virq_entry *q = &_guest_virqs[vmid][0];
 
@@ -174,6 +173,7 @@ hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
      */
     if (vmid == get_current_vcpuid()) {
         uint32_t slot;
+        lock_mutex(&VIRQ_MUTEX);
         if (hw) {
             slot = vgic_inject_virq_hw(virq,
                     VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
@@ -185,6 +185,8 @@ hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
                     VIRQ_STATE_PENDING, 0,
                     vmid, 1);
         }
+        unlock_mutex(&VIRQ_MUTEX);
+
         if (slot == VGIC_SLOT_NOTFOUND)
             return result;
 
@@ -215,7 +217,6 @@ hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
             gic_set_sgi(1<<vmid, GIC_SGI_SLOT_CHECK);
         }
     }
-    unlock_mutex(&VIRQ_MUTEX);
     return result;
 }
 hvmm_status_t vgic_flush_virqs(vmid_t vmid)

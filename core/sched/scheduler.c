@@ -261,4 +261,5 @@ void do_schedule(void *pdata, uint32_t *delay_tick)
      * cause context switch */
 
     switch_to(next_vcpuid);
+    sched_perform_switch(pdata);
 }
