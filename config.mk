@@ -20,7 +20,7 @@ LIB				= lib
 DRV				= drivers
 INC				= include
 MKDIR			= mkdir
-BUILD			= build
+BUILD			= .#build
 MAKE			= make
 
 INCLUDES		= -I$(ROOT)/include
