@@ -1,18 +1,21 @@
-include  ../config.mk
+#include ../config.mk
 
-ROOT_PATH	= ..
-#OBJS_DIR	= $(ROOT_PATH)/$(BUILD)/drivers
+INCLUDES	+= -I./
 
-SRCS		= $(wildcard *.c)
-OBJS		= $(SRCS:%.c=%.o)
+include ${SOURCE_PATH}/drivers/vdev/Makefile
 
-all: $(OBJS)
+DRIVER_SRCS+= $(patsubst %, vdev/%, ${VDEV_SRCS})
+DRIVER_SRCS+= generic_timer.c
+DRIVER_SRCS+= pl01x.c
+DRIVER_OBJS+= $(DRIVER_SRCS:%.c=%.o)
 
-%.o: %.c
-	#@`[ -d $(OBJS_DIR) ] || $(MKDIR) -p $(OBJS_DIR)`
-	$(CC) $(CPPFLAGS) $(INCLUDES) -c $< -o $@
+#all: $(DRIVER_OBJS)
 
+# alternatives: .S.o:
+#%.o: %.c
+#	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+#
 #clean:
-#	rm -f $(OBJS_DIR)
-
-#.PHONY: clean
+#	rm -rf $(DRIVER_OBJS)
+#
+##.PHONY: clean

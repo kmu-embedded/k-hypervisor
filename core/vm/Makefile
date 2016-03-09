@@ -1,18 +1,9 @@
-include ../../config.mk
-
-ROOT_PATH   = ../..
-#OBJS_DIR	= $(ROOT_PATH)/$(BUILD)/core/sched
-
-SRCS		= $(wildcard *.c)
-OBJS		= $(SRCS:%.c=%.o)
-
-all: $(OBJS)
-
-%.o: %.c
-	@`[ -d $(OBJS_DIR) ] || $(MKDIR) -p $(OBJS_DIR)`
-	$(CC) $(CPPFLAGS) $(INCLUDES) -c $< -o $@
-
-clean:
-	rm -rf $(OBJS_DIR)
-
-.PHONY: clean
+VM_SRCS += atags.c
+VM_SRCS += context_switch.c
+VM_SRCS += guest_memory_hw.c
+VM_SRCS += stage2_mm.c
+VM_SRCS += vcpu.c
+VM_SRCS += vcpu_regs.c
+VM_SRCS += virq.c
+VM_SRCS += vm.c
+VM_SRCS += vmem.c

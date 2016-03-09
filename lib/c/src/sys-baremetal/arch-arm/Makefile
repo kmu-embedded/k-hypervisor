@@ -1,17 +1,5 @@
-include ../../../../../config.mk
-
-ROOT_PATH	= ../../../../..
-#OBJS_DIR	= $(ROOT_PATH)/$(BUILD)/lib/c/src/sys-baremetal/arch-arm
-
-SRCS		= $(wildcard *.c)
-OBJS		= $(SRCS:%.c=%.o)
-
-all: $(OBJS)
-
-%.o: %.c
-	$(CC) $(CPPFLAGS) $(INCLUDES) -c $< -o $@
-
-clean:
-	rm -rf $(OBJS_DIR)
-
-.PHONY: clean
+LIBC_BM_ARCH_SRCS += sys_fgetc.c
+LIBC_BM_ARCH_SRCS += sys_fputc.c
+LIBC_BM_ARCH_SRCS += sys_morecore.c
+LIBC_BM_ARCH_SRCS += sys_stdio.c
+LIBC_BM_ARCH_SRCS += sys_tmpfile.c

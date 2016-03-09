@@ -1,21 +1,33 @@
-include ../../config.mk
+#include ../../config.mk
 
-INCLUDES	+= -I./
+include ${SOURCE_PATH}/arch/arm/v7/Makefile
+include ${SOURCE_PATH}/arch/arm/platform/Makefile
 
-ROOT_PATH	= ../..
-#OBJS_DIR	= $(ROOT_PATH)/$(BUILD)/arch/arm
+ARCH_ASMS+= $(patsubst %, v7/%, ${ARMV7_ASMS})
+ARCH_OBJS+= $(ARCH_ASMS:%.S=%.o)
 
-SRCS		= $(wildcard *.c)
-OBJS		= $(SRCS:%.c=%.o)
+ARCH_SRCS+= $(patsubst %, platform/%, ${PLATFORM_SRCS})
+ARCH_SRCS+= arch_init.c
+ARCH_SRCS+= gic-v2.c
+ARCH_SRCS+= lpae.c
+ARCH_SRCS+= mm.c
+ARCH_SRCS+= trap.c
+ARCH_SRCS+= vgic.c
 
-all: $(OBJS)
+ARCH_OBJS+= $(ARCH_SRCS:%.c=%.o)
 
-%.o: %.c
-	#@`[ -d $(OBJS_DIR) ] || $(MKDIR) -p $(OBJS_DIR)`
-	echo $(OBJS)
-	$(CC) $(CPPFLAGS) $(INCLUDES) -c $< -o $@
+#INCLUDES	+= -I./
+#all: $(ARCH_OBJS)
 
-clean:
-	rm -rf $(OBJS_DIR)
-
-.PHONY: clean
+# alternatives: .S.o:
+#%.o: %.S
+#	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+#
+## alternatives: .S.o:
+#%.o: %.c
+#	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+#
+#clean:
+#	rm -rf $(ARCH_OBJS_DIR)
+#
+#.PHONY: clean
