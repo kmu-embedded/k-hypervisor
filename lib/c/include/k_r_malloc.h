@@ -16,6 +16,6 @@ union header {			/* block header */
 typedef union header Header;
 
 Header  *morecore(unsigned nu);
-//void __malloc_init(void*, void*);
-void __malloc_init();
+//void __malloc_init();
+void __malloc_init(void*, void*);
 #endif /* _LIBC_K_R_MALLOC_H_ */
