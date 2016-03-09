@@ -1,6 +1,10 @@
 #ifndef __FSR_H__
 #define __FSR_H__
 
+#ifdef CONFIG_C99
+#include "c99.h"
+#endif
+
 /* Definition of Fault Status Registers */
 #define read_hdfar()            ({ unsigned int rval; asm volatile(\
                                 " mrc     p15, 4, %0, c6, c0, 0\n\t" \

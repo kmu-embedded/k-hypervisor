@@ -2,7 +2,7 @@
 #include <hvmm_trace.h>
 #include <stdio.h>
 #include <debug_print.h>
-#include <arch/armv7/smp.h>
+#include <arch/armv7.h>
 
 #define MAX_VDEV    256
 

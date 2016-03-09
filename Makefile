@@ -1,4 +1,5 @@
-
+# Makefile
+#
 SOURCE_PATH=.
 export SOURCE_PATH
 BUILD_PATH=.
@@ -33,37 +34,41 @@ endif
 ######################################################
 # TOOLCHAINE VARIABLES
 ######################################################
-CROSS_COMPILE	= arm-linux-gnueabihf-
-CC			= ${CROSS_COMPILE}gcc
-LD			= ${CROSS_COMPILE}ld
-NM			= ${CROSS_COMPILE}nm
-OBJCOPY		= ${CROSS_COMPILE}objcopy
-
-CPU:=cortex-a15
-ARMV:=armv7-a
+CROSS_COMPILE=arm-linux-gnueabihf-
+CC=${CROSS_COMPILE}gcc
+LD=${CROSS_COMPILE}ld
+NM=${CROSS_COMPILE}nm
+OBJCOPY=${CROSS_COMPILE}objcopy
 
 ######################################################
 # FLAGS
 ######################################################
-CFLAGS = -nodefaultlibs -nostartfiles -nostdlib -nostdinc -ffreestanding
-CFLAGS += --std=c99
-CFLAGS += -Wall
-CFLAGS += -mcpu=${CPU} -marm
-CFLAGS += -D__CONFIG_MUTEX__ #-D__CONFIG_SMP__	#-D__TEST_TIMER__
+CPU:=cortex-a15
+ARMV:=armv7-a
 
-ASFLAGS += -Wa,-mcpu=${CPU} -Wa,-march=${ARMV}
-DEFINES +=
+CFLAGS= -nodefaultlibs -nostartfiles -nostdlib -nostdinc -ffreestanding
+CFLAGS+= -Wall
+CFLAGS+= -mcpu=${CPU} -marm
+DEFINES= -D__CONFIG_MUTEX__#-D__CONFIG_SMP__ #-D__TEST_TIMER__
+CFLAGS+=${DEFINES}
 
-ifdef DEBUG
-    DEFINES += -DDEBUG
-    CFLAGS += -ggdb -g3
+#CONFIG_99=y
+ifeq (${CONFIG_99}, y)
+CFLAGS+= --std=c99 -DCONFIG_C99
 endif
 
-INCLUDES = -I${SOURCE_PATH}/include
-INCLUDES += -I${SOURCE_PATH}/arch/arm
-INCLUDES += -I${SOURCE_PATH}/arch/arm/platform
-INCLUDES += -I${SOURCE_PATH}/drivers/vdev
-INCLUDES += -I${SOURCE_PATH}/lib/c/include
+ASFLAGS+= -Wa,-mcpu=${CPU} -Wa,-march=${ARMV}
+
+#DEBUG=y
+ifdef DEBUG
+    CFLAGS+= -ggdb -g3
+endif
+
+INCLUDES= -I${SOURCE_PATH}/include
+INCLUDES+= -I${SOURCE_PATH}/arch/arm
+INCLUDES+= -I${SOURCE_PATH}/arch/arm/platform
+INCLUDES+= -I${SOURCE_PATH}/drivers/vdev
+INCLUDES+= -I${SOURCE_PATH}/lib/c/include
 
 ######################################################
 # OUTPUT FILENAMES

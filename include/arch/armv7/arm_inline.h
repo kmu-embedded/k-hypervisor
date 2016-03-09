@@ -1,13 +1,17 @@
 #ifndef __ARM_INLINE__
 #define __ARM_INLINE__
 
-#define sev()   __asm__ __volatile__ ("sev" : : : "memory")
-#define wfe()   __asm__ __volatile__ ("wfe" : : : "memory")
-#define wfi()   __asm__ __volatile__ ("wfi" : : : "memory")
+#ifdef CONFIG_C99
+#include "c99.h"
+#endif
 
-#define isb() __asm__ __volatile__ ("isb" : : : "memory")
-#define dsb() __asm__ __volatile__ ("dsb" : : : "memory")
-#define dmb() __asm__ __volatile__ ("dmb" : : : "memory")
+#define sev()   asm __volatile__ ("sev" : : : "memory")
+#define wfe()   asm __volatile__ ("wfe" : : : "memory")
+#define wfi()   asm __volatile__ ("wfi" : : : "memory")
+
+#define isb() asm __volatile__ ("isb" : : : "memory")
+#define dsb() asm __volatile__ ("dsb" : : : "memory")
+#define dmb() asm __volatile__ ("dmb" : : : "memory")
 
 #define asm_clz(x)      ({ unsigned int rval; asm volatile(\
                                 " clz %0, %1\n\t" \
