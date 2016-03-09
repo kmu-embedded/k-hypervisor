@@ -109,6 +109,10 @@ ${OUTPUT}: ${OBJS} ${MACHINE}.lds
 	${Q}echo "[LD] $@"
 	${Q}${LD} ${LDFLAGS} ${OBJS} -e __start -T ${BUILD_PATH}/${MACHINE}.lds -o ${BUILD_PATH}/$@
 
+style:
+	astyle --max-instatement-indent=120 --style=otbs --pad-header --recursive --indent=spaces=4 --pad-oper "*.c"
+	astyle --max-instatement-indent=120 --style=otbs --pad-header --recursive --indent=spaces=4 --pad-oper "*.h"
+
 clean:
 	${Q}echo "clean ${OBJS}"
 	${Q}rm -rf ${BUILD_PATH}/${OBJS} ${BUILD_PATH}/${OUTPUT} ${BUILD_PATH}/${MACHINE}.lds
