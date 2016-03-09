@@ -34,4 +34,11 @@ vmid_t get_current_vcpuid(void);
 hvmm_status_t guest_perform_switch(struct core_regs *regs);
 hvmm_status_t guest_switchto(vmid_t vmid);
 
+struct running_vcpus_entry_t {
+    struct list_head head;
+    vcpuid_t vcpuid;
+};
+
+extern struct list_head __running_vcpus[];
+
 #endif /* __SCHEDULER_H__ */
