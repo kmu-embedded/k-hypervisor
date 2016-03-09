@@ -1,13 +1,11 @@
-#include ../../../config.mk
-
 include ${SOURCE_PATH}/lib/c/src/arch-arm/Makefile
 include ${SOURCE_PATH}/lib/c/src/sys-baremetal/Makefile
 
 LIBC_ASMS+= $(patsubst %, arch-arm/%, ${LIBC_ARCH_ASM})
-LIBC_OBJS+= $(LIBC_ASMS:%.S=%.o)
-
 LIBC_SRCS+= $(patsubst %, arch-arm/%, ${LIBC_ARCH_SRCS})
+
 LIBC_SRCS+= $(patsubst %, sys-baremetal/%, ${LIBC_BM_SRCS})
+
 
 LIBC_SRCS+= memcpy.c strncat.c fgetc.c strpbrk.c fflush.c strcat.c rand.c memcmp.c  \
 			clearerr.c strcspn.c calloc.c vprintf.c strrchr.c putchar.c srand.c sprintf.c \
@@ -19,20 +17,3 @@ LIBC_SRCS+= memcpy.c strncat.c fgetc.c strpbrk.c fflush.c strcat.c rand.c memcmp
 			memchr.c localtime.c fseek.c strspn.c rename.c exit.c strncpy.c mktime.c strtol.c \
 			qsort.c rewind.c strtok.c init_libc.c strcpy.c aligned_alloc.c fprintf.c fgets.c \
 			strdup.c ctype.c
-
-#LIBC_OBJS+= $(LIBC_SRCS:%.c=%.o)
-
-#all: $(LIBC_OBJS)
-
-# alternatives: .S.o:
-#%.o: %.S
-#	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-# alternatives: .S.o:
-#%.o: %.c
-#	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-#clean:
-#	rm -rf $(LIBC_OBJS_DIR)
-
-#.PHONY: clean
