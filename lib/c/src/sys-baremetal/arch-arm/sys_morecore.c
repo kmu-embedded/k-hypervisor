@@ -87,17 +87,13 @@ extern Header  *_kr_malloc_freep;
 extern struct mutex malloc_mutex;
 #endif /* MALLOC_LOCKED */
 
-// Defines __xxxx_heap in the linker script.
-extern unsigned int __begin_heap;
-extern unsigned int __end_heap;
+static uintptr_t __malloc_bss;
+static uintptr_t __malloc_top;
 
-uintptr_t __malloc_bss;
-uintptr_t __malloc_top;
-
-void __malloc_init()
+void __malloc_init(void *__begin_heap, void *__end_heap)
 {
-	__malloc_bss = (uintptr_t) &__begin_heap;
-	__malloc_top = (uintptr_t) &__end_heap;
+	__malloc_bss = (uintptr_t) __begin_heap;
+	__malloc_top = (uintptr_t) __end_heap;
 
 #ifdef MALLOC_LOCKED
 	malloc_mutex.holder = 0;
