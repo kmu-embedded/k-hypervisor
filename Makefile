@@ -1,5 +1,20 @@
 # Makefile
-#
+
+######################################################
+# MAKEFILE VERBOSE OPTION
+######################################################
+V ?= 1
+ifeq ($V, 1)
+    Q = @
+else
+ifeq ($V, 2)
+    Q =
+endif
+endif
+
+######################################################
+# DEFINE BUILD VARIABLES and PATHs
+######################################################
 SOURCE_PATH=.
 export SOURCE_PATH
 BUILD_PATH=.
@@ -21,30 +36,25 @@ SRCS+= $(patsubst %, lib/c/src/%, ${LIBC_SRCS})
 OBJS+= $(ASMS:%.S=%.o)
 OBJS+= $(SRCS:%.c=%.o)
 
-V ?= 1
-ifeq ($V, 1)
-    Q = @
-else
-ifeq ($V, 2)
-    Q =
-endif
-endif
 
 
 ######################################################
-# TOOLCHAINE VARIABLES
+# DEFINE TOOLCHAINE VARIABLES
 ######################################################
-CROSS_COMPILE=arm-linux-gnueabihf-
+TOOLPATH=/usr/local/DS-5/bin
+CROSS_COMPILE=${TOOLPATH}/arm-linux-gnueabihf-
 CC=${CROSS_COMPILE}gcc
 LD=${CROSS_COMPILE}ld
 NM=${CROSS_COMPILE}nm
 OBJCOPY=${CROSS_COMPILE}objcopy
 
 ######################################################
-# FLAGS
+# DEFINE FLAGS
 ######################################################
 CPU:=cortex-a15
 ARMV:=armv7-a
+
+ASFLAGS+= -Wa,-mcpu=${CPU} -Wa,-march=${ARMV}
 
 CFLAGS= -nodefaultlibs -nostartfiles -nostdlib -nostdinc -ffreestanding
 CFLAGS+= -Wall
@@ -56,8 +66,6 @@ CFLAGS+=${DEFINES}
 ifeq (${CONFIG_99}, y)
 CFLAGS+= --std=c99 -DCONFIG_C99
 endif
-
-ASFLAGS+= -Wa,-mcpu=${CPU} -Wa,-march=${ARMV}
 
 #DEBUG=y
 ifdef DEBUG
