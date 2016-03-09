@@ -1,6 +1,10 @@
 #ifndef __GENERIC_TIMER_H___
 #define __GENERIC_TIMER_H___
 
+#ifdef CONFIG_C99
+#include "c99.h"
+#endif
+
 /* Generic Timer */
 #define read_cntfrq()           ({ unsigned int rval; asm volatile(\
                                 " mrc     p15, 0, %0, c14, c0, 0\n\t" \

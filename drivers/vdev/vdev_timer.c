@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <core/timer.h>
 #include <core/interrupt.h>
-#include <arch/armv7/smp.h>
+#include <arch/armv7.h>
 #include <core/scheduler.h>
 #include <rtsm-config.h>
 

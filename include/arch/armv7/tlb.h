@@ -2,6 +2,10 @@
 #define __ARMV7_TLB_H__
 
 
+#ifdef CONFIG_C99
+#include "c99.h"
+#endif
+
 // TODO: add tlb-related operations
 /* Invalidate entire unified TLB */
 #define invalidate_unified_tlb(val)      asm volatile(\

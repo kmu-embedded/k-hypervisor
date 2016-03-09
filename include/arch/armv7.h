@@ -1,6 +1,9 @@
 #ifndef __ARMV7_H__
 #define __ARMV7_H__
 
+#ifdef CONFIG_C99
+#include "armv7/c99.h"
+#endif
 #include "armv7/cache.h"
 #include "armv7/fsr.h"
 #include "armv7/tlb.h"

@@ -1,7 +1,7 @@
 #ifndef __SMP_H__
 #define __SMP_H__
 
-#include "arch/armv7.h"
+//#include "arch/armv7.h"
 #include "arm_inline.h"
 
 #define MPIDR_MASK 0xFFFFFF
@@ -44,7 +44,7 @@ static inline unsigned int smp_processor_id(void)
 
 static inline void dsb_sev(void)
 {
-    __asm__ __volatile__ (
+    asm __volatile__ (
         "dsb\n"
         SEV
     );
@@ -65,7 +65,7 @@ static inline void spin_lock(spinlock_t *lock)
 {
     unsigned long tmp;
 
-    __asm__ __volatile__(
+    asm __volatile__(
 "1: ldrex   %0, [%1]\n"
 "   teq %0, #0\n"
     WFE("ne")
@@ -83,7 +83,7 @@ static inline int spin_trylock(spinlock_t *lock)
 {
     unsigned long tmp;
 
-    __asm__ __volatile__(
+    asm __volatile__(
 "   ldrex   %0, [%1]\n"
 "   teq %0, #0\n"
 "   strexeq %0, %2, [%1]"
@@ -103,7 +103,7 @@ static inline void spin_unlock(spinlock_t *lock)
 {
     smp_mb();
 
-    __asm__ __volatile__(
+    asm __volatile__(
 "   str %1, [%0]\n"
     :
     : "r" (&lock->lock), "r" (0)

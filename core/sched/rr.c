@@ -1,6 +1,6 @@
 #include <core/sched/scheduler_skeleton.h>
 #include <rtsm-config.h>
-#include <arch/armv7/smp.h>
+#include <arch/armv7.h>
 #include <lib/bsd/list.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -124,6 +124,7 @@ int sched_rr_vcpu_unregister(vcpuid_t vcpuid)
  * @param
  * @return
  */
+#include <lib/bsd/list.h>
 int sched_rr_vcpu_attach(vcpuid_t vcpuid)
 {
     uint32_t cpu = smp_processor_id();

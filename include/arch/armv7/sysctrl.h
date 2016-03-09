@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#ifdef CONFIG_C99
+#include "c99.h"
+#endif
+
 #define read_vbar()             ({ unsigned int rval; asm volatile(\
                                 " mrc     p15, 0, %0, c12, c0, 0\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })

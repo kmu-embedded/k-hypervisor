@@ -1,6 +1,10 @@
 #ifndef __ARMV7_MM_H__
 #define __ARMV7_MM_H__
 
+#ifdef CONFIG_C99
+#include "c99.h"
+#endif
+
 #define read_ttbr0()            ({ unsigned int rval; asm volatile(\
                                 " mrc     p15, 0, %0, c2, c0, 0\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })

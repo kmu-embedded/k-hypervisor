@@ -5,7 +5,7 @@
 #include <core/vm.h>
 #include <core/vm/virq.h>
 #include <core/interrupt.h>
-#include <arch/armv7/smp.h>
+#include <arch/armv7.h>
 
 #include <rtsm-config.h>
 #include <core/vm/vcpu.h>
