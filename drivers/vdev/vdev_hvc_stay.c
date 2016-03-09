@@ -3,17 +3,18 @@
 #include <stdio.h>
 
 static int32_t vdev_hvc_stay_write(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                                   struct core_regs *regs)
 {
     printf("[hyp] _hyp_hvc_service:stay\n\r");
     return 0;
 }
 
 static int32_t vdev_hvc_stay_check(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                                   struct core_regs *regs)
 {
-    if ((info->iss & 0xFFFF) == 0xFFFF)
+    if ((info->iss & 0xFFFF) == 0xFFFF) {
         return 0;
+    }
 
     return VDEV_NOT_FOUND;
 }
@@ -41,11 +42,11 @@ hvmm_status_t vdev_hvc_stay_init()
 
 
     result = vdev_register(VDEV_LEVEL_MIDDLE, &_vdev_hvc_stay_module);
-    if (result == HVMM_STATUS_SUCCESS)
+    if (result == HVMM_STATUS_SUCCESS) {
         printf("vdev registered:'%s'\n", _vdev_hvc_stay_module.name);
-    else {
+    } else {
         printf("%s: Unable to register vdev:'%s' code=%x\n",
-                __func__, _vdev_hvc_stay_module.name, result);
+               __func__, _vdev_hvc_stay_module.name, result);
     }
 
     return result;

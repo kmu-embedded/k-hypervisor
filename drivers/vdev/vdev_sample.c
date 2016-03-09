@@ -13,18 +13,18 @@ struct vdev_sample_regs {
 };
 
 static struct vdev_memory_map _vdev_sample_info = {
-   .base = SAMPLE_BASE_ADDR,
-   .size = sizeof(struct vdev_sample_regs),
+    .base = SAMPLE_BASE_ADDR,
+    .size = sizeof(struct vdev_sample_regs),
 };
 
 static struct vdev_sample_regs sample_regs[NUM_GUESTS_STATIC];
 
 static hvmm_status_t vdev_sample_access_handler(uint32_t write, uint32_t offset,
-        uint32_t *pvalue, enum vdev_access_size access_size)
+                                                uint32_t *pvalue, enum vdev_access_size access_size)
 {
     printf("%s: %s offset:%d value:%x\n", __func__,
-            write ? "write" : "read", offset,
-            write ? *pvalue : (uint32_t) pvalue);
+           write ? "write" : "read", offset,
+           write ? *pvalue : (uint32_t) pvalue);
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     unsigned int vmid = get_current_vcpuid();
     if (!write) {
@@ -64,7 +64,7 @@ static hvmm_status_t vdev_sample_access_handler(uint32_t write, uint32_t offset,
 }
 
 static int32_t vdev_sample_read(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                                struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_sample_info.base;
 
@@ -72,7 +72,7 @@ static int32_t vdev_sample_read(struct arch_vdev_trigger_info *info,
 }
 
 static int32_t vdev_sample_write(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                                 struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_sample_info.base;
 
@@ -80,12 +80,13 @@ static int32_t vdev_sample_write(struct arch_vdev_trigger_info *info,
 }
 
 static hvmm_status_t vdev_sample_post(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                                      struct core_regs *regs)
 {
     uint8_t isize = 4;
 
-    if (regs->cpsr & 0x20) /* Thumb */
+    if (regs->cpsr & 0x20) { /* Thumb */
         isize = 2;
+    }
 
     regs->pc += isize;
 
@@ -93,13 +94,14 @@ static hvmm_status_t vdev_sample_post(struct arch_vdev_trigger_info *info,
 }
 
 static int32_t vdev_sample_check(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                                 struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_sample_info.base;
 
     if (info->fipa >= _vdev_sample_info.base &&
-        offset < _vdev_sample_info.size)
+            offset < _vdev_sample_info.size) {
         return 0;
+    }
     return VDEV_NOT_FOUND;
 }
 
@@ -128,11 +130,11 @@ hvmm_status_t vdev_sample_init()
     hvmm_status_t result = HVMM_STATUS_BUSY;
 
     result = vdev_register(VDEV_LEVEL_LOW, &_vdev_sample_module);
-    if (result == HVMM_STATUS_SUCCESS)
+    if (result == HVMM_STATUS_SUCCESS) {
         printf("vdev registered:'%s'\n", _vdev_sample_module.name);
-    else {
+    } else {
         printf("%s: Unable to register vdev:'%s' code=%x\n",
-                __func__, _vdev_sample_module.name, result);
+               __func__, _vdev_sample_module.name, result);
     }
 
     return result;

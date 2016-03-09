@@ -1,16 +1,16 @@
 /*
  * Australian Public Licence B (OZPLB)
- * 
+ *
  * Version 1-0
- * 
+ *
  * Copyright (c) 2004 University of New South Wales
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * Developed by: Operating Systems and Distributed Systems Group (DiSy)
  *               University of New South Wales
  *               http://www.disy.cse.unsw.edu.au
- * 
+ *
  * Permission is granted by University of New South Wales, free of charge, to
  * any person obtaining a copy of this software and any associated
  * documentation files (the "Software") to deal with the Software without
@@ -19,19 +19,19 @@
  * sublicense, and/or sell, lend or rent out copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject
  * to the following conditions:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimers.
- * 
+ *
  *     * Redistributions in binary form must reproduce the above
  *       copyright notice, this list of conditions and the following
  *       disclaimers in the documentation and/or other materials provided
  *       with the distribution.
- * 
+ *
  *     * Neither the name of University of New South Wales, nor the names of its
  *       contributors, may be used to endorse or promote products derived
  *       from this Software without specific prior written permission.
- * 
+ *
  * EXCEPT AS EXPRESSLY STATED IN THIS LICENCE AND TO THE FULL EXTENT
  * PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED "AS-IS", AND
  * NATIONAL ICT AUSTRALIA AND ITS CONTRIBUTORS MAKE NO REPRESENTATIONS,
@@ -41,7 +41,7 @@
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NONINFRINGEMENT,
  * THE ABSENCE OF LATENT OR OTHER DEFECTS, OR THE PRESENCE OR ABSENCE OF
  * ERRORS, WHETHER OR NOT DISCOVERABLE.
- * 
+ *
  * TO THE FULL EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL
  * NATIONAL ICT AUSTRALIA OR ITS CONTRIBUTORS BE LIABLE ON ANY LEGAL
  * THEORY (INCLUDING, WITHOUT LIMITATION, IN AN ACTION OF CONTRACT,
@@ -55,7 +55,7 @@
  * DEALINGS WITH THE SOFTWARE, EVEN IF NATIONAL ICT AUSTRALIA OR ITS
  * CONTRIBUTORS HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH CLAIM, LOSS,
  * DAMAGES OR OTHER LIABILITY.
- * 
+ *
  * If applicable legislation implies representations, warranties, or
  * conditions, or imposes obligations or liability on University of New South
  * Wales or one of its contributors in respect of the Software that
@@ -72,7 +72,7 @@
  * b.  in the case of services:
  * i.  the supplying of the services again; or
  * ii.  the payment of the cost of having the services supplied again.
- * 
+ *
  * The construction, validity and performance of this licence is governed
  * by the laws in force in New South Wales, Australia.
  */
@@ -83,33 +83,33 @@
 #include <stdint.h>
 
 /*
- * copy n bytes from s to d; the regions must not overlap 
+ * copy n bytes from s to d; the regions must not overlap
  */
 /* THREAD SAFE */
 void *
 memcpy(void *d, const void *s, size_t n)
 {
-	size_t i;
-	uintptr_t align = sizeof(uintptr_t)-1;
+    size_t i;
+    uintptr_t align = sizeof(uintptr_t) - 1;
 
-	if (((uintptr_t)d & align) || ((uintptr_t)s & align) || (n & align))
-	{
-		char *bs = (char *)s;
-		char *bd = (char *)d;
+    if (((uintptr_t)d & align) || ((uintptr_t)s & align) || (n & align)) {
+        char *bs = (char *)s;
+        char *bd = (char *)d;
 
-		/* XXX - optimize this */
-		for (i = 0; i < n; i++)
-			*bd++ = *bs++;
-	}
-	else
-	{	/* memcpy - word aligned */
-		uintptr_t *ws = (uintptr_t*)s;
-		uintptr_t *wd = (uintptr_t*)d;
+        /* XXX - optimize this */
+        for (i = 0; i < n; i++) {
+            *bd++ = *bs++;
+        }
+    } else {
+        /* memcpy - word aligned */
+        uintptr_t *ws = (uintptr_t*)s;
+        uintptr_t *wd = (uintptr_t*)d;
 
-		n /= sizeof(uintptr_t);
+        n /= sizeof(uintptr_t);
 
-		for (i = 0; i < n; i++)
-			*wd++ = *ws++;
-	}
-	return d;
+        for (i = 0; i < n; i++) {
+            *wd++ = *ws++;
+        }
+    }
+    return d;
 }

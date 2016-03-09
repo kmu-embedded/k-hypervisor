@@ -67,7 +67,7 @@ vmcb_state_t vm_init(vmid_t vmid)
 
     for (i = 0; i < vm->num_vcpus; i++) {
         if (vcpu_init(vm->vcpu[i]) != VCPU_REGISTERED) {
-           return vm->state;
+            return vm->state;
         }
     }
 

@@ -28,8 +28,9 @@ static void setup_cmdline_tag(const char *line)
 {
     int linelen = strlen(line);
     /* do not insert a tag for an empty commandline */
-    if (!linelen)
+    if (!linelen) {
         return;
+    }
     _params->hdr.tag = ATAG_CMDLINE;          /* Commandline tag */
     _params->hdr.size = (sizeof(struct atag_header) + linelen + 1 + 4) >> 2;
     /* place commandline into tag */
@@ -78,35 +79,35 @@ setup_ramdisk_tag(uint32_t size)
 void linuxloader_setup_atags(uint32_t src)
 {
     char *commandline =
-/* mmc-rtsm */
+        /* mmc-rtsm */
 
-     "root=/dev/mmcblk0 rw ip=dhcp "
-     "rw ip=dhcp earlyprintk console=ttyAMA0 mem=256M";
+        "root=/dev/mmcblk0 rw ip=dhcp "
+        "rw ip=dhcp earlyprintk console=ttyAMA0 mem=256M";
 
-/* android-rtsm */
+    /* android-rtsm */
     /*
      * "console=tty0 console=ttyAMA0,38400n8 rootwait ro init=/init "
      * "androidboot.console=ttyAMA0 mem=768M";
      */
-/* nfs-rtsm */
+    /* nfs-rtsm */
     /*
      * "root=/dev/nfs nfsroot=192.168.0.4:/srv/nfs_simpleroot/ "
      * "rw ip=dhcp earlyprintk console=ttyAMA0 mem=256M";
      */
-/* ramdisk-rtsm */
+    /* ramdisk-rtsm */
     /*
      "root=/dev/ram rw earlyprintk console=ttyAMA0 "
      "mem=512M rdinit=/sbin/init";
      */
-/* android-arndale board */
+    /* android-arndale board */
     /*
      * "root=/dev/ram0 rw ramdisk=8192 initrd=0x41000000,8M "
      * console=ttySAC1,115200 init= mem=256M"
      */
-/* Arndale board ramdisk */
-     // "root=/dev/ram rw earlyprintk console=ttySAC1 "
-     // "mem=512M rdinit=/sbin/init";
-/* Arndale board with mmc */
+    /* Arndale board ramdisk */
+    // "root=/dev/ram rw earlyprintk console=ttySAC1 "
+    // "mem=512M rdinit=/sbin/init";
+    /* Arndale board with mmc */
     /*
       "root=/dev/mmcblk1p1   rw ip=dhcp earlyprintk rootwait "
       "console=ttySAC1,115200n8 mem=512M init --no-log";
@@ -116,14 +117,14 @@ void linuxloader_setup_atags(uint32_t src)
     /* commandline setting root device */
     setup_revision_tag();
     setup_mem_tag(src, SZ_512M);
-    #ifdef USE_ANDROID_INITRD
+#ifdef USE_ANDROID_INITRD
     {
         uint32_t start = &initrd_start;
         uint32_t end = &initrd_end;
         uint32_t size = end - start;
         setup_initrd2_tag(start + 0x40, size - 0x40);
     }
-    #endif
+#endif
     setup_cmdline_tag(commandline);
     /* end of tags */
     setup_end_tag();
@@ -131,9 +132,9 @@ void linuxloader_setup_atags(uint32_t src)
 
 uint32_t *linuxloader_get_atags_addr(void)
 {
-    if (_params != INVALID)
+    if (_params != INVALID) {
         return _params;
-    else {
+    } else {
         printf("[loadlinux] ERROR: SET ATAGS BEFORE JUMP TO ZIMAGE\n");
         while (1)
             ;

@@ -26,11 +26,9 @@ typedef unsigned su_int;
 typedef          long long di_int;
 typedef unsigned long long du_int;
 
-typedef union
-{
+typedef union {
     di_int all;
-    struct
-    {
+    struct {
 #if _YUGA_LITTLE_ENDIAN
         su_int low;
         si_int high;
@@ -38,14 +36,12 @@ typedef union
         si_int high;
         su_int low;
 #endif /* _YUGA_LITTLE_ENDIAN */
-    }s;
+    } s;
 } dwords;
 
-typedef union
-{
+typedef union {
     du_int all;
-    struct
-    {
+    struct {
 #if _YUGA_LITTLE_ENDIAN
         su_int low;
         su_int high;
@@ -53,7 +49,7 @@ typedef union
         su_int high;
         su_int low;
 #endif /* _YUGA_LITTLE_ENDIAN */
-    }s;
+    } s;
 } udwords;
 
 #define CHAR_BIT 8
@@ -70,48 +66,45 @@ du_int __udivmoddi4(du_int a, du_int b, du_int* rem)
     udwords r;
     unsigned sr;
     /* special cases, X is unknown, K != 0 */
-    if (n.s.high == 0)
-    {
-        if (d.s.high == 0)
-        {
+    if (n.s.high == 0) {
+        if (d.s.high == 0) {
             /* 0 X
              * ---
              * 0 X
              */
-            if (rem)
+            if (rem) {
                 *rem = n.s.low % d.s.low;
+            }
             return n.s.low / d.s.low;
         }
         /* 0 X
          * ---
          * K X
          */
-        if (rem)
+        if (rem) {
             *rem = n.s.low;
+        }
         return 0;
     }
     /* n.s.high != 0 */
-    if (d.s.low == 0)
-    {
-        if (d.s.high == 0)
-        {
+    if (d.s.low == 0) {
+        if (d.s.high == 0) {
             /* K X
              * ---
              * 0 0
              */
-            if (rem)
+            if (rem) {
                 *rem = n.s.high % d.s.low;
+            }
             return n.s.high / d.s.low;
         }
         /* d.s.high != 0 */
-        if (n.s.low == 0)
-        {
+        if (n.s.low == 0) {
             /* K 0
              * ---
              * K 0
              */
-            if (rem)
-            {
+            if (rem) {
                 r.s.high = n.s.high % d.s.high;
                 r.s.low = 0;
                 *rem = r.all;
@@ -122,10 +115,8 @@ du_int __udivmoddi4(du_int a, du_int b, du_int* rem)
          * ---
          * K 0
          */
-        if ((d.s.high & (d.s.high - 1)) == 0)     /* if d is a power of 2 */
-        {
-            if (rem)
-            {
+        if ((d.s.high & (d.s.high - 1)) == 0) {   /* if d is a power of 2 */
+            if (rem) {
                 r.s.low = n.s.low;
                 r.s.high = n.s.high & (d.s.high - 1);
                 *rem = r.all;
@@ -138,10 +129,10 @@ du_int __udivmoddi4(du_int a, du_int b, du_int* rem)
          */
         sr = __builtin_clz(d.s.high) - __builtin_clz(n.s.high);
         /* 0 <= sr <= n_uword_bits - 2 or sr large */
-        if (sr > n_uword_bits - 2)
-        {
-           if (rem)
+        if (sr > n_uword_bits - 2) {
+            if (rem) {
                 *rem = n.all;
+            }
             return 0;
         }
         ++sr;
@@ -152,21 +143,19 @@ du_int __udivmoddi4(du_int a, du_int b, du_int* rem)
         /* r.all = n.all >> sr; */
         r.s.high = n.s.high >> sr;
         r.s.low = (n.s.high << (n_uword_bits - sr)) | (n.s.low >> sr);
-    }
-    else  /* d.s.low != 0 */
-    {
-        if (d.s.high == 0)
-        {
+    } else { /* d.s.low != 0 */
+        if (d.s.high == 0) {
             /* K X
              * ---
              * 0 K
              */
-            if ((d.s.low & (d.s.low - 1)) == 0)     /* if d is a power of 2 */
-            {
-                if (rem)
+            if ((d.s.low & (d.s.low - 1)) == 0) {   /* if d is a power of 2 */
+                if (rem) {
                     *rem = n.s.low & (d.s.low - 1);
-                if (d.s.low == 1)
+                }
+                if (d.s.low == 1) {
                     return n.all;
+                }
                 sr = __builtin_ctz(d.s.low);
                 q.s.high = n.s.high >> sr;
                 q.s.low = (n.s.high << (n_uword_bits - sr)) | (n.s.low >> sr);
@@ -181,55 +170,45 @@ du_int __udivmoddi4(du_int a, du_int b, du_int* rem)
              * q.all = n.all << (n_udword_bits - sr);
              * r.all = n.all >> sr;
              */
-            if (sr == n_uword_bits)
-            {
+            if (sr == n_uword_bits) {
                 q.s.low = 0;
                 q.s.high = n.s.low;
                 r.s.high = 0;
                 r.s.low = n.s.high;
-            }
-            else if (sr < n_uword_bits)  // 2 <= sr <= n_uword_bits - 1
-            {
+            } else if (sr < n_uword_bits) { // 2 <= sr <= n_uword_bits - 1
                 q.s.low = 0;
                 q.s.high = n.s.low << (n_uword_bits - sr);
                 r.s.high = n.s.high >> sr;
                 r.s.low = (n.s.high << (n_uword_bits - sr)) | (n.s.low >> sr);
-            }
-            else              // n_uword_bits + 1 <= sr <= n_udword_bits - 1
-            {
+            } else {          // n_uword_bits + 1 <= sr <= n_udword_bits - 1
                 q.s.low = n.s.low << (n_udword_bits - sr);
                 q.s.high = (n.s.high << (n_udword_bits - sr)) |
                            (n.s.low >> (sr - n_uword_bits));
                 r.s.high = 0;
                 r.s.low = n.s.high >> (sr - n_uword_bits);
             }
-        }
-        else
-        {
+        } else {
             /* K X
              * ---
              * K K
              */
             sr = __builtin_clz(d.s.high) - __builtin_clz(n.s.high);
             /* 0 <= sr <= n_uword_bits - 1 or sr large */
-            if (sr > n_uword_bits - 1)
-            {
-                if (rem)
+            if (sr > n_uword_bits - 1) {
+                if (rem) {
                     *rem = n.all;
+                }
                 return 0;
             }
             ++sr;
             /* 1 <= sr <= n_uword_bits */
             /*  q.all = n.all << (n_udword_bits - sr); */
             q.s.low = 0;
-            if (sr == n_uword_bits)
-            {
+            if (sr == n_uword_bits) {
                 q.s.high = n.s.low;
                 r.s.high = 0;
                 r.s.low = n.s.high;
-            }
-            else
-            {
+            } else {
                 q.s.high = n.s.low << (n_uword_bits - sr);
                 r.s.high = n.s.high >> sr;
                 r.s.low = (n.s.high << (n_uword_bits - sr)) | (n.s.low >> sr);
@@ -243,8 +222,7 @@ du_int __udivmoddi4(du_int a, du_int b, du_int* rem)
      * 1 <= sr <= n_udword_bits - 1
      */
     su_int carry = 0;
-    for (; sr > 0; --sr)
-    {
+    for (; sr > 0; --sr) {
         /* r:q = ((r:q)  << 1) | carry */
         r.s.high = (r.s.high << 1) | (r.s.low  >> (n_uword_bits - 1));
         r.s.low  = (r.s.low  << 1) | (q.s.high >> (n_uword_bits - 1));
@@ -262,7 +240,8 @@ du_int __udivmoddi4(du_int a, du_int b, du_int* rem)
         r.all -= d.all & s;
     }
     q.all = (q.all << 1) | carry;
-    if (rem)
+    if (rem) {
         *rem = r.all;
+    }
     return q.all;
 }

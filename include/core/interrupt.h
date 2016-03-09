@@ -116,7 +116,7 @@ void interrupt_host_enable(uint32_t irq);
 void interrupt_host_disable(uint32_t irq);
 void interrupt_host_configure(uint32_t irq);
 void interrupt_guest_inject(vmid_t vmid, uint32_t virq, uint32_t pirq,
-                uint8_t hw);
+                            uint8_t hw);
 void interrupt_guest_enable(vmid_t vmid, uint32_t irq);
 void interrupt_guest_disable(vmid_t vmid, uint32_t irq);
 // void interrupt_save(vmid_t vmid);

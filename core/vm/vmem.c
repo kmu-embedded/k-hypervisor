@@ -29,8 +29,10 @@ struct memdesc_t vm0_device_md[] = {
     { "v2m_timer23", 0x1C120000, 0x1C120000, SZ_4K, MEMATTR_DEVICE_MEMORY },
     { "rtc", 0x1C170000, 0x1C170000, SZ_4K, MEMATTR_DEVICE_MEMORY },
     { "clcd", 0x1C1F0000, 0x1C1F0000, SZ_4K, MEMATTR_DEVICE_MEMORY },
-    { "gicc", CFG_GIC_BASE_PA | 0x2000,
-            CFG_GIC_BASE_PA | 0x6000, SZ_8K, MEMATTR_DEVICE_MEMORY },
+    {
+        "gicc", CFG_GIC_BASE_PA | 0x2000,
+        CFG_GIC_BASE_PA | 0x6000, SZ_8K, MEMATTR_DEVICE_MEMORY
+    },
     { "SMSC91c111i", 0x1A000000, 0x1A000000, SZ_16M, MEMATTR_DEVICE_MEMORY },
     { "simplebus2", 0x18000000, 0x18000000, SZ_64M, MEMATTR_DEVICE_MEMORY },
     { 0, 0, 0, 0, 0 }
@@ -52,8 +54,10 @@ struct memdesc_t vm1_device_md[] = {
     { "v2m_timer23", 0x1C120000, 0x1C120000, SZ_4K, MEMATTR_DEVICE_MEMORY },
     { "rtc", 0x1C170000, 0x1C170000, SZ_4K, MEMATTR_DEVICE_MEMORY },
     { "clcd", 0x1C1F0000, 0x1C1F0000, SZ_4K, MEMATTR_DEVICE_MEMORY },
-    { "gicc", CFG_GIC_BASE_PA | 0x2000,
-            CFG_GIC_BASE_PA | 0x6000, SZ_8K, MEMATTR_DEVICE_MEMORY },
+    {
+        "gicc", CFG_GIC_BASE_PA | 0x2000,
+        CFG_GIC_BASE_PA | 0x6000, SZ_8K, MEMATTR_DEVICE_MEMORY
+    },
     { "SMSC91c111i", 0x1A000000, 0x1A000000, SZ_16M, MEMATTR_DEVICE_MEMORY },
     { "simplebus2", 0x18000000, 0x18000000, SZ_64M, MEMATTR_DEVICE_MEMORY },
     { 0, 0, 0, 0, 0 }
@@ -75,8 +79,10 @@ struct memdesc_t vm2_device_md[] = {
     { "v2m_timer23", 0x1C120000, 0x1C120000, SZ_4K, MEMATTR_DEVICE_MEMORY },
     { "rtc", 0x1C170000, 0x1C170000, SZ_4K, MEMATTR_DEVICE_MEMORY },
     { "clcd", 0x1C1F0000, 0x1C1F0000, SZ_4K, MEMATTR_DEVICE_MEMORY },
-    { "gicc", CFG_GIC_BASE_PA | 0x2000,
-            CFG_GIC_BASE_PA | 0x6000, SZ_8K, MEMATTR_DEVICE_MEMORY },
+    {
+        "gicc", CFG_GIC_BASE_PA | 0x2000,
+        CFG_GIC_BASE_PA | 0x6000, SZ_8K, MEMATTR_DEVICE_MEMORY
+    },
     { "SMSC91c111i", 0x1A000000, 0x1A000000, SZ_16M, MEMATTR_DEVICE_MEMORY },
     { "simplebus2", 0x18000000, 0x18000000, SZ_64M, MEMATTR_DEVICE_MEMORY },
     { 0, 0, 0, 0, 0 }
@@ -140,19 +146,19 @@ void set_memmap(struct vmem *vmem, vmid_t vmid)
      * PA: 0xB0000000 ~ 0xEFFFFFFF    guest2_bin_start
      */
 
-    if(vmid == 0) {
+    if (vmid == 0) {
         vm0_memory_md[0].pa = (uint64_t)((uint32_t) CFG_MEMMAP_GUEST0_ATAGS_OFFSET);
-    }else if(vmid == 1) {
+    } else if (vmid == 1) {
         vm1_memory_md[0].pa = (uint64_t)((uint32_t) CFG_MEMMAP_GUEST1_ATAGS_OFFSET);
-    }else if(vmid == 2) {
+    } else if (vmid == 2) {
         vm2_memory_md[0].pa = (uint64_t)((uint32_t) CFG_MEMMAP_GUEST2_ATAGS_OFFSET);
     }
 
-    if(vmid == 0) {
+    if (vmid == 0) {
         vmem->memmap = vm0_mdlist;
-    }else if(vmid == 1) {
+    } else if (vmid == 1) {
         vmem->memmap = vm1_mdlist;
-    }else if(vmid == 2) {
+    } else if (vmid == 2) {
         vmem->memmap = vm2_mdlist;
     }
 }

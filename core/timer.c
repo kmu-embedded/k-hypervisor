@@ -73,32 +73,32 @@ static inline uint64_t get_systemcounter_value(void)
 uint64_t timer_time_to_count(uint64_t time, time_unit_t unit)
 {
     switch (unit) {
-        case TIMEUNIT_USEC:
-            return us_to_count(time);
-        case TIMEUNIT_NSEC:
-            return ten_ns_to_count(time);
-        case TIMEUNIT_MSEC:
-            return ms_to_count(time);
-        case TIMEUNIT_SEC:
-            return sec_to_count(time);
-        default:
-            return 0; /* error */
+    case TIMEUNIT_USEC:
+        return us_to_count(time);
+    case TIMEUNIT_NSEC:
+        return ten_ns_to_count(time);
+    case TIMEUNIT_MSEC:
+        return ms_to_count(time);
+    case TIMEUNIT_SEC:
+        return sec_to_count(time);
+    default:
+        return 0; /* error */
     }
 }
 
 uint64_t timer_count_to_time(uint64_t count, time_unit_t unit)
 {
     switch (unit) {
-        case TIMEUNIT_USEC:
-            return count_to_us(count);
-        case TIMEUNIT_NSEC:
-            return count_to_ten_ns(count);
-        case TIMEUNIT_MSEC:
-            return count_to_ms(count);
-        case TIMEUNIT_SEC:
-            return count_to_sec(count);
-        default:
-            return 0; /* error */
+    case TIMEUNIT_USEC:
+        return count_to_us(count);
+    case TIMEUNIT_NSEC:
+        return count_to_ten_ns(count);
+    case TIMEUNIT_MSEC:
+        return count_to_ms(count);
+    case TIMEUNIT_SEC:
+        return count_to_sec(count);
+    default:
+        return 0; /* error */
     }
 }
 
@@ -113,8 +113,9 @@ uint64_t timer_get_systemcounter_value(void)
 hvmm_status_t timer_start(void)
 {
     /* timer_enable() */
-    if (__ops->enable)
+    if (__ops->enable) {
         return __ops->enable();
+    }
 
     return HVMM_STATUS_UNSUPPORTED_FEATURE;
 }
@@ -125,8 +126,9 @@ hvmm_status_t timer_start(void)
 hvmm_status_t timer_stop(void)
 {
     /* timer_disable() */
-    if (__ops->disable)
+    if (__ops->disable) {
         return __ops->disable();
+    }
 
     return HVMM_STATUS_UNSUPPORTED_FEATURE;
 }
@@ -137,8 +139,9 @@ hvmm_status_t timer_stop(void)
 static hvmm_status_t timer_set_interval(uint32_t interval_us)
 {
     /* timer_set_tval() */
-    if (__ops->set_interval)
+    if (__ops->set_interval) {
         return __ops->set_interval((uint32_t)us_to_count(interval_us));
+    }
 
     return HVMM_STATUS_UNSUPPORTED_FEATURE;
 }
@@ -146,8 +149,9 @@ static hvmm_status_t timer_set_interval(uint32_t interval_us)
 static hvmm_status_t timer_set_absolute(uint64_t absolute_us)
 {
     /* timer_set_tval() */
-    if (__ops->set_interval)
+    if (__ops->set_interval) {
         return __ops->set_absolute(us_to_count(absolute_us));
+    }
 
     return HVMM_STATUS_UNSUPPORTED_FEATURE;
 }
@@ -222,8 +226,9 @@ hvmm_status_t timer_set(struct timer *timer, uint32_t host)
         timer__host_set_callback(timer->callback, timer->interval);
         timer_set_interval(TICK_PERIOD_US);
         timer_start();
-    } else
+    } else {
         timer__guest_set_callback(timer->callback, timer->interval);
+    }
 
     /* TODO:(igkang) add code to handle guest_callback count (for vdev)  */
 
@@ -234,8 +239,9 @@ hvmm_status_t timer_init(uint32_t irq)
 {
     __ops = _timer_module.ops;
 
-    if (__ops->init)
+    if (__ops->init) {
         __ops->init();
+    }
 
     /* TODO: (igkang) timer related call - check return value */
     timer_requset_irq(irq);

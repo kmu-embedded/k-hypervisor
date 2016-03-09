@@ -32,7 +32,7 @@ hvmm_status_t vdev_register(int level, struct vdev_module *module)
 
     if (result != HVMM_STATUS_SUCCESS) {
         debug_print("vdev : Failed registering vdev '%s', max %d full\n",
-                module->name, MAX_VDEV);
+                    module->name, MAX_VDEV);
     }
 
     return result;
@@ -46,7 +46,7 @@ hvmm_status_t vdev_register(int level, struct vdev_module *module)
  * \retval -1 This is an internal error.
  */
 int32_t vdev_find(int level, struct arch_vdev_trigger_info *info,
-        struct core_regs *regs)
+                  struct core_regs *regs)
 {
     int32_t i;
     int32_t vdev_num = VDEV_NOT_FOUND;
@@ -56,16 +56,17 @@ int32_t vdev_find(int level, struct arch_vdev_trigger_info *info,
         vdev = _vdev_module[level][i];
         if (!vdev) {
             debug_print("vdev : Could not get module, level : %d, i : %d\n",
-                    level, i);
+                        level, i);
             break;
         }
         if (!vdev->ops) {
             debug_print("vdev : Could not get operation, level : %d, i : %d\n",
-                    level, i);
+                        level, i);
             break;
         }
-        if (!vdev->ops->check)
+        if (!vdev->ops->check) {
             continue;
+        }
         if (!vdev->ops->check(info, regs)) {
             vdev_num = i;
             break;
@@ -76,73 +77,76 @@ int32_t vdev_find(int level, struct arch_vdev_trigger_info *info,
 }
 
 int32_t vdev_read(int level, int num, struct arch_vdev_trigger_info *info,
-            struct core_regs *regs)
+                  struct core_regs *regs)
 {
     int32_t size = 0;
     struct vdev_module *vdev = _vdev_module[level][num];
 
     if (!vdev) {
         debug_print("vdev : Could not get module, level : %d, i : %d\n",
-                level, num);
+                    level, num);
         return VDEV_ERROR;
     }
 
     if (!vdev->ops) {
         debug_print("vdev : Could not get operation, level : %d, i : %d\n",
-                level, num);
+                    level, num);
         return VDEV_ERROR;
     }
 
-    if (vdev->ops->read)
+    if (vdev->ops->read) {
         size = vdev->ops->read(info, regs);
+    }
 
     return size;
 }
 
 int32_t vdev_write(int level, int num, struct arch_vdev_trigger_info *info,
-            struct core_regs *regs)
+                   struct core_regs *regs)
 {
     int32_t size = 0;
     struct vdev_module *vdev = _vdev_module[level][num];
 
     if (!vdev) {
         debug_print("vdev : Could not get module, level : %d, i : %d\n",
-                level, num);
+                    level, num);
         return VDEV_ERROR;
     }
 
     if (!vdev->ops) {
         debug_print("vdev : Could not get operation, level : %d, i : %d\n",
-                level, num);
+                    level, num);
         return VDEV_ERROR;
     }
 
-    if (vdev->ops->write)
+    if (vdev->ops->write) {
         size = vdev->ops->write(info, regs);
+    }
 
     return size;
 }
 
 hvmm_status_t vdev_post(int level, int num, struct arch_vdev_trigger_info *info,
-            struct core_regs *regs)
+                        struct core_regs *regs)
 {
     hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
     struct vdev_module *vdev = _vdev_module[level][num];
 
     if (!vdev) {
         debug_print("vdev : Could not get module, level : %d, i : %d\n",
-                level, num);
+                    level, num);
         return HVMM_STATUS_UNKNOWN_ERROR;
     }
 
     if (!vdev->ops) {
         debug_print("vdev : Could not get operation, level : %d, i : %d\n",
-                level, num);
+                    level, num);
         return HVMM_STATUS_UNKNOWN_ERROR;
     }
 
-    if (vdev->ops->post)
+    if (vdev->ops->post) {
         result = vdev->ops->post(info, regs);
+    }
 
     return result;
 }
@@ -157,8 +161,9 @@ hvmm_status_t vdev_save(vmid_t vmid)
     for (i = 0; i < VDEV_LEVEL_MAX; i++) {
         for (j = 0; j < _vdev_size[i]; j++) {
             vdev = _vdev_module[i][j];
-            if (!vdev->ops->save)
+            if (!vdev->ops->save) {
                 continue;
+            }
 
             result = vdev->ops->save(vmid);
             if (result) {
@@ -181,8 +186,9 @@ hvmm_status_t vdev_restore(vmid_t vmid)
     for (i = 0; i < VDEV_LEVEL_MAX; i++) {
         for (j = 0; j < _vdev_size[i]; j++) {
             vdev = _vdev_module[i][j];
-            if (!vdev->ops->restore)
+            if (!vdev->ops->restore) {
                 continue;
+            }
 
             result = vdev->ops->restore(vmid);
             if (result) {
@@ -247,12 +253,13 @@ hvmm_status_t SECTION(".init.vdev") vdev_init(void)
             vdev = _vdev_module[i][j];
             if (!vdev->ops) {
                 debug_print("vdev : Could not get operation, level : %d, i : %d\n",
-                        i, j);
+                            i, j);
                 return HVMM_STATUS_UNKNOWN_ERROR;
             }
 
-            if (!vdev->ops->init)
+            if (!vdev->ops->init) {
                 continue;
+            }
 
             result = vdev->ops->init();
             debug_print("vdev->name: %s\n", vdev->name);

@@ -168,7 +168,7 @@ static inline uint64_t generic_timer_reg_read64(int reg)
  *   Monitor mode when SCR.NS is  set to 1.
  */
 static hvmm_status_t generic_timer_set_tval(enum generic_timer_type timer_type,
-        uint32_t tval)
+                                            uint32_t tval)
 {
     hvmm_status_t result = HVMM_STATUS_UNSUPPORTED_FEATURE;
 
@@ -184,7 +184,7 @@ static hvmm_status_t generic_timer_set_tval(enum generic_timer_type timer_type,
 }
 
 static hvmm_status_t generic_timer_set_cval(enum generic_timer_type timer_type,
-        uint64_t cval)
+                                            uint64_t cval)
 {
     hvmm_status_t result = HVMM_STATUS_UNSUPPORTED_FEATURE;
 

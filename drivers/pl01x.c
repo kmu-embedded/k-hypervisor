@@ -14,11 +14,13 @@ void pl01x_putc(const char c)
 int pl01x_tst_fifo()
 {
     /* There is not a data in the FIFO */
-    if (readl((void *)(PL01X_BASE + PL01X_UARTFR)) & PL01X_UARTFR_RXFE)
+    if (readl((void *)(PL01X_BASE + PL01X_UARTFR)) & PL01X_UARTFR_RXFE) {
         return 0;
-    else
+    } else
         /* There is a data in the FIFO */
+    {
         return 1;
+    }
 }
 
 char pl01x_getc()
@@ -67,11 +69,11 @@ void pl01x_subinit(unsigned int base, uint32_t baudrate, uint32_t input_clock)
      * no parity, fifo enabled
      */
     writel((PL01X_UARTLCR_H_WLEN_8 | PL01X_UARTLCR_H_FEN),
-            (void *)(base + PL01X_UARTLCR_H));
+           (void *)(base + PL01X_UARTLCR_H));
 
     /* Finally, enable the UART */
     writel((PL01X_UARTCR_UARTEN | PL01X_UARTCR_TXE | PL01X_UARTCR_RXE),
-            (void *)(base + PL01X_UARTCR));
+           (void *)(base + PL01X_UARTCR));
 }
 
 void pl01x_init(uint32_t baudrate, uint32_t input_clock)
@@ -104,11 +106,11 @@ void pl01x_init(uint32_t baudrate, uint32_t input_clock)
      * no parity, fifo enabled
      */
     writel((PL01X_UARTLCR_H_WLEN_8 | PL01X_UARTLCR_H_FEN),
-            (void *)(PL01X_BASE + PL01X_UARTLCR_H));
+           (void *)(PL01X_BASE + PL01X_UARTLCR_H));
 
     /* Finally, enable the UART */
     writel((PL01X_UARTCR_UARTEN | PL01X_UARTCR_TXE | PL01X_UARTCR_RXE),
-            (void *)(PL01X_BASE + PL01X_UARTCR));
+           (void *)(PL01X_BASE + PL01X_UARTCR));
 
     pl01x_subinit(0x1C0A0000, baudrate, input_clock);
     pl01x_subinit(0x1C0B0000, baudrate, input_clock);

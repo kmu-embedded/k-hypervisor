@@ -140,11 +140,13 @@ int sched_rr_vcpu_attach(vcpuid_t vcpuid)
     }
 
     /* TODO:(igkang) Name the return value constants. */
-    if (entry_to_be_attached == NULL)
-        return -1; /* error: not registered */
+    if (entry_to_be_attached == NULL) {
+        return -1;    /* error: not registered */
+    }
 
-    if (entry_to_be_attached->state != DETACHED)
-        return -2; /* error: already attached */
+    if (entry_to_be_attached->state != DETACHED) {
+        return -2;    /* error: already attached */
+    }
 
     /* Set rq_entry_rr's fields */
     entry_to_be_attached->state = WAITING;
@@ -195,8 +197,9 @@ int sched_rr_do_schedule(uint32_t *delay_tick)
     /* determine next vcpu to be run
      *  - if there is an detach-pending vcpu than detach it. */
     if (current[cpu] == NULL) { /* No vCPU is running */
-        if (!list_empty(&runqueue_rr[cpu])) /* and there are some vcpus waiting */
+        if (!list_empty(&runqueue_rr[cpu])) { /* and there are some vcpus waiting */
             is_switching_needed = true;
+        }
     } else { /* There's a vCPU currently running */
         struct rq_entry_rr *current_entry = NULL;
 

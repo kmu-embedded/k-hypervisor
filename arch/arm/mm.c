@@ -83,12 +83,12 @@ void SECTION(".init") pgtable_init()
     l2_pgtable = l1_pgtable + 0x1000;
     l3_pgtable = l2_pgtable + 0x4000;
 
-    for(i = 0; i < 4; i++) {
+    for (i = 0; i < 4; i++) {
         l1_offset = i << 3;
         l2_offset = (i << 9) << 3;
         write64(set_table(l2_pgtable + l2_offset).raw, l1_pgtable + l1_offset);
 
-        for(j = 0; j < 512; j++) {
+        for (j = 0; j < 512; j++) {
             l3_offset = ((i << 18) + j << 9) << 3;
             write64(set_table(l3_pgtable + l3_offset).raw, l2_pgtable + l2_offset);
 
@@ -102,7 +102,7 @@ write_hyp_pgentry(uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size)
     uint32_t l1_index, l2_index, l3_index;
     int i;
 
-    for (i = 0; i < (size/SZ_4K); i++) {
+    for (i = 0; i < (size / SZ_4K); i++) {
         l1_index = (va & L1_INDEX_MASK) >> L1_SHIFT;
         l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
         l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
@@ -175,7 +175,7 @@ void write_pgentry_4k(void *pgtable_base, struct memdesc_t *mem_desc, bool is_gu
     size = mem_desc->size;
     if (size > SZ_4K) {
         debug_print("[%s] size is bigger than 4K\n");
-        while(1) ;
+        while (1) ;
     }
     va = (uint32_t) mem_desc->va;
     pa = (uint32_t) mem_desc->pa;

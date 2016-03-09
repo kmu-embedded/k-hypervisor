@@ -30,8 +30,9 @@ const int32_t interrupt_check_guest_irq(uint32_t pirq)
         struct vmcb *vm = vm_find(i);
         map = vm->virq.guest_virqmap->map;
 
-        if (map[pirq].virq != VIRQ_INVALID)
+        if (map[pirq].virq != VIRQ_INVALID) {
             return GUEST_IRQ;
+        }
     }
 
     return HOST_IRQ;
@@ -52,8 +53,9 @@ const uint32_t interrupt_pirq_to_enabled_virq(vmid_t vmid, uint32_t pirq)
     struct vmcb *vm = vm_find(vmid);
     struct virqmap_entry *map = vm->virq.guest_virqmap->map;
 
-    if (map[pirq].enabled)
+    if (map[pirq].enabled) {
         virq = map[pirq].virq;
+    }
 
     return virq;
 }
@@ -69,11 +71,13 @@ void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
 {
     uint32_t cpu = smp_processor_id();
 
-    if (irq < MAX_PPI_IRQS)
+    if (irq < MAX_PPI_IRQS) {
         _host_ppi_handlers[cpu][irq] = handler;
+    }
 
-    else
+    else {
         _host_spi_handlers[irq] = handler;
+    }
 }
 
 void interrupt_guest_enable(vmid_t vmid, uint32_t irq)
@@ -92,11 +96,13 @@ static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
 
     for (i = 0; i < num_of_guests; i++) {
         virq = interrupt_pirq_to_enabled_virq(i, irq);
-        if (virq == VIRQ_INVALID)
+        if (virq == VIRQ_INVALID) {
             continue;
+        }
 #ifdef __UART_IRQ_DEBUG__
-        if (irq != 34)
+        if (irq != 34) {
             printf("vmid %d: pirq %d virq %d\n", i, irq, virq);
+        }
 #endif
         virq_inject(i, virq, irq, INJECT_HW);
     }
@@ -119,17 +125,20 @@ void interrupt_service_routine(int irq, void *current_regs, void *pdata)
         } else {
             /* host irq */
             if (irq < MAX_PPI_IRQS) {
-                if (_host_ppi_handlers[cpu][irq])
+                if (_host_ppi_handlers[cpu][irq]) {
                     _host_ppi_handlers[cpu][irq](irq, regs, 0);
+                }
             } else {
-                if (_host_spi_handlers[irq])
+                if (_host_spi_handlers[irq]) {
                     _host_spi_handlers[irq](irq, regs, 0);
+                }
             }
             gic_completion_irq(irq);
             gic_deactivate_irq(irq);
         }
-    } else
+    } else {
         debug_print("interrupt:no pending irq:%x\n", irq);
+    }
 }
 
 // TODO(casionwoo): Will be moved into vgic.c?
