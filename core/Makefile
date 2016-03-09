@@ -1,18 +1,30 @@
-include ../config.mk
+#include ../config.mk
 
-ROOT_PATH   = ..
-#OBJS_DIR	= $(ROOT_PATH)/$(BUILD)/core
+INCLUDES	+= -I./
 
-SRCS		= $(wildcard *.c)
-OBJS		= $(SRCS:%.c=%.o)
+include ${SOURCE_PATH}/core/sched/Makefile
+include ${SOURCE_PATH}/core/vm/Makefile
 
-all: $(OBJS)
+CORE_SRCS+= $(patsubst %, sched/%, ${SCHED_SRCS})
+CORE_SRCS+= $(patsubst %, vm/%, ${VM_SRCS})
+CORE_SRCS+= interrupt.c
+CORE_SRCS+= main.c
+CORE_SRCS+= vdev.c
+CORE_SRCS+= timer.c
 
-%.o: %.c
-	@`[ -d $(OBJS_DIR) ] || $(MKDIR) -p $(OBJS_DIR)`
-	$(CC) $(CPPFLAGS) $(INCLUDES) -c $< -o $@
+#CORE_OBJS+= $(CORE_SRCS:%.c=%.o)
 
-clean:
-	rm -rf $(OBJS_DIR)
+#all: $(CORE_OBJS)
 
-.PHONY: clean
+# alternatives: .S.o:
+#%.o: %.S
+#	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+#
+## alternatives: .S.o:
+#%.o: %.c
+#	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+#
+#clean:
+#	rm -rf $(CORE_OBJS)
+#
+#.PHONY: clean

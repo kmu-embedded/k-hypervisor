@@ -34,8 +34,8 @@ NM			= $(CROSS_COMPILE)nm
 OBJCOPY		= $(CROSS_COMPILE)objcopy
 
 
-CPPFLAGS	= $(CONFIG_FLAG) -ffreestanding -nostdlib -nodefaultlibs -nostartfiles $(DEBUG_FLAG)
-CPPFLAGS	+= -Wall
-CPPFLAGS	+= -D__CONFIG_MUTEX__
-#CPPFLAGS	+= -D__CONFIG_SMP__
-#CPPFLAGS	+= -D__TEST_TIMER__
+CFLAGS	= $(CONFIG_FLAG) -ffreestanding -nostdlib -nodefaultlibs -nostartfiles $(DEBUG_FLAG)
+CFLAGS	+= -Wall
+CFLAGS	+= -D__CONFIG_MUTEX__
+#CFLAGS	+= -D__CONFIG_SMP__
+#CFLAGS	+= -D__TEST_TIMER__

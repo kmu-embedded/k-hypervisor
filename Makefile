@@ -1,86 +1,51 @@
 include config.mk
 
-ARCH_DIRS		= $(ROOT)/$(ARCH) $(ROOT)/$(ARCH)/$(VERSION) $(ROOT)/$(ARCH)/platform
-CORE_DIRS		= $(ROOT)/$(CORE) $(ROOT)/$(CORE)/sched $(ROOT)/$(CORE)/vm
-DRIVERS_DIRS	= $(ROOT)/$(DRV) $(ROOT)/$(DRV)/vdev
-LIB_DIRS		= $(ROOT)/$(LIB)/c/src $(ROOT)/$(LIB)/c/src/arch-arm $(ROOT)/$(LIB)/c/src/sys-baremetal	\
-			  		$(ROOT)/$(LIB)/c/src/sys-baremetal/arch-arm
-TESTS_DIRS		= $(ROOT)/$(TESTS) $(ROOT)/$(TESTS)/libs
+SOURCE_PATH=.
+export SOURCE_PATH
+
+include ${SOURCE_PATH}/arch/arm/Makefile
+include ${SOURCE_PATH}/core/Makefile
+include ${SOURCE_PATH}/drivers/Makefile
+include ${SOURCE_PATH}/lib/c/src/Makefile
+
+ASMS+= $(patsubst %, arch/arm/%, ${ARCH_ASMS})
+SRCS+= $(patsubst %, arch/arm/%, ${ARCH_SRCS})
+
+SRCS+= $(patsubst %, core/%, ${CORE_SRCS})
+SRCS+= $(patsubst %, drivers/%, ${DRIVER_SRCS})
+
+SRCS+= $(patsubst %, lib/c/src/%, ${LIBC_SRCS})
+ASMS+= $(patsubst %, lib/c/src/%, ${LIBC_ASMS})
+
+OBJS+= $(ASMS:%.S=%.o)
+OBJS+= $(SRCS:%.c=%.o)
+
+ARCH_DIRS		= $(ROOT)/$(ARCH)
+CORE_DIRS		= $(ROOT)/$(CORE)
+DRIVERS_DIRS	= $(ROOT)/$(DRV)
+LIB_DIRS		= $(ROOT)/$(LIB)/c/src
 
 BIN				= $(BUILD_DIR)/$(TARGET).bin
 LD_SCRIPT		= $(PROJECT).lds.S
 OUTPUT			= $(TARGET).axf
 MAP				= $(PROJECT).map
 
+INCLUDES += -I${SOURCE_PATH}/arch/arm
+INCLUDES += -I${SOURCE_PATH}/drivers/vdev
 
 #all:	ARCH CORE DRIVERS LIB TESTS
-all:	ARCH CORE DRIVERS LIB \
-	$(OUTPUT) $(MAP)
+#all: $(OUTPUT) $(MAP) $(BIN) $(OBJS)
+all: $(OBJS)
+%.o: %.S
+	echo $(OBJS)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-ARCH:
-	@for dir in $(ARCH_DIRS); do \
-	$(MAKE) -C $$dir all; \
-	if [ $$? != 0 ]; then exit 1; fi; \
-	done
-
-CORE:
-	@for dir in $(CORE_DIRS); do \
-	$(MAKE) -C $$dir all; \
-	if [ $$? != 0 ]; then exit 1; fi; \
-	done
-
-DRIVERS:
-	@for dir in $(DRIVERS_DIRS); do \
-	$(MAKE) -C $$dir all; \
-	if [ $$? != 0 ]; then exit 1; fi; \
-	done
-
-LIB:
-	@for dir in $(LIB_DIRS); do \
-	$(MAKE) -C $$dir all; \
-	if [ $$? != 0 ]; then exit 1; fi; \
-	done
-
-TESTS:
-	@for dir in $(TESTS_DIRS); do \
-	$(MAKE) -C $$dir all; \
-	if [ $$? != 0 ]; then exit 1; fi; \
-	done
-
-
-$(MAP): $(OUTPUT)
-	$(NM) $(BUILD)/$< > $(BUILD)/$@
-
-$(OUTPUT): $(MACHINE).lds $(OBJS)
-	$(CC) $(CPPFLAGS) -e __start -T $(BUILD)/$(MACHINE).lds -o $(BUILD)/$@ \
-		$(BUILD)/$(ARCH)/*.o	\
-		$(BUILD)/$(ARCH)/platform/*.o	\
-		$(BUILD)/$(ARCH)/$(VERSION)/*.o	\
-		$(BUILD)/$(CORE)/*.o	\
-		$(BUILD)/$(CORE)/sched/*.o	\
-		$(BUILD)/$(CORE)/vm/*.o	\
-		$(BUILD)/$(DRV)/*.o		\
-		$(BUILD)/$(DRV)/vdev/*.o	\
-		$(BUILD)/$(LIB)/c/src/*.o	\
-		$(BUILD)/$(LIB)/c/src/arch-arm/*.o	\
-		$(BUILD)/$(LIB)/c/src/sys-baremetal/arch-arm/*.o	\
-		$(BUILD)/$(LIB)/c/src/sys-baremetal/*.o
-
-$(BIN): $(OUTPUT)
-	$(OBJCOPY) -O binary $(OUTPUT) $(BIN)
-
-$(MACHINE).lds: $(LD_SCRIPT) Makefile
-	$(CC) $(CPPFLAGS) $(INCLUDES) -E -P -C -o $(BUILD)/$@ $<
-
-%: force
-	$(MAKE) -C $(KERNEL_SRC) $@
-
-force: ;
-
-Makefile: ;
+# alternatives: .S.o:
+%.o: %.c
+	echo $(OBJS)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	find . -name '*.o' -exec rm {} \;
-	rm *.axf *.lds *.map
+	rm -rf $(OBJS)
 
-.PHONY: all clean config.mk
+#.PHONY: all clean config.mk
