@@ -50,12 +50,12 @@ name:
 
 #else
 /* ARM tools */
-	MACRO
-	begin_proc $name
-	EXPORT	$name
-	ALIGN
+MACRO
+begin_proc $name
+EXPORT	$name
+ALIGN
 $name
-	MEND
+MEND
 #define BEGIN_PROC(name)			\
     begin_proc name
 
@@ -67,10 +67,10 @@ $name
  * start of lines, while RVCT puts no space at all! :(
  */
 #if __ARMCC_VERSION < 200000
-	MACRO
-	label $name
+MACRO
+label $name
 $name
-	MEND
+MEND
 #define LABEL(name)		label name
 #else
 #define LABEL(name)		name

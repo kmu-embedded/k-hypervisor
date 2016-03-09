@@ -54,13 +54,13 @@ hvmm_status_t vgic_restore_status(struct vgic_status *status, vmid_t vmid);
 hvmm_status_t vgic_flush_virqs(vmid_t vmid);
 /* returns slot index if successful, VGIC_SLOT_NOTFOUND otherwise */
 uint32_t vgic_inject_virq_sw(uint32_t virq, enum virq_state state,
-            uint32_t priority, uint32_t cpuid, uint8_t maintenance);
+                             uint32_t priority, uint32_t cpuid, uint8_t maintenance);
 /* returns slot index if successful, VGIC_SLOT_NOTFOUND otherwise */
 uint32_t vgic_inject_virq_hw(uint32_t virq, enum virq_state state,
-            uint32_t priority, uint32_t pirq);
+                             uint32_t priority, uint32_t pirq);
 uint32_t vgic_inject_virq(uint32_t virq, uint32_t slot, enum virq_state state,
-            uint32_t priority, uint8_t hw, uint32_t physrc,
-            uint8_t maintenance);
+                          uint32_t priority, uint8_t hw, uint32_t physrc,
+                          uint8_t maintenance);
 hvmm_status_t vgic_setcallback_virq_flush(void (*callback)(vmid_t vmid));
 hvmm_status_t vgic_injection_enable(uint8_t enable);
 /**
@@ -81,7 +81,7 @@ void vgic_slotvirq_clear(vmid_t vmid, uint32_t slot);
  */
 
 hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
-        uint32_t pirq, uint8_t hw);
+                          uint32_t pirq, uint8_t hw);
 /**
  * @brief   Initializes virq_entry structure and
             Sets callback function about injection of queued VIRQs.

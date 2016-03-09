@@ -66,15 +66,15 @@ static inline void spin_lock(spinlock_t *lock)
     unsigned long tmp;
 
     asm __volatile__(
-"1: ldrex   %0, [%1]\n"
-"   teq %0, #0\n"
-    WFE("ne")
-"   strexeq %0, %2, [%1]\n"
-"   teqeq   %0, #0\n"
-"   bne 1b"
-    : "=&r" (tmp)
-    : "r" (&lock->lock), "r" (1)
-    : "cc");
+        "1: ldrex   %0, [%1]\n"
+        "   teq %0, #0\n"
+        WFE("ne")
+        "   strexeq %0, %2, [%1]\n"
+        "   teqeq   %0, #0\n"
+        "   bne 1b"
+        : "=&r" (tmp)
+        : "r" (&lock->lock), "r" (1)
+        : "cc");
 
     smp_mb();
 }
@@ -84,12 +84,12 @@ static inline int spin_trylock(spinlock_t *lock)
     unsigned long tmp;
 
     asm __volatile__(
-"   ldrex   %0, [%1]\n"
-"   teq %0, #0\n"
-"   strexeq %0, %2, [%1]"
-    : "=&r" (tmp)
-    : "r" (&lock->lock), "r" (1)
-    : "cc");
+        "   ldrex   %0, [%1]\n"
+        "   teq %0, #0\n"
+        "   strexeq %0, %2, [%1]"
+        : "=&r" (tmp)
+        : "r" (&lock->lock), "r" (1)
+        : "cc");
 
     if (tmp == 0) {
         smp_mb();
@@ -104,10 +104,10 @@ static inline void spin_unlock(spinlock_t *lock)
     smp_mb();
 
     asm __volatile__(
-"   str %1, [%0]\n"
-    :
-    : "r" (&lock->lock), "r" (0)
-    : "cc");
+        "   str %1, [%0]\n"
+        :
+        : "r" (&lock->lock), "r" (0)
+        : "cc");
 
     dsb_sev();
 }

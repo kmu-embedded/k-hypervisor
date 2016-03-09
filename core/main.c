@@ -117,9 +117,9 @@ void SECTION(".init") main(void)
 #ifdef __CONFIG_SMP__
     uint8_t cpuid = smp_processor_id();
 
-    if (cpuid)
+    if (cpuid) {
         secondary_core_init();
-    else
+    } else
 #endif
         primary_core_init();
 }

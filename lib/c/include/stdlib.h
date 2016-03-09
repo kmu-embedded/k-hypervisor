@@ -1,16 +1,16 @@
 /*
  * Australian Public Licence B (OZPLB)
- * 
+ *
  * Version 1-0
- * 
+ *
  * Copyright (c) 2004 National ICT Australia
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * Developed by: Embedded, Real-time and Operating Systems Program (ERTOS)
  *               National ICT Australia
  *               http://www.ertos.nicta.com.au
- * 
+ *
  * Permission is granted by National ICT Australia, free of charge, to
  * any person obtaining a copy of this software and any associated
  * documentation files (the "Software") to deal with the Software without
@@ -19,19 +19,19 @@
  * sublicense, and/or sell, lend or rent out copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject
  * to the following conditions:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimers.
- * 
+ *
  *     * Redistributions in binary form must reproduce the above
  *       copyright notice, this list of conditions and the following
  *       disclaimers in the documentation and/or other materials provided
  *       with the distribution.
- * 
+ *
  *     * Neither the name of National ICT Australia, nor the names of its
  *       contributors, may be used to endorse or promote products derived
  *       from this Software without specific prior written permission.
- * 
+ *
  * EXCEPT AS EXPRESSLY STATED IN THIS LICENCE AND TO THE FULL EXTENT
  * PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED "AS-IS", AND
  * NATIONAL ICT AUSTRALIA AND ITS CONTRIBUTORS MAKE NO REPRESENTATIONS,
@@ -41,7 +41,7 @@
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NONINFRINGEMENT,
  * THE ABSENCE OF LATENT OR OTHER DEFECTS, OR THE PRESENCE OR ABSENCE OF
  * ERRORS, WHETHER OR NOT DISCOVERABLE.
- * 
+ *
  * TO THE FULL EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL
  * NATIONAL ICT AUSTRALIA OR ITS CONTRIBUTORS BE LIABLE ON ANY LEGAL
  * THEORY (INCLUDING, WITHOUT LIMITATION, IN AN ACTION OF CONTRACT,
@@ -55,7 +55,7 @@
  * DEALINGS WITH THE SOFTWARE, EVEN IF NATIONAL ICT AUSTRALIA OR ITS
  * CONTRIBUTORS HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH CLAIM, LOSS,
  * DAMAGES OR OTHER LIABILITY.
- * 
+ *
  * If applicable legislation implies representations, warranties, or
  * conditions, or imposes obligations or liability on National ICT
  * Australia or one of its contributors in respect of the Software that
@@ -72,7 +72,7 @@
  * b.  in the case of services:
  * i.  the supplying of the services again; or
  * ii.  the payment of the cost of having the services supplied again.
- * 
+ *
  * The construction, validity and performance of this licence is governed
  * by the laws in force in New South Wales, Australia.
  */
@@ -87,19 +87,19 @@
 
 /* 7.20.2 div types */
 typedef struct {
-	int quot, rem;
+    int quot, rem;
 } div_t;
 
 typedef struct {
-	long quot, rem;
+    long quot, rem;
 } ldiv_t;
 
 typedef struct {
-	long long quot, rem;
+    long long quot, rem;
 } lldiv_t;
 
 
-/* 7.20.3 EXIT_ macros */  
+/* 7.20.3 EXIT_ macros */
 #define	EXIT_FAILURE	1
 #define	EXIT_SUCCESS	0
 
@@ -122,23 +122,23 @@ unsigned long long strtoull(const char *s, char **endp, int base);
 /* 7.20.1-1 atof function */
 static inline double atof(const char *nptr)
 {
-	return strtod(nptr, (char **)NULL);
+    return strtod(nptr, (char **)NULL);
 }
 
 /* 7.20.1-2 The atoi, atol and atoll functions */
 static inline int atoi(const char *nptr)
 {
-	return (int) strtol(nptr, (char **)NULL, 10);
+    return (int) strtol(nptr, (char **)NULL, 10);
 }
 
 static inline long atol(const char *nptr)
 {
-	return strtol(nptr, (char **)NULL, 10);
+    return strtol(nptr, (char **)NULL, 10);
 }
 
 static inline long long atoll(const char *nptr)
 {
-	return strtoll(nptr, (char **)NULL, 10);
+    return strtoll(nptr, (char **)NULL, 10);
 }
 
 /* 7.20.2 Pseudo-random sequence generation functions */
@@ -182,19 +182,19 @@ long long llabs(long long);
 static inline int
 abs(int x)
 {
-	return x < 0 ? -x : x;
+    return x < 0 ? -x : x;
 }
 
 static inline long
 labs(long x)
 {
-	return x < 0 ? -x : x;
+    return x < 0 ? -x : x;
 }
 
 static inline long long
 llabs(long long x)
 {
-	return x < 0 ? -x : x;
+    return x < 0 ? -x : x;
 }
 #endif
 /* 7.20.7 Multibyte/wide character conversion functions */

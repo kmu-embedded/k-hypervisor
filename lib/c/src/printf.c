@@ -100,8 +100,8 @@ static DEFINE_MUTEX(PRINT_MUTEX);
 int
 printf(const char *format, ...)
 {
-	int ret;
-	va_list ap;
+    int ret;
+    va_list ap;
 
 #ifdef __CONFIG_SMP__
     unsigned long flags;
@@ -112,9 +112,9 @@ printf(const char *format, ...)
     lock_mutex(&PRINT_MUTEX);
 #endif
 
-	va_start(ap, format);
-	ret = vfprintf(stdout, format, ap);
-	va_end(ap);
+    va_start(ap, format);
+    ret = vfprintf(stdout, format, ap);
+    va_end(ap);
 
 #ifdef __CONFIG_MUTEX__
     unlock_mutex(&PRINT_MUTEX);
@@ -124,5 +124,5 @@ printf(const char *format, ...)
     smp_spin_unlock(&PRINTF_LOCK, flags);
 #endif
 
-	return ret;
+    return ret;
 }

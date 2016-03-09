@@ -115,11 +115,13 @@ enum hyp_hvc_result _hyp_hvc_service(struct core_regs *regs)
     }
 
     if (iss & ISS_WNR) {
-        if (vdev_write(level, vdev_num, &info, regs) < 0)
+        if (vdev_write(level, vdev_num, &info, regs) < 0) {
             goto trap_error;
+        }
     } else {
-        if (vdev_read(level, vdev_num, &info, regs) < 0)
+        if (vdev_read(level, vdev_num, &info, regs) < 0) {
             goto trap_error;
+        }
     }
     vdev_post(level, vdev_num, &info, regs);
 

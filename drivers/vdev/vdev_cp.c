@@ -62,8 +62,9 @@ void emulate_mcr_mrc_cp15(unsigned int iss, unsigned int il)
     } else if (dir == 1) {
         printf("MRC ");
         printf("p15, %d, Rt%d, c%d, c%d, %d\n", Opc1, Rt, CRn, CRm, Opc2);
-    } else
+    } else {
         printf("Error: Unknown instructions\n");
+    }
 }
 
 void emulate_mcr_mrc_cp14(unsigned int iss, unsigned int il)
@@ -96,8 +97,9 @@ void emulate_mcr_mrc_cp14(unsigned int iss, unsigned int il)
     } else if (dir == 1) {
         printf("MRC ");
         printf("p14, %d, Rt%d, c%d, c%d, %d\n", Opc1, Rt, CRn, CRm, Opc2);
-    } else
+    } else {
         printf("Error: Unknown instructions\n");
+    }
 }
 
 void emulate_mcr_mrc_cp10(unsigned int iss, unsigned int il)
@@ -131,8 +133,9 @@ void emulate_mcr_mrc_cp10(unsigned int iss, unsigned int il)
     } else if (dir == 1) {
         printf("VMRS ");
         printf("p10, %d, Rt%d, c%d, c%d, %d\n", Opc1, Rt, CRn, CRm, Opc2);
-    } else
+    } else {
         printf("Error: Unknown instructions\n");
+    }
 }
 
 /*
@@ -176,21 +179,23 @@ void emulate_wfi_wfe(unsigned int iss, unsigned int il)
     else
         cond = 0x0;
     */
-    if (il == 0)
+    if (il == 0) {
         printf("16-bit Thumb instruction\n");
-    else
+    } else {
         printf("32-bit ARM instruction\n");
+    }
 
     direction = (iss & WFI_WFE_DIRECTION_BIT);
-    if (direction == 0)
+    if (direction == 0) {
         printf("WFI trapped.\n");
-    else
+    } else {
         printf("WFE trapped.\n");
+    }
 
 }
 
 static int32_t vdev_cp_read(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                            struct core_regs *regs)
 {
     unsigned int ec = info->ec;
     unsigned int hsr = read_hsr();
@@ -237,7 +242,7 @@ static int32_t vdev_cp_read(struct arch_vdev_trigger_info *info,
 }
 
 static int32_t vdev_cp_write(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                             struct core_regs *regs)
 {
     unsigned int ec = info->ec;
     unsigned int hsr = read_hsr();
@@ -284,12 +289,13 @@ static int32_t vdev_cp_write(struct arch_vdev_trigger_info *info,
 }
 
 static hvmm_status_t vdev_cp_post(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                                  struct core_regs *regs)
 {
     uint8_t isize = 4;
 
-    if (regs->cpsr & 0x20) /* Thumb */
+    if (regs->cpsr & 0x20) { /* Thumb */
         isize = 2;
+    }
 
     regs->pc += isize;
 
@@ -297,19 +303,20 @@ static hvmm_status_t vdev_cp_post(struct arch_vdev_trigger_info *info,
 }
 
 static int32_t vdev_cp_check(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                             struct core_regs *regs)
 {
     uint32_t ec = info->ec;
 
     if (ec == TRAP_EC_ZERO_MCR_MRC_CP15 ||
-        ec == TRAP_EC_ZERO_MCRR_MRRC_CP15 ||
-        ec == TRAP_EC_ZERO_MCR_MRC_CP14 ||
-        ec == TRAP_EC_ZERO_HCRTR_CP0_CP13 ||
-        ec == TRAP_EC_ZERO_MRC_VMRS_CP10 ||
-        ec == TRAP_EC_ZERO_MRRC_CP14 ||
-        ec == TRAP_EC_ZERO_MCR_MRC_CP14 ||
-        ec == TRAP_EC_ZERO_LDC_STC_CP14)
+            ec == TRAP_EC_ZERO_MCRR_MRRC_CP15 ||
+            ec == TRAP_EC_ZERO_MCR_MRC_CP14 ||
+            ec == TRAP_EC_ZERO_HCRTR_CP0_CP13 ||
+            ec == TRAP_EC_ZERO_MRC_VMRS_CP10 ||
+            ec == TRAP_EC_ZERO_MRRC_CP14 ||
+            ec == TRAP_EC_ZERO_MCR_MRC_CP14 ||
+            ec == TRAP_EC_ZERO_LDC_STC_CP14) {
         return 0;
+    }
 
     return VDEV_NOT_FOUND;
 }
@@ -339,11 +346,11 @@ hvmm_status_t vdev_cp_init()
     hvmm_status_t result = HVMM_STATUS_BUSY;
 
     result = vdev_register(VDEV_LEVEL_HIGH, &_vdev_cp_module);
-    if (result == HVMM_STATUS_SUCCESS)
+    if (result == HVMM_STATUS_SUCCESS) {
         printf("vdev registered:'%s'\n", _vdev_cp_module.name);
-    else {
+    } else {
         printf("%s: Unable to register vdev:'%s' code=%x\n",
-                __func__, _vdev_cp_module.name, result);
+               __func__, _vdev_cp_module.name, result);
     }
 
     return result;

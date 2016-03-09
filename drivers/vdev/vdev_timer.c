@@ -28,11 +28,11 @@ static void vtimer_changed_status(vmid_t vmid, uint32_t status)
 }
 
 static hvmm_status_t vdev_vtimer_access_handler(uint32_t write,
-        uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
+                                                uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     printf("%s: %s offset:%d value:%x\n", __func__,
-            write ? "write" : "read",
-            offset, write ? *pvalue : (uint32_t) pvalue);
+           write ? "write" : "read",
+           offset, write ? *pvalue : (uint32_t) pvalue);
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     unsigned int vmid = get_current_vcpuid();
     if (!write) {
@@ -50,14 +50,14 @@ static hvmm_status_t vdev_vtimer_access_handler(uint32_t write,
             vtimer_regs[vmid].vtimer_mask = *pvalue;
             vtimer_changed_status(vmid, *pvalue);
             result = HVMM_STATUS_SUCCESS;
-                break;
+            break;
         }
     }
     return result;
 }
 
 static int32_t vdev_vtimer_read(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                                struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_timer_info.base;
 
@@ -65,7 +65,7 @@ static int32_t vdev_vtimer_read(struct arch_vdev_trigger_info *info,
 }
 
 static int32_t vdev_vtimer_write(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                                 struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_timer_info.base;
 
@@ -73,12 +73,13 @@ static int32_t vdev_vtimer_write(struct arch_vdev_trigger_info *info,
 }
 
 static hvmm_status_t vdev_vtimer_post(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                                      struct core_regs *regs)
 {
     uint8_t isize = 4;
 
-    if (regs->cpsr & 0x20) /* Thumb */
+    if (regs->cpsr & 0x20) { /* Thumb */
         isize = 2;
+    }
 
     regs->pc += isize;
 
@@ -86,13 +87,14 @@ static hvmm_status_t vdev_vtimer_post(struct arch_vdev_trigger_info *info,
 }
 
 static int32_t vdev_vtimer_check(struct arch_vdev_trigger_info *info,
-                        struct core_regs *regs)
+                                 struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_timer_info.base;
 
     if (info->fipa >= _vdev_timer_info.base &&
-        offset < _vdev_timer_info.size)
+            offset < _vdev_timer_info.size) {
         return 0;
+    }
     return VDEV_NOT_FOUND;
 }
 
@@ -102,7 +104,9 @@ void callback_timer(void *pdata, uint32_t *delay_tick)
 
     if (_timer_status[vmid] == 0)
         // TODO:(igkang) make '0' parameter as named constant.
+    {
         virq_inject(vmid, VTIMER_IRQ, 0, INJECT_SW);
+    }
 
     /* FIXME:(igkang) hardcoded */
     *delay_tick = 1 * TICKTIME_1MS / 50;
@@ -115,8 +119,9 @@ static hvmm_status_t vdev_vtimer_reset(void)
     uint32_t cpu = smp_processor_id();
 
     if (!cpu) {
-        for (i = 0; i < NUM_GUESTS_STATIC; i++)
+        for (i = 0; i < NUM_GUESTS_STATIC; i++) {
             _timer_status[i] = 1;
+        }
     }
 
     timer.interval = TICKTIME_1MS;
@@ -146,11 +151,11 @@ hvmm_status_t vdev_vtimer_init()
     hvmm_status_t result = HVMM_STATUS_BUSY;
 
     result = vdev_register(VDEV_LEVEL_LOW, &_vdev_hvc_vtimer_module);
-    if (result == HVMM_STATUS_SUCCESS)
+    if (result == HVMM_STATUS_SUCCESS) {
         printf("vdev registered:'%s'\n", _vdev_hvc_vtimer_module.name);
-    else {
+    } else {
         printf("%s: Unable to register vdev:'%s' code=%x\n",
-                __func__, _vdev_hvc_vtimer_module.name, result);
+               __func__, _vdev_hvc_vtimer_module.name, result);
     }
 
     return result;

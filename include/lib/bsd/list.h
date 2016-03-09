@@ -55,8 +55,8 @@
  */
 
 struct list_head {
-	struct list_head *prev;
-	struct list_head *next;
+    struct list_head *prev;
+    struct list_head *next;
 };
 
 #define	LIST_HEAD_INIT(name)	{ .prev = &(name), .next = &(name) }
@@ -64,139 +64,143 @@ struct list_head {
 static inline void
 INIT_LIST_HEAD(struct list_head *head)
 {
-	head->prev = head;
-	head->next = head;
+    head->prev = head;
+    head->next = head;
 }
 
 static inline struct list_head *
 list_first(const struct list_head *head)
 {
-	return head->next;
+    return head->next;
 }
 
 static inline struct list_head *
 list_last(const struct list_head *head)
 {
-	return head->prev;
+    return head->prev;
 }
 
 static inline struct list_head *
 list_next(const struct list_head *node)
 {
-	return node->next;
+    return node->next;
 }
 
 static inline struct list_head *
 list_prev(const struct list_head *node)
 {
-	return node->prev;
+    return node->prev;
 }
 
 static inline int
 list_empty(const struct list_head *head)
 {
-	return (head->next == head);
+    return (head->next == head);
 }
 
 static inline int
 list_is_singular(const struct list_head *head)
 {
 
-	if (list_empty(head))
-		return false;
-	if (head->next != head->prev)
-		return false;
-	return true;
+    if (list_empty(head)) {
+        return false;
+    }
+    if (head->next != head->prev) {
+        return false;
+    }
+    return true;
 }
 
 static inline void
 __list_add_between(struct list_head *prev, struct list_head *node,
-    struct list_head *next)
+                   struct list_head *next)
 {
-	prev->next = node;
-	node->prev = prev;
-	node->next = next;
-	next->prev = node;
+    prev->next = node;
+    node->prev = prev;
+    node->next = next;
+    next->prev = node;
 }
 
 static inline void
 list_add(struct list_head *node, struct list_head *head)
 {
-	__list_add_between(head, node, head->next);
+    __list_add_between(head, node, head->next);
 }
 
 static inline void
 list_add_tail(struct list_head *node, struct list_head *head)
 {
-	__list_add_between(head->prev, node, head);
+    __list_add_between(head->prev, node, head);
 }
 
 static inline void
 list_del(struct list_head *entry)
 {
-	entry->prev->next = entry->next;
-	entry->next->prev = entry->prev;
+    entry->prev->next = entry->next;
+    entry->next->prev = entry->prev;
 }
 
 static inline void
 __list_splice_between(struct list_head *prev, const struct list_head *list,
-    struct list_head *next)
+                      struct list_head *next)
 {
-	struct list_head *first = list->next;
-	struct list_head *last = list->prev;
+    struct list_head *first = list->next;
+    struct list_head *last = list->prev;
 
-	first->prev = prev;
-	prev->next = first;
+    first->prev = prev;
+    prev->next = first;
 
-	last->next = next;
-	next->prev = last;
+    last->next = next;
+    next->prev = last;
 }
 
 static inline void
 list_splice(const struct list_head *list, struct list_head *head)
 {
-	if (!list_empty(list))
-		__list_splice_between(head, list, head->next);
+    if (!list_empty(list)) {
+        __list_splice_between(head, list, head->next);
+    }
 }
 
 static inline void
 list_splice_tail(const struct list_head *list, struct list_head *head)
 {
-	if (!list_empty(list))
-		__list_splice_between(head->prev, list, head);
+    if (!list_empty(list)) {
+        __list_splice_between(head->prev, list, head);
+    }
 }
 
 static inline void
 list_move(struct list_head *node, struct list_head *head)
 {
-	list_del(node);
-	list_add(node, head);
+    list_del(node);
+    list_add(node, head);
 }
 
 static inline void
 list_move_tail(struct list_head *node, struct list_head *head)
 {
-	list_del(node);
-	list_add_tail(node, head);
+    list_del(node);
+    list_add_tail(node, head);
 }
 
 static inline void
 list_replace(struct list_head *old, struct list_head *new)
 {
-	new->prev = old->prev;
-	old->prev->next = new;
-	new->next = old->next;
-	old->next->prev = new;
+    new->prev = old->prev;
+    old->prev->next = new;
+    new->next = old->next;
+    old->next->prev = new;
 }
 
 static inline void
 list_del_init(struct list_head *node)
 {
-	list_del(node);
-	INIT_LIST_HEAD(node);
+    list_del(node);
+    INIT_LIST_HEAD(node);
 }
 
-// FIXME(casionwoo) : Duplicated with include/lib/c/stddef.h : offsetof 
+// FIXME(casionwoo) : Duplicated with include/lib/c/stddef.h : offsetof
 //#define offsetof(type, member)  ((size_t)(unsigned long)(&(((type *)0)->member)))
 
 #define __validate_container_of(PTR, TYPE, FIELD)           \
@@ -268,43 +272,43 @@ list_del_init(struct list_head *node)
 
 LIST_HEAD(hlist_head, hlist_node);
 struct hlist_node {
-	LIST_ENTRY(hlist_node) hln_entry;
+    LIST_ENTRY(hlist_node) hln_entry;
 };
 
 static inline struct hlist_node *
 hlist_first(struct hlist_head *head)
 {
-	return LIST_FIRST(head);
+    return LIST_FIRST(head);
 }
 
 static inline struct hlist_node *
 hlist_next(struct hlist_node *node)
 {
-	return LIST_NEXT(node, hln_entry);
+    return LIST_NEXT(node, hln_entry);
 }
 
 static inline void
 hlist_add_head(struct hlist_node *node, struct hlist_head *head)
 {
-	LIST_INSERT_HEAD(head, node, hln_entry);
+    LIST_INSERT_HEAD(head, node, hln_entry);
 }
 
 static inline void
 hlist_add_after(struct hlist_node *node, struct hlist_node *next)
 {
-	LIST_INSERT_AFTER(node, next, hln_entry);
+    LIST_INSERT_AFTER(node, next, hln_entry);
 }
 
 static inline void
 hlist_del(struct hlist_node *node)
 {
-	LIST_REMOVE(node, hln_entry);
+    LIST_REMOVE(node, hln_entry);
 }
 
 static inline void
 hlist_del_init(struct hlist_node *node)
 {
-	LIST_REMOVE(node, hln_entry);
+    LIST_REMOVE(node, hln_entry);
 }
 
 #define	hlist_entry(PTR, TYPE, FIELD)	container_of(PTR, TYPE, FIELD)

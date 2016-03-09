@@ -35,7 +35,7 @@ struct arch_vdev_trigger_info {
 };
 
 typedef hvmm_status_t (*vdev_callback_t)(uint32_t wnr, uint32_t offset,
-        uint32_t *pvalue, enum vdev_access_size access_size);
+                                         uint32_t *pvalue, enum vdev_access_size access_size);
 
 typedef void(*vdev_irq_callback_t)(void *pdata);
 
@@ -132,13 +132,13 @@ struct vdev_module {
 
 hvmm_status_t vdev_register(int level, struct vdev_module *module);
 int32_t vdev_find(int level, struct arch_vdev_trigger_info *info,
-        struct core_regs *regs);
+                  struct core_regs *regs);
 int32_t vdev_read(int level, int num, struct arch_vdev_trigger_info *info,
-            struct core_regs *regs);
+                  struct core_regs *regs);
 int32_t vdev_write(int level, int num, struct arch_vdev_trigger_info *info,
-            struct core_regs *regs);
+                   struct core_regs *regs);
 hvmm_status_t vdev_post(int level, int num, struct arch_vdev_trigger_info *info,
-            struct core_regs *regs);
+                        struct core_regs *regs);
 hvmm_status_t vdev_save(vmid_t vmid);
 hvmm_status_t vdev_restore(vmid_t vmid);
 hvmm_status_t vdev_init(void);

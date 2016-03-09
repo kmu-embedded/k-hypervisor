@@ -29,7 +29,7 @@ void SECTION(".init") gic_init(void)
     // This code will be moved other parts, not here. */
     /* Get GICv2 base address */
     gic_hw.base = (uint32_t)(get_periphbase() & 0x000000FFFFFFFFFFULL);
-    if(gic_hw.base == 0x0) {
+    if (gic_hw.base == 0x0) {
         printf("Warning: Curretn architecture has no value in CBAR\n    \
                 The architecture do not follow design philosophy from ARM recommendation\n");
         // TODO(casionwoo): vaule of base address will be read from DTB or configuration file.
@@ -97,7 +97,7 @@ void gic_configure_irq(uint32_t irq, uint8_t polarity)
         //gic_disable_irq(irq);
 
         reg = gicd_read(GICD_ICFGR(irq >> 4));
-        mask = (reg >> 2*(irq % 16)) & 0x3;
+        mask = (reg >> 2 * (irq % 16)) & 0x3;
 
         if (polarity == IRQ_LEVEL_TRIGGERED) {
             mask &= 0;
@@ -109,8 +109,8 @@ void gic_configure_irq(uint32_t irq, uint8_t polarity)
             //reg |= (2u << (2 * (irq % 16)));
         }
 
-        reg = reg & ~(0x3 << 2*(irq % 16));
-        reg = reg | (mask << 2*(irq % 16));
+        reg = reg & ~(0x3 << 2 * (irq % 16));
+        reg = reg | (mask << 2 * (irq % 16));
         gicd_write(GICD_ICFGR(irq >> 4), reg);
 
         /* enable forwarding */
@@ -127,12 +127,13 @@ uint32_t gic_get_irq_number(void)
 
 void gic_set_sgi(const uint32_t target, uint32_t sgi)
 {
-    if(!(sgi < 16))
+    if (!(sgi < 16)) {
         return ;
+    }
 
     gicd_write(GICD_SGIR(0), GICD_SGIR_TARGET_LIST |
-                            (target << GICD_SGIR_CPU_TARGET_LIST_OFFSET) |
-                            (sgi & GICD_SGIR_SGI_INT_ID_MASK));
+               (target << GICD_SGIR_CPU_TARGET_LIST_OFFSET) |
+               (sgi & GICD_SGIR_SGI_INT_ID_MASK));
 
 }
 

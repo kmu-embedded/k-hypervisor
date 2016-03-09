@@ -78,8 +78,9 @@ static hvmm_status_t perform_switch(struct core_regs *regs, vcpuid_t next_vcpuid
     uint32_t pcpu = smp_processor_id();
     vcpuid_t currentcurrent = VCPUID_INVALID;
 
-    if (__current_vcpuid[pcpu] == next_vcpuid)
+    if (__current_vcpuid[pcpu] == next_vcpuid) {
         return HVMM_STATUS_IGNORED;
+    }
 
     currentcurrent = __current_vcpuid[pcpu];
     __current_vcpuid[pcpu] = next_vcpuid;
@@ -121,10 +122,11 @@ void sched_start(void)
     debug_print("[hyp] switch_to_initial_guest:\n");
     /* Select the first guest context to switch to. */
     __current_vcpuid[pcpu] = VCPUID_INVALID;
-    if (pcpu)
+    if (pcpu) {
         vcpu = vcpu_find(2);
-    else
+    } else {
         vcpu = vcpu_find(0);
+    }
 
     switch_to(vcpu->vcpuid);
     sched_perform_switch(&vcpu->vcpu_regs.core_regs);

@@ -68,10 +68,11 @@ static void guest_memory_stage2_enable(int enable)
     /* HCR.VM[0] = enable */
     /* debug_print( "hcr:"); debug_print_hex32(hcr); debug_print("\n\r"); */
     hcr = read_hcr();
-    if (enable)
+    if (enable) {
         hcr |= (0x1);
-    else
+    } else {
         hcr &= ~(0x1);
+    }
 
     write_hcr(hcr);
 }
@@ -117,9 +118,9 @@ static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, pgentry *ttbl)
 
 hvmm_status_t memory_hw_create(struct vmem *vmem)
 {
-   stage2_mm_create(&vmem->pgtable_base);
+    stage2_mm_create(&vmem->pgtable_base);
 
-   return HVMM_STATUS_SUCCESS;
+    return HVMM_STATUS_SUCCESS;
 }
 
 /**

@@ -1,16 +1,16 @@
 /*
  * Australian Public Licence B (OZPLB)
- * 
+ *
  * Version 1-0
- * 
+ *
  * Copyright (c) 2004 National ICT Australia
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * Developed by: Embedded, Real-time and Operating Systems Program (ERTOS)
  *               National ICT Australia
  *               http://www.ertos.nicta.com.au
- * 
+ *
  * Permission is granted by National ICT Australia, free of charge, to
  * any person obtaining a copy of this software and any associated
  * documentation files (the "Software") to deal with the Software without
@@ -19,19 +19,19 @@
  * sublicense, and/or sell, lend or rent out copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject
  * to the following conditions:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimers.
- * 
+ *
  *     * Redistributions in binary form must reproduce the above
  *       copyright notice, this list of conditions and the following
  *       disclaimers in the documentation and/or other materials provided
  *       with the distribution.
- * 
+ *
  *     * Neither the name of National ICT Australia, nor the names of its
  *       contributors, may be used to endorse or promote products derived
  *       from this Software without specific prior written permission.
- * 
+ *
  * EXCEPT AS EXPRESSLY STATED IN THIS LICENCE AND TO THE FULL EXTENT
  * PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED "AS-IS", AND
  * NATIONAL ICT AUSTRALIA AND ITS CONTRIBUTORS MAKE NO REPRESENTATIONS,
@@ -41,7 +41,7 @@
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NONINFRINGEMENT,
  * THE ABSENCE OF LATENT OR OTHER DEFECTS, OR THE PRESENCE OR ABSENCE OF
  * ERRORS, WHETHER OR NOT DISCOVERABLE.
- * 
+ *
  * TO THE FULL EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL
  * NATIONAL ICT AUSTRALIA OR ITS CONTRIBUTORS BE LIABLE ON ANY LEGAL
  * THEORY (INCLUDING, WITHOUT LIMITATION, IN AN ACTION OF CONTRACT,
@@ -55,7 +55,7 @@
  * DEALINGS WITH THE SOFTWARE, EVEN IF NATIONAL ICT AUSTRALIA OR ITS
  * CONTRIBUTORS HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH CLAIM, LOSS,
  * DAMAGES OR OTHER LIABILITY.
- * 
+ *
  * If applicable legislation implies representations, warranties, or
  * conditions, or imposes obligations or liability on National ICT
  * Australia or one of its contributors in respect of the Software that
@@ -72,13 +72,13 @@
  * b.  in the case of services:
  * i.  the supplying of the services again; or
  * ii.  the payment of the cost of having the services supplied again.
- * 
+ *
  * The construction, validity and performance of this licence is governed
  * by the laws in force in New South Wales, Australia.
  */
 /*
   Author: Ben Leslie
-  Created: Fri Oct  8 2004 
+  Created: Fri Oct  8 2004
 */
 
 #include <stdlib.h>
@@ -89,7 +89,7 @@
 
 /**
  * Work out the numeric value of a char, assuming up to base 36
- *  
+ *
  * @param ch The character to decode
  *
  * \return Numeric value of character, or 37 on failure
@@ -97,122 +97,128 @@
 static inline unsigned short
 char_value(char ch)
 {
-	if (ch >= '0' && ch <= '9') {
-		return ch - '0';
-	}
-	if (ch >= 'a' && ch <= 'z') {
-		return ch - 'a' + 10;
-	}
-	if (ch >= 'A' && ch <= 'Z') {
-		return ch - 'A' + 10;
-	}
-	
-	return 37;
+    if (ch >= '0' && ch <= '9') {
+        return ch - '0';
+    }
+    if (ch >= 'a' && ch <= 'z') {
+        return ch - 'a' + 10;
+    }
+    if (ch >= 'A' && ch <= 'Z') {
+        return ch - 'A' + 10;
+    }
+
+    return 37;
 }
 
 
 unsigned long int
 strtoul(const char *nptr, char **endptr, int base)
 {
-	/*
-	  Decompose input info thread parts:
-	  - inital list of whitespace (as per isspace)
-	  - subject sequence
-	  - final string one or more unrecognized
-	*/
-	const char *ptr = nptr;
-	bool negative = false;
-	unsigned int value;
-	long int return_value = 0;
-	/* Remove spaces */
-	while(*ptr != '\0') {
-		if (! isspace(*ptr)) {
-			break;
-		}
-		ptr++;
-	}
+    /*
+      Decompose input info thread parts:
+      - inital list of whitespace (as per isspace)
+      - subject sequence
+      - final string one or more unrecognized
+    */
+    const char *ptr = nptr;
+    bool negative = false;
+    unsigned int value;
+    long int return_value = 0;
+    /* Remove spaces */
+    while (*ptr != '\0') {
+        if (! isspace(*ptr)) {
+            break;
+        }
+        ptr++;
+    }
 
-	if (*ptr == '\0') 
-		goto fail;
+    if (*ptr == '\0') {
+        goto fail;
+    }
 
-	/* check [+|-] */	
-	if (*ptr == '+') {
-		ptr++;
-	} else if (*ptr == '-') {
-		negative = true;
-		ptr++;
-	}
+    /* check [+|-] */
+    if (*ptr == '+') {
+        ptr++;
+    } else if (*ptr == '-') {
+        negative = true;
+        ptr++;
+    }
 
-	if (*ptr == '\0') 
-		goto fail;
+    if (*ptr == '\0') {
+        goto fail;
+    }
 
-	if (base == 16) {
-		/* _May_ have 0x prefix */
-		if (*ptr == '0') {
-			ptr++;
-		        if (*ptr == 'x' || *ptr == 'X') {
-				ptr++;
-			}
-		}
-	}
+    if (base == 16) {
+        /* _May_ have 0x prefix */
+        if (*ptr == '0') {
+            ptr++;
+            if (*ptr == 'x' || *ptr == 'X') {
+                ptr++;
+            }
+        }
+    }
 
-	/* [0(x|X)+] */
-	if (base == 0) {
-		/* Could be hex or octal or decimal */
-		if (*ptr != '0') {
-			base = 10;
-		} else {
-			ptr++;
-			if (*ptr == '\0')
-				goto fail;
-			if (*ptr == 'x' || *ptr == 'X') {
-				base = 16;
-				ptr++;
-			} else {
-				base = 8;
-			}
-		}
-	}
+    /* [0(x|X)+] */
+    if (base == 0) {
+        /* Could be hex or octal or decimal */
+        if (*ptr != '0') {
+            base = 10;
+        } else {
+            ptr++;
+            if (*ptr == '\0') {
+                goto fail;
+            }
+            if (*ptr == 'x' || *ptr == 'X') {
+                base = 16;
+                ptr++;
+            } else {
+                base = 8;
+            }
+        }
+    }
 
-	if (*ptr == '\0')
-		goto fail;
+    if (*ptr == '\0') {
+        goto fail;
+    }
 
-	/* Ok, here we have a base, and we might have a valid number */
-	value = char_value(*ptr);
-	if (value >= base) {
-		goto fail;
-	} else {
-		return_value = value;
-		ptr++;
-	}
+    /* Ok, here we have a base, and we might have a valid number */
+    value = char_value(*ptr);
+    if (value >= base) {
+        goto fail;
+    } else {
+        return_value = value;
+        ptr++;
+    }
 
-	while (*ptr != '\0' && (value = char_value(*ptr)) < base) {
-		return_value = return_value * base + value;
-		ptr++;
-	}
+    while (*ptr != '\0' && (value = char_value(*ptr)) < base) {
+        return_value = return_value * base + value;
+        ptr++;
+    }
 
-	if (endptr != NULL)
-		*endptr = (char*) ptr;
+    if (endptr != NULL) {
+        *endptr = (char*) ptr;
+    }
 
-	if (negative) {
-		return_value *= -1;
-	}
+    if (negative) {
+        return_value *= -1;
+    }
 
-	return return_value;
+    return return_value;
 
-	/*
-	  if base is 0, then we work it out based on a couple
-	  of things 
-	*/
-	/*
-	  [+|-][0(x|X)+][0-9A-Za-z] not LL *
-	*/
+    /*
+      if base is 0, then we work it out based on a couple
+      of things
+    */
+    /*
+      [+|-][0(x|X)+][0-9A-Za-z] not LL *
+    */
 
-	/* endptr == final string */
+    /* endptr == final string */
 
- fail:
-	if (endptr != NULL)
-		*endptr = (char*) nptr;
-	return 0;
+fail:
+    if (endptr != NULL) {
+        *endptr = (char*) nptr;
+    }
+    return 0;
 
 }

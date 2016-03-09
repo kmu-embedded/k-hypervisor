@@ -682,8 +682,8 @@ static __inline const void * __launder_type(const void *);
 static __inline const void *
 __launder_type(const void *__x)
 {
-	__asm __volatile("" : "+r" (__x));
-	return __x;
+    __asm __volatile("" : "+r" (__x));
+    return __x;
 }
 
 #if defined(QUEUEDEBUG)
