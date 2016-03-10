@@ -2,7 +2,6 @@
 #include <debug_print.h>
 
 #include "gic-v2.h"
-#include <arch/armv7/smp.h>
 #include <core/vm/vcpu.h>
 #include <hvmm_trace.h>
 

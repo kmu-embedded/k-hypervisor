@@ -62,14 +62,14 @@ CFLAGS+= -mcpu=${CPU} -marm
 DEFINES= -D__CONFIG_MUTEX__#-D__CONFIG_SMP__ #-D__TEST_TIMER__
 CFLAGS+=${DEFINES}
 
-#CONFIG_99=y
-ifeq (${CONFIG_99}, y)
+CONFIG_C99=y
+ifeq (${CONFIG_C99}, y)
 CFLAGS+= --std=c99 -DCONFIG_C99
 endif
 
-#DEBUG=y
+DEBUG=y
 ifdef DEBUG
-    CFLAGS+= -ggdb -g3
+    DFLAGS+= -ggdb -g3
 endif
 
 INCLUDES= -I${SOURCE_PATH}/include
@@ -95,11 +95,11 @@ BIN				= ${BUILD_PATH}/${TARGET}.bin
 all: ${OUTPUT} ${LD_SCRIPT} ${OBJS}
 %.o: %.S
 	${Q}echo "[AS] $@"
-	${Q}${CC} ${ASFLAGS} ${INCLUDES} -c $< -o ${BUILD_PATH}/$@
+	${Q}${CC} ${ASFLAGS} ${DFLAGS} ${INCLUDES} -c $< -o ${BUILD_PATH}/$@
 
 %.o: %.c
 	${Q}echo "[CC] $(notdir $@)"
-	${Q}${CC} ${CFLAGS} ${INCLUDES} -c $< -o ${BUILD_PATH}/$@
+	${Q}${CC} ${CFLAGS} ${DFLAGS} ${INCLUDES} -c $< -o ${BUILD_PATH}/$@
 
 ${MACHINE}.lds: ${LD_SCRIPT}
 	${Q}echo "[LD SCRIPT] $@"

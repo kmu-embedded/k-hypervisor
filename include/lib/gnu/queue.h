@@ -186,11 +186,13 @@ struct name {								\
 #define	LIST_HEAD_INITIALIZER(head)					\
 	{ NULL }
 
+#ifndef CONFIG_C99
 #define	LIST_ENTRY(type)						\
 struct {								\
 	struct type *le_next;	/* next element */			\
 	struct type **le_prev;	/* address of previous next element */	\
 }
+#endif
 
 /*
  * List access methods.
