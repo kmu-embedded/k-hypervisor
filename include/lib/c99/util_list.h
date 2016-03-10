@@ -52,7 +52,7 @@ struct list_head
 
 //static inline void
 //INIT_LIST_HEAD(struct list_head *head)
-static inline void INIT_LIST_HEAD(struct list_head *item)
+static inline void list_inithead(struct list_head *item)
 {
     item->prev = item;
     item->next = item;
@@ -67,7 +67,7 @@ static inline void list_add(struct list_head *item, struct list_head *list)
 }
 
 static inline void
-list_add_tail(struct list_head *item, struct list_head *list)
+list_addtail(struct list_head *item, struct list_head *list)
 {
     item->next = list;
     item->prev = list->prev;
@@ -145,10 +145,10 @@ static inline void list_validate(struct list_head *list)
     //pipe_mutex bo_handles_mutex;
 //};
 //LIST_INITHEAD(&qdws->delayed);
-#define LIST_INITHEAD(__item) INIT_LIST_HEAD(__item)
+#define LIST_INITHEAD(__item) list_inithead(__item)
 
 #define LIST_ADD(__item, __list) list_add(__item, __list)
-#define LIST_ADDTAIL(__item, __list) list_add_tail(__item, __list)
+#define LIST_ADDTAIL(__item, __list) list_addtail(__item, __list)
 #define LIST_REPLACE(__from, __to) list_replace(__from, __to)
 #define LIST_DEL(__item) list_del(__item)
 #define LIST_DELINIT(__item) list_delinit(__item)

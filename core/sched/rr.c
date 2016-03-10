@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 #ifdef CONFIG_C99
-#include <lib/util_list.h>
+#include <lib/c99/util_list.h>
 #else
 #include <lib/gnu/list.h>
 #endif
@@ -49,8 +49,14 @@ int sched_rr_init()
 
     /* Initialize data */
     current[cpu] = NULL;
+
+#ifdef CONFIG_C99
+    list_inithead(&runqueue_rr[cpu]);
+    list_inithead(&registered_list_rr[cpu]);
+#else
     INIT_LIST_HEAD(&runqueue_rr[cpu]);
     INIT_LIST_HEAD(&registered_list_rr[cpu]);
+#endif
 
     return 0;
 }
@@ -76,8 +82,13 @@ int sched_rr_vcpu_register(vcpuid_t vcpuid)
     new_entry = (struct rq_entry_rr *) malloc(sizeof(struct rq_entry_rr));// alloc_rq_entry_rr();
 
     /* Initialize rq_entry_rr instance */
+#ifdef CONFIG_C99
+    list_inithead(&new_entry->registered_list_head);
+    list_inithead(&new_entry->head);
+#else
     INIT_LIST_HEAD(&new_entry->registered_list_head);
     INIT_LIST_HEAD(&new_entry->head);
+#endif
 
     new_entry->vcpuid = vcpuid;
 
@@ -87,7 +98,11 @@ int sched_rr_vcpu_register(vcpuid_t vcpuid)
     new_entry->state = DETACHED;
 
     /* Add it to registerd vcpus list */
+#ifdef CONFIG_C99
+    list_addtail(&new_entry->registered_list_head, &registered_list_rr[cpu]);
+#else
     list_add_tail(&new_entry->registered_list_head, &registered_list_rr[cpu]);
+#endif
 
     return 0;
 }
@@ -132,11 +147,15 @@ int sched_rr_vcpu_unregister(vcpuid_t vcpuid)
 int sched_rr_vcpu_attach(vcpuid_t vcpuid)
 {
     uint32_t cpu = smp_processor_id();
-    struct rq_entry_rr *entry = NULL;
     struct rq_entry_rr *entry_to_be_attached = NULL;
 
     /* To find entry in registered entry list */
+#ifdef CONFIG_C99
+    list_for_each_entry(struct rq_entry_rr, entry, &registered_list_rr[cpu], registered_list_head) {
+#else
+    struct rq_entry_rr *entry = NULL;
     list_for_each_entry(entry, &registered_list_rr[cpu], registered_list_head) {
+#endif
         if (entry->vcpuid == vcpuid) {
             entry_to_be_attached = entry;
             break;
@@ -156,7 +175,11 @@ int sched_rr_vcpu_attach(vcpuid_t vcpuid)
     entry_to_be_attached->state = WAITING;
 
     /* Add it to runqueue */
+#ifdef CONFIG_C99
+    list_addtail(&entry_to_be_attached->head, &runqueue_rr[cpu]);
+#else
     list_add_tail(&entry_to_be_attached->head, &runqueue_rr[cpu]);
+#endif
 
     return 0;
 }
@@ -205,8 +228,20 @@ int sched_rr_do_schedule(uint32_t *delay_tick)
             is_switching_needed = true;
         }
     } else { /* There's a vCPU currently running */
+#ifdef CONFIG_C99
         struct rq_entry_rr *current_entry = NULL;
+        /* check & decrease tick. if tick was <= 0 let's switch */
+        current_entry = LIST_ENTRY(struct rq_entry_rr, current[cpu], head);
 
+        /* tick's over */
+        is_switching_needed = true;
+
+        /* put current entry back to runqueue_rr */
+        current_entry->state = WAITING;
+        list_addtail(current[cpu], &runqueue_rr[cpu]);
+        current[cpu] = NULL;
+#else
+        struct rq_entry_rr *current_entry = NULL;
         /* check & decrease tick. if tick was <= 0 let's switch */
         current_entry = list_entry(current[cpu], struct rq_entry_rr, head);
 
@@ -217,15 +252,23 @@ int sched_rr_do_schedule(uint32_t *delay_tick)
         current_entry->state = WAITING;
         list_add_tail(current[cpu], &runqueue_rr[cpu]);
         current[cpu] = NULL;
+#endif
     }
 
     /* update scheduling-related data (like tick) */
     if (is_switching_needed) {
         /* move entry from runqueue_rr to current */
+#ifdef CONFIG_C99
+        current[cpu] = runqueue_rr[cpu].next;
+        list_delinit(current[cpu]);
+
+        next_entry = LIST_ENTRY(struct rq_entry_rr, current[cpu], head);
+#else
         current[cpu] = list_first(&runqueue_rr[cpu]);
         list_del_init(current[cpu]);
 
         next_entry = list_entry(current[cpu], struct rq_entry_rr, head);
+#endif
 
         /* FIXME:(igkang) hardcoded */
         *delay_tick = next_entry->tick_reset_val * TICKTIME_1MS;
@@ -233,7 +276,11 @@ int sched_rr_do_schedule(uint32_t *delay_tick)
 
     /* vcpu of current entry will be the next vcpu */
     if (current[cpu] != NULL) {
+#ifdef CONFIG_C99
+        next_entry = LIST_ENTRY(struct rq_entry_rr, current[cpu], head);
+#else
         next_entry = list_entry(current[cpu], struct rq_entry_rr, head);
+#endif
         next_entry->state = RUNNING;
 
         /* set return next_vcpuid value */
