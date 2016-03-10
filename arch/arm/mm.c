@@ -54,7 +54,7 @@ void SECTION(".init") enable_mmu(void)
 
 #include <asm/asm.h>
 #include <io.h>
-void inline write64(uint64_t value, uint32_t addr)
+static void write64(uint64_t value, uint32_t addr)
 {
     uint32_t upper = 0, lower = 0;
     upper = (value >> 32) & 0xFFFFFFFF;
@@ -63,7 +63,7 @@ void inline write64(uint64_t value, uint32_t addr)
     writel(upper, addr + 0x4);
 }
 
-uint64_t inline read64(uint32_t addr)
+static uint64_t read64(uint32_t addr)
 {
     uint64_t result = 0x0UL;
     result |= readl(addr);
