@@ -14,7 +14,12 @@
 #include <hvmm_trace.h>
 
 #include <rtsm-config.h>
-#include <lib/bsd/list.h>
+
+#ifdef CONFIG_C99
+#include <lib/util_list.h>
+#else
+#include <lib/gnu/list.h>
+#endif
 
 vcpuid_t __current_vcpuid[NR_CPUS];// = {VCPUID_INVALID, VCPUID_INVALID};
 vcpuid_t __next_vcpuid[NR_CPUS];// = {VCPUID_INVALID, };

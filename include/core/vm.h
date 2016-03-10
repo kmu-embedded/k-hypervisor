@@ -1,7 +1,12 @@
 #ifndef __VM_H__
 #define __VM_H__
 
-#include <lib/bsd/list.h>
+#ifdef CONFIG_C99
+#include <lib/util_list.h>
+#else
+#include <lib/gnu/list.h>
+#endif
+
 #include "vm/vcpu.h"
 #include "vm/vmem.h"
 #include "vm/virq.h"
