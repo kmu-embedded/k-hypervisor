@@ -2,13 +2,15 @@
 
 #include "../include/io.h"
 
-void pl01x_putc(const char c)
+int pl01x_putc(const char c)
 {
     /* Wait until there is space in the FIFO */
     while (*((uint32_t *)(PL01X_BASE + 0x18)) & 0x20)
         ;
     /* Send the character */
     writel(c, (uint32_t *) PL01X_BASE + PL01X_UARTDR);
+
+    return c;
 }
 
 int pl01x_tst_fifo()
@@ -23,7 +25,7 @@ int pl01x_tst_fifo()
     }
 }
 
-char pl01x_getc()
+int pl01x_getc()
 {
     char data;
     /* Wait until there is data in the FIFO */

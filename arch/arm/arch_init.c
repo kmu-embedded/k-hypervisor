@@ -19,7 +19,7 @@ void SECTION(".init.arch") cpu_init()
 {
     // Set vector table base address in HVBAR
     write_hvbar(&__hvc_vector);
-    assert(read_hvbar() == &__hvc_vector);
+    assert(read_hvbar() == (uint32_t) &__hvc_vector);
 
     // TODO(wonseok): D-Cache invalidate and TLB flush.
     // TODO(casionwoo): add cache operation in arch/arm
@@ -43,7 +43,6 @@ void SECTION(".init.arch") irq_init()
 #include <rtsm-config.h>
 void SECTION(".init.arch") mm_init()
 {
-    int i;
     set_hmair();
     set_htcr();
     set_httbr();

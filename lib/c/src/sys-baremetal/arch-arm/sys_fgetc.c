@@ -9,6 +9,6 @@ __fgetc_p __libc_getc;
 int
 __fgetc()
 {
-    return __libc_getc;
+    return (int) __libc_getc;
 }
 

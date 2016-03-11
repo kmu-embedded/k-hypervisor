@@ -173,7 +173,7 @@ void vmem_create(struct vmem *vmem, vmid_t vmid)
 
 hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
 {
-    return memory_hw_init(vmem->memmap, &vmem->pgtable_base, vmid);
+    return memory_hw_init(vmem->memmap, (char **) &vmem->pgtable_base, vmid);
 }
 
 hvmm_status_t vmem_save(void)
@@ -183,6 +183,6 @@ hvmm_status_t vmem_save(void)
 
 hvmm_status_t vmem_restore(struct vmem *vmem, vmid_t vmid)
 {
-    return memory_hw_restore(vmid, &vmem->pgtable_base);
+    return memory_hw_restore(vmid, (char **) &vmem->pgtable_base);
 }
 

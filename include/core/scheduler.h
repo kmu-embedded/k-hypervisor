@@ -28,10 +28,10 @@ void do_schedule(void *pdata, uint32_t *delay_tick);
 vmid_t sched_policy_determ_next(void);
 #endif
 
-void guest_sched_start(void);
+void sched_start(void);
 vmid_t get_current_vcpuid(void);
 
-hvmm_status_t guest_perform_switch(struct core_regs *regs);
+hvmm_status_t sched_perform_switch(struct core_regs *regs);
 hvmm_status_t guest_switchto(vmid_t vmid);
 
 struct running_vcpus_entry_t {

@@ -12,15 +12,17 @@
 
 static struct gic_hw_info gic_hw;
 
-#define gicd_read(offset)           getl(gic_hw.base + GICD_OFFSET + offset)
-#define gicd_write(offset, value)   putl(value, gic_hw.base + GICD_OFFSET + offset)
+#define gicd_read(offset)           getl((uint32_t) gic_hw.base + GICD_OFFSET + offset)
+#define gicd_write(offset, value)   putl(value, (uint32_t) gic_hw.base + GICD_OFFSET + offset)
 
-#define gicc_read(offset)           getl(gic_hw.base + GICC_OFFSET + offset)
-#define gicc_write(offset, value)   putl(value, gic_hw.base + GICC_OFFSET + offset)
+#define gicc_read(offset)           getl((uint32_t) gic_hw.base + GICC_OFFSET + offset)
+#define gicc_write(offset, value)   putl(value, (uint32_t) gic_hw.base + GICC_OFFSET + offset)
 
-#define gich_read(offset)           getl(gic_hw.base + GICH_OFFSET + offset)
-#define gich_write(offset, value)   putl(value, gic_hw.base + GICH_OFFSET + offset)
+#define gich_read(offset)           getl((uint32_t) gic_hw.base + GICH_OFFSET + offset)
+#define gich_write(offset, value)   putl(value, (uint32_t) gic_hw.base + GICH_OFFSET + offset)
 
+static uint32_t gicd;
+static uint32_t gicc;
 void SECTION(".init") gic_init(void)
 {
     int i;
@@ -35,6 +37,8 @@ void SECTION(".init") gic_init(void)
         // Currently, we set the base address of gic to 0x2C000000, it is for RTSM.
         gic_hw.base = 0x2C000000;
     }
+    gicd = gic_hw.base + GICD_OFFSET;
+    gicc = gic_hw.base + GICC_OFFSET;
 
     gic_hw.nr_irqs = 32 * ((gicd_read(GICD_TYPER) & GICD_TYPE_LINES_MASK) + 1);
     gic_hw.nr_cpus = 1 + ((gicd_read(GICD_TYPER) & GICD_TYPE_CPUS_MASK) >> GICD_TYPE_CPUS_SHIFT);
@@ -159,5 +163,5 @@ void gic_deactivate_irq(uint32_t irq)
 
 uint32_t *gic_vgic_baseaddr(void)
 {
-    return gic_hw.base + GICH_OFFSET;
+    return (uint32_t *) (uint32_t) (gic_hw.base + GICH_OFFSET);
 }

@@ -119,7 +119,7 @@ int sched_rr_vcpu_register(vcpuid_t vcpuid)
  */
 int sched_rr_vcpu_unregister(vcpuid_t vcpuid)
 {
-    uint32_t cpu = smp_processor_id();
+    // uint32_t cpu = smp_processor_id();
     /* Check if vcpu is registered */
 
     /* Check if vcpu is detached. If not, request detachment.*/
@@ -192,7 +192,7 @@ int sched_rr_vcpu_attach(vcpuid_t vcpuid)
  */
 int sched_rr_vcpu_detach(vcpuid_t vcpuid)
 {
-    uint32_t cpu = smp_processor_id();
+    // uint32_t cpu = smp_processor_id();
     /* Check if vcpu is attached */
 
     /* Remove it from runqueue by setting will_detached flag*/

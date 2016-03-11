@@ -28,6 +28,7 @@ const struct scheduler *__policy[NR_CPUS];
 /* TODO:(igkang) redesign runqueue & registered list structure for external external access */
 struct list_head __running_vcpus[NR_CPUS];
 
+hvmm_status_t switch_to(vcpuid_t vcpuid);
 /* TODO:(igkang) rename sched functions
  *   - remove the word 'guest'
  */
@@ -126,7 +127,7 @@ void sched_start(void)
 {
     struct vcpu *vcpu = 0;
     uint32_t pcpu = smp_processor_id();
-    struct timer timer;
+    //struct timer timer;
 
     debug_print("[hyp] switch_to_initial_guest:\n");
     /* Select the first guest context to switch to. */

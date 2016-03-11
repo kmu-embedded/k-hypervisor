@@ -1,6 +1,11 @@
 #include <atags.h>
 #include <size.h>
+#include <string.h>
+#include <stdio.h>
 
+// TODO(casionwoo): Refactoring whole code in atags.c
+
+static struct atag *_params = INVALID; /* used to point at the current tag */
 static void setup_core_tag(void *address, long pagesize)
 {
     /* Initialise parameters to start at given address */
@@ -48,6 +53,7 @@ static void setup_mem_tag(uint32_t start, uint32_t len)
     _params = tag_next(_params);             /* move pointer to next tag */
 }
 
+#if 0
 static void setup_initrd2_tag(uint32_t start, uint32_t size)
 {
     _params->hdr.tag = ATAG_INITRD2;        /* Initrd2 tag */
@@ -56,6 +62,7 @@ static void setup_initrd2_tag(uint32_t start, uint32_t size)
     _params->u.initrd2.size = size;          /* compressed ramdisk size */
     _params = tag_next(_params);              /* move pointer to next tag */
 }
+#endif
 
 static void setup_end_tag(void)
 {
@@ -63,6 +70,7 @@ static void setup_end_tag(void)
     _params->hdr.size = 0;                   /* zero length */
 }
 
+#if 0
 static void
 setup_ramdisk_tag(uint32_t size)
 {
@@ -75,6 +83,7 @@ setup_ramdisk_tag(uint32_t size)
 
     _params = tag_next(_params);              /* move pointer to next tag */
 }
+#endif
 
 void linuxloader_setup_atags(uint32_t src)
 {
@@ -133,7 +142,7 @@ void linuxloader_setup_atags(uint32_t src)
 uint32_t *linuxloader_get_atags_addr(void)
 {
     if (_params != INVALID) {
-        return _params;
+        return (uint32_t *) _params;
     } else {
         printf("[loadlinux] ERROR: SET ATAGS BEFORE JUMP TO ZIMAGE\n");
         while (1)

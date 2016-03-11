@@ -7,6 +7,8 @@
 #include <core/scheduler.h>
 #include <rtsm-config.h>
 
+#include "../../arch/arm/vgic.h"
+
 #define VTIMER_BASE_ADDR 0x3FFFE000
 #define VTIMER_IRQ 30
 

@@ -36,7 +36,7 @@ void SECTION(".init") set_htcr(void)
 /* Set Hyp Translation Table Base Register(HTTBR) */
 void SECTION(".init") set_httbr(void)
 {
-    write_httbr((uint32_t) l1_pgtable);
+    write_httbr((uint64_t) l1_pgtable);
 }
 
 /* Set Hyp System Control Register(HSCTLR) */
@@ -67,7 +67,7 @@ static uint64_t read64(uint32_t addr)
 {
     uint64_t result = 0x0UL;
     result |= readl(addr);
-    result |= readl(addr + 0x4) << 32;
+    result |= (uint64_t) readl(addr + 0x4) << 32;
     return result;
 }
 
@@ -79,7 +79,7 @@ void SECTION(".init") pgtable_init()
     int i, j;
     uint32_t l1_offset, l2_offset, l3_offset;
 
-    l1_pgtable = &__pgtable_start;
+    l1_pgtable = (uint32_t) &__pgtable_start;
     l2_pgtable = l1_pgtable + 0x1000;
     l3_pgtable = l2_pgtable + 0x4000;
 
@@ -89,7 +89,7 @@ void SECTION(".init") pgtable_init()
         write64(set_table(l2_pgtable + l2_offset).raw, l1_pgtable + l1_offset);
 
         for (j = 0; j < 512; j++) {
-            l3_offset = ((i << 18) + j << 9) << 3;
+            l3_offset = ((i << 18) + (j << 9)) << 3;
             write64(set_table(l3_pgtable + l3_offset).raw, l2_pgtable + l2_offset);
 
         }
@@ -146,12 +146,12 @@ void write_pgentry(void *pgtable_base, struct memdesc_t *mem_desc, bool is_guest
     for (l1_offset = 0; size > 0; l1_offset++ ) {
         l1_pgtable_base[l1_index + l1_offset].table.valid = 1;
 
-        l2_pgtable_base = l1_pgtable_base[l1_index + l1_offset].table.base << PAGE_SHIFT;
+        l2_pgtable_base = (pgentry *) (l1_pgtable_base[l1_index + l1_offset].table.base << PAGE_SHIFT);
         l2_index = (va & L2_INDEX_MASK) >> L2_SHIFT;
 
         for (l2_offset = 0; l2_index + l2_offset < L2_ENTRY && size > 0; l2_offset++ ) {
             l2_pgtable_base[l2_index + l2_offset].table.valid = 1;
-            l3_pgtable_base = l2_pgtable_base[l2_index + l2_offset].table.base << PAGE_SHIFT;
+            l3_pgtable_base = (pgentry *) (l2_pgtable_base[l2_index + l2_offset].table.base << PAGE_SHIFT);
             l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
 
             for (l3_offset = 0; l3_index + l3_offset < L3_ENTRY && size > 0; l3_offset++) {
@@ -186,8 +186,8 @@ void write_pgentry_4k(void *pgtable_base, struct memdesc_t *mem_desc, bool is_gu
     l3_index = (va & L3_INDEX_MASK) >> L3_SHIFT;
 
     l1_pgtable_base[l1_index].table.valid = 1;
-    l2_pgtable_base = l1_pgtable_base[l1_index].table.base << PAGE_SHIFT;
+    l2_pgtable_base = (pgentry *) (l1_pgtable_base[l1_index].table.base << PAGE_SHIFT);
     l2_pgtable_base[l2_index].table.valid = 1;
-    l3_pgtable_base = l2_pgtable_base[l2_index].table.base << PAGE_SHIFT;
+    l3_pgtable_base = (pgentry *) (l2_pgtable_base[l2_index].table.base << PAGE_SHIFT);
     l3_pgtable_base[l3_index] = set_entry(pa, mem_desc->attr, 3, size_4kb);
 }

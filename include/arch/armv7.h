@@ -19,7 +19,7 @@ static inline unsigned long long get_periphbase(void)
 {
     unsigned long long periphbase = 0UL;
     unsigned long cbar = read_cbar();
-    unsigned char upper_periphbase = cbar & 0xFF;
+    unsigned long long upper_periphbase = cbar & 0xFF;
 
     if (upper_periphbase != 0x0) {
         periphbase |= upper_periphbase << 32;

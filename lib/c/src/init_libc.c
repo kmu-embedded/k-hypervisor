@@ -8,6 +8,6 @@ extern unsigned int __end_heap;
 void libc_init()
 {
     __malloc_init(&__begin_heap, &__end_heap);
-    __libc_putc = &pl01x_putc;
-    __libc_getc = &pl01x_getc;
+    __libc_putc = (__fputc_p) &pl01x_putc;
+    __libc_getc = (__fgetc_p) &pl01x_getc;
 }

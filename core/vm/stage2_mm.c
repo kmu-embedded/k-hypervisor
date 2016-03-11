@@ -4,6 +4,7 @@
 #include <hvmm_trace.h>
 #include <rtsm-config.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 // TODO(wonseok): make it neat.
 #include "../../arch/arm/mm.h"
@@ -37,14 +38,14 @@ void init_pgtable(uint32ptr_t *pgtable_base)
 
     for (l1_index = 0; l1_index < L1_ENTRY; l1_index++) {
         vm_l2_pgtable = (pgentry *) aligned_alloc ((sizeof(pgentry) * 512), 0x1000);
-        vm_l1_pgtable[l1_index] = set_table(vm_l2_pgtable);
+        vm_l1_pgtable[l1_index] = (pgentry) set_table((uint32_t) vm_l2_pgtable);
 
         for (l2_index = 0; l2_index < L2_ENTRY; l2_index++) {
             vm_l3_pgtable = (pgentry *) aligned_alloc ((sizeof(pgentry) * 512), 0x1000);
-            vm_l2_pgtable[l2_index] = set_table(vm_l3_pgtable);
+            vm_l2_pgtable[l2_index] = (pgentry) set_table((uint32_t) vm_l3_pgtable);
         }
     }
-    *pgtable_base = vm_l1_pgtable;
+    *pgtable_base = (uint32_t) vm_l1_pgtable;
 }
 
 void stage2_mm_create(uint32ptr_t *pgtable_base)
