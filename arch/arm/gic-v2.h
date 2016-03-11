@@ -7,12 +7,13 @@
 #define GIC_NUM_MAX_IRQS    1024
 #define GIC_INT_PRIORITY_DEFAULT        0xa0
 
-struct gic_hw_info {
-    uint64_t base;        /**< GIC base address */
-    uint32_t gich;              /**< Virtual interface control (common)*/
-    uint32_t nr_irqs;           /**< The Maximum number of interrupts */
-    uint32_t nr_cpus;           /**< The number of implemented CPU interfaces */
-    uint32_t initialized;       /**< Check whether initializing GIC. */
+struct GICv2_HW {
+    uint32_t gicd;
+    uint32_t gicc;
+    uint32_t gich;
+    uint32_t ITLinesNumber;
+    uint32_t CPUNumber;
+    uint32_t initialized;
 };
 
 #define GIC_SIGNATURE_INITIALIZED   0x5108EAD7
