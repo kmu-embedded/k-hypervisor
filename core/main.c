@@ -17,6 +17,7 @@
 #include <core/scheduler.h>
 #include <libc_init.h>
 #include <core/timer.h>
+#include <core/interrupt.h>
 
 #include "../arch/arm/mm.h"
 
@@ -44,7 +45,7 @@ static void SECTION(".init") primary_core_init(void)
 
     enable_mmu();
 
-    arch_irq_init();
+    interrupt_init();
 
 #ifdef __CONFIG_SMP__
     printf("wake up...other CPUs\n");
