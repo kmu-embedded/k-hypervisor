@@ -66,13 +66,6 @@ const uint32_t interrupt_pirq_to_enabled_virq(vcpuid_t vcpuid, uint32_t pirq)
     return virq;
 }
 
-#if 0
-void interrupt_guest_inject(vmid_t vmid, uint32_t virq, uint32_t pirq, uint8_t hw)
-{
-    virq_inject(vmid, virq, pirq, hw);
-}
-#endif
-
 void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
 {
     uint32_t cpu = smp_processor_id();
