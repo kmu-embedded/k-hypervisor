@@ -62,7 +62,9 @@ CFLAGS+= -mcpu=${CPU} -marm
 DEFINES= -D__CONFIG_MUTEX__#-D__CONFIG_SMP__ #-D__TEST_TIMER__
 CFLAGS+=${DEFINES}
 
-CONFIG_C99=y
+# BUILD: Passed --std==gnu90, --std==gnu99, --std=gnu11
+
+#CONFIG_C99=y
 ifeq (${CONFIG_C99}, y)
 CFLAGS+= --std=c99 -DCONFIG_C99
 endif
