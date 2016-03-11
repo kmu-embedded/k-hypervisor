@@ -17,3 +17,7 @@ LIBC_SRCS+= memcpy.c strncat.c fgetc.c strpbrk.c fflush.c strcat.c rand.c memcmp
 			memchr.c localtime.c fseek.c strspn.c rename.c exit.c strncpy.c mktime.c strtol.c \
 			qsort.c rewind.c strtok.c init_libc.c strcpy.c aligned_alloc.c fprintf.c fgets.c \
 			strdup.c ctype.c
+
+SUBDIRECTORIES += lib/c/src/arch-arm
+SUBDIRECTORIES += lib/c/src/sys-baremetal
+SUBDIRECTORIES += lib/c/src/sys-baremetal/arch-arm

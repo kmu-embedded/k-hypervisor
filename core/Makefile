@@ -8,3 +8,5 @@ CORE_SRCS+= interrupt.c
 CORE_SRCS+= main.c
 CORE_SRCS+= vdev.c
 CORE_SRCS+= timer.c
+
+SUBDIRECTORIES += core/sched core/vm
