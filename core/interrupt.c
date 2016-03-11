@@ -9,7 +9,7 @@
 
 #include <rtsm-config.h>
 #include <core/vm/vcpu.h>
-
+#include "../arch/arm/arch_init.h"
 
 #define VIRQ_MIN_VALID_PIRQ 16
 #define VIRQ_NUM_MAX_PIRQS  MAX_IRQS
@@ -153,14 +153,5 @@ void interrupt_service_routine(int irq, void *current_regs, void *pdata)
 
 void interrupt_init()
 {
-    //uint32_t cpu = smp_processor_id();
-
-    gic_init();
-    write_hcr(HCR_IMO | HCR_FMO);
-
-    /* Virtual Interrupt: GIC Virtual Interface Control */
-    vgic_init();
-    vgic_enable(1);
-    virq_table_init();
-
+    arch_irq_init();
 }
