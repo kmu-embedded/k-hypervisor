@@ -28,8 +28,7 @@ void guest_memory_init_mmu(void)
     HVMM_TRACE_EXIT();
 }
 
-
-void init_pgtable(uint32ptr_t *pgtable_base)
+void stage2_mm_create(uint32ptr_t *pgtable_base)
 {
     int l1_index, l2_index;
     pgentry *vm_l1_pgtable, *vm_l2_pgtable, *vm_l3_pgtable;
@@ -46,11 +45,6 @@ void init_pgtable(uint32ptr_t *pgtable_base)
         }
     }
     *pgtable_base = (uint32_t) vm_l1_pgtable;
-}
-
-void stage2_mm_create(uint32ptr_t *pgtable_base)
-{
-    init_pgtable(pgtable_base);
 }
 
 void stage2_mm_init(struct memdesc_t **mdlist, char **_vmid_ttbl, vmid_t vmid)

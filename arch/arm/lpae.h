@@ -101,9 +101,9 @@ typedef union lpae_t pgentry;
 #define L2_SHIFT    (L3_SHIFT + ENTRY_SHIFT)
 #define L1_SHIFT    (L2_SHIFT + ENTRY_SHIFT)
 
-#define L1_INDEX_MASK 0xC0000000
-#define L2_INDEX_MASK 0x3FE00000
-#define L3_INDEX_MASK 0x001FF000
+#define L1_BIT_MASK 0xC0000000
+#define L2_BIT_MASK 0x3FE00000
+#define L3_BIT_MASK 0x001FF000
 
 #define PAGE_MASK 0x00000FFF
 

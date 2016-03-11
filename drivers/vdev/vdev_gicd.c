@@ -172,7 +172,6 @@ static hvmm_status_t handler_000(uint32_t write, uint32_t offset,
     /* TYPER;             RO*/
     /* IIDR;              RO*/
     /* IGROUPR[32];       0x080 ~ 0x0FF */
-    printf("%s[%d]\n", __func__, __LINE__);
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     vmid_t vmid = get_current_vcpuid();
     struct gicd_regs *regs = &_regs[vmid];
@@ -180,7 +179,6 @@ static hvmm_status_t handler_000(uint32_t write, uint32_t offset,
     uint32_t woffset = offset / 4;
     switch (woffset) {
     case __GICD_CTLR: /* RW */
-        printf("%s[%d]\n", __func__, __LINE__);
         if (write) {
             regs->CTLR = *pvalue;
         } else {
@@ -189,14 +187,12 @@ static hvmm_status_t handler_000(uint32_t write, uint32_t offset,
         result = HVMM_STATUS_SUCCESS;
         break;
     case __GICD_TYPER: /* RO */
-        printf("%s[%d]\n", __func__, __LINE__);
         if (write == 0) {
             *pvalue = regs->TYPER;
             result = HVMM_STATUS_SUCCESS;
         }
         break;
     case __GICD_IIDR: /* RO */
-        printf("%s[%d]\n", __func__, __LINE__);
         if (write == 0) {
             *pvalue = regs->IIDR;
             result = HVMM_STATUS_SUCCESS;
@@ -205,7 +201,6 @@ static hvmm_status_t handler_000(uint32_t write, uint32_t offset,
     default: { /* RW GICD_IGROUPR */
         int igroup = woffset - __GICD_IGROUPR;
         if ((igroup == 0) && (igroup < VGICD_NUM_IGROUPR)) {
-            printf("%s[%d]\n", __func__, __LINE__);
             if (write) {
                 regs_banked->IGROUPR = *pvalue;
             } else {
@@ -214,7 +209,6 @@ static hvmm_status_t handler_000(uint32_t write, uint32_t offset,
 
             result = HVMM_STATUS_SUCCESS;
         } else if ((igroup > 0) && (igroup < VGICD_NUM_IGROUPR)) {
-            printf("%s[%d]\n", __func__, __LINE__);
             if (write) {
                 regs->IGROUPR[igroup] = *pvalue;
             } else {
@@ -640,13 +634,17 @@ static hvmm_status_t vdev_gicd_access_handler(uint32_t write,
                                               uint32_t offset, uint32_t *pvalue,
                                               enum vdev_access_size access_size)
 {
+#if 0
     uint32_t smp = smp_processor_id();
     printf ("[%d]%s: %s offset:%x value:%x access_size : %d\n", smp, __func__,
             write ? "write" : "read", offset,
             write ? *pvalue : (uint32_t) pvalue, access_size);
+#endif
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     uint8_t offsetidx = (uint8_t) ((offset & 0xF00) >> 8);
+#if 0
     printf("offset_idx : %d\n", offsetidx);
+#endif
     result = _handler_map[offsetidx].handler(write, offset, pvalue, access_size);
     return result;
 }

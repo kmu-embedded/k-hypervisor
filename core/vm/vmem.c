@@ -4,10 +4,6 @@
 
 // TODO(casionwoo) : These memory mapping variables should be removed after DTB implementation
 
-//extern uint32_t _guest0_bin_start;
-//extern uint32_t _guest1_bin_start;
-//extern uint32_t _guest2_bin_start;
-//
 struct memdesc_t vm_md_empty[] = {
     { 0, 0, 0, 0,  0 },
 };
