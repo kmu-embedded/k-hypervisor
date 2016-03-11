@@ -21,7 +21,6 @@ struct virqmap_entry {
 };
 
 struct guest_virqmap {
-    vmid_t vmid;
     struct virqmap_entry map[1024];
 };
 
