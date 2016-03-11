@@ -18,8 +18,7 @@
     (pirq >= VIRQ_MIN_VALID_PIRQ && pirq < VIRQ_NUM_MAX_PIRQS)
 
 /**< IRQ handler */
-static interrupt_handler_t _host_ppi_handlers[NR_CPUS][MAX_PPI_IRQS];
-static interrupt_handler_t _host_spi_handlers[MAX_IRQS];
+static interrupt_handler_t interrupt_handlers[MAX_PPI_IRQS];
 
 const int32_t interrupt_check_guest_irq(uint32_t pirq)
 {
@@ -68,15 +67,8 @@ const uint32_t interrupt_pirq_to_enabled_virq(vcpuid_t vcpuid, uint32_t pirq)
 
 void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
 {
-    uint32_t cpu = smp_processor_id();
-
-    if (irq < MAX_PPI_IRQS) {
-        _host_ppi_handlers[cpu][irq] = handler;
-    }
-
-    else {
-        _host_spi_handlers[irq] = handler;
-    }
+    if (irq < MAX_IRQS)
+        interrupt_handlers[irq] = handler;
 }
 
 // Parameter of vmid would be replaced to vcpuid, First I will assume this vmid as vcpuid
@@ -112,8 +104,6 @@ static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
 void interrupt_service_routine(int irq, void *current_regs, void *pdata)
 {
     struct arch_regs *regs = (struct arch_regs *)current_regs;
-    uint32_t cpu = smp_processor_id();
-
 
     if (irq < MAX_IRQS) {
         if (interrupt_check_guest_irq(irq) == GUEST_IRQ) {
@@ -124,15 +114,9 @@ void interrupt_service_routine(int irq, void *current_regs, void *pdata)
             interrupt_inject_enabled_guest(NUM_GUESTS_STATIC, irq);
         } else {
             /* host irq */
-            if (irq < MAX_PPI_IRQS) {
-                if (_host_ppi_handlers[cpu][irq]) {
-                    _host_ppi_handlers[cpu][irq](irq, regs, 0);
-                }
-            } else {
-                if (_host_spi_handlers[irq]) {
-                    _host_spi_handlers[irq](irq, regs, 0);
-                }
-            }
+            if (interrupt_handlers[irq])
+                interrupt_handlers[irq](irq, regs, 0);
+
             gic_completion_irq(irq);
             gic_deactivate_irq(irq);
         }
