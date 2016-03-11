@@ -12,11 +12,7 @@ static int nr_vcpus;
 
 hvmm_status_t vcpu_setup()
 {
-#ifdef CONFIG_C99
     list_inithead(&vcpu_list);
-#else
-    INIT_LIST_HEAD(&vcpu_list);
-#endif
     if (nr_vcpus != 0) {
         /* Never this happend */
         nr_vcpus = 0;
@@ -41,11 +37,7 @@ struct vcpu *vcpu_create()
     // TODO(casionwoo) : Initialize running_time and actual_running_time after time_module created
     // TODO(casionwoo) : Initialize period and deadline after menuconfig module created
 
-#ifdef CONFIG_C99
     list_addtail(&vcpu->head, &vcpu_list);
-#else
-    list_add_tail(&vcpu->head, &vcpu_list);
-#endif
 
     return vcpu;
 }
@@ -94,12 +86,8 @@ hvmm_status_t vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
 
 struct vcpu *vcpu_find(vcpuid_t vcpuid)
 {
-#ifdef CONFIG_C99
-    list_for_each_entry(struct vcpu, vcpu, &vcpu_list, head) {
-#else
     struct vcpu *vcpu = NULL;
-    list_for_each_entry(vcpu, &vcpu_list, head) {
-#endif
+    list_for_each_entry(struct vcpu, vcpu, &vcpu_list, head) {
         if (vcpu->vcpuid == vcpuid) {
             return vcpu;
         }
@@ -110,12 +98,8 @@ struct vcpu *vcpu_find(vcpuid_t vcpuid)
 
 void print_all_vcpu()
 {
-#ifdef CONFIG_C99
+    struct vcpu *vcpu = NULL;
     list_for_each_entry(struct vcpu, vcpu, &vcpu_list, head) {
-#else
-    struct vcpu *vcpu;
-    list_for_each_entry(vcpu, &vcpu_list, head) {
-#endif
         print_vcpu(vcpu);
     }
 }

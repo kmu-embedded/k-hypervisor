@@ -48,9 +48,6 @@ struct list_head {
     struct list_head *next;
 };
 
-
-//static inline void
-//INIT_LIST_HEAD(struct list_head *head)
 static inline void list_inithead(struct list_head *item)
 {
     item->prev = item;
@@ -82,7 +79,6 @@ static inline void list_replace(struct list_head *from, struct list_head *to)
     from->prev->next = to;
 }
 
-//list_del
 static inline void list_del(struct list_head *item)
 {
     item->prev->next = item->next;
@@ -90,7 +86,6 @@ static inline void list_del(struct list_head *item)
     item->prev = item->next = NULL;
 }
 
-//list_del_init
 static inline void list_delinit(struct list_head *item)
 {
     item->prev->next = item->next;
@@ -131,21 +126,6 @@ static inline void list_validate(struct list_head *list)
     }
 }
 
-//#define	LIST_HEAD_INIT(name)	{ .prev = &(name), .next = &(name) }
-//struct virgl_drm_winsys
-//{
-//struct virgl_winsys base;
-//int fd;
-//struct list_head delayed;
-//int num_delayed;
-//unsigned usecs;
-//pipe_mutex mutex;
-
-//struct util_hash_table *bo_handles;
-//struct util_hash_table *bo_names;
-//pipe_mutex bo_handles_mutex;
-//};
-//LIST_INITHEAD(&qdws->delayed);
 #define LIST_INITHEAD(__item) list_inithead(__item)
 
 #define LIST_ADD(__item, __list) list_add(__item, __list)
@@ -154,11 +134,9 @@ static inline void list_validate(struct list_head *list)
 #define LIST_DEL(__item) list_del(__item)
 #define LIST_DELINIT(__item) list_delinit(__item)
 
-//LIST_ENTRY
 #define LIST_ENTRY(__type, __item, __field)   \
     ((__type *)(((char *)(__item)) - offsetof(__type, __field)))
 
-//list_empty
 #define LIST_IS_EMPTY(__list)                   \
     ((__list)->next == (__list))
 
@@ -167,11 +145,11 @@ static inline void list_validate(struct list_head *list)
  *
  * 'sample' MUST be initialized, or else the result is undefined!
  */
-//#ifndef container_of
+#ifndef container_of
 #define container_of(ptr, sample, member)				\
     (void *)((char *)(ptr)						\
 	     - ((char *)&(sample)->member - (char *)(sample)))
-//#endif
+#endif
 
 #define list_first_entry(ptr, type, member) \
         LIST_ENTRY(type, (ptr)->next, member)
@@ -179,7 +157,6 @@ static inline void list_validate(struct list_head *list)
 #define list_last_entry(ptr, type, member) \
         LIST_ENTRY(type, (ptr)->prev, member)
 
-//list_for_each_entry(entry, &registered_list_rr[cpu], registered_list_head)
 #define LIST_FOR_EACH_ENTRY(pos, head, member)				\
    for (pos = NULL, pos = container_of((head)->next, pos, member);	\
 	&pos->member != (head);						\
@@ -207,37 +184,38 @@ static inline void list_validate(struct list_head *list)
 	&pos->member != (head);						\
 	pos = container_of(pos->member.prev, pos, member))
 
+// Modified type *pos -> pos to support C99 and GNUxx
 #define list_for_each_entry(type, pos, head, member)                    \
-   for (type *pos = LIST_ENTRY(type, (head)->next, member);             \
+   for (pos = LIST_ENTRY(type, (head)->next, member);             \
 	&pos->member != (head);                                         \
 	pos = LIST_ENTRY(type, pos->member.next, member))
 
 #define list_for_each_entry_safe(type, pos, head, member)               \
-   for (type *pos = LIST_ENTRY(type, (head)->next, member),             \
+   for (pos = LIST_ENTRY(type, (head)->next, member),             \
 	     *__next = LIST_ENTRY(type, pos->member.next, member);      \
 	&pos->member != (head);                                         \
 	pos = __next,                                                   \
         __next = LIST_ENTRY(type, __next->member.next, member))
 
 #define list_for_each_entry_rev(type, pos, head, member)                \
-   for (type *pos = LIST_ENTRY(type, (head)->prev, member);             \
+   for (pos = LIST_ENTRY(type, (head)->prev, member);             \
 	&pos->member != (head);                                         \
 	pos = LIST_ENTRY(type, pos->member.prev, member))
 
 #define list_for_each_entry_safe_rev(type, pos, head, member)           \
-   for (type *pos = LIST_ENTRY(type, (head)->prev, member),             \
+   for (pos = LIST_ENTRY(type, (head)->prev, member),             \
 	     *__prev = LIST_ENTRY(type, pos->member.prev, member);      \
 	&pos->member != (head);                                         \
 	pos = __prev,                                                   \
         __prev = LIST_ENTRY(type, __prev->member.prev, member))
 
 #define list_for_each_entry_from(type, pos, start, head, member)        \
-   for (type *pos = LIST_ENTRY(type, (start), member);                  \
+   for (pos = LIST_ENTRY(type, (start), member);                  \
 	&pos->member != (head);                                         \
 	pos = LIST_ENTRY(type, pos->member.next, member))
 
 #define list_for_each_entry_from_rev(type, pos, start, head, member)    \
-   for (type *pos = LIST_ENTRY(type, (start), member);                  \
+   for (pos = LIST_ENTRY(type, (start), member);                  \
 	&pos->member != (head);                                         \
 	pos = LIST_ENTRY(type, pos->member.prev, member))
 
