@@ -32,7 +32,7 @@ static void SECTION(".init") primary_core_init(void)
     irq_disable();
 
     // Setup some basic operations such as BSS init., cache invalidate, etc.
-    cpu_init();
+    arch_cpu_init();
 
     console_init();
 
@@ -44,7 +44,7 @@ static void SECTION(".init") primary_core_init(void)
 
     enable_mmu();
 
-    irq_init();
+    arch_irq_init();
 
 #ifdef __CONFIG_SMP__
     printf("wake up...other CPUs\n");
