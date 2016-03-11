@@ -43,8 +43,7 @@
 #include <assert.h>
 
 
-struct list_head
-{
+struct list_head {
     struct list_head *prev;
     struct list_head *next;
 };
@@ -102,7 +101,7 @@ static inline void list_delinit(struct list_head *item)
 
 static inline bool list_empty(struct list_head *list)
 {
-   return list->next == list;
+    return list->next == list;
 }
 
 /**
@@ -110,39 +109,41 @@ static inline bool list_empty(struct list_head *list)
  */
 static inline bool list_is_singular(const struct list_head *list)
 {
-   return list->next != NULL && list->next->next == list;
+    return list->next != NULL && list->next->next == list;
 }
 
 static inline unsigned list_length(struct list_head *list)
 {
-   struct list_head *node;
-   unsigned length = 0;
-   for (node = list->next; node != list; node = node->next)
-      length++;
-   return length;
+    struct list_head *node;
+    unsigned length = 0;
+    for (node = list->next; node != list; node = node->next) {
+        length++;
+    }
+    return length;
 }
 
 static inline void list_validate(struct list_head *list)
 {
-   struct list_head *node;
-   assert(list->next->prev == list && list->prev->next == list);
-   for (node = list->next; node != list; node = node->next)
-      assert(node->next->prev == node && node->prev->next == node);
+    struct list_head *node;
+    assert(list->next->prev == list && list->prev->next == list);
+    for (node = list->next; node != list; node = node->next) {
+        assert(node->next->prev == node && node->prev->next == node);
+    }
 }
 
 //#define	LIST_HEAD_INIT(name)	{ .prev = &(name), .next = &(name) }
 //struct virgl_drm_winsys
 //{
-    //struct virgl_winsys base;
-    //int fd;
-    //struct list_head delayed;
-    //int num_delayed;
-    //unsigned usecs;
-    //pipe_mutex mutex;
+//struct virgl_winsys base;
+//int fd;
+//struct list_head delayed;
+//int num_delayed;
+//unsigned usecs;
+//pipe_mutex mutex;
 
-    //struct util_hash_table *bo_handles;
-    //struct util_hash_table *bo_names;
-    //pipe_mutex bo_handles_mutex;
+//struct util_hash_table *bo_handles;
+//struct util_hash_table *bo_names;
+//pipe_mutex bo_handles_mutex;
 //};
 //LIST_INITHEAD(&qdws->delayed);
 #define LIST_INITHEAD(__item) list_inithead(__item)
