@@ -1,131 +1,109 @@
-#include <stdio.h>
-#include <debug_print.h>
-
 #include "gic-v2.h"
-#include <core/vm/vcpu.h>
-#include <hvmm_trace.h>
-
-#include <arch/gic_regs.h>
-#include <arch/armv7.h>
+#include <arch/gic_regs.h>  // Define OFFSETS
+#include <debug_print.h>
+#include <arch/armv7.h>     // get_periphbase()
 #include <io.h>
-#include <asm/asm.h>
+#include <asm/asm.h>        // SECTION(x)
 
-static struct gic_hw_info gic_hw;
+static struct GICv2_HW GICv2;
 
-#define gicd_read(offset)           getl((uint32_t) gic_hw.base + GICD_OFFSET + offset)
-#define gicd_write(offset, value)   putl(value, (uint32_t) gic_hw.base + GICD_OFFSET + offset)
+#define GICD_READ(offset)           readl(GICv2.gicd)
+#define GICD_WRITE(offset, value)   writel(value, GICv2.gicd + offset)
+#define GICC_READ(offset)           readl(GICv2.gicc + offset)
+#define GICC_WRITE(offset, value)   writel(value, GICv2.gicc + offset)
 
-#define gicc_read(offset)           getl((uint32_t) gic_hw.base + GICC_OFFSET + offset)
-#define gicc_write(offset, value)   putl(value, (uint32_t) gic_hw.base + GICC_OFFSET + offset)
-
-#define gich_read(offset)           getl((uint32_t) gic_hw.base + GICH_OFFSET + offset)
-#define gich_write(offset, value)   putl(value, (uint32_t) gic_hw.base + GICH_OFFSET + offset)
-
-static uint32_t gicd;
-static uint32_t gicc;
 void SECTION(".init") gic_init(void)
 {
     int i;
+    uint32_t periphbase;
 
     // This code will be moved other parts, not here. */
     /* Get GICv2 base address */
-    gic_hw.base = (uint32_t)(get_periphbase() & 0x000000FFFFFFFFFFULL);
-    if (gic_hw.base == 0x0) {
+    periphbase = (uint32_t)(get_periphbase() & 0x000000FFFFFFFFFFULL);
+    if (periphbase == 0x0) {
         printf("Warning: Curretn architecture has no value in CBAR\n    \
                 The architecture do not follow design philosophy from ARM recommendation\n");
         // TODO(casionwoo): vaule of base address will be read from DTB or configuration file.
         // Currently, we set the base address of gic to 0x2C000000, it is for RTSM.
-        gic_hw.base = 0x2C000000;
+        periphbase = 0x2C000000;
     }
-    gicd = gic_hw.base + GICD_OFFSET;
-    gicc = gic_hw.base + GICC_OFFSET;
+    GICv2.gicd = periphbase + GICD_OFFSET;
+    GICv2.gicc = periphbase + GICC_OFFSET;
 
-    gic_hw.nr_irqs = 32 * ((gicd_read(GICD_TYPER) & GICD_TYPE_LINES_MASK) + 1);
-    gic_hw.nr_cpus = 1 + ((gicd_read(GICD_TYPER) & GICD_TYPE_CPUS_MASK) >> GICD_TYPE_CPUS_SHIFT);
+    /*
+     * We usually use the name of variables in lower case, but
+     * here, using upper case is special case for readability.
+     */
+    uint32_t gicd_typer = GICD_READ(GICD_TYPER_OFFSET);
+    /* maximum number of irq lines: 32(N+1). */
+    GICv2.ITLinesNumber = 32 * ((gicd_typer & GICD_NR_IT_LINES_MASK) + 1);
+    GICv2.CPUNumber = 1 + (gicd_typer >> 5);
+    debug_print("Number of IRQs: %d\n", GICv2.ITLinesNumber);
+    debug_print("Number of CPU interfaces: %d\n", GICv2.CPUNumber);
 
-    gicc_write(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
-    gicd_write(GICD_CTLR, 0x1);
+    GICC_WRITE(GICC_CTLR_OFFSET, GICC_CTL_ENABLE | GICC_CTL_EOI);
+    GICD_WRITE(GICD_CTLR_OFFSET, 0x1);
 
     /* No Priority Masking: the lowest value as the threshold : 255 */
     // We set 0xff but, real value is 0xf8
-    gicc_write(GICC_PMR, 0xff);
+    GICC_WRITE(GICC_PMR_OFFSET, 0xff);
 
-    debug_print("GIC: nr_irqs: 0x%08x\n", gic_hw.nr_irqs);
-    debug_print(" nr_cpus: 0x%08x\n", gic_hw.nr_cpus);
 
     // Set interrupt configuration do not work.
-    for (i = 32; i < gic_hw.nr_irqs; i += 16) {
-        debug_print("BEFORE: GICD_ICFGR(%d): 0x%08x\n", i >> 4, gicd_read(GICD_ICFGR(i >> 4)));
-        gicd_write(GICD_ICFGR(i >> 4), 0x0);
-        debug_print("AFTER: GICD_ICFGR(%d): 0x%08x\n", i >> 4, gicd_read(GICD_ICFGR(i >> 4)));
+    for (i = 32; i < GICv2.ITLinesNumber; i += 16) {
+        GICD_WRITE(GICD_ICFGR(i >> 4), 0x0);
     }
 
     /* Disable all global interrupts. */
-    for (i = 0; i < gic_hw.nr_irqs; i += 32) {
-        debug_print("BEFORE: GICD_ICENABLER(%d): 0x%08x\n", i >> 5, gicd_read(GICD_ICENABLER(i >> 5)));
-        gicd_write(GICD_ISENABLER(i >> 5), 0xffffffff);
-        uint32_t valid = gicd_read(GICD_ISENABLER(i >> 5));
-        gicd_write(GICD_ICENABLER(i >> 5), valid);
-        debug_print("AFTER: GICD_ICENABLER(%d): 0x%08x\n", i >> 5, gicd_read(GICD_ICENABLER(i >> 5)));
+    for (i = 0; i < GICv2.ITLinesNumber; i += 32) {
+        GICD_WRITE(GICD_ISENABLER(i >> 5), 0xffffffff);
+        uint32_t valid = GICD_READ(GICD_ISENABLER(i >> 5));
+        GICD_WRITE(GICD_ICENABLER(i >> 5), valid);
     }
 
     // We set priority 0xa0 for each but real value is a 0xd0, Why?
     /* Set priority as default for all interrupts */
-    for (i = 0; i < gic_hw.nr_irqs; i += 4) {
-        debug_print("BEFORE: GICD_IPRIORITYR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_IPRIORITYR(i >> 2)));
-        gicd_write(GICD_IPRIORITYR(i >> 2), 0xa0a0a0a0);
-        debug_print("AFTER: GICD_IPRIORITYR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_IPRIORITYR(i >> 2)));
+    for (i = 0; i < GICv2.ITLinesNumber; i += 4) {
+        GICD_WRITE(GICD_IPRIORITYR(i >> 2), 0xa0a0a0a0);
     }
 
 #ifndef __CONFIG_SMP__
     // NOTE: GIC_ITRAGETSR is read-only on multiprocessor environment.
-    for (i = 32; i < gic_hw.nr_irqs; i += 4) {
-        debug_print("BEFORE: GICD_ITARGETSR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_ITARGETSR(i >> 2)));
-        gicd_write(GICD_ITARGETSR(i >> 2), 1 << 0 | 1 << 8 | 1 << 16 | 1 << 24);
-        debug_print("AFTER: GICD_ITARGETSR(%d): 0x%08x\n", i >> 2, gicd_read(GICD_ITARGETSR(i >> 2)));
+    for (i = 32; i < GICv2.ITLinesNumber; i += 4) {
+        GICD_WRITE(GICD_ITARGETSR(i >> 2), 1 << 0 | 1 << 8 | 1 << 16 | 1 << 24);
     }
 #endif
 
     // TODO(casionwoo): Set SGI and PPIs
 
-    gic_hw.initialized = GIC_SIGNATURE_INITIALIZED;
+    // Dirty code in left, here.
+    // TODO(casionwoo): We will remove the variable as below.
+    GICv2.initialized = GIC_SIGNATURE_INITIALIZED;
 }
 
 void gic_configure_irq(uint32_t irq, uint8_t polarity)
 {
-    if (irq < gic_hw.nr_irqs) {
+    if (irq < GICv2.ITLinesNumber) {
         uint32_t reg;
         uint32_t mask;
 
-        //gic_disable_irq(irq);
+        reg = GICD_READ(GICD_ICFGR(irq >> 4));
 
-        reg = gicd_read(GICD_ICFGR(irq >> 4));
         mask = (reg >> 2 * (irq % 16)) & 0x3;
-
         if (polarity == IRQ_LEVEL_TRIGGERED) {
             mask &= 0;
             mask |= IRQ_LEVEL_TRIGGERED << 0;
-            //reg &= ~(2u << (2 * (irq % 16)));
         } else { /* IRQ_EDGE_TRIGGERED */
             mask &= 0;
             mask |= IRQ_EDGE_TRIGGERED << 0;
-            //reg |= (2u << (2 * (irq % 16)));
         }
-
         reg = reg & ~(0x3 << 2 * (irq % 16));
         reg = reg | (mask << 2 * (irq % 16));
-        gicd_write(GICD_ICFGR(irq >> 4), reg);
 
-        /* enable forwarding */
-        //enable_irq(irq);
+        GICD_WRITE(GICD_ICFGR(irq >> 4), reg);
     } else {
-        debug_print("invalid irq: 0x%08x\n", irq);
+        printf("invalid or spurious irq: %d\n", irq);
     }
-}
-
-uint32_t gic_get_irq_number(void)
-{
-    return gicc_read(GICC_IAR) & GICC_IAR_MASK;
 }
 
 void gic_set_sgi(const uint32_t target, uint32_t sgi)
@@ -133,35 +111,39 @@ void gic_set_sgi(const uint32_t target, uint32_t sgi)
     if (!(sgi < 16)) {
         return ;
     }
-
-    gicd_write(GICD_SGIR(0), GICD_SGIR_TARGET_LIST |
+    GICD_WRITE(GICD_SGIR(0), GICD_SGIR_TARGET_LIST |
                (target << GICD_SGIR_CPU_TARGET_LIST_OFFSET) |
                (sgi & GICD_SGIR_SGI_INT_ID_MASK));
 
 }
 
 /* API functions */
+uint32_t gic_get_irq_number(void)
+{
+    return GICC_READ(GICC_IAR_OFFSET) & GICC_IAR_MASK;
+}
+
 void gic_enable_irq(uint32_t irq)
 {
-    gicd_write(GICD_ISENABLER(irq >> 5), 1UL << (irq & 0x1F));
+    GICD_WRITE(GICD_ISENABLER(irq >> 5), 1UL << (irq & 0x1F));
 }
 
 void gic_disable_irq(uint32_t irq)
 {
-    gicd_write(GICD_ICENABLER(irq >> 5), 1UL << (irq & 0x1F));
+    GICD_WRITE(GICD_ICENABLER(irq >> 5), 1UL << (irq & 0x1F));
 }
 
 void gic_completion_irq(uint32_t irq)
 {
-    gicc_write(GICC_EOIR, irq);
+    GICC_WRITE(GICC_EOIR_OFFSET, irq);
 }
 
 void gic_deactivate_irq(uint32_t irq)
 {
-    gicc_write(GICC_DIR, irq);
+    GICC_WRITE(GICC_DIR_OFFSET, irq);
 }
 
 uint32_t *gic_vgic_baseaddr(void)
 {
-    return (uint32_t *) (uint32_t) (gic_hw.base + GICH_OFFSET);
+    return (uint32_t *) (GICv2.gich);
 }
