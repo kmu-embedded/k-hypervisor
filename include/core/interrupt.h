@@ -95,8 +95,6 @@ extern struct interrupt_module _interrupt_module;
 void interrupt_init();
 void register_irq_handler(uint32_t irq, interrupt_handler_t handler);
 void interrupt_host_configure(uint32_t irq);
-void interrupt_guest_inject(vmid_t vmid, uint32_t virq, uint32_t pirq,
-                            uint8_t hw);
 void interrupt_guest_enable(vmid_t vmid, uint32_t irq);
 
 void interrupt_service_routine(int irq, void *current_regs, void *pdata);
