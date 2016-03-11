@@ -23,35 +23,41 @@ static interrupt_handler_t _host_spi_handlers[MAX_IRQS];
 
 const int32_t interrupt_check_guest_irq(uint32_t pirq)
 {
-    int i;
+    int vmid, nr_vcpu;
     struct virqmap_entry *map;
 
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        struct vmcb *vm = vm_find(i);
-        map = vm->virq.guest_virqmap->map;
+    for (vmid = 0; vmid < NUM_GUESTS_STATIC; vmid++) {
+        struct vmcb *vm = vm_find(vmid);
 
-        if (map[pirq].virq != VIRQ_INVALID) {
-            return GUEST_IRQ;
+        for (nr_vcpu = 0; nr_vcpu < vm->num_vcpus; nr_vcpu++) {
+            struct vcpu *vcpu = vm->vcpu[nr_vcpu];
+
+            map = vcpu->virq.guest_virqmap->map;
+            if (map[pirq].virq != VIRQ_INVALID) {
+                return GUEST_IRQ;
+            }
         }
     }
 
     return HOST_IRQ;
 }
 
-const uint32_t interrupt_virq_to_pirq(vmid_t vmid, uint32_t virq)
+// Parameter of vmid would be replaced to vcpuid, First I will assume this vmid as vcpuid
+const uint32_t interrupt_virq_to_pirq(vcpuid_t vcpuid, uint32_t virq)
 {
-    struct vmcb *vm = vm_find(vmid);
-    struct virqmap_entry *map = vm->virq.guest_virqmap->map;
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct virqmap_entry *map = vcpu->virq.guest_virqmap->map;
 
     return map[virq].pirq;
 }
 
-const uint32_t interrupt_pirq_to_enabled_virq(vmid_t vmid, uint32_t pirq)
+// Parameter of vmid would be replaced to vcpuid, First I will assume this vmid as vcpuid
+const uint32_t interrupt_pirq_to_enabled_virq(vcpuid_t vcpuid, uint32_t pirq)
 {
     uint32_t virq = VIRQ_INVALID;
 
-    struct vmcb *vm = vm_find(vmid);
-    struct virqmap_entry *map = vm->virq.guest_virqmap->map;
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct virqmap_entry *map = vcpu->virq.guest_virqmap->map;
 
     if (map[pirq].enabled) {
         virq = map[pirq].virq;
@@ -80,10 +86,11 @@ void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
     }
 }
 
-void interrupt_guest_enable(vmid_t vmid, uint32_t irq)
+// Parameter of vmid would be replaced to vcpuid, First I will assume this vmid as vcpuid
+void interrupt_guest_enable(vcpuid_t vcpuid, uint32_t irq)
 {
-    struct vmcb *vm = vm_find(vmid);
-    struct virqmap_entry *map = vm->virq.guest_virqmap->map;
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct virqmap_entry *map = vcpu->virq.guest_virqmap->map;
 
     map[irq].enabled = GUEST_IRQ_ENABLE;
 }
