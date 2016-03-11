@@ -13,6 +13,7 @@
 #include <core/timer.h>
 #include <stdio.h>
 #include <stdint.h>
+#include "../arch/arm/gic-v2.h"
 
 static timer_callback_t __host_callback[NR_CPUS];
 static timer_callback_t __guest_callback[NR_CPUS];

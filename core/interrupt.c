@@ -146,7 +146,7 @@ void interrupt_service_routine(int irq, void *current_regs, void *pdata)
 
 void interrupt_init()
 {
-    uint32_t cpu = smp_processor_id();
+    //uint32_t cpu = smp_processor_id();
 
     gic_init();
     write_hcr(HCR_IMO | HCR_FMO);

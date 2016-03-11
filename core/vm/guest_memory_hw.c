@@ -4,6 +4,7 @@
 #include <arch/armv7.h>
 
 #include "../../arch/arm/lpae.h"
+#include "stage2_mm.h"
 
 #define L2_ENTRY_MASK 0x1FF
 
@@ -89,7 +90,7 @@ static void guest_memory_stage2_enable(int enable)
  * @param ttbl Level 1 translation table of the guest.
  * @return HVMM_STATUS_SUCCESS only.
  */
-static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, pgentry *ttbl)
+static hvmm_status_t guest_memory_set_vmid_ttbl(vmid_t vmid, char *ttbl)
 {
     uint64_t vttbr;
     /*

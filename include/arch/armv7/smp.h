@@ -1,7 +1,7 @@
 #ifndef __SMP_H__
 #define __SMP_H__
 
-//#include "arch/armv7.h"
+#include "sysctrl.h"
 #include "arm_inline.h"
 
 #define MPIDR_MASK 0xFFFFFF

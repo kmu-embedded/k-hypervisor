@@ -28,7 +28,7 @@
 static void core_regs_init(struct core_regs *core_regs)
 {
     int i = 0;
-    uint32_t *atag_ptr;
+    //uint32_t *atag_ptr;
 
     /* TODO(casionwoo) : Why PC should be this value */
     core_regs->pc = CFG_GUEST_START_ADDRESS;
@@ -235,6 +235,7 @@ static void cop_regs_restore(struct cop_regs *cop_regs)
     write_vmpidr(cop_regs->vmpidr);
 }
 
+#if 0
 static char *_modename(uint8_t mode)
 {
     char *name = "Unknown";
@@ -269,6 +270,7 @@ static char *_modename(uint8_t mode)
     }
     return name;
 }
+#endif
 
 void print_core_regs(struct core_regs *core_regs)
 {
@@ -316,6 +318,7 @@ hvmm_status_t vcpu_regs_save(struct vcpu_regs *vcpu_regs, struct core_regs *curr
     return HVMM_STATUS_SUCCESS;
 }
 
+void __set_vcpu_context_first_time(struct core_regs *regs);
 hvmm_status_t vcpu_regs_restore(struct vcpu_regs *vcpu_regs, struct core_regs *current_regs)
 {
     struct context_regs *context_regs = &vcpu_regs->context_regs;

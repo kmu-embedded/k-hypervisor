@@ -14,6 +14,10 @@
 #include <core/vdev.h>
 #include <arch/armv7.h>
 
+#include <core/scheduler.h>
+#include <libc_init.h>
+#include <core/timer.h>
+
 static vmid_t vm[NUM_GUESTS_STATIC];
 uint8_t secondary_smp_pen;
 

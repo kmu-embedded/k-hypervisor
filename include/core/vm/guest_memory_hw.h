@@ -22,6 +22,9 @@ enum memattr {
     MEMATTR_NORMAL_WB_CACHEABLE     = 0xF,  // 11_11
 };
 
+//For compiler warning:
+// error: ‘struct vmem’ declared inside parameter list [-Werror]
+struct vmem;
 hvmm_status_t memory_hw_create(struct vmem *vmem);
 hvmm_status_t memory_hw_init(struct memdesc_t **memmap, char **_vmid_ttbl, vmid_t vmid);
 hvmm_status_t memory_hw_save(void);

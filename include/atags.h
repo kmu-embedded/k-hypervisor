@@ -96,7 +96,6 @@ struct atag {
 };
 
 #define INVALID 0
-static struct atag *_params = INVALID; /* used to point at the current tag */
 
 void atags_setup(void);
 uint32_t *linuxloader_get_atags_addr(void);

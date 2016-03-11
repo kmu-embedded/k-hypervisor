@@ -81,13 +81,13 @@ int pl01x_tst_fifo();
 /** @brief Like putc
  *  @param c Character to be written.
  */
-void pl01x_putc(const char c);
+int pl01x_putc(const char c);
 
 /** @brief Like getc
  *  @param base pl01x's base address.
  *  @return Read from pl01x's FIFO.
  */
-char pl01x_getc();
+int pl01x_getc();
 
 /** @brief Initializes pl01x.
  *  @param base pl01x's base address.

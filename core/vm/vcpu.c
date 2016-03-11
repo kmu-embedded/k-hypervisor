@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <core/scheduler.h>
 #include <string.h>
+#include <stdlib.h>
 
 static struct list_head vcpu_list;
 static int nr_vcpus;

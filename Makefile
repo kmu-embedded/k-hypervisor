@@ -57,7 +57,7 @@ ARMV:=armv7-a
 ASFLAGS+= -Wa,-mcpu=${CPU} -Wa,-march=${ARMV}
 
 CFLAGS= -nodefaultlibs -nostartfiles -nostdlib -nostdinc -ffreestanding
-CFLAGS+= -Wall
+CFLAGS+= -Wall -Werror
 CFLAGS+= -mcpu=${CPU} -marm
 DEFINES= -D__CONFIG_MUTEX__#-D__CONFIG_SMP__ #-D__TEST_TIMER__
 CFLAGS+=${DEFINES}
