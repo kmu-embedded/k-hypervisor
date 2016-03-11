@@ -10,12 +10,7 @@
 #include <debug_print.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-#ifdef CONFIG_C99
-#include <lib/c99/util_list.h>
-#else
-#include <lib/gnu/list.h>
-#endif
+#include <lib/list.h>
 
 vcpuid_t __current_vcpuid[NR_CPUS];// = {VCPUID_INVALID, VCPUID_INVALID};
 vcpuid_t __next_vcpuid[NR_CPUS];// = {VCPUID_INVALID, };
@@ -43,11 +38,7 @@ void sched_init()
     __current_vcpuid[pcpu] = VCPUID_INVALID;
     __next_vcpuid[pcpu] = VCPUID_INVALID;
 
-#ifdef CONFIG_C99
     list_inithead(&__running_vcpus[pcpu]);
-#else
-    INIT_LIST_HEAD(&__running_vcpus[pcpu]);
-#endif
 
     /* TODO:(igkang) choose policy based on config */
     __policy[pcpu] = &sched_rr;
@@ -222,13 +213,8 @@ int sched_vcpu_attach(vcpuid_t vcpuid)
     __policy[pcpu]->attach_vcpu(vcpuid);
 
     new_entry = (struct running_vcpus_entry_t *) malloc(sizeof(struct running_vcpus_entry_t));
-#ifdef CONFIG_C99
     list_inithead(&new_entry->head);
     list_addtail(&new_entry->head, &__running_vcpus[pcpu]);
-#else
-    INIT_LIST_HEAD(&new_entry->head);
-    list_add_tail(&new_entry->head, &__running_vcpus[pcpu]);
-#endif
 
     return 0;
 }

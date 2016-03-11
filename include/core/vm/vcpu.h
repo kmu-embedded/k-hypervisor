@@ -1,12 +1,7 @@
 #ifndef __VCPU_H__
 #define __VCPU_H__
 
-#ifdef CONFIG_C99
-#include <lib/c99/util_list.h>
-#else
-#include <lib/gnu/list.h>
-#endif
-
+#include <lib/list.h>
 #include <hvmm_types.h>
 
 #include "vcpu_regs.h"

@@ -12,11 +12,7 @@ static vmid_t vm_count;
 
 hvmm_status_t vm_setup()
 {
-#ifdef CONFIG_C99
     list_inithead(&vm_list);
-#else
-    INIT_LIST_HEAD(&vm_list);
-#endif
     vm_count = 0;
 
     vcpu_setup();
@@ -56,11 +52,7 @@ vmid_t vm_create(unsigned char num_vcpus)
     vmem_create(&vm->vmem, vm->vmid);
     virq_create(&vm->virq, vm->vmid);
 
-#ifdef CONFIG_C99
     list_addtail(&vm->head, &vm_list);
-#else
-    list_add_tail(&vm->head, &vm_list);
-#endif
 
     return vm->vmid;
 }
@@ -123,11 +115,7 @@ vmcb_state_t vm_delete(vmid_t vmid)
         }
     }
 
-#ifdef CONFIG_C99
     list_del(&vm->head);
-#else
-    list_del(&vm->head);
-#endif
     free(vm);
 
     return UNDEFINED;
@@ -175,12 +163,8 @@ hvmm_status_t vm_restore(vmid_t restore_vmid)
 
 struct vmcb *vm_find(vmid_t vmid)
 {
-#ifdef CONFIG_C99
-    list_for_each_entry(struct vmcb, vm, &vm_list, head) {
-#else
     struct vmcb *vm = NULL;
-    list_for_each_entry(vm, &vm_list, head) {
-#endif
+    list_for_each_entry(struct vmcb, vm, &vm_list, head) {
         if (vm->vmid == vmid) {
             return vm;
         }
@@ -190,12 +174,8 @@ struct vmcb *vm_find(vmid_t vmid)
 
 void print_all_vm()
 {
-#ifdef CONFIG_C99
-    list_for_each_entry(struct vmcb, vm, &vm_list, head) {
-#else
     struct vmcb *vm = NULL;
-    list_for_each_entry(vm, &vm_list, head) {
-#endif
+    list_for_each_entry(struct vmcb, vm, &vm_list, head) {
         print_vm(vm);
     }
 }
