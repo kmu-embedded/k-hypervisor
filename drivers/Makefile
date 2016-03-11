@@ -4,3 +4,5 @@ DRIVER_SRCS+= $(patsubst %, vdev/%, ${VDEV_SRCS})
 
 DRIVER_SRCS+= generic_timer.c
 DRIVER_SRCS+= pl01x.c
+
+SUBDIRECTORIES += drivers/vdev

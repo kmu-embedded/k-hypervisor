@@ -26,7 +26,7 @@
 
 #define USEC 1000000
 
-#define NUM_GUESTS_STATIC       1
+#define NUM_GUESTS_STATIC       3
 #define NUM_CPUS       1
 
 #define NUM_GUESTS_CPU0_STATIC       2

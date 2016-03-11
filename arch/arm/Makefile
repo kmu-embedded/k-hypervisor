@@ -10,3 +10,5 @@ ARCH_SRCS+= lpae.c
 ARCH_SRCS+= mm.c
 ARCH_SRCS+= trap.c
 ARCH_SRCS+= vgic.c
+
+SUBDIRECTORIES += arch/arm/v7 arch/arm/platform
