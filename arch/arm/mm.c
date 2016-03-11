@@ -8,9 +8,9 @@
 #include <lpae.h>
 #include <asm/asm.h>
 
-static unsigned int l1_pgtable;
-static unsigned int l2_pgtable;
-static unsigned int l3_pgtable;
+static uint32_t l1_pgtable;
+static uint32_t l2_pgtable;
+static uint32_t l3_pgtable;
 
 /* Set Hyp Memory Attribute Indirection Registers 0 and 1 */
 void SECTION(".init") set_hmair(void)
@@ -71,8 +71,8 @@ static uint64_t read64(uint32_t addr)
     return result;
 }
 
-extern unsigned int __pgtable_start;
-extern unsigned int __pgtable_end;
+extern uint32_t __pgtable_start;
+extern uint32_t __pgtable_end;
 
 void SECTION(".init") pgtable_init()
 {
