@@ -7,10 +7,11 @@
 
 static struct GICv2_HW GICv2;
 
-#define GICD_READ(offset)           readl(GICv2.gicd)
-#define GICD_WRITE(offset, value)   writel(value, GICv2.gicd + offset)
-#define GICC_READ(offset)           readl(GICv2.gicc + offset)
-#define GICC_WRITE(offset, value)   writel(value, GICv2.gicc + offset)
+#define GICD_READ(offset)           __readl(GICv2.gicd + offset)
+#define GICD_WRITE(offset, value)   __writel(value, GICv2.gicd + offset)
+
+#define GICC_READ(offset)           __readl(GICv2.gicc + offset)
+#define GICC_WRITE(offset, value)   __writel(value, GICv2.gicc + offset)
 
 void SECTION(".init") gic_init(void)
 {
@@ -29,6 +30,7 @@ void SECTION(".init") gic_init(void)
     }
     GICv2.gicd = periphbase + GICD_OFFSET;
     GICv2.gicc = periphbase + GICC_OFFSET;
+    GICv2.gich = periphbase + GICH_OFFSET;
 
     /*
      * We usually use the name of variables in lower case, but
@@ -37,9 +39,9 @@ void SECTION(".init") gic_init(void)
     uint32_t gicd_typer = GICD_READ(GICD_TYPER_OFFSET);
     /* maximum number of irq lines: 32(N+1). */
     GICv2.ITLinesNumber = 32 * ((gicd_typer & GICD_NR_IT_LINES_MASK) + 1);
-    GICv2.CPUNumber = 1 + (gicd_typer >> 5);
-    debug_print("Number of IRQs: %d\n", GICv2.ITLinesNumber);
-    debug_print("Number of CPU interfaces: %d\n", GICv2.CPUNumber);
+    GICv2.CPUNumber = 1 + (gicd_typer & GICD_NR_CPUS_MASK);
+    printf("Number of IRQs: %d\n", GICv2.ITLinesNumber);
+    printf("Number of CPU interfaces: %d\n", GICv2.CPUNumber);
 
     GICC_WRITE(GICC_CTLR_OFFSET, GICC_CTL_ENABLE | GICC_CTL_EOI);
     GICD_WRITE(GICD_CTLR_OFFSET, 0x1);
@@ -47,7 +49,6 @@ void SECTION(".init") gic_init(void)
     /* No Priority Masking: the lowest value as the threshold : 255 */
     // We set 0xff but, real value is 0xf8
     GICC_WRITE(GICC_PMR_OFFSET, 0xff);
-
 
     // Set interrupt configuration do not work.
     for (i = 32; i < GICv2.ITLinesNumber; i += 16) {
@@ -76,9 +77,8 @@ void SECTION(".init") gic_init(void)
 
     // TODO(casionwoo): Set SGI and PPIs
 
-    // Dirty code in left, here.
     // TODO(casionwoo): We will remove the variable as below.
-    GICv2.initialized = GIC_SIGNATURE_INITIALIZED;
+    GICv2.initialized = GIC_SIGNATURE_INITIALIZED;    // Dirty code in left, here.
 }
 
 void gic_configure_irq(uint32_t irq, uint8_t polarity)
@@ -87,7 +87,10 @@ void gic_configure_irq(uint32_t irq, uint8_t polarity)
         uint32_t reg;
         uint32_t mask;
 
+        printf("IRQ: %d: GICD_ICFGR(%d) %x\n", irq, irq >> 4, GICD_READ(GICD_ICFGR(irq >> 4)));
+        printf("%x\n", GICv2.gicd);
         reg = GICD_READ(GICD_ICFGR(irq >> 4));
+        printf("IRQ: %d: GICD_ICFGR(%d) %x\n", irq, irq >> 4, reg);
 
         mask = (reg >> 2 * (irq % 16)) & 0x3;
         if (polarity == IRQ_LEVEL_TRIGGERED) {
@@ -101,6 +104,7 @@ void gic_configure_irq(uint32_t irq, uint8_t polarity)
         reg = reg | (mask << 2 * (irq % 16));
 
         GICD_WRITE(GICD_ICFGR(irq >> 4), reg);
+        printf("IRQ: %d: GICD_ICFGR(%d) %x\n", irq, irq >> 4, GICD_READ(GICD_ICFGR(irq >> 4)));
     } else {
         printf("invalid or spurious irq: %d\n", irq);
     }
@@ -120,7 +124,7 @@ void gic_set_sgi(const uint32_t target, uint32_t sgi)
 /* API functions */
 uint32_t gic_get_irq_number(void)
 {
-    return GICC_READ(GICC_IAR_OFFSET) & GICC_IAR_MASK;
+    return (GICC_READ(GICC_IAR_OFFSET) & GICC_IAR_MASK);
 }
 
 void gic_enable_irq(uint32_t irq)

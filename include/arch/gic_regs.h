@@ -50,7 +50,7 @@
 /* Distributor Register Fields */
 #define GICD_CTLR_ENABLE        0x1
 #define GICD_NR_IT_LINES_MASK   0x1f
-#define GICD_NR_CPUS_MASK       0xe0
+#define GICD_NR_CPUS_MASK       0x000000e0
 
 /* Software Generated Interrupt Fields */
 #define GICD_SGIR_TARGET_LIST_FILTER_MASK   (0x3<<24)
