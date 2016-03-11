@@ -19,8 +19,6 @@ const struct scheduler *__policy[NR_CPUS];
 /* TODO:(igkang) redesign runqueue & registered list structure for external external access */
 struct list_head __running_vcpus[NR_CPUS];
 
-hvmm_status_t switch_to(vcpuid_t vcpuid);
-
 /* TODO:(igkang) make sched functions run based on phisical CPU-assigned policy
  *   - [v] add pcpu sched mapping
  *   - [ ] modify functions parameters to use pCPU ID
@@ -98,6 +96,19 @@ hvmm_status_t sched_perform_switch(struct core_regs *regs)
     return result;
 }
 
+hvmm_status_t switch_to(vcpuid_t vcpuid)
+{
+    hvmm_status_t result = HVMM_STATUS_IGNORED;
+    uint32_t pcpu = smp_processor_id();
+
+    /* TODO:(igkang) check about below comment */
+    /* valid and not current vcpuid, switch */
+    __next_vcpuid[pcpu] = vcpuid;
+    result = HVMM_STATUS_SUCCESS;
+
+    return result;
+}
+
 /* Switch to the first guest */
 void sched_start(void)
 {
@@ -124,19 +135,6 @@ vcpuid_t get_current_vcpuid(void)
      *   instead of globally defined array */
 
     return __current_vcpuid[pcpu];
-}
-
-hvmm_status_t switch_to(vcpuid_t vcpuid)
-{
-    hvmm_status_t result = HVMM_STATUS_IGNORED;
-    uint32_t pcpu = smp_processor_id();
-
-    /* TODO:(igkang) check about below comment */
-    /* valid and not current vcpuid, switch */
-    __next_vcpuid[pcpu] = vcpuid;
-    result = HVMM_STATUS_SUCCESS;
-
-    return result;
 }
 
 #if 0
