@@ -268,12 +268,19 @@ static hvmm_status_t timer_set_tval(uint32_t tval)
     return generic_timer_set_tval(GENERIC_TIMER_HYP, tval);
 }
 
-static hvmm_status_t timer_set_cval(uint64_t cval)
+uint32_t have_set_cval_by_delta_ever_called[NR_CPUS] = {0};
+static hvmm_status_t timer_set_cval_by_delta(uint64_t val)
 {
     uint64_t previous_cval; /* FIXME:(igkang) this calculation have to be moved to timer.c */
-    previous_cval = generic_timer_reg_read64(GENERIC_TIMER_REG_HYP_CVAL);
-    cval = previous_cval + cval;
-    return generic_timer_set_cval(GENERIC_TIMER_HYP, cval);
+
+    if (have_set_cval_by_delta_ever_called[NR_CPUS]) {
+        previous_cval = generic_timer_reg_read64(GENERIC_TIMER_REG_HYP_CVAL);
+        val = previous_cval + val;
+    } else { /* when if this is the very first call of timer_set_cval_by_delta */
+        previous_cval = generic_timer_pcounter_read();
+        val = previous_cval + val;
+    }
+    return generic_timer_set_cval(GENERIC_TIMER_HYP, val);
 }
 
 /** @brief dump at time.
@@ -290,7 +297,7 @@ struct timer_ops _timer_ops = {
     .enable = timer_enable,
     .disable = timer_disable,
     .set_interval = timer_set_tval,
-    .set_absolute = timer_set_cval,
+    .set_absolute = timer_set_cval_by_delta,
     .dump = timer_dump,
 };
 
