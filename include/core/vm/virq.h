@@ -31,9 +31,9 @@ struct virq {
 };
 
 void virq_setup();
-void virq_create(struct virq *virq, vmid_t vmid);
-
+void virq_create(struct virq *virq);
 hvmm_status_t virq_init(struct virq *virq, vmid_t vmid);
+
 hvmm_status_t virq_save(struct virq *virq);
 hvmm_status_t virq_restore(struct virq *virq, vmid_t vmid);
 

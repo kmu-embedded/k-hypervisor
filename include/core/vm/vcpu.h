@@ -5,6 +5,7 @@
 #include <hvmm_types.h>
 
 #include "vcpu_regs.h"
+#include <core/vm/virq.h>
 
 #define VCPU_CREATE_FAILED    NULL
 #define VCPU_NOT_EXISTED      NULL
@@ -28,8 +29,10 @@ struct vcpu {
 
     struct vcpu_regs vcpu_regs;
 
-    uint32_t period;
-    uint32_t deadline;
+    struct virq virq;
+
+    unsigned int period;
+    unsigned int deadline;
 
     uint64_t running_time;
     uint64_t actual_running_time;
