@@ -124,6 +124,6 @@ style:
 	astyle --max-instatement-indent=120 --style=otbs --pad-header --recursive --indent=spaces=4 --pad-oper "*.h"
 
 clean:
-	${Q}echo "clean ${OBJS}"
+	${Q}echo "[CLEAN] ${PROJECT}"
 	${Q}rm -rf ${OBJS} ${OUTPUT} ${BUILD_PATH}/${MACHINE}.lds
 	${Q}if [ -d $(BUILD_PATH) ]; then rm -r ${BUILD_PATH}; fi
