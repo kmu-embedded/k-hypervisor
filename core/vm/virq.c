@@ -18,6 +18,7 @@ void virq_create(struct virq *virq)
     /* Initialize PIRQ to VIRQ mapping */
     int i;
     struct virqmap_entry *map;
+    struct virq_entry *entry;
 
     virq->guest_virqmap = malloc(sizeof(struct guest_virqmap));
 
@@ -26,6 +27,11 @@ void virq_create(struct virq *virq)
         map[i].enabled = GUEST_IRQ_DISABLE;
         map[i].virq = VIRQ_INVALID;
         map[i].pirq = PIRQ_INVALID;
+    }
+
+    entry = virq->pending_irqs;
+    for (i = 0; i < MAX_PENDING_VIRQS; i++) {
+        entry[i].valid = 0;
     }
 }
 
