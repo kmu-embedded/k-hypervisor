@@ -86,6 +86,5 @@ hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t
             Sets callback function about injection of queued VIRQs.
  * @return  Always returns "success".
  */
-hvmm_status_t virq_table_init(void);
 hvmm_status_t vgic_sgi(uint32_t cpu, enum gic_sgi sgi);
 #endif
