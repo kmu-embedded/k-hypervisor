@@ -30,17 +30,17 @@
 #define WFI_WFE_DIRECTION_BIT   0x00000001
 #define WFI_WFE_DIRECTION_SHIFT 0 /* Do not use it to shift. */
 
-void emulate_mcr_mrc_cp15(unsigned int iss, unsigned int il)
+void emulate_mcr_mrc_cp15(uint32_t iss, uint32_t il)
 {
     /*
      * If value of EC bit is equal to 0x3, trapped
      * instruction should be handled here.
      */
     /* unused variable */
-    /* unsigned int cv = (iss & EC_ZERO_CV_BIT) >> EC_ZERO_CV_SHIFT; */
+    /* uint32_t cv = (iss & EC_ZERO_CV_BIT) >> EC_ZERO_CV_SHIFT; */
 
-    /* unsigned int cond; */
-    unsigned int Opc2, Opc1, CRn, Rt, CRm, dir;
+    /* uint32_t cond; */
+    uint32_t Opc2, Opc1, CRn, Rt, CRm, dir;
 
     /* warning: variable ‘cond’ set but not used */
     /*
@@ -67,17 +67,17 @@ void emulate_mcr_mrc_cp15(unsigned int iss, unsigned int il)
     }
 }
 
-void emulate_mcr_mrc_cp14(unsigned int iss, unsigned int il)
+void emulate_mcr_mrc_cp14(uint32_t iss, uint32_t il)
 {
     /*
      * If value of EC bit is equal to 0x3, trapped
      * instruction should be handled here.
      */
     /* unused variable */
-    /* unsigned int cv = (iss & EC_ZERO_CV_BIT) >> EC_ZERO_CV_SHIFT; */
+    /* uint32_t cv = (iss & EC_ZERO_CV_BIT) >> EC_ZERO_CV_SHIFT; */
     /* unused variable */
-    /* unsigned int cond; */
-    unsigned int Opc2, Opc1, CRn, Rt, CRm, dir;
+    /* uint32_t cond; */
+    uint32_t Opc2, Opc1, CRn, Rt, CRm, dir;
     /* warning: variable ‘cond’ set but not used */
     /* if (cv == IS_VAILD_CV)
         cond = (iss & EC_ZERO_COND_BIT) >> EC_ZERO_COND_SHIFT;
@@ -102,17 +102,17 @@ void emulate_mcr_mrc_cp14(unsigned int iss, unsigned int il)
     }
 }
 
-void emulate_mcr_mrc_cp10(unsigned int iss, unsigned int il)
+void emulate_mcr_mrc_cp10(uint32_t iss, uint32_t il)
 {
     /*
      * If value of EC bit is equal to 0x3,
      * trapped instruction should be handled here.
      */
     /* unused variable */
-    /* unsigned int cv = (iss & EC_ZERO_CV_BIT) >> EC_ZERO_CV_SHIFT; */
+    /* uint32_t cv = (iss & EC_ZERO_CV_BIT) >> EC_ZERO_CV_SHIFT; */
     /* unused variable */
-    /* unsigned int cond; */
-    unsigned int Opc2, Opc1, CRn, Rt, CRm, dir;
+    /* uint32_t cond; */
+    uint32_t Opc2, Opc1, CRn, Rt, CRm, dir;
     /* warning: variable ‘cond’ set but not used */
     /*
     if (cv == IS_VAILD_CV)
@@ -165,13 +165,13 @@ void emulate_mcr_mrc_cp10(unsigned int iss, unsigned int il)
  * execution of a WFE instruction generates a Hyp Trap exception.
  */
 
-void emulate_wfi_wfe(unsigned int iss, unsigned int il)
+void emulate_wfi_wfe(uint32_t iss, uint32_t il)
 {
     /* unused variable */
-    /* unsigned int cv = (iss & EC_ZERO_CV_BIT) >> EC_ZERO_CV_SHIFT; */
+    /* uint32_t cv = (iss & EC_ZERO_CV_BIT) >> EC_ZERO_CV_SHIFT; */
     /* unused variable */
-    /* unsigned int cond; */
-    unsigned int direction;
+    /* uint32_t cond; */
+    uint32_t direction;
     /* warning: variable ‘cond’ set but not used */
     /*
     if (cv == IS_VAILD_CV)
@@ -197,8 +197,8 @@ void emulate_wfi_wfe(unsigned int iss, unsigned int il)
 static int32_t vdev_cp_read(struct arch_vdev_trigger_info *info,
                             struct core_regs *regs)
 {
-    unsigned int ec = info->ec;
-    unsigned int hsr = read_hsr();
+    uint32_t ec = info->ec;
+    uint32_t hsr = read_hsr();
 
     switch (ec) {
     case TRAP_EC_ZERO_UNKNOWN:
@@ -244,8 +244,8 @@ static int32_t vdev_cp_read(struct arch_vdev_trigger_info *info,
 static int32_t vdev_cp_write(struct arch_vdev_trigger_info *info,
                              struct core_regs *regs)
 {
-    unsigned int ec = info->ec;
-    unsigned int hsr = read_hsr();
+    uint32_t ec = info->ec;
+    uint32_t hsr = read_hsr();
 
     switch (ec) {
     case TRAP_EC_ZERO_UNKNOWN:
