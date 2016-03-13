@@ -96,6 +96,4 @@ void interrupt_init();
 void register_irq_handler(uint32_t irq, interrupt_handler_t handler);
 void interrupt_service_routine(int irq, void *current_regs, void *pdata);
 
-const int32_t interrupt_check_guest_irq(uint32_t pirq);
-
 #endif
