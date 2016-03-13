@@ -38,4 +38,7 @@
 #define SZ_1G               0x40000000
 #define SZ_2G               0x80000000
 
+#define size_4k             1
+#define size_8k             2
+
 #endif //__SIZE_H__

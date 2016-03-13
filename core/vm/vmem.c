@@ -1,6 +1,7 @@
 #include <core/vm/vmem.h>
 #include <debug_print.h>
 #include <rtsm-config.h>
+#include <arch/armv7.h>
 
 // TODO(casionwoo) : These memory mapping variables should be removed after DTB implementation
 
@@ -134,14 +135,8 @@ struct memdesc_t *vm2_mdlist[] = {
     0
 };
 
-void set_memmap(struct vmem *vmem, vmid_t vmid)
+void __set_memmap(struct vmem *vmem, vmid_t vmid)
 {
-    /*
-     * VA: 0x00000000 ~ 0x3FFFFFFF,   1GB
-     * PA: 0xA0000000 ~ 0xDFFFFFFF    guest_bin_start
-     * PA: 0xB0000000 ~ 0xEFFFFFFF    guest2_bin_start
-     */
-
     if (vmid == 0) {
         vm0_memory_md[0].pa = (uint64_t)((uint32_t) CFG_MEMMAP_GUEST0_ATAGS_OFFSET);
     } else if (vmid == 1) {
@@ -159,26 +154,69 @@ void set_memmap(struct vmem *vmem, vmid_t vmid)
     }
 }
 
+#include "../../arch/arm/mm.h"
+extern uint32_t __vm_pgtable_start;
+extern uint32_t __vm_pgtable_end;
+#define PGTABLE_SIZE    0x805000
+
+#define VTTBR_VMID_MASK                                 0x00FF000000000000ULL
+#define VTTBR_VMID_SHIFT                                48
+#define VTTBR_BADDR_MASK                                0x000000FFFFFFFFFFULL
+
 void vmem_create(struct vmem *vmem, vmid_t vmid)
 {
-    /* Assign memory mapping */
-    set_memmap(vmem, vmid);
-    /* Pagetable Initialization */
-    memory_hw_create(vmem);
+    vmem->base = (uint32_t) &__vm_pgtable_start + (PGTABLE_SIZE * vmid);
+    pgtable_init(vmem->base);
+
+    vmem->vttbr = ((uint64_t) vmid << VTTBR_VMID_SHIFT) & VTTBR_VMID_MASK;
+    vmem->vttbr &= ~(VTTBR_BADDR_MASK);
+    vmem->vttbr |= (uint32_t) vmem->base & VTTBR_BADDR_MASK;
+
+    // TODO(wonseok): is vmem owned memory mapping?
+    __set_memmap(vmem, vmid);
 }
 
+#include "../../arch/arm/lpae.h"
 hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
 {
-    return memory_hw_init(vmem->memmap, (char **) &vmem->pgtable_base, vmid);
+    int i, j;
+    struct memdesc_t *map;
+
+    for (i = 0; vmem->memmap[i]; i++) {
+        if (vmem->memmap[i]->label == 0) {
+            continue;
+        }
+
+        j = 0;
+        map = vmem->memmap[i];
+        while (map[j].label != 0) {
+            write_vm_pgentry((uint32_t *) vmem->base, map[j].va, map[j].pa, map[j].attr, map[j].size, true);
+            j++;
+        }
+    }
+
+    vmem->vtcr = (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
+    vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_ORGN0_BIT);
+    vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_IRGN0_BIT);
+
+    write_vtcr(vmem->vtcr);
+
+    return HVMM_STATUS_SUCCESS;
 }
 
 hvmm_status_t vmem_save(void)
 {
-    return memory_hw_save();
+    write_hcr(read_hcr() & ~(0x1));
+
+    return HVMM_STATUS_SUCCESS;
 }
 
 hvmm_status_t vmem_restore(struct vmem *vmem, vmid_t vmid)
 {
-    return memory_hw_restore(vmid, (char **) &vmem->pgtable_base);
+    write_vttbr(vmem->vttbr);
+
+    write_hcr(read_hcr() | (0x1));
+
+    return HVMM_STATUS_SUCCESS;
 }
 

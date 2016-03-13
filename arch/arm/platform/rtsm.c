@@ -33,7 +33,7 @@ void SECTION(".init.platform") platform_init()
     write_hyp_pgentry(0x1C0B0000, 0x1C0B0000, MT_DEVICE, SZ_4K);
     write_hyp_pgentry(0x1C0C0000, 0x1C0C0000, MT_DEVICE, SZ_4K);
 
-    write_hyp_pgentry(0xF0000000, CFG_HYP_START_ADDRESS, MT_WRITEBACK_RW_ALLOC, SZ_128M);
+    write_hyp_pgentry(0xF0000000, CFG_HYP_START_ADDRESS, MT_WRITEBACK_RW_ALLOC, SZ_256M);
     write_hyp_pgentry(0x80000000, 0x80000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
     write_hyp_pgentry(0x90000000, 0x90000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
     write_hyp_pgentry(0xA0000000, 0xA0000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);

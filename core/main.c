@@ -37,7 +37,7 @@ static void SECTION(".init") primary_core_init(void)
     libc_init();
 
     // Create page tables for each levels with 4kb unit (default page size).
-    pgtable_init();
+    pgtable_init(0x0);
 
     // Add mapping for machine
     platform_init();
