@@ -11,6 +11,7 @@
 #include <core/vm/vcpu.h>
 #include "../arch/arm/arch_init.h"
 #include <core/vm/virq.h>
+#include <core/scheduler.h>
 
 #define VIRQ_MIN_VALID_PIRQ 16
 #define VIRQ_NUM_MAX_PIRQS  MAX_IRQS
@@ -21,21 +22,18 @@
 /**< IRQ handler */
 static interrupt_handler_t interrupt_handlers[MAX_PPI_IRQS];
 
-const int32_t interrupt_check_guest_irq(uint32_t pirq)
+static uint32_t interrupt_check_guest_irq(uint32_t pirq)
 {
-    int vmid, nr_vcpu;
+    uint32_t pcpu = smp_processor_id();
     struct virqmap_entry *map;
+    struct running_vcpus_entry_t *sched_vcpu_entry;
+    struct vcpu *vcpu;
 
-    for (vmid = 0; vmid < NUM_GUESTS_STATIC; vmid++) {
-        struct vmcb *vm = vm_find(vmid);
-
-        for (nr_vcpu = 0; nr_vcpu < vm->num_vcpus; nr_vcpu++) {
-            struct vcpu *vcpu = vm->vcpu[nr_vcpu];
-
-            map = vcpu->virq.guest_virqmap->map;
-            if (map[pirq].virq != VIRQ_INVALID) {
-                return GUEST_IRQ;
-            }
+    list_for_each_entry(struct running_vcpus_entry_t, sched_vcpu_entry, &__running_vcpus[pcpu], head) {
+        vcpu = vcpu_find(sched_vcpu_entry->vcpuid);
+        map = vcpu->virq.guest_virqmap->map;
+        if (map[pirq].virq != VIRQ_INVALID) {
+            return GUEST_IRQ;
         }
     }
 
