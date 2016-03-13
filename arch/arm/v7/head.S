@@ -3,8 +3,8 @@
     .syntax	unified
     .arch_extension sec
     .arch_extension virt
-    .section .init.head
 
+    .section .init.head
 BEGIN_PROC(__start)
     @ Disable interrupts
     cpsid   aif
@@ -79,7 +79,6 @@ BEGIN_PROC(__start)
     cmp     r2, r3
     blo     2b
 
-3:
     /* We are going to initialize for each core, here */
     @ DCIMVAC: invalidate data cache.
     mov     r0, #0
