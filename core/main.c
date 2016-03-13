@@ -18,6 +18,8 @@
 #include <libc_init.h>
 #include <core/timer.h>
 
+#include "../arch/arm/mm.h"
+
 static vmid_t vm[NUM_GUESTS_STATIC];
 uint8_t secondary_smp_pen;
 

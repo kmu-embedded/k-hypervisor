@@ -1,8 +1,6 @@
 #ifndef __VMEM_H__
 #define __VMEM_H__
 
-#include "guest_memory_hw.h"
-
 #include <hvmm_types.h>
 #include <stdint.h>
 #include <size.h>
