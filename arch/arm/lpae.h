@@ -82,7 +82,6 @@ union lpae_t {
         uint64_t pxn: 1;
         uint64_t xn: 1;
         uint64_t reserved: 4;
-
         /* bit[64:59] */
         uint64_t ignored: 5;
     } page __attribute__((__packed__));
@@ -90,42 +89,20 @@ union lpae_t {
 
 typedef union lpae_t pgentry;
 
-#define ENTRY_SHIFT 9
-#define PAGE_SHIFT 12
+#define ENTRY_SHIFT         9
+#define PAGE_SHIFT          12
 
-#define L1_ENTRY    4
-#define L2_ENTRY    512
-#define L3_ENTRY    512
+#define L1_ENTRY            4
+#define L2_ENTRY            512
+#define L3_ENTRY            512
 
-#define L3_SHIFT    PAGE_SHIFT
-#define L2_SHIFT    (L3_SHIFT + ENTRY_SHIFT)
-#define L1_SHIFT    (L2_SHIFT + ENTRY_SHIFT)
+#define L3_SHIFT            PAGE_SHIFT
+#define L2_SHIFT            (L3_SHIFT + ENTRY_SHIFT)
+#define L1_SHIFT            (L2_SHIFT + ENTRY_SHIFT)
 
-#if 1
-#define L1_BIT_MASK 0xC0000000
-#define L2_BIT_MASK 0x3FE00000
-#define L3_BIT_MASK 0x001FF000
-#else
-#define L1_BIT_MASK 0xC0000
-#define L2_BIT_MASK 0x3FE00
-#define L3_BIT_MASK 0x001FF
-#endif
-
-#define PAGE_MASK 0x00000FFF
-
-#define LPAE_PAGE_SHIFT    12
-#define LPAE_PAGE_SIZE      (1 << LPAE_PAGE_SHIFT)
-#define LPAE_PAGE_MASK      (0xFFF)
-
-#define LPAE_BLOCK_L2_SHIFT 21
-#define LPAE_BLOCK_L2_SIZE  (1 << LPAE_BLOCK_L2_SHIFT)
-#define LPAE_BLOCK_L2_MASK  (0x1FFFFF)
-
-typedef enum {
-    size_1gb,
-    size_2mb,
-    size_4kb,
-} pgsize_t;
+#define L1_BIT_MASK         0xC0000
+#define L2_BIT_MASK         0x3FE00
+#define L3_BIT_MASK         0x001FF
 
 /*
  * ARM memory attribute combinations

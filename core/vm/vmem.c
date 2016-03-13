@@ -198,7 +198,7 @@ hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
         j = 0;
         map = vmem->memmap[i];
         while (map[j].label != 0) {
-            write_vm_pgentry((uint32_t *) vmem->base, map[j].va, map[j].pa, map[j].attr, map[j].size, true);
+            write_vm_pgentry(vmem->base, map[j].va, map[j].pa, map[j].attr, map[j].size);
             j++;
         }
     }
@@ -219,7 +219,7 @@ hvmm_status_t vmem_save(void)
     return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t vmem_restore(struct vmem *vmem, vmid_t vmid)
+hvmm_status_t vmem_restore(struct vmem *vmem)
 {
     write_vttbr(vmem->vttbr);
 

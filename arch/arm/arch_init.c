@@ -1,18 +1,5 @@
 #include "arch_init.h"
 
-#include <stdint.h>
-#include <libc_init.h>  //for malloc_init
-#include <arch/armv7.h>    //smp_processor_id()
-#include <assert.h>
-#include <asm/asm.h>
-
-#define read_hvbar()        ({ uint32_t rval; asm volatile(\
-                            "mrc     p15, 4, %0, c12, c0, 0\n\t" \
-                            : "=r" (rval) : : "memory", "cc"); rval; })
-#define write_hvbar(val)    asm volatile(\
-                            "mcr     p15, 4, %0, c12, c0, 0\n\t" \
-                            : : "r" ((val)) : "memory", "cc")
-
 extern uint32_t __hvc_vector;
 void SECTION(".init.arch") cpu_init()
 {
@@ -25,15 +12,16 @@ void SECTION(".init.arch") cpu_init()
 
 #include "gic-v2.h"
 #include "vgic.h"
-
 void SECTION(".init.arch") irq_init()
 {
     // TODO(casionwoo): add a init function of irq handler table for hypervisor.
     gic_init();
+
     vgic_init();
     virq_table_init();
     vgic_enable(1);
-    write_hcr(HCR_IMO | HCR_FMO);
+
+    write_hcr(0x10 | 0x8);
 }
 
 #include <mm.h>
