@@ -20,7 +20,7 @@ hvmm_status_t _hyp_irq(struct core_regs *regs)
     uint32_t irq;
 
     irq = gic_get_irq_number();
-    interrupt_service_routine(irq, (void *)regs, 0);
+    interrupt_service_routine(irq, (void *)regs);
 
     return HVMM_STATUS_SUCCESS;
 }
