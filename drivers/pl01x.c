@@ -41,12 +41,12 @@ int pl01x_getc()
     return data;
 }
 
-void pl01x_subinit(unsigned int base, uint32_t baudrate, uint32_t input_clock)
+void pl01x_subinit(uint32_t base, uint32_t baudrate, uint32_t input_clock)
 {
-    unsigned int divider;
-    unsigned int temp;
-    unsigned int remainder;
-    unsigned int fraction;
+    uint32_t divider;
+    uint32_t temp;
+    uint32_t remainder;
+    uint32_t fraction;
 
     /* First, disable everything */
     writel(0x0, (void *)(base + PL01X_UARTCR));
@@ -80,10 +80,10 @@ void pl01x_subinit(unsigned int base, uint32_t baudrate, uint32_t input_clock)
 
 void pl01x_init(uint32_t baudrate, uint32_t input_clock)
 {
-    unsigned int divider;
-    unsigned int temp;
-    unsigned int remainder;
-    unsigned int fraction;
+    uint32_t divider;
+    uint32_t temp;
+    uint32_t remainder;
+    uint32_t fraction;
 
     /* First, disable everything */
     writel(0x0, (void *)(PL01X_BASE + PL01X_UARTCR));
