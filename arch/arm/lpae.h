@@ -183,4 +183,8 @@ pgentry set_entry(uint32_t paddr, uint8_t mem_attr, uint8_t ap);
 #define valid_page      (1 << 0)
 #define invalid_page    (0 << 0)
 
+#define GET_OFFSET(i)        (i << 3)               /* size of pgentry */
+#define GET_L2_INDEX(i)      GET_OFFSET((i << 9))   /* << 9 == 512 */
+#define GET_L3_INDEX(i)      GET_OFFSET((i << 18))  /* << 18 == 512*512 */
+
 #endif /* __LPAED_H__ */

@@ -14,10 +14,6 @@ extern uint32_t __pgtable_end;
 static void write64(uint64_t value, uint32_t addr);
 static uint64_t read64(uint32_t addr);
 
-#define GET_OFFSET(i)        (i << 3)               /* size of pgentry */
-#define GET_L2_INDEX(i)      GET_OFFSET((i << 9))   /* << 9 == 512 */
-#define GET_L3_INDEX(i)      GET_OFFSET((i << 18))  /* << 18 == 512*512 */
-
 void SECTION(".init") pgtable_init(uint32_t base)
 {
     int i;
