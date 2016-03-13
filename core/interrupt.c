@@ -75,8 +75,7 @@ void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
 }
 
 // The function as below will be moved into hvc_irq function.
-// FIXME(casionwoo) : pdata is unnecessary
-void interrupt_service_routine(int irq, void *current_regs, void *pdata)
+void interrupt_service_routine(int irq, void *current_regs)
 {
     struct arch_regs *regs = (struct arch_regs *)current_regs;
 
