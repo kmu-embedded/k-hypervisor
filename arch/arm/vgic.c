@@ -194,7 +194,8 @@ hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
 
         vgic_slotvirq_set(vmid, slot, virq);
         result = HVMM_STATUS_SUCCESS;
-    } else {
+    }
+    else {
         int slot = vgic_slotvirq_getslot(vmid, virq);
         if (slot == SLOT_INVALID) {
             /* Inject only the same virq is not present in a slot */

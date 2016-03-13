@@ -27,7 +27,6 @@ void virq_create(struct virq *virq)
         map[i].virq = VIRQ_INVALID;
         map[i].pirq = PIRQ_INVALID;
     }
-
 }
 
 hvmm_status_t virq_init(struct virq *virq, vmid_t vmid)
@@ -79,6 +78,49 @@ hvmm_status_t virq_init(struct virq *virq, vmid_t vmid)
     return vgic_init_status(&virq->vgic_status);
 }
 
+uint32_t pirq_to_virq(struct virq *v, uint32_t pirq)
+{
+    struct virqmap_entry *map = v->guest_virqmap->map;
+
+    return map[pirq].virq;
+}
+
+uint32_t virq_to_pirq(struct virq *v, uint32_t virq)
+{
+    struct virqmap_entry *map = v->guest_virqmap->map;
+
+    return map[virq].pirq;
+}
+
+uint32_t pirq_to_enabled_virq(struct virq *v, uint32_t pirq)
+{
+    uint32_t virq = VIRQ_INVALID;
+    struct virqmap_entry *map = v->guest_virqmap->map;
+
+    if (map[pirq].enabled)
+        virq = map[pirq].virq;
+
+    return virq;
+}
+
+uint32_t virq_to_enabled_pirq(struct virq *v, uint32_t virq)
+{
+    uint32_t pirq = PIRQ_INVALID;
+    struct virqmap_entry *map = v->guest_virqmap->map;
+
+    if (map[virq].enabled)
+        pirq = map[virq].pirq;
+
+    return pirq;
+}
+
+void virq_enable(struct virq *v, uint32_t virq)
+{
+    struct virqmap_entry *map = v->guest_virqmap->map;
+
+    map[virq].enabled = GUEST_IRQ_ENABLE;
+}
+
 hvmm_status_t virq_save(struct virq *virq)
 {
     return vgic_save_status(&virq->vgic_status);
@@ -88,3 +130,4 @@ hvmm_status_t virq_restore(struct virq *virq, vmid_t vmid)
 {
     return vgic_restore_status(&virq->vgic_status, vmid);
 }
+

@@ -94,13 +94,8 @@ extern struct interrupt_module _interrupt_module;
 
 void interrupt_init();
 void register_irq_handler(uint32_t irq, interrupt_handler_t handler);
-void interrupt_host_configure(uint32_t irq);
-void interrupt_guest_enable(vmid_t vmid, uint32_t irq);
-
 void interrupt_service_routine(int irq, void *current_regs, void *pdata);
+
 const int32_t interrupt_check_guest_irq(uint32_t pirq);
-const uint32_t interrupt_pirq_to_virq(vmid_t vmid, uint32_t pirq);
-const uint32_t interrupt_virq_to_pirq(vmid_t vmid, uint32_t virq);
-const uint32_t interrupt_pirq_to_enabled_virq(vmid_t vmid, uint32_t pirq);
 
 #endif
