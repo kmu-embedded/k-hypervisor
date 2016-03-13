@@ -11,6 +11,7 @@
 
 #include <rtsm-config.h>
 #include <core/vm/virq.h>
+#include <io.h>
 
 /* for test, surpress traces */
 #define __VGIC_DISABLE_TRACE__
@@ -29,9 +30,12 @@
 #define VIRQ_MAX_ENTRIES    128
 #define SLOT_INVALID        0xFFFFFFFF
 
+#define GICH_READ(offset)           __readl(vGICv2.base + offset)
+#define GICH_WRITE(offset, value)   __writel(value, vGICv2.base + offset)
+
 struct vGICv2_HW {
     /** Base address of VGIC (Virtual Interface Control Registers) */
-    volatile uint32_t *base;
+    uint32_t base;
     /** Number of List Registers */
     uint32_t num_lr;
     /** vgic module initialized if == VGIC_SIGNATURE_INITIALIZED */
@@ -214,10 +218,10 @@ static uint32_t vgic_find_free_slot(void)
 {
     uint32_t slot;
     uint32_t shift = 0;
-    slot = vGICv2.base[GICH_ELSR0];
+    slot = GICH_READ(GICH_ELSR(0));
     if (slot == 0 && vGICv2.num_lr > 32) {
         /* first 32 slots are occupied, try the later */
-        slot = vGICv2.base[GICH_ELSR1];
+        slot = GICH_READ(GICH_ELSR(1));
         shift = 32;
     }
     if (slot) {
@@ -243,11 +247,11 @@ static uint32_t vgic_is_free_slot(uint32_t slot)
 {
     uint32_t free_slot = VGIC_SLOT_NOTFOUND;
     if (slot < 32) {
-        if (vGICv2.base[GICH_ELSR0] & (1 << slot)) {
+        if (GICH_READ(GICH_ELSR(0)) & (1 << slot)) {
             free_slot = slot;
         }
     } else {
-        if (vGICv2.base[GICH_ELSR1] & (1 << (slot - 32))) {
+        if (GICH_READ(GICH_ELSR(1)) & (1 << (slot - 32))) {
             free_slot = slot;
         }
     }
@@ -312,19 +316,19 @@ static void _vgic_dump_regs(void)
 #ifndef __VGIC_DISABLE_TRACE__
     int i;
     HVMM_TRACE_ENTER();
-    debug_print("  hcr: 0x%08x\n", vGICv2.base[GICH_HCR]);
-    debug_print("  vtr: 0x%08x\n", vGICv2.base[GICH_VTR]);
-    debug_print(" vmcr: 0x%08x\n", vGICv2.base[GICH_VMCR]);
-    debug_print(" misr: 0x%08x\n", vGICv2.base[GICH_MISR]);
-    debug_print("eisr0: 0x%08x\n", vGICv2.base[GICH_EISR0]);
-    debug_print("eisr1: 0x%08x\n", vGICv2.base[GICH_EISR1]);
-    debug_print("elsr0: 0x%08x\n", vGICv2.base[GICH_ELSR0]);
-    debug_print("elsr1: 0x%08x\n", vGICv2.base[GICH_ELSR1]);
-    debug_print("  apr: 0x%08x\n", vGICv2.base[GICH_APR]);
+    debug_print("  hcr: 0x%08x\n", GICH_READ(GICH_HCR));
+    debug_print("  vtr: 0x%08x\n", GICH_READ(GICH_VTR));
+    debug_print(" vmcr: 0x%08x\n", GICH_READ(GICH_VMCR));
+    debug_print(" misr: 0x%08x\n", GICH_READ(GICH_MISR));
+    debug_print("eisr0: 0x%08x\n", GICH_READ(GICH_EISR(0)));
+    debug_print("eisr1: 0x%08x\n", GICH_READ(GICH_EISR(1)));
+    debug_print("elsr0: 0x%08x\n", GICH_READ(GICH_ELSR(0)));
+    debug_print("elsr1: 0x%08x\n", GICH_READ(GICH_ELSR(1)));
+    debug_print("  apr: 0x%08x\n", GICH_READ(GICH_APR));
     debug_print("   LR:\n");
     for (i = 0; i < vGICv2.num_lr; i++) {
         if (vgic_is_free_slot(i) != i) {
-            debug_print("0x%08x - %d\n", vGICv2.base[GICH_LR + i], i);
+            debug_print("0x%08x - %d\n", GICH_READ(GICH_LR(i)), i);
         }
     }
     HVMM_TRACE_EXIT();
@@ -336,9 +340,9 @@ static void _vgic_dump_regs(void)
 static void _vgic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
 {
     HVMM_TRACE_ENTER();
-    if (vGICv2.base[GICH_MISR] & GICH_MISR_EOI) {
+    if (GICH_READ(GICH_MISR) & GICH_MISR_EOI) {
         /* clean up invalid entries from List Registers */
-        uint32_t eisr = vGICv2.base[GICH_EISR0];
+        uint32_t eisr = GICH_READ(GICH_EISR(0));
         uint32_t slot;
         uint32_t pirq;
         vmid_t vmid;
@@ -346,7 +350,7 @@ static void _vgic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
         while (eisr) {
             slot = (31 - asm_clz(eisr));
             eisr &= ~(1 << slot);
-            vGICv2.base[GICH_LR + slot] = 0;
+            GICH_WRITE(GICH_LR(slot), 0);
             /* deactivate associated pirq at the slot */
             pirq = vgic_slotpirq_get(vmid, slot);
             if (pirq != PIRQ_INVALID) {
@@ -358,11 +362,11 @@ static void _vgic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
             }
             vgic_slotvirq_clear(vmid, slot);
         }
-        eisr = vGICv2.base[GICH_EISR1];
+        eisr = GICH_READ(GICH_EISR(1));
         while (eisr) {
             slot = (31 - asm_clz(eisr));
             eisr &= ~(1 << slot);
-            vGICv2.base[GICH_LR + slot + 32] = 0;
+            GICH_WRITE(GICH_LR(slot + 32), 0);
             /* deactivate associated pirq at the slot */
             pirq = vgic_slotpirq_get(vmid, slot + 32);
             if (pirq != PIRQ_INVALID) {
@@ -385,11 +389,13 @@ hvmm_status_t vgic_enable(uint8_t enable)
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     if (VGIC_READY()) {
         if (enable) {
-            uint32_t hcr = vGICv2.base[GICH_HCR];
+            uint32_t hcr = GICH_READ(GICH_HCR);
             hcr |= GICH_HCR_EN;
-            vGICv2.base[GICH_HCR] = hcr;
+            GICH_WRITE(GICH_HCR, hcr);
         } else {
-            vGICv2.base[GICH_HCR] &= ~(GICH_HCR_EN);
+            uint32_t hcr = GICH_READ(GICH_HCR);
+            hcr &= ~(GICH_HCR_EN);
+            GICH_WRITE(GICH_HCR, hcr);
         }
         result = HVMM_STATUS_SUCCESS;
     }
@@ -449,7 +455,7 @@ uint32_t vgic_inject_virq(
     HVMM_TRACE_HEX32("lr_desc:", lr_desc);
     HVMM_TRACE_HEX32("free slot:", slot);
     if (slot != VGIC_SLOT_NOTFOUND) {
-        vGICv2.base[GICH_LR + slot] = lr_desc;
+        GICH_WRITE(GICH_LR(slot), lr_desc);
     }
 
     _vgic_dump_regs();
@@ -535,7 +541,7 @@ hvmm_status_t vgic_init(void)
 
     if (!cpu) {
         vGICv2.base = gic_vgic_baseaddr();
-        vGICv2.num_lr = (vGICv2.base[GICH_VTR] & GICH_VTR_LISTREGS_MASK) + 1;
+        vGICv2.num_lr = (GICH_READ(GICH_VTR) & GICH_VTR_LISTREGS_MASK) + 1;
         vGICv2.valid_lr_mask = _vgic_valid_lr_mask(vGICv2.num_lr);
         vGICv2.initialized = VGIC_SIGNATURE_INITIALIZED;
     }
@@ -572,11 +578,11 @@ hvmm_status_t vgic_save_status(struct vgic_status *status)
     int i;
 
     for (i = 0; i < vGICv2.num_lr; i++) {
-        status->lr[i] = vGICv2.base[GICH_LR + i];
+        status->lr[i] = GICH_READ(GICH_LR(i));
     }
-    status->hcr = vGICv2.base[GICH_HCR];
-    status->apr = vGICv2.base[GICH_APR];
-    status->vmcr = vGICv2.base[GICH_VMCR];
+    status->hcr = GICH_READ(GICH_HCR);
+    status->apr = GICH_READ(GICH_APR);
+    status->vmcr = GICH_READ(GICH_VMCR);
     status->saved_once = VGIC_SIGNATURE_INITIALIZED;
     vgic_enable(0);
     return result;
@@ -587,11 +593,11 @@ hvmm_status_t vgic_restore_status(struct vgic_status *status, vmid_t vmid)
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     int i;
     for (i = 0; i < vGICv2.num_lr; i++) {
-        vGICv2.base[GICH_LR + i] = status->lr[i];
+        GICH_WRITE(GICH_LR(i), status->lr[i]);
     }
-    vGICv2.base[GICH_APR] = status->apr;
-    vGICv2.base[GICH_VMCR] = status->vmcr;
-    vGICv2.base[GICH_HCR] = status->hcr;
+    GICH_WRITE(GICH_APR, status->apr);
+    GICH_WRITE(GICH_VMCR, status->vmcr);
+    GICH_WRITE(GICH_HCR, status->hcr);
     /* Inject queued virqs to the next guest */
     /*
      * Staying at the currently active guest.
