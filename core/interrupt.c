@@ -75,27 +75,24 @@ void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
 }
 
 // The function as below will be moved into hvc_irq function.
+// FIXME(casionwoo) : pdata is unnecessary
 void interrupt_service_routine(int irq, void *current_regs, void *pdata)
 {
     struct arch_regs *regs = (struct arch_regs *)current_regs;
 
-    if (irq < MAX_IRQS) {
-        if (interrupt_check_guest_irq(irq) == GUEST_IRQ) {
+    if (interrupt_check_guest_irq(irq) == GUEST_IRQ) {
 
-            /* IRQ INJECTION */
-            /* priority drop only for hanlding irq in guest */
-            gic_completion_irq(irq);
-            interrupt_inject_enabled_guest(NUM_GUESTS_STATIC, irq);
-        } else {
-            /* host irq */
-            if (interrupt_handlers[irq])
-                interrupt_handlers[irq](irq, regs, 0);
-
-            gic_completion_irq(irq);
-            gic_deactivate_irq(irq);
-        }
+        /* IRQ INJECTION */
+        /* priority drop only for hanlding irq in guest */
+        gic_completion_irq(irq);
+        interrupt_inject_enabled_guest(NUM_GUESTS_STATIC, irq);
     } else {
-        debug_print("interrupt:no pending irq:%x\n", irq);
+        /* host irq */
+        if (interrupt_handlers[irq])
+            interrupt_handlers[irq](irq, regs, 0);
+
+        gic_completion_irq(irq);
+        gic_deactivate_irq(irq);
     }
 }
 
