@@ -2,7 +2,6 @@
 #include <debug_print.h>
 #include <arch/armv7.h>
 #include <rtsm-config.h>
-#include <core/vm/guest_memory_hw.h>
 
 #include <mm.h>
 #include <lpae.h>
