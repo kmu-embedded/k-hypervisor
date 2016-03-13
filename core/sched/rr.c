@@ -46,8 +46,8 @@ int sched_rr_init()
     /* Initialize data */
     current[cpu] = NULL;
 
-    list_inithead(&runqueue_rr[cpu]);
-    list_inithead(&registered_list_rr[cpu]);
+    LIST_INITHEAD(&runqueue_rr[cpu]);
+    LIST_INITHEAD(&registered_list_rr[cpu]);
 
     return 0;
 }
@@ -73,8 +73,8 @@ int sched_rr_vcpu_register(vcpuid_t vcpuid)
     new_entry = (struct rq_entry_rr *) malloc(sizeof(struct rq_entry_rr));// alloc_rq_entry_rr();
 
     /* Initialize rq_entry_rr instance */
-    list_inithead(&new_entry->registered_list_head);
-    list_inithead(&new_entry->head);
+    LIST_INITHEAD(&new_entry->registered_list_head);
+    LIST_INITHEAD(&new_entry->head);
 
     new_entry->vcpuid = vcpuid;
 
@@ -84,7 +84,7 @@ int sched_rr_vcpu_register(vcpuid_t vcpuid)
     new_entry->state = DETACHED;
 
     /* Add it to registerd vcpus list */
-    list_addtail(&new_entry->registered_list_head, &registered_list_rr[cpu]);
+    LIST_ADDTAIL(&new_entry->registered_list_head, &registered_list_rr[cpu]);
 
     return 0;
 }
@@ -153,7 +153,7 @@ int sched_rr_vcpu_attach(vcpuid_t vcpuid)
     entry_to_be_attached->state = WAITING;
 
     /* Add it to runqueue */
-    list_addtail(&entry_to_be_attached->head, &runqueue_rr[cpu]);
+    LIST_ADDTAIL(&entry_to_be_attached->head, &runqueue_rr[cpu]);
 
     return 0;
 }
@@ -198,14 +198,14 @@ int sched_rr_do_schedule(uint32_t *delay_tick)
     /* determine next vcpu to be run
      *  - if there is an detach-pending vcpu than detach it. */
     if (current[cpu] == NULL) { /* No vCPU is running */
-        if (!list_empty(&runqueue_rr[cpu])) { /* and there are some vcpus waiting */
+        if (!LIST_IS_EMPTY(&runqueue_rr[cpu])) { /* and there are some vcpus waiting */
             is_switching_needed = true;
         }
     } else { /* There's a vCPU currently running */
         struct rq_entry_rr *current_entry = NULL;
         /* put current entry back to runqueue_rr */
         current_entry = LIST_ENTRY(struct rq_entry_rr, current[cpu], head);
-        list_addtail(current[cpu], &runqueue_rr[cpu]);
+        LIST_ADDTAIL(current[cpu], &runqueue_rr[cpu]);
 
         /* let's switch as tick is over */
         current_entry->state = WAITING;
@@ -218,7 +218,7 @@ int sched_rr_do_schedule(uint32_t *delay_tick)
     if (is_switching_needed) {
         /* move entry from runqueue_rr to current */
         current[cpu] = runqueue_rr[cpu].next;
-        list_delinit(current[cpu]);
+        LIST_DELINIT(current[cpu]);
 
         next_entry = LIST_ENTRY(struct rq_entry_rr, current[cpu], head);
 

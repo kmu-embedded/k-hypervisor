@@ -12,7 +12,7 @@ static vmid_t vm_count;
 
 hvmm_status_t vm_setup()
 {
-    list_inithead(&vm_list);
+    LIST_INITHEAD(&vm_list);
     vm_count = 0;
 
     vcpu_setup();
@@ -52,7 +52,7 @@ vmid_t vm_create(unsigned char num_vcpus)
     vmem_create(&vm->vmem, vm->vmid);
     virq_create(&vm->virq, vm->vmid);
 
-    list_addtail(&vm->head, &vm_list);
+    LIST_ADDTAIL(&vm->head, &vm_list);
 
     return vm->vmid;
 }
@@ -115,7 +115,7 @@ vmcb_state_t vm_delete(vmid_t vmid)
         }
     }
 
-    list_del(&vm->head);
+    LIST_DEL(&vm->head);
     free(vm);
 
     return UNDEFINED;

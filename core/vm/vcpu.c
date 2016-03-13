@@ -12,7 +12,7 @@ static int nr_vcpus;
 
 hvmm_status_t vcpu_setup()
 {
-    list_inithead(&vcpu_list);
+    LIST_INITHEAD(&vcpu_list);
     if (nr_vcpus != 0) {
         /* Never this happend */
         nr_vcpus = 0;
@@ -37,7 +37,7 @@ struct vcpu *vcpu_create()
     // TODO(casionwoo) : Initialize running_time and actual_running_time after time_module created
     // TODO(casionwoo) : Initialize period and deadline after menuconfig module created
 
-    list_addtail(&vcpu->head, &vcpu_list);
+    LIST_ADDTAIL(&vcpu->head, &vcpu_list);
 
     return vcpu;
 }
@@ -68,7 +68,7 @@ vcpu_state_t vcpu_delete(struct vcpu *vcpu)
     // TODO(casionwoo) : Unregister vcpu id from scheduler
 
     //NO IFDEF?
-    list_del(&vcpu->head);
+    LIST_DEL(&vcpu->head);
     free(vcpu);
 
     return VCPU_UNDEFINED;
