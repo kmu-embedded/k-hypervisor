@@ -10,6 +10,7 @@
 #include <debug_print.h>
 
 #include <rtsm-config.h>
+#include <core/vm/virq.h>
 
 /* for test, surpress traces */
 #define __VGIC_DISABLE_TRACE__
@@ -25,8 +26,8 @@
 #define VGIC_SIGNATURE_INITIALIZED      0x45108EAD
 #define VGIC_READY() \
             (_vgic.initialized == VGIC_SIGNATURE_INITIALIZED)
-#define SLOT_INVALID        0xFFFFFFFF
 #define VIRQ_MAX_ENTRIES    128
+#define SLOT_INVALID        0xFFFFFFFF
 
 /*
  * Operations:
@@ -76,19 +77,10 @@ struct vgic {
     uint64_t valid_lr_mask;
 };
 
-struct virq_entry {
-    uint32_t pirq;
-    uint32_t virq;
-    uint8_t hw;
-    uint8_t valid;
-};
-
 static struct vgic _vgic;
 
 static uint32_t _guest_pirqatslot[NUM_GUESTS_STATIC][VGIC_NUM_MAX_SLOTS];
 static uint32_t _guest_virqatslot[NUM_GUESTS_STATIC][VGIC_NUM_MAX_SLOTS];
-
-static struct virq_entry _guest_virqs[NUM_GUESTS_STATIC][VIRQ_MAX_ENTRIES + 1];
 
 void vgic_slotpirq_init(void)
 {
@@ -163,13 +155,9 @@ hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t
 {
     int i;
     hvmm_status_t result = HVMM_STATUS_BUSY;
-    struct virq_entry *q = &_guest_virqs[vcpuid][0];
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct virq_entry *q = vcpu->virq.pending_irqs;
 
-    /* Interrupt occurs to the same virtual machine running guest;Then,
-     * we directly inject into guest. If it's not running guest's interrupt,
-     * we save interrupt in _guest_virqs due to preventing loss of
-     * the interrupt.
-     */
     if (vcpuid == get_current_vcpuid()) {
         uint32_t slot;
         lock_mutex(&VIRQ_MUTEX);
@@ -216,12 +204,14 @@ hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t
     }
     return result;
 }
-hvmm_status_t vgic_flush_virqs(vmid_t vmid)
+hvmm_status_t vgic_flush_virqs(vcpuid_t vcpuid)
 {
     /* Actual injection of queued VIRQs takes place here */
     int i;
     int count = 0;
-    struct virq_entry *entries = &_guest_virqs[vmid][0];
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct virq_entry *entries = vcpu->virq.pending_irqs;
+
     for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
         if (entries[i].valid) {
             uint32_t slot;
@@ -230,7 +220,7 @@ hvmm_status_t vgic_flush_virqs(vmid_t vmid)
                                            VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
                                            entries[i].pirq);
                 if (slot != VGIC_SLOT_NOTFOUND) {
-                    vgic_slotpirq_set(vmid, slot, entries[i].pirq);
+                    vgic_slotpirq_set(vcpuid, slot, entries[i].pirq);
                 }
             } else {
                 slot = vgic_inject_virq_sw(entries[i].virq,
@@ -240,14 +230,14 @@ hvmm_status_t vgic_flush_virqs(vmid_t vmid)
             if (slot == VGIC_SLOT_NOTFOUND) {
                 break;
             }
-            vgic_slotvirq_set(vmid, slot, entries[i].virq);
+            vgic_slotvirq_set(vcpuid, slot, entries[i].virq);
             /* Forget */
             entries[i].valid = 0;
             count++;
         }
     }
     if (count > 0) {
-        debug_print("virq: injected %d virqs to vmid %d\n", count, vmid);
+        debug_print("virq: injected %d virqs to vmid %d\n", count, vcpuid);
     }
 
     return HVMM_STATUS_SUCCESS;
@@ -580,7 +570,7 @@ hvmm_status_t virq_table_init(void)
     int i, j;
     for (i = 0; i < NUM_GUESTS_STATIC; i++)
         for (j = 0; j < (VIRQ_MAX_ENTRIES + 1); j++) {
-            _guest_virqs[i][j].valid = 0;
+//            _guest_virqs[i][j].valid = 0;
         }
 
     return HVMM_STATUS_SUCCESS;

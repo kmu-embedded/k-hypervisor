@@ -7,6 +7,15 @@
 #include "../../../arch/arm/vgic.h"
 #include <core/interrupt.h>
 
+#define MAX_PENDING_VIRQS    128
+
+struct virq_entry {
+    uint32_t pirq;
+    uint32_t virq;
+    uint8_t hw;
+    uint8_t valid;
+};
+
 /**
  * @breif   Saves a mapping information to find a virq for injection.
  *
@@ -27,6 +36,7 @@ struct guest_virqmap {
 struct virq {
     struct vgic_status vgic_status;
     struct guest_virqmap *guest_virqmap;
+    struct virq_entry pending_irqs[MAX_PENDING_VIRQS +1];
 };
 
 void virq_create(struct virq *virq);
