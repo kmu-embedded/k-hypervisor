@@ -159,32 +159,27 @@ void vgic_slotvirq_clear(vmid_t vmid, uint32_t slot)
 
 // Test mutex
 static DEFINE_MUTEX(VIRQ_MUTEX);
-hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
-                          uint32_t pirq, uint8_t hw)
+hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
-    hvmm_status_t result = HVMM_STATUS_BUSY;
     int i;
-    struct virq_entry *q = &_guest_virqs[vmid][0];
+    hvmm_status_t result = HVMM_STATUS_BUSY;
+    struct virq_entry *q = &_guest_virqs[vcpuid][0];
 
     /* Interrupt occurs to the same virtual machine running guest;Then,
      * we directly inject into guest. If it's not running guest's interrupt,
      * we save interrupt in _guest_virqs due to preventing loss of
      * the interrupt.
      */
-    if (vmid == get_current_vcpuid()) {
+    if (vcpuid == get_current_vcpuid()) {
         uint32_t slot;
         lock_mutex(&VIRQ_MUTEX);
         if (hw) {
-            slot = vgic_inject_virq_hw(virq,
-                                       VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
-                                       pirq);
+            slot = vgic_inject_virq_hw(virq, VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT, pirq);
             if (slot != VGIC_SLOT_NOTFOUND) {
-                vgic_slotpirq_set(vmid, slot, pirq);
+                vgic_slotpirq_set(vcpuid, slot, pirq);
             }
         } else {
-            slot = vgic_inject_virq_sw(virq,
-                                       VIRQ_STATE_PENDING, 0,
-                                       vmid, 1);
+            slot = vgic_inject_virq_sw(virq, VIRQ_STATE_PENDING, 0, vcpuid, 1);
         }
         unlock_mutex(&VIRQ_MUTEX);
 
@@ -192,11 +187,11 @@ hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
             return result;
         }
 
-        vgic_slotvirq_set(vmid, slot, virq);
+        vgic_slotvirq_set(vcpuid, slot, virq);
         result = HVMM_STATUS_SUCCESS;
     }
     else {
-        int slot = vgic_slotvirq_getslot(vmid, virq);
+        int slot = vgic_slotvirq_getslot(vcpuid, virq);
         if (slot == SLOT_INVALID) {
             /* Inject only the same virq is not present in a slot */
             for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
@@ -210,14 +205,13 @@ hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
                 }
             }
             debug_print("virq: queueing virq %d pirq %d to vmid %d %s\n",
-                        virq, pirq, vmid,
-                        result == HVMM_STATUS_SUCCESS ? "done" : "failed");
+                        virq, pirq, vcpuid, result == HVMM_STATUS_SUCCESS ? "done" : "failed");
         } else {
-            debug_print("virq: rejected queueing duplicated virq %d pirq %d to "
-                        "vmid %d %s\n", virq, pirq, vmid);
+            debug_print("virq: rejected queueing duplicated virq %d pirq %d to vmid %d %s\n", 
+                        virq, pirq, vcpuid);
         }
         if ((result == HVMM_STATUS_SUCCESS) && (virq < 16) ) {
-            gic_set_sgi(1 << vmid, GIC_SGI_SLOT_CHECK);
+            gic_set_sgi(1 << vcpuid, GIC_SGI_SLOT_CHECK);
         }
     }
     return result;
