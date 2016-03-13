@@ -6,8 +6,12 @@ LIBC_SRCS+= $(patsubst %, arch-arm/%, ${LIBC_ARCH_SRCS})
 
 LIBC_SRCS+= $(patsubst %, sys-baremetal/%, ${LIBC_BM_SRCS})
 
+#LIBRARY FOR CURRENT USE, IF YOU WANT TO USE OTHER LIBS, YOU HAVE TO INCLUDE THE FILS AS BELOW
+LIBC_SRCS+= init_libc.c malloc.c strlen.c strcpy.c printf.c memset.c realloc.c
+LIBC_SRCS+= fputc.c memcpy.c vfprintf.c fprintf.c format.c assert.c
 
-LIBC_SRCS+= memcpy.c strncat.c fgetc.c strpbrk.c fflush.c strcat.c rand.c memcmp.c  \
+#FOR ALL STANDARD C LIBRARY
+#LIBC_SRCS+= memcpy.c strncat.c fgetc.c strpbrk.c fflush.c strcat.c rand.c memcmp.c  \
 			clearerr.c strcspn.c calloc.c vprintf.c strrchr.c putchar.c srand.c sprintf.c \
 			feof.c system.c realloc.c memset.c ftell.c clock.c time.c strerror.c vsnprintf.c \
 			strstr.c fwrite.c gmtime.c fputc.c ferror.c format.c strcmp.c strlen.c difftime.c \
