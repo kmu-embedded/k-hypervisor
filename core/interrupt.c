@@ -40,20 +40,6 @@ static uint32_t interrupt_check_guest_irq(uint32_t pirq)
     return HOST_IRQ;
 }
 
-// TODO(casionwoo): Will be moved into vgic.c?
-//static struct vgic_status _vgic_status[NUM_GUESTS_STATIC];
-
-void interrupt_init()
-{
-    arch_irq_init();
-}
-
-void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
-{
-    if (irq < MAX_IRQS)
-        interrupt_handlers[irq] = handler;
-}
-
 #define __UART_IRQ_DEBUG__
 static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
 {
@@ -74,6 +60,18 @@ static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
 #endif
         virq_inject(vcpuid, virq, irq, INJECT_HW);
     }
+}
+
+// TODO(casionwoo): Will be moved into vgic.c?
+void interrupt_init()
+{
+    arch_irq_init();
+}
+
+void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
+{
+    if (irq < MAX_IRQS)
+        interrupt_handlers[irq] = handler;
 }
 
 // The function as below will be moved into hvc_irq function.
