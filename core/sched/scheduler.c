@@ -36,7 +36,7 @@ void sched_init()
     __current_vcpuid[pcpu] = VCPUID_INVALID;
     __next_vcpuid[pcpu] = VCPUID_INVALID;
 
-    list_inithead(&__running_vcpus[pcpu]);
+    LIST_INITHEAD(&__running_vcpus[pcpu]);
 
     /* TODO:(igkang) choose policy based on config */
     __policy[pcpu] = &sched_rr;
@@ -211,8 +211,8 @@ int sched_vcpu_attach(vcpuid_t vcpuid)
     __policy[pcpu]->attach_vcpu(vcpuid);
 
     new_entry = (struct running_vcpus_entry_t *) malloc(sizeof(struct running_vcpus_entry_t));
-    list_inithead(&new_entry->head);
-    list_addtail(&new_entry->head, &__running_vcpus[pcpu]);
+    LIST_INITHEAD(&new_entry->head);
+    LIST_ADDTAIL(&new_entry->head, &__running_vcpus[pcpu]);
 
     return 0;
 }
