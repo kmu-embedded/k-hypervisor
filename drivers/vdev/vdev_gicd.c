@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 #include "vdev_gicd.h"
+#include <core/vm/virq.h>
 
 /* return the bit position of the first bit set from msb
  * for example, firstbit32(0x7F = 111 1111) returns 7
@@ -227,29 +228,30 @@ static hvmm_status_t handler_000(uint32_t write, uint32_t offset,
     return result;
 }
 
-static void vgicd_changed_istatus(vmid_t vmid, uint32_t istatus,
+static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus,
                                   uint8_t word_offset)
 {
+    struct vcpu *vcpu = vcpu_find(vcpuid);
     uint32_t cstatus; /* changed bits only */
     uint32_t minirq;
     int bit;
     /* irq range: 0~31 + word_offset * size_of_istatus_in_bits */
     minirq = word_offset * 32;
     /* find changed bits */
-    cstatus = old_vgicd_status[vmid][word_offset] ^ istatus;
+    cstatus = old_vgicd_status[vcpuid][word_offset] ^ istatus;
     while (cstatus) {
         uint32_t virq;
         uint32_t pirq;
         bit = firstbit32(cstatus);
         virq = minirq + bit;
-        pirq = interrupt_virq_to_pirq(vmid, virq);
+        pirq = virq_to_pirq(&vcpu->virq, virq);
         if (pirq != PIRQ_INVALID) {
             /* changed bit */
             if (istatus & (1 << bit)) {
                 printf("[%s : %d] enabled irq num is %d\n", __func__, __LINE__, bit + minirq);
                 gic_configure_irq(pirq, IRQ_LEVEL_TRIGGERED);
-                printf("vmid %d\tpirq %d\n", vmid, pirq);
-                interrupt_guest_enable(vmid, pirq);
+                printf("vcpuid %d\tpirq %d\n", vcpuid, pirq);
+                virq_enable(&vcpu->virq, pirq);
                 gic_enable_irq(pirq);
             } else {
                 printf("[%s : %d] disabled irq num is %d\n", __func__, __LINE__, bit + minirq);
@@ -257,11 +259,11 @@ static void vgicd_changed_istatus(vmid_t vmid, uint32_t istatus,
             }
         } else {
             printf("WARNING: Ignoring virq %d for guest %d has "
-                   "no mapped pirq\n", virq, vmid);
+                   "no mapped pirq\n", virq, vcpuid);
         }
         cstatus &= ~(1 << bit);
     }
-    old_vgicd_status[vmid][word_offset] = istatus;
+    old_vgicd_status[vcpuid][word_offset] = istatus;
 }
 
 static hvmm_status_t handler_ISCENABLER(uint32_t write,

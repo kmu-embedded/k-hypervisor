@@ -10,6 +10,7 @@
 #include <rtsm-config.h>
 #include <core/vm/vcpu.h>
 #include "../arch/arm/arch_init.h"
+#include <core/vm/virq.h>
 
 #define VIRQ_MIN_VALID_PIRQ 16
 #define VIRQ_NUM_MAX_PIRQS  MAX_IRQS
@@ -41,28 +42,12 @@ const int32_t interrupt_check_guest_irq(uint32_t pirq)
     return HOST_IRQ;
 }
 
-// Parameter of vmid would be replaced to vcpuid, First I will assume this vmid as vcpuid
-const uint32_t interrupt_virq_to_pirq(vcpuid_t vcpuid, uint32_t virq)
+// TODO(casionwoo): Will be moved into vgic.c?
+//static struct vgic_status _vgic_status[NUM_GUESTS_STATIC];
+
+void interrupt_init()
 {
-    struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct virqmap_entry *map = vcpu->virq.guest_virqmap->map;
-
-    return map[virq].pirq;
-}
-
-// Parameter of vmid would be replaced to vcpuid, First I will assume this vmid as vcpuid
-const uint32_t interrupt_pirq_to_enabled_virq(vcpuid_t vcpuid, uint32_t pirq)
-{
-    uint32_t virq = VIRQ_INVALID;
-
-    struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct virqmap_entry *map = vcpu->virq.guest_virqmap->map;
-
-    if (map[pirq].enabled) {
-        virq = map[pirq].virq;
-    }
-
-    return virq;
+    arch_irq_init();
 }
 
 void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
@@ -71,32 +56,25 @@ void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
         interrupt_handlers[irq] = handler;
 }
 
-// Parameter of vmid would be replaced to vcpuid, First I will assume this vmid as vcpuid
-void interrupt_guest_enable(vcpuid_t vcpuid, uint32_t irq)
-{
-    struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct virqmap_entry *map = vcpu->virq.guest_virqmap->map;
-
-    map[irq].enabled = GUEST_IRQ_ENABLE;
-}
-
 #define __UART_IRQ_DEBUG__
 static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
 {
-    int i;
+    vcpuid_t vcpuid;
     uint32_t virq;
+    struct vcpu *vcpu;
 
-    for (i = 0; i < num_of_guests; i++) {
-        virq = interrupt_pirq_to_enabled_virq(i, irq);
+    for (vcpuid = 0; vcpuid < num_of_guests; vcpuid++) {
+        vcpu = vcpu_find(vcpuid);
+        virq = pirq_to_enabled_virq(&vcpu->virq, irq);
         if (virq == VIRQ_INVALID) {
             continue;
         }
 #ifdef __UART_IRQ_DEBUG__
         if (irq != 34) {
-            printf("vmid %d: pirq %d virq %d\n", i, irq, virq);
+            printf("vmid %d: pirq %d virq %d\n", vcpuid, irq, virq);
         }
 #endif
-        virq_inject(i, virq, irq, INJECT_HW);
+        virq_inject(vcpuid, virq, irq, INJECT_HW);
     }
 }
 
@@ -125,10 +103,3 @@ void interrupt_service_routine(int irq, void *current_regs, void *pdata)
     }
 }
 
-// TODO(casionwoo): Will be moved into vgic.c?
-//static struct vgic_status _vgic_status[NUM_GUESTS_STATIC];
-
-void interrupt_init()
-{
-    arch_irq_init();
-}
