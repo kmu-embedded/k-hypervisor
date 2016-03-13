@@ -1,4 +1,5 @@
 #include "arch_init.h"
+#include "mm.h"
 
 extern uint32_t __hvc_vector;
 void SECTION(".init.arch") cpu_init()
@@ -24,7 +25,6 @@ void SECTION(".init.arch") irq_init()
     write_hcr(0x10 | 0x8);
 }
 
-#include <mm.h>
 #include <size.h>
 #include <rtsm-config.h>
 void SECTION(".init.arch") mm_init()

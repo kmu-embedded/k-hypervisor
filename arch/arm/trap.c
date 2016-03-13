@@ -1,10 +1,9 @@
+#include <stdio.h>
+#include <debug_print.h>
 #include <hvmm_trace.h>
 #include "gic-v2.h"
 #include "trap.h"
 #include <arch/armv7.h>
-
-#include <stdio.h>
-#include <debug_print.h>
 
 #include <core/interrupt.h>
 #include <core/scheduler.h>
