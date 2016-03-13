@@ -76,17 +76,6 @@ SECTIONS
     }
 
     . = ALIGN(0x1000);
-    PROVIDE(__pgtable_start = .);
-    .pgtable : {
-        *(.pgtable)
-        . = . + 0x1000;
-        . = . + 0x4000;
-        . = . + 0x800000;
-        . = ALIGN(4);
-    }
-    PROVIDE(__pgtable_end = .);
-
-    . = ALIGN(0x1000);
     PROVIDE(__begin_bss = .);
     .bss : {
         *(.bss)
@@ -111,4 +100,22 @@ SECTIONS
         . = ALIGN(4);
         __end_stack = .;
     }
+
+    . = ALIGN(0x1000);
+    PROVIDE(__pgtable_start = .);
+    .pgtable : {
+        *(.pgtable)
+        . = . + 0x805000;
+        . = ALIGN(4);
+    }
+    PROVIDE(__pgtable_end = .);
+
+    . = ALIGN(0x1000);
+    PROVIDE(__vm_pgtable_start = .);
+    .vm_pgtable : {
+        *(.vm_pgtable)
+        . = . + 0x805000 * NUM_GUESTS_STATIC;
+        . = ALIGN(4);
+    }
+    PROVIDE(__vm_pgtable_end = .);
 }

@@ -101,9 +101,15 @@ typedef union lpae_t pgentry;
 #define L2_SHIFT    (L3_SHIFT + ENTRY_SHIFT)
 #define L1_SHIFT    (L2_SHIFT + ENTRY_SHIFT)
 
+#if 1
 #define L1_BIT_MASK 0xC0000000
 #define L2_BIT_MASK 0x3FE00000
 #define L3_BIT_MASK 0x001FF000
+#else
+#define L1_BIT_MASK 0xC0000
+#define L2_BIT_MASK 0x3FE00
+#define L3_BIT_MASK 0x001FF
+#endif
 
 #define PAGE_MASK 0x00000FFF
 
@@ -171,7 +177,10 @@ typedef enum {
 } cachebility; //cacheability;
 
 
-pgentry set_table(uint32_t paddr);
-pgentry set_entry(uint32_t paddr, uint8_t mem_attr, uint8_t ap, pgsize_t size);
+pgentry set_table(uint32_t paddr, uint32_t valid);
+pgentry set_entry(uint32_t paddr, uint8_t mem_attr, uint8_t ap);
+
+#define valid_page      (1 << 0)
+#define invalid_page    (0 << 0)
 
 #endif /* __LPAED_H__ */

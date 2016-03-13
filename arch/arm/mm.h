@@ -17,11 +17,13 @@ void set_htcr(void);
 void set_httbr(void);
 void enable_mmu(void);
 
-void pgtable_init(void);
+void dump_pgtable(void);
+void pgtable_init(uint32_t base);
 void set_pgtable(struct memdesc_t *desc);
 void write_hyp_pgentry(uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size);
 
-void write_pgentry(void *pgtable_base, struct memdesc_t *mem_desc, bool is_guest);
-void write_pgentry_4k(void *pgtable_base, struct memdesc_t *mem_desc, bool is_guest);
+void vm_pgtable_init(uint32_t base);
+void write_vm_pgentry(void *pgtable_base, uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size, bool is_guest);
+
 
 #endif /* __MM_H__*/

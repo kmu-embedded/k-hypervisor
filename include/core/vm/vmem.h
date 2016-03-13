@@ -9,7 +9,9 @@
 
 struct vmem {
     struct memdesc_t **memmap;
-    uint32ptr_t pgtable_base;
+    uint32_t base;
+    uint32_t vtcr;
+    uint64_t vttbr;
 };
 
 void vmem_setup();
