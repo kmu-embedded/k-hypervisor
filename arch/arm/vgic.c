@@ -29,7 +29,7 @@
 #define VIRQ_MAX_ENTRIES    128
 #define SLOT_INVALID        0xFFFFFFFF
 
-struct vgic {
+struct vGICv2_HW {
     /** Base address of VGIC (Virtual Interface Control Registers) */
     volatile uint32_t *base;
     /** Number of List Registers */
@@ -40,7 +40,7 @@ struct vgic {
     uint64_t valid_lr_mask;
 };
 
-static struct vgic vGICv2;
+static struct vGICv2_HW vGICv2;
 
 static uint32_t _guest_pirqatslot[NUM_GUESTS_STATIC][VGIC_NUM_MAX_SLOTS];
 static uint32_t _guest_virqatslot[NUM_GUESTS_STATIC][VGIC_NUM_MAX_SLOTS];
