@@ -19,7 +19,6 @@ void SECTION(".init.arch") arch_irq_init()
     gic_init();
 
     vgic_init();
-    virq_table_init();
     vgic_enable(1);
 
     write_hcr(0x10 | 0x8);

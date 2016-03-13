@@ -565,17 +565,6 @@ static uint64_t _vgic_valid_lr_mask(uint32_t num_lr)
     return mask_valid_lr;
 }
 
-hvmm_status_t virq_table_init(void)
-{
-    int i, j;
-    for (i = 0; i < NUM_GUESTS_STATIC; i++)
-        for (j = 0; j < (VIRQ_MAX_ENTRIES + 1); j++) {
-//            _guest_virqs[i][j].valid = 0;
-        }
-
-    return HVMM_STATUS_SUCCESS;
-}
-
 hvmm_status_t vgic_init(void)
 {
     hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
