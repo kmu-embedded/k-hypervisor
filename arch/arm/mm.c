@@ -1,12 +1,5 @@
-#include <stdbool.h>
-#include <debug_print.h>
-#include <arch/armv7.h>
-#include <rtsm-config.h>
-
-#include <mm.h>
-#include <lpae.h>
-#include <asm/asm.h>
-#include <io.h>
+#include "mm.h"
+#include "lpae.h"
 
 extern uint32_t __pgtable_start;
 extern uint32_t __pgtable_end;
@@ -65,11 +58,11 @@ write_hyp_pgentry(uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size)
     }
 }
 
-void write_vm_pgentry(void *pgtable_base, uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size, bool is_guest)
+void write_vm_pgentry(uint32_t base, uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size)
 {
     int i;
     for (i = 0; i < (size >> 12); i++, va += 0x1000, pa += 0x1000) {
-        write_pgentry_4k((uint32_t) pgtable_base, va >> 12, pa, mem_attr, 3);
+        write_pgentry_4k(base, va >> 12, pa, mem_attr, 3);
     }
 }
 
@@ -79,6 +72,7 @@ void SECTION(".init") hyp_memtest(uint32_t base, uint32_t size)
 }
 
 
+#include <io.h>
 static void write64(uint64_t value, uint32_t addr)
 {
     uint32_t upper = 0, lower = 0;

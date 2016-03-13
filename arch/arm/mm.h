@@ -2,7 +2,10 @@
 #define __MM_H__
 
 #include <stdint.h>
-#include <stdbool.h>
+#include <arch/armv7.h>
+
+#include <rtsm-config.h>
+#include <asm/asm.h>
 
 struct memdesc_t {
     char *label;
@@ -23,7 +26,7 @@ void set_pgtable(struct memdesc_t *desc);
 void write_hyp_pgentry(uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size);
 
 void vm_pgtable_init(uint32_t base);
-void write_vm_pgentry(void *pgtable_base, uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size, bool is_guest);
+void write_vm_pgentry(uint32_t base, uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size);
 
 
 #endif /* __MM_H__*/
