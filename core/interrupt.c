@@ -43,22 +43,23 @@ static uint32_t interrupt_check_guest_irq(uint32_t pirq)
 #define __UART_IRQ_DEBUG__
 static void interrupt_inject_enabled_guest(int num_of_guests, uint32_t irq)
 {
-    vcpuid_t vcpuid;
     uint32_t virq;
     struct vcpu *vcpu;
+    uint32_t pcpu = smp_processor_id();
+    struct running_vcpus_entry_t *sched_vcpu_entry;
 
-    for (vcpuid = 0; vcpuid < num_of_guests; vcpuid++) {
-        vcpu = vcpu_find(vcpuid);
+    list_for_each_entry(struct running_vcpus_entry_t, sched_vcpu_entry, &__running_vcpus[pcpu], head) {
+        vcpu = vcpu_find(sched_vcpu_entry->vcpuid);
         virq = pirq_to_enabled_virq(&vcpu->virq, irq);
         if (virq == VIRQ_INVALID) {
             continue;
         }
 #ifdef __UART_IRQ_DEBUG__
         if (irq != 34) {
-            printf("vmid %d: pirq %d virq %d\n", vcpuid, irq, virq);
+            printf("vmid %d: pirq %d virq %d\n", vcpu->vcpuid, irq, virq);
         }
 #endif
-        virq_inject(vcpuid, virq, irq, INJECT_HW);
+        virq_inject(vcpu->vcpuid, virq, irq, INJECT_HW);
     }
 }
 
@@ -77,6 +78,14 @@ void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
 // The function as below will be moved into hvc_irq function.
 void interrupt_service_routine(int irq, void *current_regs)
 {
+
+    /* TODO(casionwoo) :
+    *   PPI, SGI : Just inject or call hyp's handler
+    *
+    *   SPI : (pcpu == 0) : send to other cpus and call hyp's handler
+    *         (pcpu != 0) : inject to guests or call hyp's handler
+    */
+
     struct arch_regs *regs = (struct arch_regs *)current_regs;
 
     if (interrupt_check_guest_irq(irq) == GUEST_IRQ) {
