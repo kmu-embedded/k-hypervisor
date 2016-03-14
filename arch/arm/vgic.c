@@ -24,9 +24,6 @@
 #define VGIC_MAINTENANCE_INTERRUPT_IRQ  25
 
 #define VGIC_MAX_LISTREGISTERS          VGIC_NUM_MAX_SLOTS
-#define VGIC_SIGNATURE_INITIALIZED      0x45108EAD
-#define VGIC_READY() \
-            (vGICv2.initialized == VGIC_SIGNATURE_INITIALIZED)
 #define VIRQ_MAX_ENTRIES    128
 #define SLOT_INVALID        0xFFFFFFFF
 
@@ -38,8 +35,6 @@ struct vGICv2_HW {
     uint32_t base;
     /** Number of List Registers */
     uint32_t num_lr;
-    /** vgic module initialized if == VGIC_SIGNATURE_INITIALIZED */
-    uint32_t initialized;
     /** Mask of the Number of Valid List Register */
     uint64_t valid_lr_mask;
 };
@@ -308,18 +303,16 @@ static void _vgic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
 hvmm_status_t vgic_enable(uint8_t enable)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    if (VGIC_READY()) {
-        if (enable) {
-            uint32_t hcr = GICH_READ(GICH_HCR);
-            hcr |= GICH_HCR_EN;
-            GICH_WRITE(GICH_HCR, hcr);
-        } else {
-            uint32_t hcr = GICH_READ(GICH_HCR);
-            hcr &= ~(GICH_HCR_EN);
-            GICH_WRITE(GICH_HCR, hcr);
-        }
-        result = HVMM_STATUS_SUCCESS;
+    if (enable) {
+        uint32_t hcr = GICH_READ(GICH_HCR);
+        hcr |= GICH_HCR_EN;
+        GICH_WRITE(GICH_HCR, hcr);
+    } else {
+        uint32_t hcr = GICH_READ(GICH_HCR);
+        hcr &= ~(GICH_HCR_EN);
+        GICH_WRITE(GICH_HCR, hcr);
     }
+    result = HVMM_STATUS_SUCCESS;
     return result;
 }
 
@@ -464,7 +457,6 @@ hvmm_status_t vgic_init(void)
         vGICv2.base = gic_vgic_baseaddr();
         vGICv2.num_lr = (GICH_READ(GICH_VTR) & GICH_VTR_LISTREGS_MASK) + 1;
         vGICv2.valid_lr_mask = _vgic_valid_lr_mask(vGICv2.num_lr);
-        vGICv2.initialized = VGIC_SIGNATURE_INITIALIZED;
     }
 
     _vgic_maintenance_irq_enable(1);
@@ -503,7 +495,6 @@ hvmm_status_t vgic_save_status(struct vgic_status *status)
     status->hcr = GICH_READ(GICH_HCR);
     status->apr = GICH_READ(GICH_APR);
     status->vmcr = GICH_READ(GICH_VMCR);
-    status->saved_once = VGIC_SIGNATURE_INITIALIZED;
     vgic_enable(0);
     return result;
 }
