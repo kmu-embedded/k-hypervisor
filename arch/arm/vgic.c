@@ -309,26 +309,6 @@ hvmm_status_t vgic_enable(uint8_t enable)
     return result;
 }
 
-hvmm_status_t vgic_injection_enable(uint8_t enable)
-{
-    uint32_t hcr;
-    hcr = read_hcr();
-    if (enable) {
-        if ((hcr & HCR_VI) == 0) {
-            hcr |= HCR_VI;
-            write_hcr(hcr);
-        }
-    } else {
-        if (hcr & HCR_VI) {
-            hcr &= ~(HCR_VI);
-            write_hcr(hcr);
-        }
-    }
-    hcr = read_hcr();
-    debug_print(" updated hcr: %x\n", hcr);
-    return HVMM_STATUS_SUCCESS;
-}
-
 /*
  * Params
  * @virq            virtual id (seen to the guest as an IRQ)
