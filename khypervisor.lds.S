@@ -102,20 +102,20 @@ SECTIONS
     }
 
     . = ALIGN(0x1000);
-    PROVIDE(__pgtable_start = .);
+    PROVIDE(__HYP_PGTABLE = .);
     .pgtable : {
         *(.pgtable)
         . = . + 0x805000;
         . = ALIGN(4);
     }
-    PROVIDE(__pgtable_end = .);
+    PROVIDE(__END_HYP_PGTABLE = .);
 
     . = ALIGN(0x1000);
-    PROVIDE(__vm_pgtable_start = .);
+    PROVIDE(__VM_PGTABLE = .);
     .vm_pgtable : {
         *(.vm_pgtable)
         . = . + 0x805000 * NUM_GUESTS_STATIC;
         . = ALIGN(4);
     }
-    PROVIDE(__vm_pgtable_end = .);
+    PROVIDE(__END_VM_PGTABLE = .);
 }

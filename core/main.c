@@ -38,14 +38,11 @@ static void SECTION(".init") primary_core_init(void)
 
     libc_init();
 
-    // Create page tables for each levels with 4kb unit (default page size).
-    pgtable_init(0x0);
+    mm_init();
 
-    // Add mapping for machine
     platform_init();
 
-    // enable mmu and configure malloc
-    mm_init();
+    enable_mmu();
 
     irq_init();
 

@@ -24,16 +24,3 @@ void SECTION(".init.arch") irq_init()
 
     write_hcr(0x10 | 0x8);
 }
-
-#include <size.h>
-#include <rtsm-config.h>
-void SECTION(".init.arch") mm_init()
-{
-    set_hmair();
-    set_htcr();
-    set_httbr();
-    enable_mmu();
-#ifdef __CONFIG_MEMTEST__
-    hyp_memtest(CFG_HYP_START_ADDRESS, SZ_128M);
-#endif
-}

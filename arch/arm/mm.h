@@ -3,9 +3,9 @@
 
 #include <stdint.h>
 #include <arch/armv7.h>
+#include <asm/asm.h>
 
 #include <rtsm-config.h>
-#include <asm/asm.h>
 
 struct memdesc_t {
     char *label;
@@ -15,18 +15,9 @@ struct memdesc_t {
     uint8_t attr;
 };
 
-void set_hmair(void);
-void set_htcr(void);
-void set_httbr(void);
+void mm_init();
+void add_hyp_pgentry(uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size);
 void enable_mmu(void);
 
-void dump_pgtable(void);
-void pgtable_init(uint32_t base);
-void set_pgtable(struct memdesc_t *desc);
-void write_hyp_pgentry(uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size);
-
-void vm_pgtable_init(uint32_t base);
-void write_vm_pgentry(uint32_t base, uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size);
-
-
+void pgtable_init(uint32_t pgtable_base);
 #endif /* __MM_H__*/
