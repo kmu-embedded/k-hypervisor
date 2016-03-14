@@ -1,6 +1,8 @@
 #ifndef __ARM_INLINE__
 #define __ARM_INLINE__
 
+#include <stdint.h>
+
 #ifdef CONFIG_C99
 #include "c99.h"
 #endif
@@ -13,7 +15,7 @@
 #define dsb() asm __volatile__ ("dsb" : : : "memory")
 #define dmb() asm __volatile__ ("dmb" : : : "memory")
 
-#define asm_clz(x)      ({ unsigned int rval; asm volatile(\
+#define asm_clz(x)      ({ uint32_t rval; asm volatile(\
                                 " clz %0, %1\n\t" \
                                 : "=r" (rval) : "r" (x) : ); rval; })
 

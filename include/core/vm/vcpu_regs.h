@@ -63,7 +63,6 @@ struct vcpu_regs {
 };
 
 /* moved from scheduler.h */
-extern void __mon_switch_to_guest_context(struct core_regs *core_regs);
 
 hvmm_status_t vcpu_regs_init(struct vcpu_regs *vcpu_regs);
 hvmm_status_t vcpu_regs_save(struct vcpu_regs *vcpu_regs, struct core_regs *current_regs);
