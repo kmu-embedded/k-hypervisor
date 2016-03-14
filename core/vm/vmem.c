@@ -173,6 +173,7 @@ extern uint32_t __END_VM_PGTABLE;
 
 void vmem_create(struct vmem *vmem, vmid_t vmid)
 {
+
     vmem->base = (uint32_t) &__VM_PGTABLE + (PGTABLE_SIZE << (vmid - 1));
     pgtable_init(vmem->base);
 
@@ -193,7 +194,8 @@ void add_mapping(struct vmem *vmem, uint32_t va, uint32_t pa, uint8_t mem_attr, 
     }
 }
 
-hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
+//hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
+hvmm_status_t vmem_init(struct vmem *vmem)
 {
     int i, j;
 

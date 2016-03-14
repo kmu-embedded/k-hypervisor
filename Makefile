@@ -94,7 +94,7 @@ BIN				= ${BUILD_PATH}/${TARGET}.bin
 ######################################################
 # BUILD RULES
 ######################################################
-all: ${OUTPUT} ${MACHINE}.lds
+all: ${OUTPUT} ${MACHINE}.lds ${MAP}
 
 ${OUTPUT}: ${OBJS} ${MACHINE}.lds
 	${Q}echo "[LD] $@"
@@ -115,6 +115,10 @@ ${BUILD_PATH}/%.o: %.c | ${DIRECTORIES}
 ${DIRECTORIES}:
 	@echo mkdir ${DIRECTORIES}
 	mkdir -p ${DIRECTORIES}
+
+${MAP}: ${OUTPUT}
+	${Q}echo "[NM] $@"
+	${Q}${NM} $< > ${BUILD_PATH}/$@
 
 style:
 	astyle --max-instatement-indent=120 --style=otbs --pad-header --recursive --indent=spaces=4 --pad-oper "*.c"
