@@ -23,31 +23,8 @@ struct vgic_status {
     uint32_t apr;           /**< Active Priorities Register */
     uint32_t vmcr;          /**< Virtual Machine Control Register */
 };
-/**
- * @brief           Enable/Disable Virtual CPU interface operation.
- *
- * If "enable" is "1", enables Virtual CPU interface operation and
- * maintenance interrupt.
- * If "enable" is "0", disables them.
- * @param enable    "1" enable, "0" disable.
- * @return          If Virtual Interface Control intialized, then returns "success",
- *                  otherwise returns "bad access".
- */
 hvmm_status_t vgic_enable(uint8_t enable);
-/**
- * @brief   Initializes Virtual Interface Control.
- *
- * Sets GICH's base address, number of list registers, initlizalied flag.
- * Enables Virtual Maintenace interrupt.
- * @return  Always returns "success".
- */
 hvmm_status_t vgic_init(void);
-/**
- * @brief           Initializes Virtual Interface Control status for each guest.
- * @param status    vgic status. Refer to vgic_status.
- * @param vmid      guest id.
- * @return          Always returns "success".
- */
 hvmm_status_t vgic_init_status(struct vgic_status *status);
 hvmm_status_t vgic_save_status(struct vgic_status *status);
 hvmm_status_t vgic_restore_status(struct vgic_status *status, vmid_t vmid);
@@ -63,28 +40,8 @@ uint32_t vgic_inject_virq(uint32_t virq, uint32_t slot, enum virq_state state,
                           uint8_t maintenance);
 hvmm_status_t vgic_setcallback_virq_flush(void (*callback)(vmid_t vmid));
 hvmm_status_t vgic_injection_enable(uint8_t enable);
-/**
- * @brief   Initializes all physical irq slot and virtual irq slot.
- */
-void vgic_slotpirq_init(void);
-void vgic_slotpirq_set(vmid_t vmid, uint32_t slot, uint32_t pirq);
-uint32_t vgic_slotpirq_get(vmid_t vmid, uint32_t slot);
-void vgic_slotpirq_clear(vmid_t vmid, uint32_t slot);
-void vgic_slotvirq_set(vmid_t vmid, uint32_t slot, uint32_t virq);
-uint32_t vgic_slotvirq_getslot(vmid_t vmid, uint32_t virq);
-void vgic_slotvirq_clear(vmid_t vmid, uint32_t slot);
-/**
- * @brief       Returns pirq mapped to virq for vm.
- * @param vmid  Guest vm id
- * @param virq  Virtual interrupt number.
- * @return      physical interrupt number.
- */
 
 hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw);
-/**
- * @brief   Initializes virq_entry structure and
-            Sets callback function about injection of queued VIRQs.
- * @return  Always returns "success".
- */
 hvmm_status_t vgic_sgi(uint32_t cpu, enum gic_sgi sgi);
+
 #endif
