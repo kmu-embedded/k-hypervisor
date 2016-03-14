@@ -116,8 +116,6 @@ void vgic_slotvirq_clear(vmid_t vmid, uint32_t slot)
     vgic_slotvirq_set(vmid, slot, VIRQ_INVALID);
 }
 
-// Test mutex
-static DEFINE_MUTEX(VIRQ_MUTEX);
 hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
     int i;
@@ -136,7 +134,6 @@ hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t
         } else {
             slot = vgic_inject_virq_sw(virq, VIRQ_STATE_PENDING, 0, vcpuid, 1);
         }
-        unlock_mutex(&VIRQ_MUTEX);
 
         if (slot == VGIC_SLOT_NOTFOUND) {
             return result;

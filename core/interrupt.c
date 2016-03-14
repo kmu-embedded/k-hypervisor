@@ -13,13 +13,12 @@
 #include <core/vm/virq.h>
 #include <core/scheduler.h>
 
-#define VIRQ_MIN_VALID_PIRQ 16
-#define VIRQ_NUM_MAX_PIRQS  MAX_IRQS
+#define VIRQ_MIN_VALID_PIRQ     16
+#define VIRQ_NUM_MAX_PIRQS      MAX_IRQS
 
 /**< IRQ handler */
 static interrupt_handler_t interrupt_handlers[MAX_IRQS];
 
-#define __UART_IRQ_DEBUG__
 static void interrupt_inject_enabled_guest(uint32_t irq)
 {
     uint32_t virq;
@@ -33,11 +32,6 @@ static void interrupt_inject_enabled_guest(uint32_t irq)
         if (virq == VIRQ_INVALID) {
             continue;
         }
-#ifdef __UART_IRQ_DEBUG__
-        if (irq != 34) {
-            printf("vcpuid %d: pirq %d virq %d\n", vcpu->vcpuid, irq, virq);
-        }
-#endif
         virq_inject(vcpu->vcpuid, virq, irq, INJECT_HW);
     }
 }
