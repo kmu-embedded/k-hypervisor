@@ -1,6 +1,7 @@
 #ifndef __SMP_H__
 #define __SMP_H__
 
+#include <stdint.h>
 #include "sysctrl.h"
 #include "arm_inline.h"
 
@@ -17,7 +18,7 @@
  *   - MPIDR[7:2] - Reserved, Read as zero
  * @return The current CPU ID.
  */
-static inline unsigned int smp_processor_id(void)
+static inline uint32_t smp_processor_id(void)
 {
     return read_mpidr() & MPIDR_MASK & MPIDR_CPUID_MASK;
 }
@@ -53,7 +54,7 @@ static inline void dsb_sev(void)
 #define spin_is_locked(x)      ((x)->lock != 0)
 
 typedef struct {
-    volatile unsigned int lock;
+    volatile uint32_t lock;
 } spinlock_t;
 
 #define SPIN_LOCK_UNLOCKED(l)   \

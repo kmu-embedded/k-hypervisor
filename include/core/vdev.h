@@ -40,8 +40,8 @@ typedef hvmm_status_t (*vdev_callback_t)(uint32_t wnr, uint32_t offset,
 typedef void(*vdev_irq_callback_t)(void *pdata);
 
 struct vdev_memory_map {
-    unsigned int base;
-    unsigned int size;
+    uint32_t base;
+    uint32_t size;
 };
 
 typedef int (*initcall_t)(void);

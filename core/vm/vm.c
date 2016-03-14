@@ -14,14 +14,14 @@ hvmm_status_t vm_setup()
 {
     vm_count = 0;
     LIST_INITHEAD(&vm_list);
-    vcpu_setup();
 
+    vcpu_setup();
     atags_setup();
 
     return HVMM_STATUS_SUCCESS;
 }
 
-vmid_t vm_create(unsigned char num_vcpus)
+vmid_t vm_create(uint8_t num_vcpus)
 {
     int i;
     struct vmcb *vm = NULL;

@@ -24,7 +24,7 @@ typedef enum vmcb_state {
 struct vmcb {
     vmid_t vmid;
     char name[SIZE_OF_NAME];
-    unsigned char num_vcpus;
+    uint8_t num_vcpus;
 
     struct vcpu **vcpu;
     struct vmem vmem;
@@ -36,7 +36,7 @@ struct vmcb {
 };
 
 hvmm_status_t vm_setup();
-vmid_t vm_create(unsigned char num_vcpu);
+vmid_t vm_create(uint8_t num_vcpu);
 vmcb_state_t vm_init(vmid_t vmid);
 vmcb_state_t vm_start(vmid_t vmid);
 vmcb_state_t vm_delete(vmid_t vmid);

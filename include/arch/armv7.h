@@ -16,11 +16,11 @@
 #include "armv7/mutex.h"
 
 // FIXME: Move get_periphbase() to proper location.
-static inline unsigned long long get_periphbase(void)
+static inline uint64_t get_periphbase(void)
 {
-    unsigned long long periphbase = 0UL;
+    uint64_t periphbase = 0UL;
     unsigned long cbar = read_cbar();
-    unsigned long long upper_periphbase = cbar & 0xFF;
+    uint64_t upper_periphbase = cbar & 0xFF;
 
     if (upper_periphbase != 0x0) {
         periphbase |= upper_periphbase << 32;

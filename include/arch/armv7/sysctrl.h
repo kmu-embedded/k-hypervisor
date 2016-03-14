@@ -7,18 +7,18 @@
 #include "c99.h"
 #endif
 
-#define read_vbar()             ({ unsigned int rval; asm volatile(\
+#define read_vbar()             ({ uint32_t rval; asm volatile(\
                                 " mrc     p15, 0, %0, c12, c0, 0\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })
 #define write_vbar(val)         asm volatile(\
                                 " mcr     p15, 0, %0, c12, c0, 0\n\t" \
                                 : : "r" ((val)) : "memory", "cc")
 
-#define read_hsr()              ({ unsigned int rval; asm volatile(\
+#define read_hsr()              ({ uint32_t rval; asm volatile(\
                                 " mrc     p15, 4, %0, c5, c2, 0\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })
 
-#define read_sctlr()           ({ unsigned int rval; asm volatile(\
+#define read_sctlr()           ({ uint32_t rval; asm volatile(\
                                 " mrc     p15, 0, %0, c1, c0, 0\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })
 
@@ -30,7 +30,7 @@
 #define HCR_IMO     0x10
 #define HCR_VI      (0x1 << 7)
 
-#define read_hcr()              ({ unsigned int rval; asm volatile(\
+#define read_hcr()              ({ uint32_t rval; asm volatile(\
                                 " mrc     p15, 4, %0, c1, c1, 0\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })
 
@@ -39,15 +39,15 @@
                                 : : "r" ((val)) : "memory", "cc")
 
 
-#define read_midr()              ({ unsigned int rval; asm volatile(\
+#define read_midr()              ({ uint32_t rval; asm volatile(\
                                 " mrc     p15, 0, %0, c0, c0, 0\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })
 
-#define read_mpidr()            ({ unsigned int rval; asm volatile(\
+#define read_mpidr()            ({ uint32_t rval; asm volatile(\
                                 " mrc     p15, 0, %0, c0, c0, 5\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })
 
-#define read_vmpidr()           ({ unsigned int rval; asm volatile(\
+#define read_vmpidr()           ({ uint32_t rval; asm volatile(\
                                 " mrc     p15, 4, %0, c0, c0, 5\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })
 
@@ -67,7 +67,7 @@
 #define HSCTLR_BASE      0x30c51878     /**< HSTCLR Base address */
 
 
-#define read_hsctlr()           ({ unsigned int rval; asm volatile(\
+#define read_hsctlr()           ({ uint32_t rval; asm volatile(\
                                 " mrc     p15, 4, %0, c1, c0, 0\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })
 
@@ -75,7 +75,7 @@
                                 " mcr     p15, 4, %0, c1, c0, 0\n\t" \
                                 : : "r" ((val)) : "memory", "cc")
 
-#define read_cbar()              ({ unsigned int rval; asm volatile(\
+#define read_cbar()              ({ uint32_t rval; asm volatile(\
                                 " mrc     p15, 4, %0, c15, c0, 0\n\t" \
                                 : "=r" (rval) : : "memory", "cc"); rval; })
 

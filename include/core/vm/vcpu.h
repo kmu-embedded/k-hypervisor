@@ -28,11 +28,11 @@ struct vcpu {
 
     struct vcpu_regs vcpu_regs;
 
-    unsigned int period;
-    unsigned int deadline;
+    uint32_t period;
+    uint32_t deadline;
 
-    unsigned long long running_time;
-    unsigned long long actual_running_time;
+    uint64_t running_time;
+    uint64_t actual_running_time;
 
     vcpu_state_t state;
     struct list_head head;
