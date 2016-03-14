@@ -40,7 +40,7 @@ struct virq {
 };
 
 void virq_create(struct virq *virq);
-hvmm_status_t virq_init(struct virq *virq, vmid_t vmid);
+void virq_init(struct virq *virq, vmid_t vmid);
 
 uint32_t pirq_to_virq(struct virq *v, uint32_t pirq);
 uint32_t virq_to_pirq(struct virq *v, uint32_t virq);
