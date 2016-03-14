@@ -20,7 +20,7 @@
     (pirq >= VIRQ_MIN_VALID_PIRQ && pirq < VIRQ_NUM_MAX_PIRQS)
 
 /**< IRQ handler */
-static interrupt_handler_t interrupt_handlers[MAX_PPI_IRQS];
+static interrupt_handler_t interrupt_handlers[MAX_IRQS];
 
 static uint32_t interrupt_check_guest_irq(uint32_t pirq)
 {
