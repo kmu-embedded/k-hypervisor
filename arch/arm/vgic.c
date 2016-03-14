@@ -77,7 +77,7 @@ hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t
                     break;
                 }
             }
-            debug_print("virq: queueing virq %d pirq %d to vmid %d %s\n",
+            debug_print("virq: queueing virq %d pirq %d to vcpuid %d %s\n",
                         virq, pirq, vcpuid, result == HVMM_STATUS_SUCCESS ? "done" : "failed");
         if ((result == HVMM_STATUS_SUCCESS) && (virq < 16) ) {
             gic_set_sgi(1 << vcpuid, GIC_SGI_SLOT_CHECK);
@@ -115,7 +115,7 @@ hvmm_status_t vgic_flush_virqs(vcpuid_t vcpuid)
         }
     }
     if (count > 0) {
-        debug_print("virq: injected %d virqs to vmid %d\n", count, vcpuid);
+        debug_print("virq: injected %d virqs to vcpuid %d\n", count, vcpuid);
     }
 
     return HVMM_STATUS_SUCCESS;
@@ -499,7 +499,7 @@ hvmm_status_t vgic_save_status(struct vgic_status *status)
     return result;
 }
 
-hvmm_status_t vgic_restore_status(struct vgic_status *status, vmid_t vmid)
+hvmm_status_t vgic_restore_status(struct vgic_status *status, vcpuid_t vcpuid)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     int i;
@@ -516,7 +516,7 @@ hvmm_status_t vgic_restore_status(struct vgic_status *status, vmid_t vmid)
      * to switch the context, where virq flush takes place,
      * this time
      */
-    vgic_flush_virqs(vmid);
+    vgic_flush_virqs(vcpuid);
     vgic_enable(1);
     _vgic_dump_regs();
     result = HVMM_STATUS_SUCCESS;
@@ -526,16 +526,15 @@ hvmm_status_t vgic_restore_status(struct vgic_status *status, vmid_t vmid)
 hvmm_status_t vgic_sgi(uint32_t cpu, enum gic_sgi sgi)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vmid_t vmid;
-    vmid = get_current_vcpuid();
+    vcpuid_t vcpuid = get_current_vcpuid();
 
-    if (cpu != vmid) {
+    if (cpu != vcpuid) {
         return result;
     }
 
     switch (sgi) {
     case GIC_SGI_SLOT_CHECK:
-        result = vgic_flush_virqs(vmid);
+        result = vgic_flush_virqs(vcpuid);
         break;
     default:
         debug_print("sgi: wrong sgi %d\n", sgi);
