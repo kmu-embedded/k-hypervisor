@@ -66,19 +66,19 @@ hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t
         result = HVMM_STATUS_SUCCESS;
     }
     else {
-            /* Inject only the same virq is not present in a slot */
-            for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
-                if (q[i].valid == 0) {
-                    q[i].pirq = pirq;
-                    q[i].virq = virq;
-                    q[i].hw = hw;
-                    q[i].valid = 1;
-                    result = HVMM_STATUS_SUCCESS;
-                    break;
-                }
+        /* Inject only the same virq is not present in a slot */
+        for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
+            if (q[i].valid == 0) {
+                q[i].pirq = pirq;
+                q[i].virq = virq;
+                q[i].hw = hw;
+                q[i].valid = 1;
+                result = HVMM_STATUS_SUCCESS;
+                break;
             }
-            debug_print("virq: queueing virq %d pirq %d to vcpuid %d %s\n",
-                        virq, pirq, vcpuid, result == HVMM_STATUS_SUCCESS ? "done" : "failed");
+        }
+        debug_print("virq: queueing virq %d pirq %d to vcpuid %d %s\n",
+                virq, pirq, vcpuid, result == HVMM_STATUS_SUCCESS ? "done" : "failed");
         if ((result == HVMM_STATUS_SUCCESS) && (virq < 16) ) {
             gic_set_sgi(1 << vcpuid, GIC_SGI_SLOT_CHECK);
         }
@@ -89,7 +89,6 @@ hvmm_status_t vgic_flush_virqs(vcpuid_t vcpuid)
 {
     /* Actual injection of queued VIRQs takes place here */
     int i;
-    int count = 0;
     struct vcpu *vcpu = vcpu_find(vcpuid);
     struct virq_entry *entries = vcpu->virq.pending_irqs;
 
@@ -97,13 +96,11 @@ hvmm_status_t vgic_flush_virqs(vcpuid_t vcpuid)
         if (entries[i].valid) {
             uint32_t slot;
             if (entries[i].hw) {
-                slot = vgic_inject_virq_hw(entries[i].virq,
-                                           VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
-                                           entries[i].pirq);
+                slot = vgic_inject_virq_hw(entries[i].virq, VIRQ_STATE_PENDING,
+                        GIC_INT_PRIORITY_DEFAULT, entries[i].pirq);
             } else {
-                slot = vgic_inject_virq_sw(entries[i].virq,
-                                           VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
-                                           smp_processor_id(), 1);
+                slot = vgic_inject_virq_sw(entries[i].virq, VIRQ_STATE_PENDING,
+                        GIC_INT_PRIORITY_DEFAULT, smp_processor_id(), 1);
             }
             if (slot == VGIC_SLOT_NOTFOUND) {
                 break;
@@ -111,11 +108,7 @@ hvmm_status_t vgic_flush_virqs(vcpuid_t vcpuid)
 
             /* Forget */
             entries[i].valid = 0;
-            count++;
         }
-    }
-    if (count > 0) {
-        debug_print("virq: injected %d virqs to vcpuid %d\n", count, vcpuid);
     }
 
     return HVMM_STATUS_SUCCESS;
@@ -349,22 +342,22 @@ hvmm_status_t vgic_injection_enable(uint8_t enable)
  * @return          slot index, or VGIC_SLOT_NOTFOUND
  */
 uint32_t vgic_inject_virq(
-    uint32_t virq, uint32_t slot, enum virq_state state, uint32_t priority,
-    uint8_t hw, uint32_t physrc, uint8_t maintenance)
+        uint32_t virq, uint32_t slot, enum virq_state state, uint32_t priority,
+        uint8_t hw, uint32_t physrc, uint8_t maintenance)
 {
     uint32_t physicalid;
     uint32_t lr_desc;
     HVMM_TRACE_ENTER();
     physicalid = (hw ? physrc : (maintenance << 9) | \
-                  (physrc & 0x7)) << GICH_LR_PHYSICALID_SHIFT;
+            (physrc & 0x7)) << GICH_LR_PHYSICALID_SHIFT;
     physicalid &= GICH_LR_PHYSICALID_MASK;
     lr_desc = (GICH_LR_HW_MASK & (hw << GICH_LR_HW_SHIFT)) |
-              /* (GICH_LR_GRP1_MASK & (1 << GICH_LR_GRP1_SHIFT) )| */
-              (GICH_LR_STATE_MASK & (state << GICH_LR_STATE_SHIFT)) |
-              (GICH_LR_PRIORITY_MASK & \
-               ((priority >> 3)  << GICH_LR_PRIORITY_SHIFT)) |
-              physicalid |
-              (GICH_LR_VIRTUALID_MASK & virq);
+        /* (GICH_LR_GRP1_MASK & (1 << GICH_LR_GRP1_SHIFT) )| */
+        (GICH_LR_STATE_MASK & (state << GICH_LR_STATE_SHIFT)) |
+        (GICH_LR_PRIORITY_MASK & \
+         ((priority >> 3)  << GICH_LR_PRIORITY_SHIFT)) |
+        physicalid |
+        (GICH_LR_VIRTUALID_MASK & virq);
     slot = vgic_is_free_slot(slot);
     HVMM_TRACE_HEX32("lr_desc:", lr_desc);
     HVMM_TRACE_HEX32("free slot:", slot);
@@ -381,7 +374,7 @@ uint32_t vgic_inject_virq(
  * Return: slot index if successful, VGIC_SLOT_NOTFOUND otherwise
  */
 uint32_t vgic_inject_virq_hw(uint32_t virq, enum virq_state state,
-                             uint32_t priority, uint32_t pirq)
+        uint32_t priority, uint32_t pirq)
 {
     uint32_t slot = VGIC_SLOT_NOTFOUND;
     HVMM_TRACE_ENTER();
@@ -399,7 +392,7 @@ uint32_t vgic_inject_virq_hw(uint32_t virq, enum virq_state state,
 }
 
 uint32_t vgic_inject_virq_sw(uint32_t virq, enum virq_state state,
-                             uint32_t priority, uint32_t cpuid, uint8_t maintenance)
+        uint32_t priority, uint32_t cpuid, uint8_t maintenance)
 {
     uint32_t slot = VGIC_SLOT_NOTFOUND;
     HVMM_TRACE_ENTER();
@@ -407,7 +400,7 @@ uint32_t vgic_inject_virq_sw(uint32_t virq, enum virq_state state,
     HVMM_TRACE_HEX32("slot:", slot);
     if (slot != VGIC_SLOT_NOTFOUND) {
         slot = vgic_inject_virq(virq, slot, state,
-                                priority, 0, cpuid, maintenance);
+                priority, 0, cpuid, maintenance);
     }
 
     HVMM_TRACE_EXIT();
@@ -450,7 +443,6 @@ static uint64_t _vgic_valid_lr_mask(uint32_t num_lr)
 
 hvmm_status_t vgic_init(void)
 {
-    hvmm_status_t result = HVMM_STATUS_UNKNOWN_ERROR;
     uint32_t cpu = smp_processor_id();
 
     if (!cpu) {
@@ -465,14 +457,11 @@ hvmm_status_t vgic_init(void)
         _vgic_dump_regs();
     }
 
-    result = HVMM_STATUS_SUCCESS;
-
-    return result;
+    return HVMM_STATUS_SUCCESS;
 }
 
 hvmm_status_t vgic_init_status(struct vgic_status *status)
 {
-    hvmm_status_t result = HVMM_STATUS_SUCCESS;
     int i;
     status->hcr = 0;
     status->apr = 0;
@@ -481,12 +470,12 @@ hvmm_status_t vgic_init_status(struct vgic_status *status)
     for (i = 0; i < vGICv2.num_lr; i++) {
         status->lr[i] = 0;
     }
-    return result;
+
+    return HVMM_STATUS_SUCCESS;
 }
 
 hvmm_status_t vgic_save_status(struct vgic_status *status)
 {
-    hvmm_status_t result = HVMM_STATUS_SUCCESS;
     int i;
 
     for (i = 0; i < vGICv2.num_lr; i++) {
@@ -496,16 +485,18 @@ hvmm_status_t vgic_save_status(struct vgic_status *status)
     status->apr = GICH_READ(GICH_APR);
     status->vmcr = GICH_READ(GICH_VMCR);
     vgic_enable(0);
-    return result;
+
+    return HVMM_STATUS_SUCCESS;
 }
 
 hvmm_status_t vgic_restore_status(struct vgic_status *status, vcpuid_t vcpuid)
 {
-    hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     int i;
+
     for (i = 0; i < vGICv2.num_lr; i++) {
         GICH_WRITE(GICH_LR(i), status->lr[i]);
     }
+
     GICH_WRITE(GICH_APR, status->apr);
     GICH_WRITE(GICH_VMCR, status->vmcr);
     GICH_WRITE(GICH_HCR, status->hcr);
@@ -519,8 +510,7 @@ hvmm_status_t vgic_restore_status(struct vgic_status *status, vcpuid_t vcpuid)
     vgic_flush_virqs(vcpuid);
     vgic_enable(1);
     _vgic_dump_regs();
-    result = HVMM_STATUS_SUCCESS;
-    return result;
+    return HVMM_STATUS_SUCCESS;
 }
 
 hvmm_status_t vgic_sgi(uint32_t cpu, enum gic_sgi sgi)
@@ -533,12 +523,12 @@ hvmm_status_t vgic_sgi(uint32_t cpu, enum gic_sgi sgi)
     }
 
     switch (sgi) {
-    case GIC_SGI_SLOT_CHECK:
-        result = vgic_flush_virqs(vcpuid);
-        break;
-    default:
-        debug_print("sgi: wrong sgi %d\n", sgi);
-        break;
+        case GIC_SGI_SLOT_CHECK:
+            result = vgic_flush_virqs(vcpuid);
+            break;
+        default:
+            debug_print("sgi: wrong sgi %d\n", sgi);
+            break;
     }
 
     return result;
