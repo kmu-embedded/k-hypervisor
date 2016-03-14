@@ -9,13 +9,8 @@
         map[_virq].pirq = _pirq;   \
     } while (0)
 
-/* TODO(igxactly): move code from guest_interrupt_init --> virq_setup, virq_create */
 void virq_create(struct virq *virq)
 {
-    /* TODO(igkang): something like virq_setup will be called here
-     *  to load configurations from DTB or config data */
-
-    /* Initialize PIRQ to VIRQ mapping */
     int i;
     struct virqmap_entry *map;
     struct virq_entry *entry;
@@ -35,7 +30,7 @@ void virq_create(struct virq *virq)
     }
 }
 
-hvmm_status_t virq_init(struct virq *virq, vmid_t vmid)
+void virq_init(struct virq *virq, vmid_t vmid)
 {
     struct virqmap_entry *map;
 
@@ -81,7 +76,7 @@ hvmm_status_t virq_init(struct virq *virq, vmid_t vmid)
     }
 
     /* vgic_status initialization */
-    return vgic_init_status(&virq->vgic_status);
+    vgic_init_status(&virq->vgic_status);
 }
 
 uint32_t pirq_to_virq(struct virq *v, uint32_t pirq)
