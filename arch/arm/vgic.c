@@ -46,76 +46,8 @@ struct vGICv2_HW {
 
 static struct vGICv2_HW vGICv2;
 
-static uint32_t _guest_pirqatslot[NUM_GUESTS_STATIC][VGIC_NUM_MAX_SLOTS];
-static uint32_t _guest_virqatslot[NUM_GUESTS_STATIC][VGIC_NUM_MAX_SLOTS];
-
-void vgic_slotpirq_init(void)
-{
-    int i, j;
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        for (j = 0; j < VGIC_NUM_MAX_SLOTS; j++) {
-            _guest_pirqatslot[i][j] = PIRQ_INVALID;
-            _guest_virqatslot[i][j] = VIRQ_INVALID;
-        }
-    }
-}
-
-void vgic_slotpirq_set(vmid_t vmid, uint32_t slot, uint32_t pirq)
-{
-    if (vmid < NUM_GUESTS_STATIC) {
-        debug_print("vgic: setting vmid:%d slot:%d pirq:%d\n", vmid, slot, pirq);
-        _guest_pirqatslot[vmid][slot] = pirq;
-    }
-}
-
-uint32_t vgic_slotpirq_get(vmid_t vmid, uint32_t slot)
-{
-    uint32_t pirq = PIRQ_INVALID;
-    if (vmid < NUM_GUESTS_STATIC) {
-        pirq = _guest_pirqatslot[vmid][slot];
-        debug_print("vgic: reading vmid:%d slot:%d pirq:%d\n", vmid, slot, pirq);
-    }
-    return pirq;
-}
-
-void vgic_slotpirq_clear(vmid_t vmid, uint32_t slot)
-{
-    vgic_slotpirq_set(vmid, slot, PIRQ_INVALID);
-}
-
-void vgic_slotvirq_set(vmid_t vmid, uint32_t slot, uint32_t virq)
-{
-    if (vmid < NUM_GUESTS_STATIC) {
-        debug_print("vgic: setting vmid:%d slot:%d virq:%d\n", vmid, slot, virq);
-        _guest_virqatslot[vmid][slot] = virq;
-    } else {
-        debug_print("vgic: not setting invalid vmid:%d slot:%d virq:%d\n",
-                    vmid, slot, virq);
-    }
-}
-
-uint32_t vgic_slotvirq_getslot(vmid_t vmid, uint32_t virq)
-{
-    uint32_t slot = SLOT_INVALID;
-    int i;
-    if (vmid < NUM_GUESTS_STATIC) {
-        for (i = 0; i < VGIC_NUM_MAX_SLOTS; i++) {
-            if (_guest_virqatslot[vmid][i] == virq) {
-                slot = i;
-                debug_print("vgic: reading vmid:%d slot:%d virq:%d\n",
-                            vmid, slot, virq);
-                break;
-            }
-        }
-    }
-    return slot;
-}
-
-void vgic_slotvirq_clear(vmid_t vmid, uint32_t slot)
-{
-    vgic_slotvirq_set(vmid, slot, VIRQ_INVALID);
-}
-
+// Test mutex
+static DEFINE_MUTEX(VIRQ_MUTEX);
 hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
     int i;
@@ -128,9 +60,6 @@ hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t
         lock_mutex(&VIRQ_MUTEX);
         if (hw) {
             slot = vgic_inject_virq_hw(virq, VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT, pirq);
-            if (slot != VGIC_SLOT_NOTFOUND) {
-                vgic_slotpirq_set(vcpuid, slot, pirq);
-            }
         } else {
             slot = vgic_inject_virq_sw(virq, VIRQ_STATE_PENDING, 0, vcpuid, 1);
         }
@@ -139,12 +68,9 @@ hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t
             return result;
         }
 
-        vgic_slotvirq_set(vcpuid, slot, virq);
         result = HVMM_STATUS_SUCCESS;
     }
     else {
-        int slot = vgic_slotvirq_getslot(vcpuid, virq);
-        if (slot == SLOT_INVALID) {
             /* Inject only the same virq is not present in a slot */
             for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
                 if (q[i].valid == 0) {
@@ -158,10 +84,6 @@ hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t
             }
             debug_print("virq: queueing virq %d pirq %d to vmid %d %s\n",
                         virq, pirq, vcpuid, result == HVMM_STATUS_SUCCESS ? "done" : "failed");
-        } else {
-            debug_print("virq: rejected queueing duplicated virq %d pirq %d to vmid %d %s\n", 
-                        virq, pirq, vcpuid);
-        }
         if ((result == HVMM_STATUS_SUCCESS) && (virq < 16) ) {
             gic_set_sgi(1 << vcpuid, GIC_SGI_SLOT_CHECK);
         }
@@ -183,9 +105,6 @@ hvmm_status_t vgic_flush_virqs(vcpuid_t vcpuid)
                 slot = vgic_inject_virq_hw(entries[i].virq,
                                            VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
                                            entries[i].pirq);
-                if (slot != VGIC_SLOT_NOTFOUND) {
-                    vgic_slotpirq_set(vcpuid, slot, entries[i].pirq);
-                }
             } else {
                 slot = vgic_inject_virq_sw(entries[i].virq,
                                            VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
@@ -194,7 +113,7 @@ hvmm_status_t vgic_flush_virqs(vcpuid_t vcpuid)
             if (slot == VGIC_SLOT_NOTFOUND) {
                 break;
             }
-            vgic_slotvirq_set(vcpuid, slot, entries[i].virq);
+
             /* Forget */
             entries[i].valid = 0;
             count++;
@@ -341,41 +260,46 @@ static void _vgic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
         /* clean up invalid entries from List Registers */
         uint32_t eisr = GICH_READ(GICH_EISR(0));
         uint32_t slot;
-        uint32_t pirq;
+        uint32_t pirq, virq;
         vcpuid_t vcpuid = get_current_vcpuid();
+        struct virqmap_entry *map;
+        struct vcpu *vcpu;
+        uint32_t lr;
+
+        vcpu = vcpu_find(vcpuid);
+        map = vcpu->virq.guest_virqmap->map;
 
         while (eisr) {
             slot = (31 - asm_clz(eisr));
             eisr &= ~(1 << slot);
+            lr = GICH_READ(GICH_LR(slot));
+            virq = lr & 0x3ff;
             GICH_WRITE(GICH_LR(slot), 0);
             /* deactivate associated pirq at the slot */
-            pirq = vgic_slotpirq_get(vcpuid, slot);
+            pirq = map[virq].pirq;
             if (pirq != PIRQ_INVALID) {
                 gic_deactivate_irq(pirq);
-                vgic_slotpirq_clear(vcpuid, slot);
                 debug_print("vgic: deactivated pirq %d at slot %d\n", pirq, slot);
             } else {
                 debug_print("vgic: deactivated virq at slot %d\n", slot);
             }
-            vgic_slotvirq_clear(vcpuid, slot);
         }
         eisr = GICH_READ(GICH_EISR(1));
         while (eisr) {
             slot = (31 - asm_clz(eisr));
             eisr &= ~(1 << slot);
+            lr = GICH_READ(GICH_LR(slot));
+            virq = lr & 0x3ff;
             GICH_WRITE(GICH_LR(slot + 32), 0);
             /* deactivate associated pirq at the slot */
-            pirq = vgic_slotpirq_get(vcpuid, slot + 32);
+            pirq = map[virq].pirq;
             if (pirq != PIRQ_INVALID) {
                 gic_deactivate_irq(pirq);
-                vgic_slotpirq_clear(vcpuid, slot + 32);
                 debug_print("vgic: deactivated pirq %d at slot %d\n", pirq, slot);
             } else {
                 debug_print("vgic: deactivated virq at slot %d\n", slot);
             }
-            vgic_slotvirq_clear(vcpuid, slot);
         }
-
     }
 
     HVMM_TRACE_EXIT();
@@ -545,7 +469,6 @@ hvmm_status_t vgic_init(void)
 
     _vgic_maintenance_irq_enable(1);
     if (!cpu) {
-        vgic_slotpirq_init();
         _vgic_dump_status();
         _vgic_dump_regs();
     }
