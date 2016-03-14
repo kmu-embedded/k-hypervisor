@@ -3,10 +3,9 @@
 #include <arch/armv7.h>     // get_periphbase()
 #include <io.h>
 #include <asm/asm.h>        // SECTION(x)
-#include <core/vm/virq.h>
-#include <hvmm_trace.h>
 #include <core/vm/vcpu.h>
 #include <core/scheduler.h>
+#include <stdio.h>
 
 #define VIRQ_MAX_ENTRIES                128
 #define VGIC_MAINTENANCE_INTERRUPT_IRQ  25
@@ -38,13 +37,10 @@ static uint32_t gic_inject_virq_hw(uint32_t virq, enum virq_state state,
         uint32_t priority, uint32_t pirq)
 {
     uint32_t slot = VGIC_SLOT_NOTFOUND;
-    HVMM_TRACE_ENTER();
     slot = gic_find_free_slot();
-    HVMM_TRACE_HEX32("slot:", slot);
     if (slot != VGIC_SLOT_NOTFOUND) {
         slot = gic_inject_virq(virq, slot, state, priority, 1, pirq, 0);
     }
-    HVMM_TRACE_EXIT();
     return slot;
 }
 
@@ -52,15 +48,12 @@ static uint32_t gic_inject_virq_sw(uint32_t virq, enum virq_state state,
         uint32_t priority, uint32_t cpuid, uint8_t maintenance)
 {
     uint32_t slot = VGIC_SLOT_NOTFOUND;
-    HVMM_TRACE_ENTER();
     slot = gic_find_free_slot();
-    HVMM_TRACE_HEX32("slot:", slot);
     if (slot != VGIC_SLOT_NOTFOUND) {
         slot = gic_inject_virq(virq, slot, state,
                 priority, 0, cpuid, maintenance);
     }
 
-    HVMM_TRACE_EXIT();
     return slot;
 }
 
@@ -100,17 +93,12 @@ hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t
                 break;
             }
         }
-
-        if ((result == HVMM_STATUS_SUCCESS) && (virq < 16) ) {
-            gic_set_sgi(1 << vcpuid, GIC_SGI_SLOT_CHECK);
-        }
     }
     return result;
 }
 
 hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid)
 {
-    /* Actual injection of queued VIRQs takes place here */
     int i;
     struct vcpu *vcpu = vcpu_find(vcpuid);
     struct virq_entry *entries = vcpu->virq.pending_irqs;
@@ -129,7 +117,6 @@ hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid)
                 break;
             }
 
-            /* Forget */
             entries[i].valid = 0;
         }
     }
@@ -157,7 +144,6 @@ static uint32_t gic_is_free_slot(uint32_t slot)
 
 static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
 {
-    HVMM_TRACE_ENTER();
     if (GICH_READ(GICH_MISR) & GICH_MISR_EOI) {
         /* clean up invalid entries from List Registers */
         uint32_t eisr = GICH_READ(GICH_EISR(0));
@@ -199,13 +185,11 @@ static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
         }
     }
 
-    HVMM_TRACE_EXIT();
 }
 
 static hvmm_status_t gic_maintenance_irq_enable(uint8_t enable)
 {
     uint32_t irq = VGIC_MAINTENANCE_INTERRUPT_IRQ;
-    HVMM_TRACE_ENTER();
     if (enable) {
         register_irq_handler(irq, &gic_isr_maintenance_irq);
         gic_configure_irq(irq, IRQ_LEVEL_TRIGGERED);
@@ -214,7 +198,6 @@ static hvmm_status_t gic_maintenance_irq_enable(uint8_t enable)
         register_irq_handler(irq, 0);
         gic_disable_irq(irq);
     }
-    HVMM_TRACE_EXIT();
     return HVMM_STATUS_SUCCESS;
 }
 
@@ -342,7 +325,6 @@ void gic_set_sgi(const uint32_t target, uint32_t sgi)
 
 }
 
-/* API functions */
 uint32_t gic_get_irq_number(void)
 {
     return (GICC_READ(GICC_IAR_OFFSET) & GICC_IAR_MASK);
@@ -387,7 +369,7 @@ uint32_t gic_inject_virq(
 {
     uint32_t physicalid;
     uint32_t lr_desc;
-    HVMM_TRACE_ENTER();
+
     physicalid = (hw ? physrc : (maintenance << 9) | \
             (physrc & 0x7)) << GICH_LR_PHYSICALID_SHIFT;
     physicalid &= GICH_LR_PHYSICALID_MASK;
@@ -399,13 +381,10 @@ uint32_t gic_inject_virq(
         physicalid |
         (GICH_LR_VIRTUALID_MASK & virq);
     slot = gic_is_free_slot(slot);
-    HVMM_TRACE_HEX32("lr_desc:", lr_desc);
-    HVMM_TRACE_HEX32("free slot:", slot);
     if (slot != VGIC_SLOT_NOTFOUND) {
         GICH_WRITE(GICH_LR(slot), lr_desc);
     }
 
-    HVMM_TRACE_EXIT();
     return slot;
 }
 
