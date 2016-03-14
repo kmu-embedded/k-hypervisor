@@ -13,7 +13,6 @@ struct GICv2_HW {
     uint32_t gich;
     uint32_t ITLinesNumber;
     uint32_t CPUNumber;
-    uint32_t initialized;
 };
 
 #define GIC_SIGNATURE_INITIALIZED   0x5108EAD7
