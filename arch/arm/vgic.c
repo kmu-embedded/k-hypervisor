@@ -15,7 +15,6 @@ hvmm_status_t vgic_init_status(struct vgic_status *status)
     status->hcr = 0;
     status->apr = 0;
     status->vmcr = 0;
-    status->saved_once = 0;
 
     return HVMM_STATUS_SUCCESS;
 }
