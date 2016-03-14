@@ -6,8 +6,8 @@
 #include <assert.h>
 #include <asm/asm.h>
 
-void cpu_init();
-void irq_init();
+void arch_cpu_init();
+void arch_irq_init();
 
 #define read_hvbar()        ({ uint32_t rval; asm volatile(\
                             "mrc     p15, 4, %0, c12, c0, 0\n\t" \

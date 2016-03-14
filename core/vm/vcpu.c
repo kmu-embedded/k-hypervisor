@@ -37,6 +37,8 @@ struct vcpu *vcpu_create()
     // TODO(casionwoo) : Initialize running_time and actual_running_time after time_module created
     // TODO(casionwoo) : Initialize period and deadline after menuconfig module created
 
+    virq_create(&vcpu->virq);
+
     LIST_ADDTAIL(&vcpu->head, &vcpu_list);
 
     return vcpu;
@@ -46,6 +48,8 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
 {
     vcpu_regs_init(&vcpu->vcpu_regs);
     vcpu->state = VCPU_REGISTERED;
+
+    virq_init(&vcpu->virq, vcpu->vmid);
 
     // TODO(casionwoo) : Check the return value after scheduler status value defined
     sched_vcpu_register(vcpu->vcpuid);
@@ -76,11 +80,13 @@ vcpu_state_t vcpu_delete(struct vcpu *vcpu)
 
 hvmm_status_t vcpu_save(struct vcpu *vcpu, struct core_regs *regs)
 {
+    virq_save(&vcpu->virq);
     return  vcpu_regs_save(&vcpu->vcpu_regs, regs);
 }
 
 hvmm_status_t vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
 {
+    virq_restore(&vcpu->virq, vcpu->vmid);
     return  vcpu_regs_restore(&vcpu->vcpu_regs, regs);
 }
 

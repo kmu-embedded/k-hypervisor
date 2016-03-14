@@ -80,13 +80,11 @@ void vgic_slotvirq_clear(vmid_t vmid, uint32_t slot);
  * @return      physical interrupt number.
  */
 
-hvmm_status_t virq_inject(vmid_t vmid, uint32_t virq,
-                          uint32_t pirq, uint8_t hw);
+hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw);
 /**
  * @brief   Initializes virq_entry structure and
             Sets callback function about injection of queued VIRQs.
  * @return  Always returns "success".
  */
-hvmm_status_t virq_table_init(void);
 hvmm_status_t vgic_sgi(uint32_t cpu, enum gic_sgi sgi);
 #endif

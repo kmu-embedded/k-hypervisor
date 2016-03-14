@@ -35,7 +35,7 @@ void gic_init(void);
 void gic_deactivate_irq(uint32_t irq);
 void gic_completion_irq(uint32_t irq);
 
-uint32_t *gic_vgic_baseaddr(void);
+uint32_t gic_vgic_baseaddr(void);
 
 void gic_configure_irq(uint32_t irq, uint8_t polarity);
 
