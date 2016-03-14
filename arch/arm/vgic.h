@@ -23,6 +23,7 @@ struct vgic_status {
     uint32_t apr;           /**< Active Priorities Register */
     uint32_t vmcr;          /**< Virtual Machine Control Register */
 };
+
 hvmm_status_t vgic_enable(uint8_t enable);
 hvmm_status_t vgic_init(void);
 
