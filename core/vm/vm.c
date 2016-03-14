@@ -50,7 +50,6 @@ vmid_t vm_create(uint8_t num_vcpus)
     }
 
     vmem_create(&vm->vmem, vm->vmid);
-    virq_create(&vm->virq, vm->vmid);
 
     LIST_ADDTAIL(&vm->head, &vm_list);
 
@@ -75,7 +74,6 @@ vmcb_state_t vm_init(vmid_t vmid)
     vm->state = HALTED;
 
     vmem_init(&vm->vmem);
-    virq_init(&vm->virq, vm->vmid);
 
     return vm->state;
 }
@@ -130,7 +128,7 @@ hvmm_status_t vm_save(vmid_t save_vmid)
     }
 
     vmem_save();
-    virq_save(&vm->virq);
+    vdev_save(save_vmid);
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -143,8 +141,8 @@ hvmm_status_t vm_restore(vmid_t restore_vmid)
         return HVMM_STATUS_NOT_FOUND;
     }
 
-    virq_restore(&vm->virq, restore_vmid);
     vmem_restore(&vm->vmem);
+    vdev_restore(restore_vmid);
 
     return HVMM_STATUS_SUCCESS;
 }

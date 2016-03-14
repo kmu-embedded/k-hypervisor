@@ -36,16 +36,14 @@
 
 
 /* Virtual Interface Control */
-#define GICH_HCR    (0x00/4)
-#define GICH_VTR    (0x04/4)
-#define GICH_VMCR   (0x08/4)
-#define GICH_MISR   (0x10/4)
-#define GICH_EISR0  (0x20/4)
-#define GICH_EISR1  (0x24/4)
-#define GICH_ELSR0  (0x30/4)
-#define GICH_ELSR1  (0x34/4)
-#define GICH_APR    (0xF0/4)
-#define GICH_LR     (0x100/4)    /* LR0 ~ LRn, n:GICH_VTR.ListRegs */
+#define GICH_HCR        0x00
+#define GICH_VTR        0x04
+#define GICH_VMCR       0x08
+#define GICH_MISR       0x10
+#define GICH_EISR(n)    (0x20 + ((n) *4))
+#define GICH_ELSR(n)    (0x30 + ((n) *4))
+#define GICH_APR        0xF0
+#define GICH_LR(n)      (0x100 + ((n) * 4))
 
 /* Distributor Register Fields */
 #define GICD_CTLR_ENABLE        0x1

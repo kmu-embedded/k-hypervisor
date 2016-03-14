@@ -212,6 +212,8 @@ int sched_vcpu_attach(vcpuid_t vcpuid)
     __policy[pcpu]->attach_vcpu(vcpuid);
 
     new_entry = (struct running_vcpus_entry_t *) malloc(sizeof(struct running_vcpus_entry_t));
+    new_entry->vcpuid = vcpuid;
+
     LIST_INITHEAD(&new_entry->head);
     LIST_ADDTAIL(&new_entry->head, &__running_vcpus[pcpu]);
 

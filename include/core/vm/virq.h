@@ -7,15 +7,48 @@
 #include "../../../arch/arm/vgic.h"
 #include <core/interrupt.h>
 
+#define MAX_PENDING_VIRQS    128
+
+struct virq_entry {
+    uint32_t pirq;
+    uint32_t virq;
+    uint8_t hw;
+    uint8_t valid;
+};
+
+/**
+ * @breif   Saves a mapping information to find a virq for injection.
+ *
+ * We do not consider a sharing device that's why we save only one vmid.
+ * @todo    (wonseok): need to change a structure when we support
+ *                     a sharing device among guests.
+ */
+struct virqmap_entry {
+    uint32_t enabled;   /**< virqmap enabled flag */
+    uint32_t virq;      /**< Virtual interrupt nubmer */
+    uint32_t pirq;      /**< Pysical interrupt nubmer */
+};
+
+struct guest_virqmap {
+    struct virqmap_entry map[1024];
+};
+
 struct virq {
     struct vgic_status vgic_status;
     struct guest_virqmap *guest_virqmap;
+    struct virq_entry pending_irqs[MAX_PENDING_VIRQS +1];
 };
 
-void virq_setup();
-void virq_create(struct virq *virq, vmid_t vmid);
-
+void virq_create(struct virq *virq);
 hvmm_status_t virq_init(struct virq *virq, vmid_t vmid);
+
+uint32_t pirq_to_virq(struct virq *v, uint32_t pirq);
+uint32_t virq_to_pirq(struct virq *v, uint32_t virq);
+uint32_t pirq_to_enabled_virq(struct virq *v, uint32_t pirq);
+uint32_t virq_to_enabled_pirq(struct virq *v, uint32_t virq);
+
+void virq_enable(struct virq *v, uint32_t virq);
+
 hvmm_status_t virq_save(struct virq *virq);
 hvmm_status_t virq_restore(struct virq *virq, vmid_t vmid);
 

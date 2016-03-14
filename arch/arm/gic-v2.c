@@ -147,7 +147,7 @@ void gic_deactivate_irq(uint32_t irq)
     GICC_WRITE(GICC_DIR_OFFSET, irq);
 }
 
-uint32_t *gic_vgic_baseaddr(void)
+uint32_t gic_vgic_baseaddr(void)
 {
-    return (uint32_t *) (GICv2.gich);
+    return GICv2.gich;
 }

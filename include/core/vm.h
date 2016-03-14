@@ -29,8 +29,6 @@ struct vmcb {
     struct vcpu **vcpu;
     struct vmem vmem;
 
-    struct virq virq;
-
     vmcb_state_t state;
     struct list_head head;
 };
