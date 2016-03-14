@@ -16,9 +16,6 @@
 #define VIRQ_MIN_VALID_PIRQ 16
 #define VIRQ_NUM_MAX_PIRQS  MAX_IRQS
 
-#define VALID_PIRQ(pirq) \
-    (pirq >= VIRQ_MIN_VALID_PIRQ && pirq < VIRQ_NUM_MAX_PIRQS)
-
 /**< IRQ handler */
 static interrupt_handler_t interrupt_handlers[MAX_IRQS];
 
