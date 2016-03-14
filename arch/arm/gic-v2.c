@@ -16,12 +16,14 @@ static uint32_t gic_find_free_slot(void)
 {
     uint32_t slot;
     uint32_t shift = 0;
+
     slot = GICH_READ(GICH_ELSR(0));
     if (slot == 0 && GICv2.num_lr > 32) {
         /* first 32 slots are occupied, try the later */
         slot = GICH_READ(GICH_ELSR(1));
         shift = 32;
     }
+
     if (slot) {
         slot &= -(slot);
         slot = (31 - asm_clz(slot));
@@ -30,71 +32,77 @@ static uint32_t gic_find_free_slot(void)
         /* 64 slots are fully occupied */
         slot = VGIC_SLOT_NOTFOUND;
     }
+
     return slot;
 }
 
-static uint32_t gic_inject_virq_hw(uint32_t virq, enum virq_state state,
-        uint32_t priority, uint32_t pirq)
+static uint32_t gic_inject_virq_hw(uint32_t virq, enum virq_state state, uint32_t priority, uint32_t pirq)
 {
     uint32_t slot = VGIC_SLOT_NOTFOUND;
+
     slot = gic_find_free_slot();
-    if (slot != VGIC_SLOT_NOTFOUND) {
+    if (slot != VGIC_SLOT_NOTFOUND)
         slot = gic_inject_virq(virq, slot, state, priority, 1, pirq, 0);
-    }
+
     return slot;
 }
 
-static uint32_t gic_inject_virq_sw(uint32_t virq, enum virq_state state,
-        uint32_t priority, uint32_t cpuid, uint8_t maintenance)
+static uint32_t gic_inject_virq_sw(uint32_t virq, enum virq_state state, uint32_t priority, uint32_t cpuid, uint8_t maintenance)
 {
     uint32_t slot = VGIC_SLOT_NOTFOUND;
+
     slot = gic_find_free_slot();
-    if (slot != VGIC_SLOT_NOTFOUND) {
-        slot = gic_inject_virq(virq, slot, state,
-                priority, 0, cpuid, maintenance);
-    }
+    if (slot != VGIC_SLOT_NOTFOUND)
+        slot = gic_inject_virq(virq, slot, state, priority, 0, cpuid, maintenance);
 
     return slot;
 }
 
-// Test mutex
+static struct virq_entry set_virq_entry(uint32_t pirq, uint32_t virq, uint8_t hw)
+{
+    struct virq_entry entry;
+
+    entry.pirq  = pirq;
+    entry.virq  = virq;
+    entry.hw    = hw;
+    entry.valid = 1;
+
+    return entry;
+}
+
 static DEFINE_MUTEX(VIRQ_MUTEX);
 hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
     int i;
-    hvmm_status_t result = HVMM_STATUS_BUSY;
     struct vcpu *vcpu = vcpu_find(vcpuid);
     struct virq_entry *q = vcpu->virq.pending_irqs;
 
     if (vcpuid == get_current_vcpuid()) {
         uint32_t slot;
+
         lock_mutex(&VIRQ_MUTEX);
-        if (hw) {
+        if (hw)
             slot = gic_inject_virq_hw(virq, VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT, pirq);
-        } else {
+        else
             slot = gic_inject_virq_sw(virq, VIRQ_STATE_PENDING, 0, vcpuid, 1);
-        }
+
         unlock_mutex(&VIRQ_MUTEX);
 
         if (slot == VGIC_SLOT_NOTFOUND) {
-            return result;
+            return HVMM_STATUS_BUSY;
         }
 
-        result = HVMM_STATUS_SUCCESS;
-    }
-    else {
+        return HVMM_STATUS_SUCCESS;
+    } else {
         for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
             if (q[i].valid == 0) {
-                q[i].pirq = pirq;
-                q[i].virq = virq;
-                q[i].hw = hw;
-                q[i].valid = 1;
-                result = HVMM_STATUS_SUCCESS;
-                break;
+                q[i] = set_virq_entry(pirq, virq, hw);
+                return HVMM_STATUS_SUCCESS;
             }
         }
     }
-    return result;
+
+    return HVMM_STATUS_BUSY;
 }
 
 hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid)
@@ -113,6 +121,7 @@ hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid)
                 slot = gic_inject_virq_sw(entries[i].virq, VIRQ_STATE_PENDING,
                         GIC_INT_PRIORITY_DEFAULT, smp_processor_id(), 1);
             }
+
             if (slot == VGIC_SLOT_NOTFOUND) {
                 break;
             }
@@ -122,24 +131,6 @@ hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid)
     }
 
     return HVMM_STATUS_SUCCESS;
-}
-
-static uint32_t gic_is_free_slot(uint32_t slot)
-{
-    uint32_t free_slot = VGIC_SLOT_NOTFOUND;
-    if (slot < 32) {
-        if (GICH_READ(GICH_ELSR(0)) & (1 << slot)) {
-            free_slot = slot;
-        }
-    } else {
-        if (GICH_READ(GICH_ELSR(1)) & (1 << (slot - 32))) {
-            free_slot = slot;
-        }
-    }
-    if (free_slot != slot) {
-        free_slot = gic_find_free_slot();
-    }
-    return free_slot;
 }
 
 static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
@@ -163,6 +154,7 @@ static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
             lr = GICH_READ(GICH_LR(slot));
             virq = lr & 0x3ff;
             GICH_WRITE(GICH_LR(slot), 0);
+
             /* deactivate associated pirq at the slot */
             pirq = map[virq].pirq;
             if (pirq != PIRQ_INVALID) {
@@ -177,6 +169,7 @@ static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
             lr = GICH_READ(GICH_LR(slot));
             virq = lr & 0x3ff;
             GICH_WRITE(GICH_LR(slot + 32), 0);
+
             /* deactivate associated pirq at the slot */
             pirq = map[virq].pirq;
             if (pirq != PIRQ_INVALID) {
@@ -184,20 +177,16 @@ static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
             }
         }
     }
-
 }
 
-static hvmm_status_t gic_maintenance_irq_enable(uint8_t enable)
+static hvmm_status_t gic_maintenance_irq_enable()
 {
     uint32_t irq = VGIC_MAINTENANCE_INTERRUPT_IRQ;
-    if (enable) {
-        register_irq_handler(irq, &gic_isr_maintenance_irq);
-        gic_configure_irq(irq, IRQ_LEVEL_TRIGGERED);
-        gic_enable_irq(irq);
-    } else {
-        register_irq_handler(irq, 0);
-        gic_disable_irq(irq);
-    }
+
+    register_irq_handler(irq, &gic_isr_maintenance_irq);
+    gic_configure_irq(irq, IRQ_LEVEL_TRIGGERED);
+    gic_enable_irq(irq);
+
     return HVMM_STATUS_SUCCESS;
 }
 
@@ -278,10 +267,8 @@ void SECTION(".init") gic_init(void)
     // Initialization GICH
     GICv2.num_lr = (GICH_READ(GICH_VTR) & GICH_VTR_LISTREGS_MASK) + 1;
     GICv2.valid_lr_mask = gic_valid_lr_mask(GICv2.num_lr);
-    gic_maintenance_irq_enable(1);
+    gic_maintenance_irq_enable();
     gich_enable(1);
-
-    // TODO(casionwoo): Set SGI and PPIs
 
 }
 
@@ -352,38 +339,30 @@ void gic_deactivate_irq(uint32_t irq)
 
 void gich_enable(uint8_t enable)
 {
-    if (enable) {
-        uint32_t hcr = GICH_READ(GICH_HCR);
+    uint32_t hcr = GICH_READ(GICH_HCR);
+
+    if (enable)
         hcr |= GICH_HCR_EN;
-        GICH_WRITE(GICH_HCR, hcr);
-    } else {
-        uint32_t hcr = GICH_READ(GICH_HCR);
+    else
         hcr &= ~(GICH_HCR_EN);
-        GICH_WRITE(GICH_HCR, hcr);
-    }
+
+    GICH_WRITE(GICH_HCR, hcr);
 }
 
-uint32_t gic_inject_virq(
-        uint32_t virq, uint32_t slot, enum virq_state state, uint32_t priority,
+uint32_t gic_inject_virq(uint32_t virq, uint32_t slot, enum virq_state state, uint32_t priority,
         uint8_t hw, uint32_t physrc, uint8_t maintenance)
 {
     uint32_t physicalid;
     uint32_t lr_desc;
 
-    physicalid = (hw ? physrc : (maintenance << 9) | \
-            (physrc & 0x7)) << GICH_LR_PHYSICALID_SHIFT;
+    physicalid = (hw ? physrc : (maintenance << 9) | (physrc & 0x7)) << GICH_LR_PHYSICALID_SHIFT;
     physicalid &= GICH_LR_PHYSICALID_MASK;
     lr_desc = (GICH_LR_HW_MASK & (hw << GICH_LR_HW_SHIFT)) |
-        /* (GICH_LR_GRP1_MASK & (1 << GICH_LR_GRP1_SHIFT) )| */
-        (GICH_LR_STATE_MASK & (state << GICH_LR_STATE_SHIFT)) |
-        (GICH_LR_PRIORITY_MASK & \
-         ((priority >> 3)  << GICH_LR_PRIORITY_SHIFT)) |
-        physicalid |
-        (GICH_LR_VIRTUALID_MASK & virq);
-    slot = gic_is_free_slot(slot);
-    if (slot != VGIC_SLOT_NOTFOUND) {
-        GICH_WRITE(GICH_LR(slot), lr_desc);
-    }
+              (GICH_LR_STATE_MASK & (state << GICH_LR_STATE_SHIFT)) |
+              (GICH_LR_PRIORITY_MASK & ((priority >> 3) << GICH_LR_PRIORITY_SHIFT)) |
+              physicalid | (GICH_LR_VIRTUALID_MASK & virq);
+
+    GICH_WRITE(GICH_LR(slot), lr_desc);
 
     return slot;
 }
