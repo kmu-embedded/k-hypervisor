@@ -1,6 +1,7 @@
 #include "lpae.h"
 #include "mm.h"
 #include <assert.h>
+#include <io.h>
 
 static void set_hmair(void);
 static void set_htcr(void);
