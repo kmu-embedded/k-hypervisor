@@ -77,8 +77,6 @@ void SECTION(".init") gic_init(void)
 
     // TODO(casionwoo): Set SGI and PPIs
 
-    // TODO(casionwoo): We will remove the variable as below.
-    GICv2.initialized = GIC_SIGNATURE_INITIALIZED;    // Dirty code in left, here.
 }
 
 void gic_configure_irq(uint32_t irq, uint8_t polarity)
