@@ -40,7 +40,6 @@ uint32_t vgic_inject_virq_hw(uint32_t virq, enum virq_state state,
 uint32_t vgic_inject_virq(uint32_t virq, uint32_t slot, enum virq_state state,
                           uint32_t priority, uint8_t hw, uint32_t physrc,
                           uint8_t maintenance);
-hvmm_status_t vgic_injection_enable(uint8_t enable);
 
 hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw);
 hvmm_status_t vgic_sgi(uint32_t cpu, enum gic_sgi sgi);
