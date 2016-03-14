@@ -342,22 +342,22 @@ static void _vgic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
         uint32_t eisr = GICH_READ(GICH_EISR(0));
         uint32_t slot;
         uint32_t pirq;
-        vmid_t vmid;
-        vmid = get_current_vcpuid();
+        vcpuid_t vcpuid = get_current_vcpuid();
+
         while (eisr) {
             slot = (31 - asm_clz(eisr));
             eisr &= ~(1 << slot);
             GICH_WRITE(GICH_LR(slot), 0);
             /* deactivate associated pirq at the slot */
-            pirq = vgic_slotpirq_get(vmid, slot);
+            pirq = vgic_slotpirq_get(vcpuid, slot);
             if (pirq != PIRQ_INVALID) {
                 gic_deactivate_irq(pirq);
-                vgic_slotpirq_clear(vmid, slot);
+                vgic_slotpirq_clear(vcpuid, slot);
                 debug_print("vgic: deactivated pirq %d at slot %d\n", pirq, slot);
             } else {
                 debug_print("vgic: deactivated virq at slot %d\n", slot);
             }
-            vgic_slotvirq_clear(vmid, slot);
+            vgic_slotvirq_clear(vcpuid, slot);
         }
         eisr = GICH_READ(GICH_EISR(1));
         while (eisr) {
@@ -365,15 +365,15 @@ static void _vgic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
             eisr &= ~(1 << slot);
             GICH_WRITE(GICH_LR(slot + 32), 0);
             /* deactivate associated pirq at the slot */
-            pirq = vgic_slotpirq_get(vmid, slot + 32);
+            pirq = vgic_slotpirq_get(vcpuid, slot + 32);
             if (pirq != PIRQ_INVALID) {
                 gic_deactivate_irq(pirq);
-                vgic_slotpirq_clear(vmid, slot + 32);
+                vgic_slotpirq_clear(vcpuid, slot + 32);
                 debug_print("vgic: deactivated pirq %d at slot %d\n", pirq, slot);
             } else {
                 debug_print("vgic: deactivated virq at slot %d\n", slot);
             }
-            vgic_slotvirq_clear(vmid, slot);
+            vgic_slotvirq_clear(vcpuid, slot);
         }
 
     }
