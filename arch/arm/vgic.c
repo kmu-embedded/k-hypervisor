@@ -16,10 +16,6 @@
 /* for test, surpress traces */
 #define __VGIC_DISABLE_TRACE__
 
-#ifndef __CONFIG_SMP__
-#define VGIC_SIMULATE_HWVIRQ
-#endif
-
 /* Cortex-A15: 25 (PPI6) */
 #define VGIC_MAINTENANCE_INTERRUPT_IRQ  25
 
@@ -361,11 +357,7 @@ uint32_t vgic_inject_virq_hw(uint32_t virq, enum virq_state state,
     slot = vgic_find_free_slot();
     HVMM_TRACE_HEX32("slot:", slot);
     if (slot != VGIC_SLOT_NOTFOUND) {
-#ifdef VGIC_SIMULATE_HWVIRQ
-        slot = vgic_inject_virq(virq, slot, state, priority, 0, smp_processor_id(), 1);
-#else
         slot = vgic_inject_virq(virq, slot, state, priority, 1, pirq, 0);
-#endif
     }
     HVMM_TRACE_EXIT();
     return slot;
