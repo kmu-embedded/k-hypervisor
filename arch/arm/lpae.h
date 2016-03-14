@@ -155,10 +155,7 @@ typedef enum {
 
 
 pgentry set_table(uint32_t paddr, uint32_t valid);
-pgentry set_entry(uint32_t paddr, uint8_t mem_attr, uint8_t ap);
 void write_pgentry(uint32_t base, uint32_t va, uint32_t pa, uint8_t mem_attr, uint8_t ap);
-void write64(uint64_t value, uint32_t addr);
-uint64_t read64(uint32_t addr);
 
 #define set_valid      (1 << 0)
 #define set_invalid    (0 << 0)
