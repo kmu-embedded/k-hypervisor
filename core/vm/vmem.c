@@ -163,8 +163,8 @@ void __set_memmap(struct vmem *vmem, vmid_t vmid)
 }
 
 #include "../../arch/arm/mm.h"
-extern uint32_t __vm_pgtable_start;
-extern uint32_t __vm_pgtable_end;
+extern uint32_t __VM_PGTABLE;
+extern uint32_t __END_VM_PGTABLE;
 #define PGTABLE_SIZE    0x805000
 
 #define VTTBR_VMID_MASK                                 0x00FF000000000000ULL
@@ -173,7 +173,7 @@ extern uint32_t __vm_pgtable_end;
 
 void vmem_create(struct vmem *vmem, vmid_t vmid)
 {
-    vmem->base = (uint32_t) &__vm_pgtable_start + (PGTABLE_SIZE * vmid);
+    vmem->base = (uint32_t) &__VM_PGTABLE + (PGTABLE_SIZE << (vmid - 1));
     pgtable_init(vmem->base);
 
     vmem->vttbr = ((uint64_t) vmid << VTTBR_VMID_SHIFT) & VTTBR_VMID_MASK;
@@ -185,11 +185,19 @@ void vmem_create(struct vmem *vmem, vmid_t vmid)
 }
 
 #include "../../arch/arm/lpae.h"
+void add_mapping(struct vmem *vmem, uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size)
+{
+    int i;
+    for (i = 0; i < (size >> PAGE_SHIFT); i++, va += 0x1000, pa += 0x1000) {
+        write_pgentry(vmem->base, va >> PAGE_SHIFT, pa, mem_attr, 3);
+    }
+}
+
 hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
 {
     int i, j;
-    struct memdesc_t *map;
 
+    struct memdesc_t *map;
     for (i = 0; vmem->memmap[i]; i++) {
         if (vmem->memmap[i]->label == 0) {
             continue;
@@ -198,7 +206,7 @@ hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
         j = 0;
         map = vmem->memmap[i];
         while (map[j].label != 0) {
-            write_vm_pgentry(vmem->base, map[j].va, map[j].pa, map[j].attr, map[j].size);
+            add_mapping(vmem, map[j].va, map[j].pa, map[j].attr, map[j].size);
             j++;
         }
     }
@@ -206,7 +214,6 @@ hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
     vmem->vtcr = (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
     vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_ORGN0_BIT);
     vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_IRGN0_BIT);
-
     write_vtcr(vmem->vtcr);
 
     return HVMM_STATUS_SUCCESS;

@@ -89,8 +89,8 @@ union lpae_t {
 
 typedef union lpae_t pgentry;
 
-#define ENTRY_SHIFT         9
 #define PAGE_SHIFT          12
+#define ENTRY_SHIFT         9
 
 #define L1_ENTRY            4
 #define L2_ENTRY            512
@@ -156,9 +156,12 @@ typedef enum {
 
 pgentry set_table(uint32_t paddr, uint32_t valid);
 pgentry set_entry(uint32_t paddr, uint8_t mem_attr, uint8_t ap);
+void write_pgentry(uint32_t base, uint32_t va, uint32_t pa, uint8_t mem_attr, uint8_t ap);
+void write64(uint64_t value, uint32_t addr);
+uint64_t read64(uint32_t addr);
 
-#define valid_page      (1 << 0)
-#define invalid_page    (0 << 0)
+#define set_valid      (1 << 0)
+#define set_invalid    (0 << 0)
 
 #define GET_OFFSET(i)        (i << 3)               /* size of pgentry */
 #define GET_L2_INDEX(i)      GET_OFFSET((i << 9))   /* << 9 == 512 */
