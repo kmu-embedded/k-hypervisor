@@ -1,6 +1,5 @@
 #include "gic-v2.h"
 #include <arch/gic_regs.h>  // Define OFFSETS
-#include <debug_print.h>
 #include <arch/armv7.h>     // get_periphbase()
 #include <io.h>
 #include <asm/asm.h>        // SECTION(x)
@@ -101,8 +100,7 @@ hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t
                 break;
             }
         }
-        debug_print("virq: queueing virq %d pirq %d to vcpuid %d %s\n",
-                virq, pirq, vcpuid, result == HVMM_STATUS_SUCCESS ? "done" : "failed");
+
         if ((result == HVMM_STATUS_SUCCESS) && (virq < 16) ) {
             gic_set_sgi(1 << vcpuid, GIC_SGI_SLOT_CHECK);
         }
