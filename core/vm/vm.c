@@ -74,6 +74,7 @@ vmcb_state_t vm_init(vmid_t vmid)
     vm->state = HALTED;
 
     vmem_init(&vm->vmem);
+    vgic_init(&vm->vgic);
 
     return vm->state;
 }
