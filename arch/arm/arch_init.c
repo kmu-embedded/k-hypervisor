@@ -18,8 +18,5 @@ void SECTION(".init.arch") arch_irq_init()
     // TODO(casionwoo): add a init function of irq handler table for hypervisor.
     gic_init();
 
-    vgic_init();
-    vgic_enable(1);
-
     write_hcr(0x10 | 0x8);
 }
