@@ -2,8 +2,6 @@
 #define __VIRQ_H__
 
 #include <hvmm_types.h>
-//#include <stdint.h>
-// TODO(wonseok): make it neat.
 #include "../../../arch/arm/vgic.h"
 #include <core/interrupt.h>
 
@@ -16,17 +14,10 @@ struct virq_entry {
     uint8_t valid;
 };
 
-/**
- * @breif   Saves a mapping information to find a virq for injection.
- *
- * We do not consider a sharing device that's why we save only one vmid.
- * @todo    (wonseok): need to change a structure when we support
- *                     a sharing device among guests.
- */
 struct virqmap_entry {
-    uint32_t enabled;   /**< virqmap enabled flag */
-    uint32_t virq;      /**< Virtual interrupt nubmer */
-    uint32_t pirq;      /**< Pysical interrupt nubmer */
+    uint32_t enabled;
+    uint32_t virq;
+    uint32_t pirq;
 };
 
 struct guest_virqmap {
