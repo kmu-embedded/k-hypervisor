@@ -1,8 +1,8 @@
-#ifndef __VGIC_H__
-#define __VGIC_H__
+#ifndef __VGIC_STATUS_H__
+#define __VGIC_STATUS_H__
 
 #include <stdint.h>
-#include "gic-v2.h"
+#include <hvmm_types.h>
 
 struct vgic_status {
     uint32_t lr[64];        /**< List Registers */
