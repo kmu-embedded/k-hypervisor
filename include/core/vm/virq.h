@@ -6,6 +6,7 @@
 #include <core/interrupt.h>
 
 #define MAX_PENDING_VIRQS    128
+#define MAX_NR_IRQ           1024
 
 struct virq_entry {
     uint32_t pirq;
@@ -21,7 +22,7 @@ struct virqmap_entry {
 };
 
 struct guest_virqmap {
-    struct virqmap_entry map[1024];
+    struct virqmap_entry map[MAX_NR_IRQ];
 };
 
 struct virq {
