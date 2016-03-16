@@ -1,20 +1,16 @@
 #include "platform.h"
-#include <stdio.h>
 #include <stdint.h>
-#include <libc_init.h>
 #include <drivers/pl01x.h>
 
 // TODO(wonseok): moved header files from arch/arm to proper dir.
 #include "../../arch/arm/paging.h"
-#include "../../arch/arm/lpae.h"
 
 #include <size.h>
 #include <arch/gic_regs.h>
-#include <asm/asm.h>
 
 #include <arch/armv7.h>
 
-#include "rtsm-config.h"
+#define CFG_HYP_START_ADDRESS      0xF0000000
 void SECTION(".init.platform") platform_init()
 {
     uint32_t gic_base = (uint32_t)(get_periphbase() & 0x000000FFFFFFFFFFULL);

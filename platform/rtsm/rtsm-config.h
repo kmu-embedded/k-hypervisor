@@ -1,33 +1,22 @@
-#ifndef KHYPERVISOR_CONFIG_H
-#define KHYPERVISOR_CONFIG_H
+#ifndef RTSM_CONFIG_H
+#define RTSM_CONFIG_H
 
-/*
- *  MACHINE NUMBER FOR LINUX
- */
-
-#define MAHINE_TYPE       2272
-
-#define CFG_GENERIC_CA15
+#define MAHINE_TYPE         2272
 #define CFG_CNTFRQ          100000000
-#define CFG_UART2         0x1C0B0000
-#define CFG_UART1         0x1C0A0000
-#define CFG_UART0         0x1C090000
 
-#define CFG_NUMBER_OF_CPUS  2
-#define HYP_STACK_SIZE  4096
-#define NR_CPUS         2
+#define HYP_STACK_SIZE      4096
+#define NR_CPUS             2
+#define NUM_GUESTS_STATIC       3
 
 /*
  *  SOC param
  */
-#define CFG_GIC_BASE_PA   0x2C000000
-#define CFG_GICD_BASE_PA   0x2C001000
-#define CFG_GICC_BASE_PA   0x2C002000
+#define CFG_GIC_BASE_PA     0x2C000000
+#define CFG_GICD_BASE_PA    0x2C001000
+#define CFG_GICC_BASE_PA    0x2C002000
 
 #define USEC 1000000
 
-#define NUM_GUESTS_STATIC       3
-#define NUM_CPUS       1
 
 #define NUM_GUESTS_CPU0_STATIC       2
 #define NUM_GUESTS_CPU1_STATIC       2
@@ -55,4 +44,4 @@
 
 #define CFG_HYP_START_ADDRESS      0xF0000000
 
-#endif  /* KHYPERVISOR_CONFIG_H */
+#endif  /* RTSM_CONFIG_H */
