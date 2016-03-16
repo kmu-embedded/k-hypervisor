@@ -106,7 +106,7 @@ ${TARGET}.lds: ${LD_SCRIPT} | ${DIRECTORIES}
 	${Q}${CC} ${CFLAGS} ${INCLUDES} -E -P -o ${BUILD_PATH}/$@ -x c $<
 
 ${BUILD_PATH}/%.o: %.S | ${DIRECTORIES}
-	${Q}echo "[AS] $@"
+	${Q}echo "[AS] $(notdir $@)"
 	${Q}${CC} ${ASFLAGS} ${DFLAGS} ${INCLUDES} -c $< -o $@
 
 ${BUILD_PATH}/%.o: %.c | ${DIRECTORIES}
