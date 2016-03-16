@@ -2,7 +2,9 @@
 #define __GIC_H__
 
 #include <stdint.h>
-#include <core/interrupt.h>
+#include <hvmm_types.h>
+#include <io.h>
+//#include <core/interrupt.h>
 
 #define GIC_NUM_MAX_IRQS                1024
 #define GIC_INT_PRIORITY_DEFAULT        0xa0

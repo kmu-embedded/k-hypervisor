@@ -16,10 +16,11 @@
 #include <core/scheduler.h>
 #include <libc_init.h>
 #include <core/timer.h>
-#include <core/interrupt.h>
+#include <core/irq.h>
 
 #include "../arch/arm/mm.h"
-#include "../platform/rtsm/arch_init.h"
+//#include "../platform/rtsm/arch_init.h"
+#include "../arch/arm/cpu.h"
 
 static vmid_t vm[NUM_GUESTS_STATIC];
 uint8_t secondary_smp_pen;
@@ -33,7 +34,7 @@ static void SECTION(".init") primary_core_init(void)
     irq_disable();
 
     // Setup some basic operations such as BSS init., cache invalidate, etc.
-    arch_cpu_init();
+    cpu_init();
 
     console_init();
 
@@ -45,7 +46,7 @@ static void SECTION(".init") primary_core_init(void)
 
     enable_mmu();
 
-    interrupt_init();
+    irq_init();
 
 #ifdef __CONFIG_SMP__
     printf("wake up...other CPUs\n");

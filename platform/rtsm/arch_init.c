@@ -1,24 +1,10 @@
-#include "arch_init.h"
-#include "../../arch/arm/mm.h"
 #include <irq-chip.h>
+#include "arch_init.h"
 
-extern uint32_t __hvc_vector;
-void SECTION(".init.arch") arch_cpu_init()
-{
-    uint32_t vector_base = (uint32_t) &__hvc_vector;
-    write_hvbar(vector_base);
-    assert(read_hvbar() == vector_base);
-    // TODO(wonseok): D-Cache invalidate and TLB flush.
-    // TODO(casionwoo): add cache operation in arch/arm
-}
-
-#include "../../drivers/gic-v2.h"
-void SECTION(".init.arch") irq_chip_init()
+void irq_chip_init()
 {
     // TODO(casionwoo): add a init function of irq handler table for hypervisor.
     register_irq_chip();
     irq_hw->init();
     virq_hw->init();
-
-    write_hcr(0x10 | 0x8);
 }

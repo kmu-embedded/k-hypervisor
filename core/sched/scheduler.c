@@ -1,7 +1,7 @@
 #include <arch/armv7.h>
 #include <rtsm-config.h>
 #include <core/timer.h>
-#include <core/interrupt.h>
+#include <core/irq.h>
 #include <core/context_switch.h>
 #include <core/scheduler.h>
 #include <core/sched/scheduler_skeleton.h>

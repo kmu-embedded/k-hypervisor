@@ -30,6 +30,21 @@ void virq_create(struct virq *virq)
     }
 }
 
+hvmm_status_t vgic_init_status(struct vgic_status *status)
+{
+    int i;
+
+    for (i = 0; i < GICv2.num_lr; i++) {
+        status->lr[i] = 0;
+    }
+
+    status->hcr = 0;
+    status->apr = 0;
+    status->vmcr = 0;
+
+    return HVMM_STATUS_SUCCESS;
+}
+
 void virq_init(struct virq *virq, vmid_t vmid)
 {
     struct virqmap_entry *map;
@@ -122,13 +137,42 @@ void virq_enable(struct virq *v, uint32_t virq)
     map[virq].enabled = GUEST_IRQ_ENABLE;
 }
 
+#include "vgic.h"
+#include <arch/gic_regs.h>
+#include <irq-chip.h>
+
 hvmm_status_t virq_save(struct virq *virq)
 {
-    return vgic_save_status(&virq->vgic_status);
+    int i;
+
+    for (i = 0; i < GICv2.num_lr; i++) {
+        virq->vgic_status.lr[i] = GICH_READ(GICH_LR(i));
+    }
+
+    virq->vgic_status.hcr = GICH_READ(GICH_HCR);
+    virq->vgic_status.apr = GICH_READ(GICH_APR);
+    virq->vgic_status.vmcr = GICH_READ(GICH_VMCR);
+
+    virq_hw->disable();
+
+    return HVMM_STATUS_SUCCESS;
 }
 
 hvmm_status_t virq_restore(struct virq *virq, vmid_t vmid)
 {
-    return vgic_restore_status(&virq->vgic_status, vmid);
+    int i;
+
+    for (i = 0; i < GICv2.num_lr; i++) {
+        GICH_WRITE(GICH_LR(i), virq->vgic_status.lr[i]);
+    }
+
+    GICH_WRITE(GICH_APR, virq->vgic_status.apr);
+    GICH_WRITE(GICH_VMCR, virq->vgic_status.vmcr);
+    GICH_WRITE(GICH_HCR, virq->vgic_status.hcr);
+
+    virq_hw->forward_pending_irq(vmid);
+    virq_hw->enable();
+
+    return HVMM_STATUS_SUCCESS;
 }
 

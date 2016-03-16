@@ -4,7 +4,7 @@
 #include "trap.h"
 #include <arch/armv7.h>
 
-#include <core/interrupt.h>
+#include <core/irq.h>
 #include <core/scheduler.h>
 #include <core/vdev.h>
 
@@ -21,7 +21,7 @@ hvmm_status_t _hyp_irq(struct core_regs *regs)
     uint32_t irq;
 
     irq = irq_hw->ack();
-    interrupt_service_routine(irq, (void *)regs);
+    irq_service_routine(irq, (void *)regs);
 
     return HVMM_STATUS_SUCCESS;
 }
