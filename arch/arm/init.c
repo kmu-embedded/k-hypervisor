@@ -16,6 +16,10 @@ void init_system()
 
     setup_vector();
 
+    setup_httbr((uint32_t) &__HYP_PGTABLE);
+
+    setup_mem_attr();
+
     if (cpuid == 0) {
         // TODO(wonseok) console init will be moved dev_init().
         console_init();
@@ -39,10 +43,6 @@ void init_system()
         secondary_smp_pen = 1;
 #endif
     }
-
-    setup_mem_attr();
-
-    setup_httbr((uint32_t) &__HYP_PGTABLE);
 
     enable_mmu();
 
