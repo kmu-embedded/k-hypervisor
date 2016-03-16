@@ -6,8 +6,7 @@
 #include <arch/armv7.h>
 #include <core/scheduler.h>
 #include <config.h>
-
-#include "../../core/vm/vgic.h"
+#include "../../drivers/gic-v2.h"
 
 #define VTIMER_BASE_ADDR 0x3FFFE000
 #define VTIMER_IRQ 30

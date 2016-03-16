@@ -11,7 +11,7 @@
 #include <arch/armv7.h>
 
 #define CFG_HYP_START_ADDRESS      0xF0000000
-void SECTION(".init.platform") platform_init()
+void platform_init()
 {
     uint32_t gic_base = (uint32_t)(get_periphbase() & 0x000000FFFFFFFFFFULL);
     if (gic_base == 0x0) {
@@ -35,13 +35,13 @@ void SECTION(".init.platform") platform_init()
     paging_add_mapping(0xA0000000, 0xA0000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
 }
 
-void SECTION(".init.platform") console_init()
+void console_init()
 {
     // TODO(wonseok): add general initialization for console devices.
     pl01x_init(115200, 24000000);
 }
 
-void SECTION(".init.platform") dev_init()
+void dev_init()
 {
     // init .text.dev section like vdev.
 }
