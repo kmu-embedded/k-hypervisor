@@ -7,7 +7,7 @@
 #include "lpae.h"
 
 void paging_init();
-void paging_create_mapping(addr_t base);
+void paging_create(addr_t base);
 void paging_add_mapping(addr_t va, addr_t pa, uint8_t mem_attr, uint32_t size);
 void paging_enable_mmu(void);
 

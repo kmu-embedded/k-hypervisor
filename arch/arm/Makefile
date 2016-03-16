@@ -8,5 +8,6 @@ ARCH_SRCS+= io.c
 ARCH_SRCS+= irq.c
 ARCH_SRCS+= lpae.c
 ARCH_SRCS+= paging.c
+ARCH_SRCS+= cpu.c
 
 SUBDIRECTORIES += arch/arm/v7
