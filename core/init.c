@@ -21,10 +21,8 @@
 #include "../arch/arm/paging.h"
 #include "../arch/arm/cpu.h"
 
-static vmid_t vm[NUM_GUESTS_STATIC];
 uint8_t secondary_smp_pen;
 
-#define PLATFORM_BASIC_TESTS 4
 static void SECTION(".init") primary_core_init(void)
 {
     int i;
@@ -66,15 +64,17 @@ static void SECTION(".init") primary_core_init(void)
 
     vm_setup();
     for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        if ((vm[i] = vm_create(nr_vcpus)) == VM_CREATE_FAILED) {
+        vmid_t vmid;
+
+        if ((vmid = vm_create(nr_vcpus)) == VM_CREATE_FAILED) {
             debug_print("vm_create(vm[%d]) is failed\n", i);
             goto error;
         }
-        if (vm_init(vm[i]) != HALTED) {
+        if (vm_init(vmid) != HALTED) {
             debug_print("vm_init(vm[%d]) is failed\n", i);
             goto error;
         }
-        if (vm_start(vm[i]) != RUNNING) {
+        if (vm_start(vmid) != RUNNING) {
             debug_print("vm_start(vm[%d]) is failed\n", i);
             goto error;
         }
@@ -85,7 +85,6 @@ static void SECTION(".init") primary_core_init(void)
      * TODO: Rename guest_sched_start to do_schedule or something others.
      *       do_schedule(vmid) or do_schedule(vcpu_id)
      */
-    // TODO: make a print_banner().
     sched_start();
 
     /* The code flow must not reach here */
