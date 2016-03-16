@@ -1,9 +1,7 @@
-#include "../../arch/arm/gic-v2.h"
 #include <arch/gic_regs.h>
 #include <core/vdev.h>
 #include <arch/armv7.h>
 #include <core/scheduler.h>
-#include "../../arch/arm/vgic.h"
 #include <rtsm-config.h>
 
 #define DEBUG
@@ -12,6 +10,8 @@
 #include "vdev_gicd.h"
 #include <core/vm/virq.h>
 
+#include "../../arch/arm/vgic.h"
+#include "../../drivers/gic-v2.h"
 /* return the bit position of the first bit set from msb
  * for example, firstbit32(0x7F = 111 1111) returns 7
  */

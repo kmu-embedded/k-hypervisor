@@ -2,8 +2,9 @@
 #include <arch/gic_regs.h>
 #include <core/vm/virq.h>
 #include <io.h>
-#include "gic-v2.h"
+//#include "gic-v2.h"
 
+#include <irq-chip.h>
 hvmm_status_t vgic_init_status(struct vgic_status *status)
 {
     int i;
@@ -30,7 +31,8 @@ hvmm_status_t vgic_save_status(struct vgic_status *status)
     status->hcr = GICH_READ(GICH_HCR);
     status->apr = GICH_READ(GICH_APR);
     status->vmcr = GICH_READ(GICH_VMCR);
-    gich_enable(0);
+
+    virq_hw->disable();
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -53,8 +55,10 @@ hvmm_status_t vgic_restore_status(struct vgic_status *status, vcpuid_t vcpuid)
      * to switch the context, where virq flush takes place,
      * this time
      */
-    gic_inject_pending_irqs(vcpuid);
-    gich_enable(1);
+    virq_hw->forward_pending_irq(vcpuid);
+
+
+    virq_hw->disable();
 
     return HVMM_STATUS_SUCCESS;
 }

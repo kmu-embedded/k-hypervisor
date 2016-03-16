@@ -27,7 +27,7 @@ static void interrupt_inject_enabled_guest(uint32_t irq)
         }
 
         //virq_inject(vcpu->vcpuid, virq, irq, INJECT_HW);
-        irq_chip->forward(vcpu->vcpuid, virq, irq, INJECT_HW);
+        virq_hw->forward_irq(vcpu->vcpuid, virq, irq, INJECT_HW);
     }
 }
 
@@ -54,23 +54,13 @@ void interrupt_service_routine(int irq, void *current_regs)
 
     struct arch_regs *regs = (struct arch_regs *)current_regs;
 
-    irq_chip->eoi(irq);
+    irq_hw->eoi(irq);
     interrupt_inject_enabled_guest(irq);
 
     /* Host irq */
     if (interrupt_handlers[irq]) {
         interrupt_handlers[irq](irq, regs, 0);
-        irq_chip->dir(irq);
+        irq_hw->dir(irq);
     }
-#if 0
-    gic_completion_irq(irq);
-    interrupt_inject_enabled_guest(irq);
-
-    /* Host irq */
-    if (interrupt_handlers[irq]) {
-        interrupt_handlers[irq](irq, regs, 0);
-        gic_deactivate_irq(irq);
-    }
-#endif
 }
 

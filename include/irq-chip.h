@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <hvmm_types.h>
 
-struct irq_chip_t {
+struct irq_chip {
     void (* init) (void);                       // gic_init
     void (* enable) (uint32_t irq);         // gic_enable_irq
     void (* disable) (uint32_t irq);        // gic_disable_irq
@@ -12,10 +12,19 @@ struct irq_chip_t {
     void (* eoi) (uint32_t irq);                    // gic_completion_irq
     void (* dir) (uint32_t irq);                    // gic_deactivate_irq
     void (* set_irq_type) (uint32_t irq, uint8_t polarity);                // gic_configure_irq
-    //void (* irq_forward) (vcpuid_t id, uint32_t virq, uint32_t pirq, bool type);              // gic_deactivate_irq
-    hvmm_status_t (* forward) (vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw);
+    hvmm_status_t (* forward_irq) (vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw);
 };
 
-struct irq_chip_t *irq_chip;
+struct virq_chip {
+    void (* init) (void);
+    void (* enable) (void);
+    void (* disable) (void);
+    hvmm_status_t (* forward_pending_irq) (vcpuid_t vcpuid);
+    hvmm_status_t (* forward_irq) (vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw);
+};
+
+struct irq_chip *irq_hw;
+struct virq_chip *virq_hw;
 void register_irq_chip();
+
 #endif //__IRQ_CHIP_H__

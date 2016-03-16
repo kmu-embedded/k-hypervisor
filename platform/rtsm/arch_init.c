@@ -12,12 +12,13 @@ void SECTION(".init.arch") arch_cpu_init()
     // TODO(casionwoo): add cache operation in arch/arm
 }
 
-#include "../../arch/arm/gic-v2.h"
+#include "../../drivers/gic-v2.h"
 void SECTION(".init.arch") irq_chip_init()
 {
     // TODO(casionwoo): add a init function of irq handler table for hypervisor.
     register_irq_chip();
-    irq_chip->init();
+    irq_hw->init();
+    virq_hw->init();
 
     write_hcr(0x10 | 0x8);
 }

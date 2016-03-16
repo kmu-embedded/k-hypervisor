@@ -43,10 +43,10 @@ void gic_configure_irq(uint32_t irq, uint8_t polarity);
 void gic_set_sgi(const uint32_t target, uint32_t sgi);
 
 /* GICH related functions */
-void gich_enable(uint8_t enable);
+void gich_init(void);
+void gich_enable(void);
+void gich_disable(void);
 hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid);
-uint32_t gic_inject_virq(uint32_t virq, uint32_t slot, enum virq_state state, uint32_t priority,
-        uint8_t hw, uint32_t physrc, uint8_t maintenance);
 hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw);
 
 #define GICD_READ(offset)           __readl(GICv2.gicd + offset)

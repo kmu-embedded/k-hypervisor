@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <debug_print.h>
 #include <hvmm_trace.h>
-#include "gic-v2.h"
 #include "trap.h"
 #include <arch/armv7.h>
 
@@ -9,6 +8,7 @@
 #include <core/scheduler.h>
 #include <core/vdev.h>
 
+#include "../../drivers/gic-v2.h"
 hvmm_status_t _hyp_dabort(struct core_regs *regs)
 {
     hyp_abort_infinite();
@@ -20,7 +20,7 @@ hvmm_status_t _hyp_irq(struct core_regs *regs)
 {
     uint32_t irq;
 
-    irq = irq_chip->ack();
+    irq = irq_hw->ack();
     interrupt_service_routine(irq, (void *)regs);
 
     return HVMM_STATUS_SUCCESS;
