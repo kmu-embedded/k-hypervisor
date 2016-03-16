@@ -2,6 +2,7 @@
 #include <debug.h>
 #include <config.h>
 #include <stdlib.h>
+#include "../../drivers/gic-v2.h"
 
 #define SET_VIRQMAP(map, _pirq, _virq) \
     do {                                 \
@@ -137,7 +138,6 @@ void virq_enable(struct virq *v, uint32_t virq)
     map[virq].enabled = GUEST_IRQ_ENABLE;
 }
 
-#include "vgic.h"
 #include <arch/gic_regs.h>
 #include <irq-chip.h>
 

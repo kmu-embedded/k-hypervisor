@@ -2,7 +2,6 @@
 #define __VIRQ_H__
 
 #include <hvmm_types.h>
-#include "../../../core/vm/vgic.h"
 #include <core/irq.h>
 
 #define MAX_PENDING_VIRQS    128
@@ -23,6 +22,13 @@ struct virqmap_entry {
 
 struct guest_virqmap {
     struct virqmap_entry map[MAX_NR_IRQ];
+};
+
+struct vgic_status {
+    uint32_t lr[64];        /**< List Registers */
+    uint32_t hcr;           /**< Hypervisor Control Register */
+    uint32_t apr;           /**< Active Priorities Register */
+    uint32_t vmcr;          /**< Virtual Machine Control Register */
 };
 
 struct virq {

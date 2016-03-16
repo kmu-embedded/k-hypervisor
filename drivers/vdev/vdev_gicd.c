@@ -10,7 +10,6 @@
 #include "vdev_gicd.h"
 #include <core/vm/virq.h>
 
-#include "../../core/vm/vgic.h"
 #include "../../drivers/gic-v2.h"
 /* return the bit position of the first bit set from msb
  * for example, firstbit32(0x7F = 111 1111) returns 7

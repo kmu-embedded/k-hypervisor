@@ -160,7 +160,7 @@ static uint64_t gic_valid_lr_mask(uint32_t num_lr)
     return mask_valid_lr;
 }
 
-void SECTION(".init") gic_init(void)
+void gic_init(void)
 {
     int i;
     uint32_t periphbase;
