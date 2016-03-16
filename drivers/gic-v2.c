@@ -338,8 +338,7 @@ hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid)
     return HVMM_STATUS_SUCCESS;
 }
 
-static DEFINE_MUTEX(VIRQ_MUTEX);
-hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
+bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
     int i;
     struct vcpu *vcpu = vcpu_find(vcpuid);
@@ -347,28 +346,25 @@ hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t
 
     if (vcpuid == get_current_vcpuid()) {
         uint32_t slot;
-
-        lock_mutex(&VIRQ_MUTEX);
         if (hw)
             slot = gic_inject_virq_hw(virq, VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT, pirq);
         else
             slot = gic_inject_virq_sw(virq, VIRQ_STATE_PENDING, 0, vcpuid, 1);
 
-        unlock_mutex(&VIRQ_MUTEX);
-
         if (slot == VGIC_SLOT_NOTFOUND) {
-            return HVMM_STATUS_BUSY;
+            return false;
+        } else {
+            return true;
         }
 
-        return HVMM_STATUS_SUCCESS;
     } else {
         for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
             if (q[i].valid == 0) {
                 q[i] = set_virq_entry(pirq, virq, hw);
-                return HVMM_STATUS_SUCCESS;
+                return true;
             }
         }
     }
 
-    return HVMM_STATUS_BUSY;
+    return false;
 }

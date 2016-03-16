@@ -106,7 +106,7 @@ BEGIN_PROC(__start)
     b       enter_smp_pen
 1:
 #endif
-    bl      main
+    bl     init_system
 
 	@ Never reached, here.
     b       __error

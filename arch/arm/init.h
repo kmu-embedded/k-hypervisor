@@ -1,12 +1,9 @@
-#ifndef __CPU_H__
-#define __CPU_H__
+#ifndef __CPU_INIT_H__
+#define __CPU_INIT_H__
 
 #include <stdint.h>
 #include <asm/asm.h>
-#include <assert.h>
 #include <arch/armv7.h>
-
-void cpu_init(void);
 
 #define read_hvbar()        ({ uint32_t rval; asm volatile(\
                             "mrc     p15, 4, %0, c12, c0, 0\n\t" \
@@ -15,6 +12,6 @@ void cpu_init(void);
                             "mcr     p15, 4, %0, c12, c0, 0\n\t" \
                             : : "r" ((val)) : "memory", "cc")
 
-extern uint32_t __hvc_vector;
+void start_hypervisor(void);
 
 #endif // __CPU_H__

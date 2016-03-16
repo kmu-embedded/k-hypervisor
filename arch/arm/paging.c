@@ -12,8 +12,6 @@ extern uint32_t __HYP_PGTABLE;
 void paging_init()
 {
     paging_create_mapping((addr_t) &__HYP_PGTABLE);
-    setup_httbr((addr_t) &__HYP_PGTABLE);
-    set_memory_attribute();
 }
 
 void paging_create_mapping(addr_t base)
@@ -53,6 +51,9 @@ void paging_add_ipa_mapping(addr_t base, addr_t ipa, addr_t pa, uint8_t mem_attr
 
 void paging_enable_mmu(void)
 {
+    setup_httbr((addr_t) &__HYP_PGTABLE);
+    set_memory_attribute();
+
     uint32_t hsctlr = 0;
 
     /* MMU, Alignment enable */
