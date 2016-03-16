@@ -5,7 +5,7 @@
 #include <core/irq.h>
 #include <arch/armv7.h>
 #include <core/scheduler.h>
-#include <rtsm-config.h>
+#include <config.h>
 
 #include "../../core/vm/vgic.h"
 

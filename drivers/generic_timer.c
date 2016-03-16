@@ -3,7 +3,7 @@
 #include <arch/armv7/arm_inline.h>
 #include <hvmm_trace.h>
 #include <core/irq.h>
-#include <rtsm-config.h>
+#include <config.h>
 
 #define NS_PL2_PTIMER_IRQ   26
 #define NS_VTIMER_IRQ       27

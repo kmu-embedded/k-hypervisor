@@ -1,6 +1,6 @@
 #include <core/vm/virq.h>
 #include <debug_print.h>
-#include <rtsm-config.h>
+#include <config.h>
 #include <stdlib.h>
 
 #define SET_VIRQMAP(map, _pirq, _virq) \

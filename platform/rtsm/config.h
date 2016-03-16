@@ -1,5 +1,5 @@
-#ifndef RTSM_CONFIG_H
-#define RTSM_CONFIG_H
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
 #define MAHINE_TYPE         2272
 #define CFG_CNTFRQ          100000000

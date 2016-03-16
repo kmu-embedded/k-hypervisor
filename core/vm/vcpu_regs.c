@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <arch/armv7.h>
 #include <core/scheduler.h>
-#include <rtsm-config.h>
+#include <config.h>
 
 #define CPSR_MODE_USER  0x10
 #define CPSR_MODE_FIQ   0x11
