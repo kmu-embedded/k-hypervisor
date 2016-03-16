@@ -2,7 +2,7 @@
 #define DEBUG
 #include <stdio.h>
 #include <core/scheduler.h>
-#include <rtsm-config.h>
+#include <config.h>
 
 #define SAMPLE_BASE_ADDR 0x3FFFF000
 

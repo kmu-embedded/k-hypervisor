@@ -3,7 +3,7 @@
 #include <core/vm.h>
 #include <core/scheduler.h>
 
-#include <rtsm-config.h>
+#include <config.h>
 
 #include "../arch/arm/init.h"
 

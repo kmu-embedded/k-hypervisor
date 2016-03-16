@@ -5,7 +5,7 @@
 #include <core/vm/vcpu.h>
 #include <core/vm/vcpu_regs.h>
 
-//#include <board/rtsm-config.h>
+//#include <board/config.h>
 
 #define GUEST_VERBOSE_ALL       0xFF
 #define GUEST_VERBOSE_LEVEL_0   0x01

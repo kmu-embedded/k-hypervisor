@@ -1,6 +1,6 @@
 #include <core/irq.h>
 #include <hvmm_types.h>
-#include <rtsm-config.h>
+#include <config.h>
 #include <arch/armv7.h>
 
 #include <irq-chip.h>

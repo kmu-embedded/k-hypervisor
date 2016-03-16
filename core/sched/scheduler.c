@@ -1,5 +1,5 @@
 #include <arch/armv7.h>
-#include <rtsm-config.h>
+#include <config.h>
 #include <core/timer.h>
 #include <core/irq.h>
 #include <core/context_switch.h>

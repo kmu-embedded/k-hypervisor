@@ -5,7 +5,7 @@
  * Responsible: Inkyu Han
  */
 
-#include <rtsm-config.h>
+#include <config.h>
 #include <hvmm_trace.h>
 #include <arch/armv7.h>
 #include <core/irq.h>
