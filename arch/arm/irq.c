@@ -5,7 +5,6 @@
 #include <core/scheduler.h>
 #include <rtsm-config.h>
 
-#include "../platform/rtsm/arch_init.h"
 #include <irq-chip.h>
 #define VIRQ_MIN_VALID_PIRQ     16
 #define VIRQ_NUM_MAX_PIRQS      MAX_IRQS
@@ -33,7 +32,7 @@ static void irq_inject_enabled_guest(uint32_t irq)
 
 void irq_init()
 {
-    irq_chip_init();
+    setup_irq();
     write_hcr(0x10 | 0x8);
 }
 
@@ -56,6 +55,7 @@ void irq_service_routine(int irq, void *current_regs)
     struct arch_regs *regs = (struct arch_regs *)current_regs;
 
     irq_hw->eoi(irq);
+    // inject_enabled_guest will be merged into irq_handler
     irq_inject_enabled_guest(irq);
 
     /* Host irq */

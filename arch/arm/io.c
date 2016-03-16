@@ -1,6 +1,6 @@
 #include <io.h>
 
-void write64(uint64_t value, uint32_t addr)
+void write64(uint64_t value, addr_t addr)
 {
     uint32_t upper = 0, lower = 0;
     upper = (value >> 32) & 0xFFFFFFFF;
@@ -9,7 +9,7 @@ void write64(uint64_t value, uint32_t addr)
     __writel(upper, addr + 0x4);
 }
 
-uint64_t read64(uint32_t addr)
+uint64_t read64(addr_t addr)
 {
     uint64_t result = 0x0UL;
     result |= __readl(addr);

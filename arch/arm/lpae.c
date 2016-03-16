@@ -1,26 +1,26 @@
 #include "lpae.h"
 #include <io.h>
 
-pgentry set_table(uint32_t paddr, uint32_t valid)
+pgentry set_table(addr_t pa)
 {
     pgentry entry;
 
     entry.raw = 0;
-    entry.table.valid = valid;
+    entry.table.valid = 0;
     entry.table.type = 1;
-    entry.table.base = paddr >> PAGE_SHIFT;
+    entry.table.base = pa >> PAGE_SHIFT;
 
     return entry;
 }
 
-static pgentry set_entry(uint32_t paddr, uint8_t mem_attr, uint8_t ap)
+static pgentry set_entry(addr_t pa, uint8_t mem_attr, uint8_t ap)
 {
     pgentry entry;
 
     entry.raw = 0;
     entry.page.valid = 1;
     entry.page.type = 1;
-    entry.page.base = paddr >> L3_SHIFT;
+    entry.page.base = pa >> L3_SHIFT;
     entry.page.mem_attr = mem_attr;
     entry.page.ap = ap;
     entry.page.sh = 3;
@@ -33,10 +33,10 @@ static pgentry set_entry(uint32_t paddr, uint8_t mem_attr, uint8_t ap)
     return entry;
 }
 
-void write_pgentry(uint32_t base, uint32_t va, uint32_t pa, uint8_t mem_attr, uint8_t ap)
+void write_pgentry(addr_t base, addr_t va, addr_t pa, uint8_t mem_attr, uint8_t ap)
 {
     uint32_t l1_index, l2_index, l3_index;
-    uint32_t l1_entry_addr, l2_entry_addr, l3_entry_addr;
+    addr_t l1_entry_addr, l2_entry_addr, l3_entry_addr;
 
     l1_index = ((va & 0xC0000) >> ENTRY_SHIFT) >> ENTRY_SHIFT;
     l2_index = ((va & 0x3FE00) >> ENTRY_SHIFT);

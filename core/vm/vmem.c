@@ -2,7 +2,15 @@
 #include <debug_print.h>
 #include <rtsm-config.h>
 #include <arch/armv7.h>
-#include "../../arch/arm/mm.h"
+#include "../../arch/arm/paging.h"
+
+struct memdesc_t {
+    char *label;
+    uint64_t ipa;
+    uint64_t pa;
+    uint32_t size;
+    uint8_t attr;
+};
 
 // TODO(casionwoo) : These memory mapping variables should be removed after DTB implementation
 enum memattr {
@@ -162,7 +170,6 @@ void __set_memmap(struct vmem *vmem, vmid_t vmid)
     }
 }
 
-#include "../../arch/arm/mm.h"
 extern uint32_t __VM_PGTABLE;
 extern uint32_t __END_VM_PGTABLE;
 #define PGTABLE_SIZE    0x805000
@@ -175,7 +182,7 @@ void vmem_create(struct vmem *vmem, vmid_t vmid)
 {
 
     vmem->base = (uint32_t) &__VM_PGTABLE + (PGTABLE_SIZE << (vmid - 1));
-    pgtable_init(vmem->base);
+    paging_create_mapping(vmem->base);
 
     vmem->vttbr = ((uint64_t) vmid << VTTBR_VMID_SHIFT) & VTTBR_VMID_MASK;
     vmem->vttbr &= ~(VTTBR_BADDR_MASK);
@@ -185,16 +192,6 @@ void vmem_create(struct vmem *vmem, vmid_t vmid)
     __set_memmap(vmem, vmid);
 }
 
-#include "../../arch/arm/lpae.h"
-void add_mapping(struct vmem *vmem, uint32_t va, uint32_t pa, uint8_t mem_attr, uint32_t size)
-{
-    int i;
-    for (i = 0; i < (size >> PAGE_SHIFT); i++, va += 0x1000, pa += 0x1000) {
-        write_pgentry(vmem->base, va >> PAGE_SHIFT, pa, mem_attr, 3);
-    }
-}
-
-//hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
 hvmm_status_t vmem_init(struct vmem *vmem)
 {
     int i, j;
@@ -208,7 +205,7 @@ hvmm_status_t vmem_init(struct vmem *vmem)
         j = 0;
         map = vmem->memmap[i];
         while (map[j].label != 0) {
-            add_mapping(vmem, map[j].va, map[j].pa, map[j].attr, map[j].size);
+            paging_add_ipa_mapping(vmem->base, map[j].ipa, map[j].pa, map[j].attr, map[j].size);
             j++;
         }
     }

@@ -5,7 +5,7 @@
 #include <drivers/pl01x.h>
 
 // TODO(wonseok): moved header files from arch/arm to proper dir.
-#include "../../arch/arm/mm.h"
+#include "../../arch/arm/paging.h"
 #include "../../arch/arm/lpae.h"
 
 #include <size.h>
@@ -22,21 +22,21 @@ void SECTION(".init.platform") platform_init()
         gic_base = 0x2C000000;
     }
 
-    add_hyp_pgentry(gic_base + GICD_OFFSET, gic_base + GICD_OFFSET, MT_DEVICE, SZ_4K);
-    add_hyp_pgentry(gic_base + GICC_OFFSET, gic_base + GICC_OFFSET, MT_DEVICE, SZ_8K);
-    add_hyp_pgentry(gic_base + GICH_OFFSET, gic_base + GICH_OFFSET, MT_DEVICE, SZ_4K);
-    add_hyp_pgentry(gic_base + GICV_OFFSET, gic_base + GICV_OFFSET, MT_DEVICE, SZ_8K);
+    paging_add_mapping(gic_base + GICD_OFFSET, gic_base + GICD_OFFSET, MT_DEVICE, SZ_4K);
+    paging_add_mapping(gic_base + GICC_OFFSET, gic_base + GICC_OFFSET, MT_DEVICE, SZ_8K);
+    paging_add_mapping(gic_base + GICH_OFFSET, gic_base + GICH_OFFSET, MT_DEVICE, SZ_4K);
+    paging_add_mapping(gic_base + GICV_OFFSET, gic_base + GICV_OFFSET, MT_DEVICE, SZ_8K);
 
     // add mapping for serial devices
-    add_hyp_pgentry(0x1C090000, 0x1C090000, MT_DEVICE, SZ_4K);
-    add_hyp_pgentry(0x1C0A0000, 0x1C0A0000, MT_DEVICE, SZ_4K);
-    add_hyp_pgentry(0x1C0B0000, 0x1C0B0000, MT_DEVICE, SZ_4K);
-    add_hyp_pgentry(0x1C0C0000, 0x1C0C0000, MT_DEVICE, SZ_4K);
+    paging_add_mapping(0x1C090000, 0x1C090000, MT_DEVICE, SZ_4K);
+    paging_add_mapping(0x1C0A0000, 0x1C0A0000, MT_DEVICE, SZ_4K);
+    paging_add_mapping(0x1C0B0000, 0x1C0B0000, MT_DEVICE, SZ_4K);
+    paging_add_mapping(0x1C0C0000, 0x1C0C0000, MT_DEVICE, SZ_4K);
 
-    add_hyp_pgentry(0xF0000000, CFG_HYP_START_ADDRESS, MT_WRITEBACK_RW_ALLOC, SZ_256M);
-    add_hyp_pgentry(0x80000000, 0x80000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
-    add_hyp_pgentry(0x90000000, 0x90000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
-    add_hyp_pgentry(0xA0000000, 0xA0000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
+    paging_add_mapping(0xF0000000, CFG_HYP_START_ADDRESS, MT_WRITEBACK_RW_ALLOC, SZ_256M);
+    paging_add_mapping(0x80000000, 0x80000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
+    paging_add_mapping(0x90000000, 0x90000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
+    paging_add_mapping(0xA0000000, 0xA0000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
 }
 
 void SECTION(".init.platform") console_init()

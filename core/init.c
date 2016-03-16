@@ -18,8 +18,7 @@
 #include <core/timer.h>
 #include <core/irq.h>
 
-#include "../arch/arm/mm.h"
-//#include "../platform/rtsm/arch_init.h"
+#include "../arch/arm/paging.h"
 #include "../arch/arm/cpu.h"
 
 static vmid_t vm[NUM_GUESTS_STATIC];
@@ -40,11 +39,11 @@ static void SECTION(".init") primary_core_init(void)
 
     libc_init();
 
-    mm_init();
+    paging_init();
 
     platform_init();
 
-    enable_mmu();
+    paging_enable_mmu();
 
     irq_init();
 
