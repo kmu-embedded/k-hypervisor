@@ -25,6 +25,7 @@ struct virq_chip {
 
 struct irq_chip *irq_hw;
 struct virq_chip *virq_hw;
-void register_irq_chip();
+
+void setup_irq();
 
 #endif //__IRQ_CHIP_H__

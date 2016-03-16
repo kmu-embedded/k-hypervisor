@@ -154,8 +154,10 @@ typedef enum {
 } cachebility; //cacheability;
 
 
-pgentry set_table(uint32_t paddr, uint32_t valid);
-void write_pgentry(uint32_t base, uint32_t va, uint32_t pa, uint8_t mem_attr, uint8_t ap);
+typedef uint32_t addr_t;
+
+pgentry set_table(addr_t pa);
+void write_pgentry(addr_t base, addr_t va, addr_t pa, uint8_t mem_attr, uint8_t ap);
 
 #define set_valid      (1 << 0)
 #define set_invalid    (0 << 0)
@@ -163,5 +165,6 @@ void write_pgentry(uint32_t base, uint32_t va, uint32_t pa, uint8_t mem_attr, ui
 #define GET_OFFSET(i)        (i << 3)               /* size of pgentry */
 #define GET_L2_INDEX(i)      GET_OFFSET((i << 9))   /* << 9 == 512 */
 #define GET_L3_INDEX(i)      GET_OFFSET((i << 18))  /* << 18 == 512*512 */
+
 
 #endif /* __LPAED_H__ */
