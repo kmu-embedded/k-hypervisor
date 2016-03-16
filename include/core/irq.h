@@ -16,6 +16,5 @@ typedef void (*irq_handler_t)(int irq, void *regs, void *pdata);
 
 void irq_init();
 void register_irq_handler(uint32_t irq, irq_handler_t handler);
-void irq_service_routine(int irq, void *current_regs);
 
 #endif

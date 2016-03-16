@@ -45,17 +45,17 @@ hvc_handler:
     .align 5
     .section .text.vector
 BEGIN_PROC(__hvc_vector)
-    .word   0                    /* reset */
-    nop                          /* undef */
-    nop                          /* svc */
-    nop                          /* pabt */
-    nop                          /* dabt */
-    b       hvc_trap_handler     /* hvc */
-    b       hvc_irq_handler      /* irq */
-    nop                          /* fiq */
+    .word   0                   /* reset */
+    nop                         /* undef */
+    nop                         /* svc */
+    nop                         /* pabt */
+    nop                         /* dabt */
+    b       __do_hvc            /* hvc */
+    b       __do_irq            /* irq */
+    nop                         /* fiq */
 END_PROC(__hvc_vector)
 
-hvc_trap_handler:
+__do_hvc:
     @ Push registers
     push    {r0-r12}
     mrs     r0, spsr_hyp
@@ -64,7 +64,7 @@ hvc_trap_handler:
 
     @ service other argument values -> _hyp_hvc_service(sp)
     mov    r0, sp
-    bl    _hyp_hvc    @ r0: HSR
+    bl     do_hvc_trap    @ r0: HSR
 
     @ r0 = return
     tst    r0, #1
@@ -91,16 +91,16 @@ hvc_trap_handler:
     mrs     lr, elr_hyp
     mov     pc, lr
 
-hvc_irq_handler:
+__do_irq:
     @ Push registers
     push    {r0-r12}
     mrs     r0, spsr_hyp
     mrs     r1, elr_hyp
     push    {r0, r1, lr}
 
-    @ service other argument values -> _hvc_irq_handler(sp)
+    @ service other argument values -> trap_irq(sp)
     mov     r0, sp
-    bl      _hyp_irq    @ r0: HSR
+    bl      do_irq    @ r0: HSR
 
     @ Pop registers
     pop     {r0-r1, lr}

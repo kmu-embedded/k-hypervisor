@@ -2,6 +2,7 @@
 #define __GIC_H__
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <hvmm_types.h>
 #include <io.h>
 //#include <core/interrupt.h>
@@ -49,7 +50,7 @@ void gich_init(void);
 void gich_enable(void);
 void gich_disable(void);
 hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid);
-hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw);
+bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw);
 
 #define GICD_READ(offset)           __readl(GICv2.gicd + offset)
 #define GICD_WRITE(offset, value)   __writel(value, GICv2.gicd + offset)

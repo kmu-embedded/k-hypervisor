@@ -1,67 +1,42 @@
 #include <core/irq.h>
 #include <hvmm_types.h>
-#include <arch/armv7.h>
-#include <core/vm/vcpu.h>
-#include <core/scheduler.h>
 #include <rtsm-config.h>
+#include <arch/armv7.h>
 
 #include <irq-chip.h>
+
 #define VIRQ_MIN_VALID_PIRQ     16
 #define VIRQ_NUM_MAX_PIRQS      MAX_IRQS
 
 static irq_handler_t irq_handlers[MAX_IRQS];
 
-static void irq_inject_enabled_guest(uint32_t irq)
+#include <core/vm/vcpu_regs.h>
+#include <core/vm/virq.h>
+
+hvmm_status_t do_irq(struct core_regs *regs)
 {
-    uint32_t virq;
-    struct vcpu *vcpu;
-    uint32_t pcpu = smp_processor_id();
-    struct running_vcpus_entry_t *sched_vcpu_entry;
+    uint32_t irq = irq_hw->ack();
 
-    list_for_each_entry(struct running_vcpus_entry_t, sched_vcpu_entry, &__running_vcpus[pcpu], head) {
-        vcpu = vcpu_find(sched_vcpu_entry->vcpuid);
-        virq = pirq_to_enabled_virq(&vcpu->virq, irq);
-        if (virq == VIRQ_INVALID) {
-            continue;
-        }
+    irq_hw->eoi(irq);
 
-        //virq_inject(vcpu->vcpuid, virq, irq, INJECT_HW);
-        virq_hw->forward_irq(vcpu->vcpuid, virq, irq, INJECT_HW);
+    is_guest_irq(irq);
+
+    if (irq_handlers[irq]) {
+        irq_handlers[irq](irq, (struct arch_regs *)regs, 0);
+        irq_hw->dir(irq);
     }
+    return HVMM_STATUS_SUCCESS;
 }
 
 void irq_init()
 {
-    setup_irq();
-    write_hcr(0x10 | 0x8);
+    set_irqchip_type();
+    write_hcr(0x10 | 0x8); // enable irq
 }
 
 void register_irq_handler(uint32_t irq, irq_handler_t handler)
 {
     if (irq < MAX_IRQS)
         irq_handlers[irq] = handler;
-}
-
-void irq_service_routine(int irq, void *current_regs)
-{
-
-    /* TODO(casionwoo) :
-    *   PPI, SGI : Just inject or call hyp's handler
-    *
-    *   SPI : (pcpu == 0) : send to other cpus and call hyp's handler
-    *         (pcpu != 0) : inject to guests or call hyp's handler
-    */
-
-    struct arch_regs *regs = (struct arch_regs *)current_regs;
-
-    irq_hw->eoi(irq);
-    // inject_enabled_guest will be merged into irq_handler
-    irq_inject_enabled_guest(irq);
-
-    /* Host irq */
-    if (irq_handlers[irq]) {
-        irq_handlers[irq](irq, regs, 0);
-        irq_hw->dir(irq);
-    }
 }
 

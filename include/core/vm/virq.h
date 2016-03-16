@@ -44,4 +44,7 @@ void virq_enable(struct virq *v, uint32_t virq);
 hvmm_status_t virq_save(struct virq *virq);
 hvmm_status_t virq_restore(struct virq *virq, vmid_t vmid);
 
+#include <stdbool.h>
+bool is_guest_irq(uint32_t irq);
+
 #endif /* __VIRQ_H__ */
