@@ -13,13 +13,12 @@
 #include <core/timer.h>
 #include <stdio.h>
 #include <stdint.h>
-#include "../arch/arm/gic-v2.h"
+#include <irq-chip.h>
 
 static timer_callback_t __host_callback[NR_CPUS];
 static timer_callback_t __guest_callback[NR_CPUS];
 static uint32_t __host_tickcount[NR_CPUS];
 static uint32_t __guest_tickcount[NR_CPUS];
-
 static struct timer_ops *__ops;
 
 /* TODO:(igkang) Conditional timeunit function definition based on CFG_CNTFRQ */
@@ -197,8 +196,8 @@ static void timer_handler(int irq, void *pregs, void *pdata)
 static void timer_requset_irq(uint32_t irq)
 {
     register_irq_handler(irq, &timer_handler);
-    gic_configure_irq(irq, 0);  // 0 is level sensitive.
-    gic_enable_irq(irq);
+    irq_chip->set_irq_type(irq, 0);  // 0 is level sensitive.
+    irq_chip->enable(irq);
 }
 
 static hvmm_status_t timer__host_set_callback(timer_callback_t func, uint32_t interval_us)

@@ -9,7 +9,6 @@
 #include <assert.h>
 #include <rtsm-config.h>
 
-#include "../arch/arm/arch_init.h"
 #include <platform.h>
 #include <core/vdev.h>
 #include <arch/armv7.h>
@@ -20,6 +19,7 @@
 #include <core/interrupt.h>
 
 #include "../arch/arm/mm.h"
+#include "../platform/rtsm/arch_init.h"
 
 static vmid_t vm[NUM_GUESTS_STATIC];
 uint8_t secondary_smp_pen;

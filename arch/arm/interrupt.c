@@ -2,10 +2,11 @@
 #include <hvmm_types.h>
 #include <arch/armv7.h>
 #include <core/vm/vcpu.h>
-#include "../arch/arm/arch_init.h"
 #include <core/scheduler.h>
 #include <rtsm-config.h>
 
+#include "../platform/rtsm/arch_init.h"
+#include <irq-chip.h>
 #define VIRQ_MIN_VALID_PIRQ     16
 #define VIRQ_NUM_MAX_PIRQS      MAX_IRQS
 
@@ -25,13 +26,14 @@ static void interrupt_inject_enabled_guest(uint32_t irq)
             continue;
         }
 
-        virq_inject(vcpu->vcpuid, virq, irq, INJECT_HW);
+        //virq_inject(vcpu->vcpuid, virq, irq, INJECT_HW);
+        irq_chip->forward(vcpu->vcpuid, virq, irq, INJECT_HW);
     }
 }
 
 void interrupt_init()
 {
-    arch_irq_init();
+    irq_chip_init();
 }
 
 void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
@@ -52,6 +54,15 @@ void interrupt_service_routine(int irq, void *current_regs)
 
     struct arch_regs *regs = (struct arch_regs *)current_regs;
 
+    irq_chip->eoi(irq);
+    interrupt_inject_enabled_guest(irq);
+
+    /* Host irq */
+    if (interrupt_handlers[irq]) {
+        interrupt_handlers[irq](irq, regs, 0);
+        irq_chip->dir(irq);
+    }
+#if 0
     gic_completion_irq(irq);
     interrupt_inject_enabled_guest(irq);
 
@@ -60,5 +71,6 @@ void interrupt_service_routine(int irq, void *current_regs)
         interrupt_handlers[irq](irq, regs, 0);
         gic_deactivate_irq(irq);
     }
+#endif
 }
 
