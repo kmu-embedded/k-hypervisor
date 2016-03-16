@@ -1,6 +1,7 @@
 # Makefile
 # TODO(wonseok): Add configuration file for board.
 
+TARGET			= rtsm
 ######################################################
 # MAKEFILE VERBOSE OPTION
 ######################################################
@@ -25,6 +26,7 @@ include ${SOURCE_PATH}/arch/arm/Makefile
 include ${SOURCE_PATH}/core/Makefile
 include ${SOURCE_PATH}/drivers/Makefile
 include ${SOURCE_PATH}/lib/c/src/Makefile
+include ${SOURCE_PATH}/platform/Makefile
 
 ASMS+= $(patsubst %, arch/arm/%, ${ARCH_ASMS})
 ASMS+= $(patsubst %, lib/c/src/%, ${LIBC_ASMS})
@@ -33,6 +35,7 @@ SRCS+= $(patsubst %, arch/arm/%, ${ARCH_SRCS})
 SRCS+= $(patsubst %, core/%, ${CORE_SRCS})
 SRCS+= $(patsubst %, drivers/%, ${DRIVER_SRCS})
 SRCS+= $(patsubst %, lib/c/src/%, ${LIBC_SRCS})
+SRCS+= $(patsubst %, platform/%, ${PLAT_SRCS})
 
 OBJS+= $(ASMS:%.S=${BUILD_PATH}/%.o)
 OBJS+= $(SRCS:%.c=${BUILD_PATH}/%.o)
@@ -77,30 +80,28 @@ endif
 
 INCLUDES= -I${SOURCE_PATH}/include
 INCLUDES+= -I${SOURCE_PATH}/lib/c/include
-
-INCLUDES+= -I${SOURCE_PATH}/arch/arm/platform
+INCLUDES+= -I${SOURCE_PATH}/platform/${TARGET}
 
 ######################################################
 # OUTPUT FILENAMES
 ######################################################
-MACHINE			= rtsm
 PROJECT			= khypervisor
-TARGET			= khypervisor-$(MACHINE)
 LD_SCRIPT		= ${PROJECT}.lds.S
-OUTPUT			= ${TARGET}.axf
-MAP				= ${PROJECT}.map
-BIN				= ${BUILD_PATH}/${TARGET}.bin
+OUTPUT			= khypervisor-${TARGET}
+ELF				= ${OUTPUT}.axf
+MAP				= ${OUTPUT}.map
+BIN				= ${BUILD_PATH}/${OUTPUT}.bin
 
 ######################################################
 # BUILD RULES
 ######################################################
-all: ${OUTPUT} ${MACHINE}.lds ${MAP}
+all: ${ELF} ${TARGET}.lds ${MAP}
 
-${OUTPUT}: ${OBJS} ${MACHINE}.lds
+${ELF}: ${OBJS} ${TARGET}.lds
 	${Q}echo "[LD] $@"
-	${Q}${LD} ${LDFLAGS} ${OBJS} -e __start -T ${BUILD_PATH}/${MACHINE}.lds -o $@
+	${Q}${LD} ${LDFLAGS} ${OBJS} -e __start -T ${BUILD_PATH}/${TARGET}.lds -o $@
 
-${MACHINE}.lds: ${LD_SCRIPT} | ${DIRECTORIES}
+${TARGET}.lds: ${LD_SCRIPT} | ${DIRECTORIES}
 	${Q}echo "[LD SCRIPT] $@"
 	${Q}${CC} ${CFLAGS} ${INCLUDES} -E -P -o ${BUILD_PATH}/$@ -x c $<
 
@@ -113,10 +114,9 @@ ${BUILD_PATH}/%.o: %.c | ${DIRECTORIES}
 	${Q}${CC} ${CFLAGS} ${DFLAGS} ${INCLUDES} -c $< -o $@
 
 ${DIRECTORIES}:
-	@echo mkdir ${DIRECTORIES}
-	mkdir -p ${DIRECTORIES}
+	${Q}mkdir -p ${DIRECTORIES}
 
-${MAP}: ${OUTPUT}
+${MAP}: ${ELF}
 	${Q}echo "[NM] $@"
 	${Q}${NM} $< > ${BUILD_PATH}/$@
 
@@ -126,5 +126,5 @@ style:
 
 clean:
 	${Q}echo "[CLEAN] ${PROJECT}"
-	${Q}rm -rf ${OBJS} ${OUTPUT} ${BUILD_PATH}/${MACHINE}.lds
+	${Q}rm -rf ${OBJS} ${ELF} ${BUILD_PATH}/${MACHINE}.lds
 	${Q}if [ -d $(BUILD_PATH) ]; then rm -r ${BUILD_PATH}; fi
