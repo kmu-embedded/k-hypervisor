@@ -1,5 +1,6 @@
 #include "arch_init.h"
-#include "mm.h"
+#include "../../arch/arm/mm.h"
+#include <irq-chip.h>
 
 extern uint32_t __hvc_vector;
 void SECTION(".init.arch") arch_cpu_init()
@@ -11,12 +12,12 @@ void SECTION(".init.arch") arch_cpu_init()
     // TODO(casionwoo): add cache operation in arch/arm
 }
 
-#include "gic-v2.h"
-#include "vgic.h"
-void SECTION(".init.arch") arch_irq_init()
+#include "../../arch/arm/gic-v2.h"
+void SECTION(".init.arch") irq_chip_init()
 {
     // TODO(casionwoo): add a init function of irq handler table for hypervisor.
-    gic_init();
+    register_irq_chip();
+    irq_chip->init();
 
     write_hcr(0x10 | 0x8);
 }

@@ -7,6 +7,8 @@
 #include <core/scheduler.h>
 #include <stdio.h>
 
+#include "irq-chip.h"
+
 #define VIRQ_MAX_ENTRIES                128
 #define VGIC_MAINTENANCE_INTERRUPT_IRQ  25
 #define VGIC_MAX_LISTREGISTERS          VGIC_NUM_MAX_SLOTS
@@ -362,4 +364,3 @@ hvmm_status_t virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t
 
     return HVMM_STATUS_BUSY;
 }
-

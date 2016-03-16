@@ -32,14 +32,14 @@ enum gic_sgi {
     GIC_SGI_SLOT_CHECK = 1,
 };
 
+void gic_init(void);
 void gic_enable_irq(uint32_t irq);
 void gic_disable_irq(uint32_t irq);
-void gic_init(void);
-void gic_deactivate_irq(uint32_t irq);
-void gic_completion_irq(uint32_t irq);
-
-void gic_configure_irq(uint32_t irq, uint8_t polarity);
 uint32_t gic_get_irq_number(void);
+void gic_completion_irq(uint32_t irq);
+void gic_deactivate_irq(uint32_t irq);
+void gic_configure_irq(uint32_t irq, uint8_t polarity);
+
 void gic_set_sgi(const uint32_t target, uint32_t sgi);
 
 /* GICH related functions */
