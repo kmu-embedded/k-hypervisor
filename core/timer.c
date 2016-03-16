@@ -200,7 +200,7 @@ static void timer_requset_irq(uint32_t irq)
     irq_hw->enable(irq);
 }
 
-static hvmm_status_t timer__host_set_callback(timer_callback_t func, uint32_t interval_us)
+static hvmm_status_t timer_host_set_callback(timer_callback_t func, uint32_t interval_us)
 {
     uint32_t pcpu = smp_processor_id();
 
@@ -211,7 +211,7 @@ static hvmm_status_t timer__host_set_callback(timer_callback_t func, uint32_t in
     return HVMM_STATUS_SUCCESS;
 }
 
-static hvmm_status_t timer__guest_set_callback(timer_callback_t func, uint32_t interval_us)
+static hvmm_status_t timer_guest_set_callback(timer_callback_t func, uint32_t interval_us)
 {
     uint32_t pcpu = smp_processor_id();
 
@@ -226,11 +226,11 @@ hvmm_status_t timer_set(struct timer *timer, uint32_t host)
 {
     if (host) {
         timer_stop();
-        timer__host_set_callback(timer->callback, timer->interval);
+        timer_host_set_callback(timer->callback, timer->interval);
         timer_set_absolute(TICK_PERIOD_US);
         timer_start();
     } else {
-        timer__guest_set_callback(timer->callback, timer->interval);
+        timer_guest_set_callback(timer->callback, timer->interval);
     }
 
     /* TODO:(igkang) add code to handle guest_callback count (for vdev)  */
