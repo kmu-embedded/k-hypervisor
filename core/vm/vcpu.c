@@ -1,5 +1,5 @@
 #include <core/vm/vcpu.h>
-#include <debug_print.h>
+#include <debug.h>
 #include <core/timer.h>
 #include <arch/armv7/smp.h>
 #include <stdio.h>

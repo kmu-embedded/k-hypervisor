@@ -3,7 +3,7 @@
 #include <arch/armv7.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <debug_print.h>
+#include <debug.h>
 #include <stdbool.h>
 
 #include <lib/list.h>

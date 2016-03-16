@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <debug_print.h>
+#include <debug.h>
 #include <core/vm.h>
 #include <core/scheduler.h>
 

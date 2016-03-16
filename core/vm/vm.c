@@ -1,5 +1,5 @@
 #include <core/vm.h>
-#include <debug_print.h>
+#include <debug.h>
 #include <stdio.h>
 #include <string.h>
 #include <atags.h>

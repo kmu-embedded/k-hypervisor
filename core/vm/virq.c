@@ -1,5 +1,5 @@
 #include <core/vm/virq.h>
-#include <debug_print.h>
+#include <debug.h>
 #include <config.h>
 #include <stdlib.h>
 

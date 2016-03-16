@@ -1,5 +1,5 @@
 #include <core/vm/vmem.h>
-#include <debug_print.h>
+#include <debug.h>
 #include <config.h>
 #include <arch/armv7.h>
 #include "../../arch/arm/paging.h"

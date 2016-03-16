@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <debug_print.h>
+#include <debug.h>
 #include <hvmm_trace.h>
 #include <arch/armv7.h>
 
