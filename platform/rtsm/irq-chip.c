@@ -1,7 +1,7 @@
 #include <irq-chip.h>
-#include "../../arch/arm/gic-v2.h"
+#include "../../drivers/gic-v2.h"
 
-struct irq_chip_t gicv2 = {
+struct irq_chip gic_v2 = {
     .init = gic_init,
     .enable = gic_enable_irq,
     .disable = gic_disable_irq,
@@ -9,10 +9,18 @@ struct irq_chip_t gicv2 = {
     .eoi = gic_completion_irq,
     .dir = gic_deactivate_irq,
     .set_irq_type = gic_configure_irq,
-    .forward = virq_inject,
+};
+
+struct virq_chip vgic_v2 = {
+    .init = gich_init,
+    .enable = gich_enable,
+    .disable = gich_disable,
+    .forward_pending_irq = gic_inject_pending_irqs,
+    .forward_irq = virq_inject,
 };
 
 void register_irq_chip()
 {
-    irq_chip = &gicv2;
+    irq_hw = &gic_v2;
+    virq_hw = &vgic_v2;
 }

@@ -2,7 +2,7 @@
 #define __VGIC_H__
 
 #include <stdint.h>
-#include "gic-v2.h"
+#include "../../drivers/gic-v2.h"
 
 struct vgic_status {
     uint32_t lr[64];        /**< List Registers */

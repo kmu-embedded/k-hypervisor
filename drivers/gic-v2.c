@@ -38,6 +38,25 @@ static uint32_t gic_find_free_slot(void)
     return slot;
 }
 
+uint32_t gic_inject_virq(uint32_t virq, uint32_t slot, enum virq_state state, uint32_t priority,
+        uint8_t hw, uint32_t physrc, uint8_t maintenance)
+{
+    uint32_t physicalid;
+    uint32_t lr_desc;
+
+    physicalid = (hw ? physrc : (maintenance << 9) | (physrc & 0x7)) << GICH_LR_PHYSICALID_SHIFT;
+    physicalid &= GICH_LR_PHYSICALID_MASK;
+    lr_desc = (GICH_LR_HW_MASK & (hw << GICH_LR_HW_SHIFT)) |
+              (GICH_LR_STATE_MASK & (state << GICH_LR_STATE_SHIFT)) |
+              (GICH_LR_PRIORITY_MASK & ((priority >> 3) << GICH_LR_PRIORITY_SHIFT)) |
+              physicalid | (GICH_LR_VIRTUALID_MASK & virq);
+
+    GICH_WRITE(GICH_LR(slot), lr_desc);
+
+    return slot;
+}
+
+
 static uint32_t gic_inject_virq_hw(uint32_t virq, enum virq_state state, uint32_t priority, uint32_t pirq)
 {
     uint32_t slot = VGIC_SLOT_NOTFOUND;
@@ -203,12 +222,17 @@ void SECTION(".init") gic_init(void)
     }
 #endif
 
+
+}
+
+void gich_init()
+{
     // Initialization GICH
     GICv2.num_lr = (GICH_READ(GICH_VTR) & GICH_VTR_LISTREGS_MASK) + 1;
     GICv2.valid_lr_mask = gic_valid_lr_mask(GICv2.num_lr);
     gic_maintenance_irq_enable();
-    gich_enable(1);
 
+    gich_enable();
 }
 
 void gic_configure_irq(uint32_t irq, uint8_t polarity)
@@ -272,15 +296,17 @@ void gic_deactivate_irq(uint32_t irq)
     GICC_WRITE(GICC_DIR_OFFSET, irq);
 }
 
-void gich_enable(uint8_t enable)
+void gich_disable(void)
 {
     uint32_t hcr = GICH_READ(GICH_HCR);
+    hcr &= ~(GICH_HCR_EN);
+    GICH_WRITE(GICH_HCR, hcr);
+}
 
-    if (enable)
-        hcr |= GICH_HCR_EN;
-    else
-        hcr &= ~(GICH_HCR_EN);
-
+void gich_enable(void)
+{
+    uint32_t hcr = GICH_READ(GICH_HCR);
+    hcr |= GICH_HCR_EN;
     GICH_WRITE(GICH_HCR, hcr);
 }
 
@@ -310,24 +336,6 @@ hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid)
     }
 
     return HVMM_STATUS_SUCCESS;
-}
-
-uint32_t gic_inject_virq(uint32_t virq, uint32_t slot, enum virq_state state, uint32_t priority,
-        uint8_t hw, uint32_t physrc, uint8_t maintenance)
-{
-    uint32_t physicalid;
-    uint32_t lr_desc;
-
-    physicalid = (hw ? physrc : (maintenance << 9) | (physrc & 0x7)) << GICH_LR_PHYSICALID_SHIFT;
-    physicalid &= GICH_LR_PHYSICALID_MASK;
-    lr_desc = (GICH_LR_HW_MASK & (hw << GICH_LR_HW_SHIFT)) |
-              (GICH_LR_STATE_MASK & (state << GICH_LR_STATE_SHIFT)) |
-              (GICH_LR_PRIORITY_MASK & ((priority >> 3) << GICH_LR_PRIORITY_SHIFT)) |
-              physicalid | (GICH_LR_VIRTUALID_MASK & virq);
-
-    GICH_WRITE(GICH_LR(slot), lr_desc);
-
-    return slot;
 }
 
 static DEFINE_MUTEX(VIRQ_MUTEX);
