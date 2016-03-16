@@ -1,5 +1,5 @@
 #include <core/vm/vcpu_regs.h>
-#include <debug_print.h>
+#include <debug.h>
 #include <stdio.h>
 #include <arch/armv7.h>
 #include <core/scheduler.h>

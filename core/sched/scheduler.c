@@ -7,7 +7,7 @@
 #include <core/sched/scheduler_skeleton.h>
 
 #include <hvmm_trace.h>
-#include <debug_print.h>
+#include <debug.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <lib/list.h>
