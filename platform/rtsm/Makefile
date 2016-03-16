@@ -1,2 +1,2 @@
-PLATFORM_SRCS += rtsm.c
+PLATFORM_SRCS += platform.c
 PLATFORM_SRCS += interrupt.c
