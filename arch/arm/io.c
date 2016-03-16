@@ -16,4 +16,3 @@ uint64_t read64(addr_t addr)
     result |= (uint64_t) __readl(addr + 0x4) << 32;
     return result;
 }
-

@@ -19,7 +19,7 @@ struct virq_chip vgic_v2 = {
     .forward_irq = virq_inject,
 };
 
-void set_irqchip_type()
+void set_irqchip_type(void)
 {
     irq_hw = &gic_v2;
     virq_hw = &vgic_v2;

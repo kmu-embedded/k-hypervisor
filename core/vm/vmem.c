@@ -182,7 +182,7 @@ void vmem_create(struct vmem *vmem, vmid_t vmid)
 {
 
     vmem->base = (uint32_t) &__VM_PGTABLE + (PGTABLE_SIZE << (vmid - 1));
-    paging_create_mapping(vmem->base);
+    paging_create(vmem->base);
 
     vmem->vttbr = ((uint64_t) vmid << VTTBR_VMID_SHIFT) & VTTBR_VMID_MASK;
     vmem->vttbr &= ~(VTTBR_BADDR_MASK);

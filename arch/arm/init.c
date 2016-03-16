@@ -1,15 +1,5 @@
 #include "init.h"
-#include <assert.h>
-
-extern uint32_t __hvc_vector;
-void SECTION(".init.arch") setup_vector()
-{
-    uint32_t vector_base = (uint32_t) &__hvc_vector;
-    write_hvbar(vector_base);
-    assert(read_hvbar() == vector_base);
-    // TODO(wonseok): D-Cache invalidate and TLB flush.
-    // TODO(casionwoo): add cache operation in arch/arm
-}
+#include "cpu.h"
 
 #include <platform.h>
 #include <libc_init.h>
@@ -18,18 +8,23 @@ void SECTION(".init.arch") setup_vector()
 #include <core/vdev.h>
 #include <core/timer.h>
 
+extern uint32_t __HYP_PGTABLE;
+
 void init_system()
 {
     uint8_t cpuid = smp_processor_id();
 
+    setup_vector();
+
     if (cpuid == 0) {
+        // TODO(wonseok) console init will be moved dev_init().
         console_init();
 
         libc_init();
 
         irq_init();
 
-        paging_init();
+        paging_create((addr_t) &__HYP_PGTABLE);
 
         platform_init();
 
@@ -45,8 +40,11 @@ void init_system()
 #endif
     }
 
-    // Per CPU
-    setup_vector();
-    paging_enable_mmu();
+    setup_mem_attr();
+
+    setup_httbr((uint32_t) &__HYP_PGTABLE);
+
+    enable_mmu();
+
     start_hypervisor();
 }
