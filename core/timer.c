@@ -8,7 +8,7 @@
 #include <rtsm-config.h>
 #include <hvmm_trace.h>
 #include <arch/armv7.h>
-#include <core/interrupt.h>
+#include <core/irq.h>
 #include <debug_print.h>
 #include <core/timer.h>
 #include <stdio.h>

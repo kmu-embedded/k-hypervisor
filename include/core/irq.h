@@ -1,5 +1,5 @@
-#ifndef __IRQ_H__
-#define __IRQ_H__
+#ifndef __INTERRUPT_H__
+#define __INTERRUPT_H__
 
 #include <stdint.h>
 #include "hvmm_types.h"

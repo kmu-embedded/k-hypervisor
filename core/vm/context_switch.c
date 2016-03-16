@@ -2,7 +2,7 @@
 #include <core/context_switch.h>
 #include <core/vm.h>
 #include <core/vm/vcpu.h>
-#include <core/interrupt.h>
+#include <core/irq.h>
 
 hvmm_status_t do_context_switch(vcpuid_t current_id, vcpuid_t next_id, struct core_regs *current_regs)
 {

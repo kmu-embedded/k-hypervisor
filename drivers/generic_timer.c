@@ -2,7 +2,7 @@
 #include <core/timer.h>
 #include <arch/armv7/arm_inline.h>
 #include <hvmm_trace.h>
-#include <core/interrupt.h>
+#include <core/irq.h>
 #include <rtsm-config.h>
 
 #define NS_PL2_PTIMER_IRQ   26

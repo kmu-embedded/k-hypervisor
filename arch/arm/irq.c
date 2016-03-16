@@ -1,4 +1,4 @@
-#include <core/interrupt.h>
+#include <core/irq.h>
 #include <hvmm_types.h>
 #include <arch/armv7.h>
 #include <core/vm/vcpu.h>
@@ -10,9 +10,9 @@
 #define VIRQ_MIN_VALID_PIRQ     16
 #define VIRQ_NUM_MAX_PIRQS      MAX_IRQS
 
-static interrupt_handler_t interrupt_handlers[MAX_IRQS];
+static irq_handler_t irq_handlers[MAX_IRQS];
 
-static void interrupt_inject_enabled_guest(uint32_t irq)
+static void irq_inject_enabled_guest(uint32_t irq)
 {
     uint32_t virq;
     struct vcpu *vcpu;
@@ -31,18 +31,19 @@ static void interrupt_inject_enabled_guest(uint32_t irq)
     }
 }
 
-void interrupt_init()
+void irq_init()
 {
     irq_chip_init();
+    write_hcr(0x10 | 0x8);
 }
 
-void register_irq_handler(uint32_t irq, interrupt_handler_t handler)
+void register_irq_handler(uint32_t irq, irq_handler_t handler)
 {
     if (irq < MAX_IRQS)
-        interrupt_handlers[irq] = handler;
+        irq_handlers[irq] = handler;
 }
 
-void interrupt_service_routine(int irq, void *current_regs)
+void irq_service_routine(int irq, void *current_regs)
 {
 
     /* TODO(casionwoo) :
@@ -55,11 +56,11 @@ void interrupt_service_routine(int irq, void *current_regs)
     struct arch_regs *regs = (struct arch_regs *)current_regs;
 
     irq_hw->eoi(irq);
-    interrupt_inject_enabled_guest(irq);
+    irq_inject_enabled_guest(irq);
 
     /* Host irq */
-    if (interrupt_handlers[irq]) {
-        interrupt_handlers[irq](irq, regs, 0);
+    if (irq_handlers[irq]) {
+        irq_handlers[irq](irq, regs, 0);
         irq_hw->dir(irq);
     }
 }

@@ -2,8 +2,8 @@
 #define __VIRQ_H__
 
 #include <hvmm_types.h>
-#include "../../../arch/arm/vgic.h"
-#include <core/interrupt.h>
+#include "../../../core/vm/vgic.h"
+#include <core/irq.h>
 
 #define MAX_PENDING_VIRQS    128
 #define MAX_NR_IRQ           1024

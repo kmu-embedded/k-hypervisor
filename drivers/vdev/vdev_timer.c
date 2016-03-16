@@ -2,12 +2,12 @@
 #define DEBUG
 #include <stdio.h>
 #include <core/timer.h>
-#include <core/interrupt.h>
+#include <core/irq.h>
 #include <arch/armv7.h>
 #include <core/scheduler.h>
 #include <rtsm-config.h>
 
-#include "../../arch/arm/vgic.h"
+#include "../../core/vm/vgic.h"
 
 #define VTIMER_BASE_ADDR 0x3FFFE000
 #define VTIMER_IRQ 30
