@@ -1,6 +1,6 @@
 #include "vgic.h"
-#include "gic-v2.h"
-#include "arch/gic_regs.h"
+#include "../../drivers/gic-v2.h"
+#include <arch/gic_regs.h>
 
 void vgic_init(struct vgic *vgic)
 {
