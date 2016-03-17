@@ -1,5 +1,6 @@
 #include "tests_vdev.h"
-#include <hvmm_types.h>
+
+#include "../include/types.h"
 
 //#include <gic_regs.h>
 //#include <asm-arm_inline.h>

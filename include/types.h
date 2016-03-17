@@ -1,11 +1,10 @@
-#ifndef __HVMM_TYPES_H__
-#define __HVMM_TYPES_H__
+#ifndef __TYPES_H__
+#define __TYPES_H__
 
-#define VMID_INVALID    0xFF
-#define VCPUID_INVALID    0xFF
-
-#define PIRQ_INVALID    0xFFFFFFFF
-#define VIRQ_INVALID    PIRQ_INVALID
+#define VMID_INVALID    	0xFF
+#define VCPUID_INVALID    	0xFF
+#define PIRQ_INVALID    	0xFFFFFFFF
+#define VIRQ_INVALID    	PIRQ_INVALID
 
 typedef enum hvmm_status {
     HVMM_STATUS_SUCCESS = 0,
@@ -21,4 +20,3 @@ typedef int vmid_t;
 typedef int vcpuid_t;
 
 #endif
-

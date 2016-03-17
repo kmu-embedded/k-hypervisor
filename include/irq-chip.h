@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <hvmm_types.h>
+
+#include "types.h"
 
 struct irq_chip {
     void (* init) (void);                       // gic_init

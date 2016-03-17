@@ -1,8 +1,8 @@
 #ifndef __TESTS__
 #define __TESTS__
 
-#include <hvmm_types.h>
 #include <stdint.h>
+#include "../include/types.h"
 
 /* Enable/Disable Test Items */
 

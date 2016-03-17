@@ -2,8 +2,7 @@
 #define __VCPU_H__
 
 #include <lib/list.h>
-#include <hvmm_types.h>
-
+#include "../../types.h"
 #include "vcpu_regs.h"
 #include "virq.h"
 

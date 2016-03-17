@@ -2,7 +2,8 @@
 #define _SCHEDULER_SKELETON_H_
 
 #include <stdint.h>
-#include <hvmm_types.h>
+
+#include "../../types.h"
 
 typedef uint32_t sched_id_t;
 struct scheduler {

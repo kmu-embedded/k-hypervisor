@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <hvmm_types.h>
 #include <io.h>
+#include "../include/types.h"
 //#include <core/interrupt.h>
 
 #define GIC_NUM_MAX_IRQS                1024

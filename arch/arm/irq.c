@@ -1,9 +1,9 @@
 #include <arch/irq.h>
-#include <hvmm_types.h>
 #include <config.h>
 #include <arch/armv7.h>
 
 #include <irq-chip.h>
+#include "../../include/types.h"
 
 #define VIRQ_MIN_VALID_PIRQ     16
 #define VIRQ_NUM_MAX_PIRQS      MAX_IRQS
