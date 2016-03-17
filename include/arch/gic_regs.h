@@ -16,11 +16,13 @@
 #define GICD_ICENABLER(n)	    (0x0180 + ((n) * 4))	/* v1 ICDICER */
 #define GICD_ISPENDR(n)		    (0x0200 + ((n) * 4))	/* v1 ICDISPR */
 #define GICD_ICPENDR(n)		    (0x0280 + ((n) * 4))	/* v1 ICDICPR */
+#define GICD_ISACTIVER(n)	    (0x0300 + ((n) * 4))	/* v1 ICDABR */
 #define GICD_ICACTIVER(n)	    (0x0380 + ((n) * 4))	/* v1 ICDABR */
 #define GICD_IPRIORITYR(n)	    (0x0400 + ((n) * 4))	/* v1 ICDIPR */
 #define GICD_ITARGETSR(n)	    (0x0800 + ((n) * 4))	/* v1 ICDIPTR */
 #define GICD_ICFGR(n)		    (0x0C00 + ((n) * 4))	/* v1 ICDICFR */
 #define GICD_SGIR(n)		    (0x0F00 + ((n) * 4))	/* v1 ICDSGIR */
+#define GICD_CPENDSGIR(n)		(0x0F10 + ((n) * 4))	/* v1 ICDICFR */
 
 /* CPU Registers */
 #define GICC_CTLR_OFFSET	    0x0000			/* v1 ICCICR */
