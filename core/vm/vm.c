@@ -5,6 +5,8 @@
 #include <atags.h>
 #include <vdev.h>
 
+#include "../../arch/arm/vgic.h"
+
 void print_vm(struct vmcb *vm);
 
 static struct list_head vm_list;
@@ -74,6 +76,7 @@ vmcb_state_t vm_init(vmid_t vmid)
     vm->state = HALTED;
 
     vmem_init(&vm->vmem);
+    vgic_init(&vm->vgic);
 
     return vm->state;
 }

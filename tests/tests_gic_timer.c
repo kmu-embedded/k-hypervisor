@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "../arch/arm/gic-v2.h"
-#include "../arch/arm/vgic.h"
 #include <core/vm/vcpu.h>
 #include <hvmm_trace.h>
 #include <arch/armv7.h>

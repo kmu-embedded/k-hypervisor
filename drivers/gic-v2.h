@@ -52,6 +52,10 @@ void gich_disable(void);
 hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid);
 bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw);
 
+void update_lr(uint32_t offset, uint32_t value);
+uint32_t gic_inject_virq(uint32_t hw, enum virq_state state, uint32_t priority, uint32_t physicalid, uint32_t virtualid, uint32_t slot);
+
+#include <io.h>
 #define GICD_READ(offset)           __readl(GICv2.gicd + offset)
 #define GICD_WRITE(offset, value)   __writel(value, GICv2.gicd + offset)
 
