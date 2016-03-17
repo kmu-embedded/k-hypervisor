@@ -5,7 +5,7 @@
 #include <libc_init.h>
 #include <arch/irq.h>
 #include "paging.h"
-#include <core/vdev.h>
+#include <vdev.h>
 #include <core/timer.h>
 
 extern uint32_t __HYP_PGTABLE;

@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <atags.h>
-#include <core/vdev.h>
+#include <vdev.h>
 
 void print_vm(struct vmcb *vm);
 

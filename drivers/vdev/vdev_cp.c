@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <core/vm/vcpu.h>
 #include "../../arch/arm/hvc_trap.h"
-#include <core/vdev.h>
+#include <vdev.h>
 #include <arch/armv7.h>
 
 /* Common in EC, HSR[31:30] zero */

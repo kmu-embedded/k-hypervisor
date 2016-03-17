@@ -1,5 +1,5 @@
 #include <arch/gic_regs.h>
-#include <core/vdev.h>
+#include <vdev.h>
 #include <arch/armv7.h>
 #include <core/scheduler.h>
 #include <config.h>
