@@ -5,6 +5,8 @@
 #include <atags.h>
 #include <vdev.h>
 
+#include "../../arch/arm/vgic.h"
+
 void print_vm(struct vmcb *vm);
 
 static struct list_head vm_list;
