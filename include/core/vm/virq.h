@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <hvmm_types.h>
+
+#include "../../types.h"
 
 #define MAX_PENDING_VIRQS    128
 #define MAX_NR_IRQ           1024

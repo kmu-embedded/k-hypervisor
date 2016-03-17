@@ -1,8 +1,8 @@
 #ifndef __VMEM_H__
 #define __VMEM_H__
 
-#include <hvmm_types.h>
 #include <stdint.h>
+#include "../../types.h"
 
 struct vmem {
     struct memdesc_t **memmap;

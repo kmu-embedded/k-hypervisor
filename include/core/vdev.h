@@ -1,7 +1,7 @@
 #ifndef __VDEV_H_
 #define __VDEV_H_
 
-#include <hvmm_types.h>
+#include "../types.h"
 #include "vm/vcpu.h"
 
 enum vdev_access_size {

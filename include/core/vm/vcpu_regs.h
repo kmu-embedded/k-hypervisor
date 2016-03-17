@@ -1,8 +1,8 @@
 #ifndef __VCPU_REGS_H__
 #define __VCPU_REGS_H__
 
-#include <hvmm_types.h>
 #include <stdint.h>
+#include "../../types.h"
 
 #define ARCH_REGS_NUM_GPR    13
 

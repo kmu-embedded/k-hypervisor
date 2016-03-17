@@ -2,8 +2,7 @@
 #define __VM_H__
 
 #include <lib/list.h>
-#include <hvmm_types.h>
-
+#include "../types.h"
 #include "vm/vcpu.h"
 #include "vm/vmem.h"
 #include "vm/virq.h"

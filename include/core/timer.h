@@ -1,8 +1,8 @@
 #ifndef __TIMER_H__
 #define __TIMER_H__
 
-#include <hvmm_types.h>
 #include <stdint.h>
+#include "../types.h"
 
 
 #define GUEST_TIMER 0
