@@ -1,4 +1,4 @@
-#include <core/irq.h>
+#include <arch/irq.h>
 #include <hvmm_types.h>
 #include <config.h>
 #include <arch/armv7.h>

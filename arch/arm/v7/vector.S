@@ -1,4 +1,4 @@
-#include <asm/asm.h>
+#include <asm/macro.h>
 #include <config.h>
     .syntax unified
     .arch_extension sec

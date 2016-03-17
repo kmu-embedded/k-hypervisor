@@ -1,14 +1,13 @@
 #include <stdio.h>
-#include <debug.h>
-#include <hvmm_trace.h>
+#include <stdlib.h>
+#include <asm/asm.h>
 #include <arch/armv7.h>
 
-#include <core/irq.h>
-#include <core/scheduler.h>
+#include <debug.h>
+
 #include <core/vdev.h>
 
 #include "hvc_trap.h"
-#include "../../drivers/gic-v2.h"
 
 static void _trap_dump_bregs(void)
 {
@@ -28,7 +27,7 @@ static void _trap_dump_bregs(void)
     debug_print(" - irq: spsr:%x sp:%x lr:%x\n", spsr, sp, lr);
 }
 
-enum hyp_hvc_result do_hvc_trap(struct core_regs *regs)
+int do_hvc_trap(struct core_regs *regs)
 {
     int32_t vdev_num = -1;
 
@@ -99,10 +98,11 @@ enum hyp_hvc_result do_hvc_trap(struct core_regs *regs)
         }
     }
     vdev_post(level, vdev_num, &info, regs);
+    return 0;
 
-    return HYP_RESULT_ERET;
 trap_error:
     _trap_dump_bregs();
     debug_print("fipa is %x guest pc is %x\n", fipa, regs->pc);
-    hyp_abort_infinite();
+    abort();
+    return -1;
 }

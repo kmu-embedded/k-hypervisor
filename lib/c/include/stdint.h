@@ -84,7 +84,21 @@
 /*
  * 7.18.1.1 Exact-width integers
  */
-#include <asm/stdint.h>
+typedef signed char int8_t;
+typedef short int16_t;
+typedef long int32_t;
+typedef long long int64_t;
+
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
+
+typedef unsigned int addr_t;
+
+typedef uint32_t uint32ptr_t;
+
+#define __PTR_SIZE 32
 
 /*
  * 7.18.2.1 Limits of exact-wdith integer types

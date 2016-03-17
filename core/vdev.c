@@ -1,5 +1,4 @@
 #include <core/vdev.h>
-#include <hvmm_trace.h>
 #include <stdio.h>
 #include <debug.h>
 #include <arch/armv7.h>
@@ -213,7 +212,7 @@ hvmm_status_t vdev_module_initcall(initcall_t fn)
  * \retval 0 on success
  * \retval -1 This is an internal error.
  */
-#include <asm/asm.h>
+#include "../include/asm/macro.h"
 hvmm_status_t SECTION(".init.vdev") vdev_init(void)
 {
     int i, j;

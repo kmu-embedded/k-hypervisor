@@ -2,10 +2,7 @@
 #define __ARM_INLINE__
 
 #include <stdint.h>
-
-#ifdef CONFIG_C99
-#include "c99.h"
-#endif
+#include <asm/asm.h>
 
 #define sev()   asm __volatile__ ("sev" : : : "memory")
 #define wfe()   asm __volatile__ ("wfe" : : : "memory")

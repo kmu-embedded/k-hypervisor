@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <asm/assembly.h>
+#include "assembly.h"
 
 // struct { uint64_t quot, uint64_t rem}
 //        __aeabi_uldivmod(uint64_t numerator, uint64_t denominator) {

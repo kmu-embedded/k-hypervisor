@@ -2,10 +2,8 @@
 #define __GENERIC_TIMER_H___
 
 #include <stdint.h>
+#include <asm/asm.h>
 
-#ifdef CONFIG_C99
-#include "c99.h"
-#endif
 
 /* Generic Timer */
 #define read_cntfrq()           ({ uint32_t rval; asm volatile(\

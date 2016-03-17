@@ -12,7 +12,7 @@
  *
  *===----------------------------------------------------------------------===*/
 
-#include <asm/assembly.h>
+#include "assembly.h"
 
 	.syntax unified
 	.text

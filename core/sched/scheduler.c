@@ -1,12 +1,11 @@
 #include <arch/armv7.h>
 #include <config.h>
 #include <core/timer.h>
-#include <core/irq.h>
+#include <arch/irq.h>
 #include <core/context_switch.h>
 #include <core/scheduler.h>
 #include <core/sched/scheduler_skeleton.h>
 
-#include <hvmm_trace.h>
 #include <debug.h>
 #include <stdlib.h>
 #include <stdio.h>

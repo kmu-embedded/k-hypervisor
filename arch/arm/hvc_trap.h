@@ -96,6 +96,6 @@
  * @param regs ARM registers for current virtual machine.
  * @return Returns the result of exceptions.
  */
-enum hyp_hvc_result do_hvc_trap(struct core_regs *regs);
+int do_hvc_trap(struct core_regs *regs);
 
 #endif
