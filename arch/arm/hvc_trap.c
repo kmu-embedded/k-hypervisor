@@ -5,7 +5,7 @@
 
 #include <debug.h>
 
-#include <core/vdev.h>
+#include <vdev.h>
 
 #include "hvc_trap.h"
 

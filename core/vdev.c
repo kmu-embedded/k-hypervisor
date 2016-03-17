@@ -1,4 +1,4 @@
-#include <core/vdev.h>
+#include <vdev.h>
 #include <stdio.h>
 #include <debug.h>
 #include <arch/armv7.h>

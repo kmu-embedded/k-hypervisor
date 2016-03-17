@@ -1,8 +1,8 @@
 #ifndef __VDEV_H_
 #define __VDEV_H_
 
-#include "../types.h"
-#include "vm/vcpu.h"
+#include "types.h"
+#include "core/vm/vcpu.h"
 
 enum vdev_access_size {
     VDEV_ACCESS_BYTE = 0,
