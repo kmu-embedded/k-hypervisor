@@ -2,10 +2,7 @@
 #define __ARMV7_TLB_H__
 
 #include <stdint.h>
-
-#ifdef CONFIG_C99
-#include "c99.h"
-#endif
+#include <asm/asm.h>
 
 // TODO: add tlb-related operations
 /* Invalidate entire unified TLB */

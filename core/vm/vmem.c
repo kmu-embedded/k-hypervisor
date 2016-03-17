@@ -2,6 +2,7 @@
 #include <debug.h>
 #include <config.h>
 #include <arch/armv7.h>
+#include <size.h>
 #include "../../arch/arm/paging.h"
 
 struct memdesc_t {

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <arch/armv7.h>
-#include <asm/asm.h>
+#include "../../include/asm/macro.h"
 #include "lpae.h"
 
 void paging_init();

@@ -8,7 +8,7 @@ void setup_mem_attr(void);
 void setup_httbr(addr_t pgtable);
 void enable_mmu(void);
 
-#include <asm/asm.h>
+#include "../../include/asm/macro.h"
 
 #define read_hvbar()        ({ uint32_t rval; asm volatile(\
                             "mrc     p15, 4, %0, c12, c0, 0\n\t" \

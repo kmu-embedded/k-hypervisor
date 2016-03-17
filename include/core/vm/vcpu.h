@@ -5,16 +5,11 @@
 #include <hvmm_types.h>
 
 #include "vcpu_regs.h"
-#include <core/vm/virq.h>
+#include "virq.h"
 
 #define VCPU_CREATE_FAILED    NULL
 #define VCPU_NOT_EXISTED      NULL
 #define NUM_GUEST_CONTEXTS    NUM_GUESTS_CPU0_STATIC
-
-enum hyp_hvc_result {
-    HYP_RESULT_ERET = 0,
-    HYP_RESULT_STAY = 1
-};
 
 typedef enum vcpu_state {
     VCPU_UNDEFINED,

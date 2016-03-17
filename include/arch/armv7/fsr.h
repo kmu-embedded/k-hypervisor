@@ -2,10 +2,8 @@
 #define __FSR_H__
 
 #include <stdint.h>
+#include <asm/asm.h>
 
-#ifdef CONFIG_C99
-#include "c99.h"
-#endif
 
 /* Definition of Fault Status Registers */
 #define read_hdfar()            ({ uint32_t rval; asm volatile(\

@@ -2,7 +2,7 @@
 #define _SCHEDULER_SKELETON_H_
 
 #include <stdint.h>
-#include <core/vm/vcpu.h>
+#include <hvmm_types.h>
 
 typedef uint32_t sched_id_t;
 struct scheduler {

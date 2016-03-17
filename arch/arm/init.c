@@ -3,7 +3,7 @@
 
 #include <platform.h>
 #include <libc_init.h>
-#include <core/irq.h>
+#include <arch/irq.h>
 #include "paging.h"
 #include <core/vdev.h>
 #include <core/timer.h>

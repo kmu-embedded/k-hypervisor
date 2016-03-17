@@ -82,7 +82,7 @@
 #ifndef _SETJMP_H_
 #define _SETJMP_H_
 
-#include <arch/setjmp.h>
+typedef int jmp_buf[10];
 
 int setjmp(jmp_buf);
 void longjmp(jmp_buf, int);

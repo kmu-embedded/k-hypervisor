@@ -1,4 +1,4 @@
-#include <asm/asm.h>
+#include <asm/macro.h>
 
 BEGIN_PROC(__set_vcpu_context_first_time)
     @ r0 = vcpu_regs->core_regs

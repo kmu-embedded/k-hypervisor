@@ -2,12 +2,14 @@
 #include <arch/gic_regs.h>  // Define OFFSETS
 #include <arch/armv7.h>     // get_periphbase()
 #include <io.h>
-#include <asm/asm.h>        // SECTION(x)
 #include <core/vm/vcpu.h>
 #include <core/scheduler.h>
 #include <stdio.h>
+#include "../include/asm/macro.h"        // SECTION(x)
 
 #include "irq-chip.h"
+
+#include <arch/irq.h>
 
 #define VIRQ_MAX_ENTRIES                128
 #define VGIC_MAINTENANCE_INTERRUPT_IRQ  25

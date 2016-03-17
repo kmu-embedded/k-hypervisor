@@ -5,8 +5,6 @@
 #include <core/vm/vcpu.h>
 #include <core/vm/vcpu_regs.h>
 
-//#include <board/config.h>
-
 #define GUEST_VERBOSE_ALL       0xFF
 #define GUEST_VERBOSE_LEVEL_0   0x01
 #define GUEST_VERBOSE_LEVEL_1   0x02
@@ -18,15 +16,13 @@
 #define GUEST_VERBOSE_LEVEL_7   0x80
 
 void sched_init();
+//sched_register_vcpu?
 int sched_vcpu_register(vcpuid_t vcpuid);
+//sched_unregister_vcpu?
 int sched_vcpu_unregister();
 int sched_vcpu_attach(vcpuid_t vcpuid);
 int sched_vcpu_detach();
 void do_schedule(void *pdata, uint32_t *delay_tick);
-
-#if 0
-vmid_t sched_policy_determ_next(void);
-#endif
 
 void sched_start(void);
 vmid_t get_current_vcpuid(void);

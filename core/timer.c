@@ -6,9 +6,8 @@
  */
 
 #include <config.h>
-#include <hvmm_trace.h>
 #include <arch/armv7.h>
-#include <core/irq.h>
+#include <arch/irq.h>
 #include <debug.h>
 #include <core/timer.h>
 #include <stdio.h>

@@ -1,8 +1,8 @@
+#include <stdio.h>
 #include <arch/armv7.h>
 #include <core/timer.h>
 #include <arch/armv7/arm_inline.h>
-#include <hvmm_trace.h>
-#include <core/irq.h>
+#include <arch/irq.h>
 #include <config.h>
 
 #define NS_PL2_PTIMER_IRQ   26
@@ -288,8 +288,6 @@ static hvmm_status_t timer_set_cval_by_delta(uint64_t val)
  */
 static hvmm_status_t timer_dump(void)
 {
-    HVMM_TRACE_ENTER();
-    HVMM_TRACE_EXIT();
     return HVMM_STATUS_SUCCESS;
 }
 

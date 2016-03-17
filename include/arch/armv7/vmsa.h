@@ -2,10 +2,7 @@
 #define __ARMV7_MM_H__
 
 #include <stdint.h>
-
-#ifdef CONFIG_C99
-#include "c99.h"
-#endif
+#include <asm/asm.h>
 
 #define read_ttbr0()            ({ uint32_t rval; asm volatile(\
                                 " mrc     p15, 0, %0, c2, c0, 0\n\t" \

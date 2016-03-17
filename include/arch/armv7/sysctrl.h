@@ -2,10 +2,8 @@
 #define __ARMV7_SYSCTRL_H__
 
 #include <stdint.h>
+#include <asm/asm.h>
 
-#ifdef CONFIG_C99
-#include "c99.h"
-#endif
 
 #define read_vbar()             ({ uint32_t rval; asm volatile(\
                                 " mrc     p15, 0, %0, c12, c0, 0\n\t" \

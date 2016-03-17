@@ -2,7 +2,7 @@
 #define DEBUG
 #include <stdio.h>
 #include <core/timer.h>
-#include <core/irq.h>
+#include <arch/irq.h>
 #include <arch/armv7.h>
 #include <core/scheduler.h>
 #include <config.h>

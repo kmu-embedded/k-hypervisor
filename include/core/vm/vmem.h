@@ -3,7 +3,6 @@
 
 #include <hvmm_types.h>
 #include <stdint.h>
-#include <size.h>
 
 struct vmem {
     struct memdesc_t **memmap;
