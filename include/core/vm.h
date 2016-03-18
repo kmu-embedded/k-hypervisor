@@ -6,8 +6,6 @@
 #include "vm/vcpu.h"
 #include "vm/vmem.h"
 
-#include "../../arch/arm/vgic.h"
-
 #define SIZE_OF_NAME        32
 #define NO_VM_FOUND         NULL
 #define VM_NOT_EXISTED      (-1)
@@ -28,7 +26,6 @@ struct vmcb {
 
     struct vcpu **vcpu;
     struct vmem vmem;
-    struct vgic vgic;
 
     vmcb_state_t state;
     struct list_head head;
