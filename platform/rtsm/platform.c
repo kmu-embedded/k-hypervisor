@@ -24,10 +24,14 @@ void platform_init()
     paging_add_mapping(gic_base + GICV_OFFSET, gic_base + GICV_OFFSET, MT_DEVICE, SZ_8K);
 
     // add mapping for serial devices
-    paging_add_mapping(0x1C090000, 0x1C090000, MT_DEVICE, SZ_4K);
-    paging_add_mapping(0x1C0A0000, 0x1C0A0000, MT_DEVICE, SZ_4K);
-    paging_add_mapping(0x1C0B0000, 0x1C0B0000, MT_DEVICE, SZ_4K);
-    paging_add_mapping(0x1C0C0000, 0x1C0C0000, MT_DEVICE, SZ_4K);
+    paging_add_mapping(0x1C090000, 0x1C090000, MT_DEVICE, SZ_64K);
+    paging_add_mapping(0x1C0A0000, 0x1C0A0000, MT_DEVICE, SZ_64K);
+    paging_add_mapping(0x1C0B0000, 0x1C0B0000, MT_DEVICE, SZ_64K);
+    paging_add_mapping(0x1C0C0000, 0x1C0C0000, MT_DEVICE, SZ_64K);
+
+    // for SP804
+    paging_add_mapping(0x1C110000, 0x1C110000, MT_DEVICE, SZ_64K);
+    paging_add_mapping(0x1C120000, 0x1C120000, MT_DEVICE, SZ_64K);
 
     paging_add_mapping(0xF0000000, CFG_HYP_START_ADDRESS, MT_WRITEBACK_RW_ALLOC, SZ_256M);
     paging_add_mapping(0x80000000, 0x80000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
