@@ -9,6 +9,8 @@
 
 #include "vdev_gicd.h"
 #include <core/vm/virq.h>
+#include <core/vm.h>
+#include <core/vm/vcpu.h>
 
 #include "../../drivers/gic-v2.h"
 
@@ -16,78 +18,6 @@
  * for example, firstbit32(0x7F = 111 1111) returns 7
  */
 #define firstbit32(word) (31 - asm_clz(word))
-
-
-/* Virtual GIC Distributor */
-/* Priority of implementation
- - [V] CTLR, TYPER
- - [V] ICFGR
- - [V] ITARGETSR
- - [V] IPRIORITYR
- - [V] ISCENABLER
- -----------------------
- - [ ]
- */
-
-// FIXME(casionwoo) : This TILinesNumber should be modified like GICv2.TILinesNumber as dynamically
-#define TILinesNumber 4
-#define NUM_MAX_VIRQS   160
-
-#define NUM_STATUS_WORDS    (NUM_MAX_VIRQS / 32)
-#define VGICE_NUM_ISCPENDR (TILinesNumber + 1)
-#define VGICE_NUM_ISCENABLER (TILinesNumber + 1)
-#define VGICE_NUM_ISCACTIVER (TILinesNumber + 1)
-#define VGICE_NUM_IPRIORITYR (8*(TILinesNumber + 1))
-#define VGICE_NUM_ITARGETSR (8*(TILinesNumber + 1))
-#define VGICE_NUM_ICFGR (2*(TILinesNumber + 1))
-#define VGICE_NUM_SPISR (TILinesNumber + 1)
-#define VGICE_NUM_CPENDSGIR (TILinesNumber + 1)
-#define VGICE_NUM_SPENDSGIR (TILinesNumber + 1)
-#define VGICD_NUM_IGROUPR (TILinesNumber + 1)
-#define VGICD_NUM_IENABLER (TILinesNumber + 1)
-
-/* Banked Registers Size */
-
-#define VGICD_BANKED_NUM_IPRIORITYR  8
-#define VGICD_BANKED_NUM_ITARGETSR  8
-#define VGICD_BANKED_NUM_CPENDSGIR  VGICE_NUM_CPENDSGIR
-#define VGICD_BANKED_NUM_SPENDSGIR  VGICD_NUM_SPENDSGIR
-
-struct gicd_regs {
-    uint32_t CTLR; /*0x000 RW*/
-    uint32_t TYPER; /*      RO*/
-    uint32_t IIDR; /*      RO*/
-
-    uint32_t IGROUPR[VGICD_NUM_IGROUPR]; /* 0x080 */
-    uint32_t ISCENABLER[VGICE_NUM_ISCENABLER]; /* 0x100, ISENABLER/ICENABLER */
-    uint32_t ISCPENDR[VGICE_NUM_ISCPENDR]; /* 0x200, ISPENDR/ICPENDR */
-    uint32_t ISCACTIVER[VGICE_NUM_ISCACTIVER]; /* 0x300, ISACTIVER/ICACTIVER */
-    uint32_t IPRIORITYR[VGICE_NUM_IPRIORITYR]; /* 0x400 */
-    uint32_t ITARGETSR[VGICE_NUM_ITARGETSR]; /* 0x800 [0]: RO, Otherwise, RW */
-    uint32_t ICFGR[VGICE_NUM_ICFGR]; /* 0xC00 */
-
-    /* Cortex-A15 */
-    /* 0xD00 GICD_PPISR RO */
-    /* 0xD04 ~ 0xD1C GICD_SPISRn RO */
-
-    uint32_t NSACR[64]; /* 0xE00 */
-    uint32_t SGIR; /* 0xF00 WO */
-    //uint32_t CPENDSGIR[VGICE_NUM_CPENDSGIR];
-    /* 0xF10 CPENDSGIR 0xF20 SPENDGIR */
-
-    /* 0xFD0 ~ 0xFFC RO Cortex-A15 PIDRn, CIDRn */
-};
-
-struct gicd_regs_banked {
-    uint32_t IGROUPR;    //0
-    uint32_t ISCENABLER;    //0
-    uint32_t ISCPENDR;  //0
-    uint32_t ISCACTIVER;    //0
-    uint32_t IPRIORITYR[VGICD_BANKED_NUM_IPRIORITYR];   //0~7
-    uint32_t ITARGETSR[VGICD_BANKED_NUM_ITARGETSR]; //0~7
-    uint32_t ICFGR; //1
-    uint32_t CPENDSGIR[VGICD_BANKED_NUM_CPENDSGIR]; //n
-};
 
 static hvmm_status_t handler_000(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
@@ -104,9 +34,6 @@ static struct vdev_memory_map _vdev_gicd_info = { .base =
         CFG_GIC_BASE_PA | GICD_OFFSET, .size = 4096,
 };
 
-static struct gicd_regs _regs[NUM_GUESTS_STATIC];
-static struct gicd_regs_banked _regs_banked[NUM_GUESTS_STATIC];
-
 static hvmm_status_t handler_000(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     /* CTLR;              0x000 RW*/
@@ -114,10 +41,14 @@ static hvmm_status_t handler_000(uint32_t write, uint32_t offset, uint32_t *pval
     /* IIDR;              RO*/
     /* IGROUPR[32];       0x080 ~ 0x0FF */
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vmid_t vmid = get_current_vcpuid();
-    struct gicd_regs *regs = &_regs[vmid];
-    struct gicd_regs_banked *regs_banked = &_regs_banked[vmid];
+    vcpuid_t vcpuid = get_current_vcpuid();
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct vmcb *vm = vm_find(vcpu->vmid);
+
+    struct gicd_regs *regs = &vm->vgic.gicd_regs;
+    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
     uint32_t woffset = offset / 4;
+
     switch (woffset) {
     case __GICD_CTLR: /* RW */
         if (write) {
@@ -205,9 +136,11 @@ static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus, uint8_t wor
 static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vmid_t vmid = get_current_vcpuid();
-    struct gicd_regs *regs = &_regs[vmid];
-    struct gicd_regs_banked *regs_banked = &_regs_banked[vmid];
+    vcpuid_t vcpuid = get_current_vcpuid();
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct vmcb *vm = vm_find(vcpu->vmid);
+    struct gicd_regs *regs = &vm->vgic.gicd_regs;
+    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
     uint32_t *preg_s;
     uint32_t *preg_c;
     uint32_t old_status;
@@ -231,7 +164,7 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_
             if (write) {
                 old_status = *preg_s;
                 *preg_s |= *pvalue;
-                vgicd_changed_istatus(vmid, *preg_s, (offset >> 2) - __GICD_ISENABLER, old_status);
+                vgicd_changed_istatus(vcpuid, *preg_s, (offset >> 2) - __GICD_ISENABLER, old_status);
             } else {
                 *pvalue = *preg_s;
             }
@@ -244,7 +177,7 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_
             if (write) {
                 old_status = *preg_c;
                 *preg_c &= ~(*pvalue);
-                vgicd_changed_istatus(vmid, *preg_c, (offset >> 2) - __GICD_ICENABLER, old_status);
+                vgicd_changed_istatus(vcpuid, *preg_c, (offset >> 2) - __GICD_ICENABLER, old_status);
             } else {
                 *pvalue = *preg_c;
             }
@@ -258,7 +191,7 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_
             if (write) {
                 old_status = *preg_s;
                 *preg_s16 |= (uint16_t) (*pvalue & 0xFFFF);
-                vgicd_changed_istatus(vmid, *preg_s, (offset >> 2) - __GICD_ISENABLER, old_status);
+                vgicd_changed_istatus(vcpuid, *preg_s, (offset >> 2) - __GICD_ISENABLER, old_status);
             } else {
                 *pvalue = (uint32_t) * preg_s16;
             }
@@ -272,7 +205,7 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_
             if (write) {
                 old_status = *preg_s;
                 *preg_c16 &= ~((uint16_t) (*pvalue & 0xFFFF));
-                vgicd_changed_istatus(vmid, *preg_c, (offset >> 2) - __GICD_ICENABLER, old_status);
+                vgicd_changed_istatus(vcpuid, *preg_c, (offset >> 2) - __GICD_ICENABLER, old_status);
             } else {
                 *pvalue = (uint32_t) * preg_c16;
             }
@@ -286,7 +219,7 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_
             if (write) {
                 old_status = *preg_s;
                 *preg_s8 |= (uint8_t) (*pvalue & 0xFF);
-                vgicd_changed_istatus(vmid, *preg_s, (offset >> 2) - __GICD_ISENABLER, old_status);
+                vgicd_changed_istatus(vcpuid, *preg_s, (offset >> 2) - __GICD_ISENABLER, old_status);
             } else {
                 *pvalue = (uint32_t) * preg_s8;
             }
@@ -300,7 +233,7 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_
             if (write) {
                 old_status = *preg_s;
                 *preg_c8 &= ~((uint8_t) (*pvalue & 0xFF));
-                vgicd_changed_istatus(vmid, *preg_c, (offset >> 2) - __GICD_ICENABLER, old_status);
+                vgicd_changed_istatus(vcpuid, *preg_c, (offset >> 2) - __GICD_ICENABLER, old_status);
             } else {
                 *pvalue = (uint32_t) * preg_c8;
             }
@@ -314,11 +247,14 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_
 static hvmm_status_t handler_ISCPENDR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vmid_t vmid = get_current_vcpuid();
-    struct gicd_regs *regs = &_regs[vmid];
-    struct gicd_regs_banked *regs_banked = &_regs_banked[vmid];
+    vcpuid_t vcpuid = get_current_vcpuid();
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct vmcb *vm = vm_find(vcpu->vmid);
+    struct gicd_regs *regs = &vm->vgic.gicd_regs;
+    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
     uint32_t *preg_s;
     uint32_t *preg_c;
+
     if (((offset >> 2) - __GICD_ISPENDR) == 0 ||
             ((offset >> 2) - __GICD_ICPENDR) == 0) {
         preg_s = &(regs_banked->ISCPENDR);
@@ -363,13 +299,13 @@ static hvmm_status_t handler_ISCACTIVER(uint32_t write, uint32_t offset, uint32_
 static hvmm_status_t handler_IPRIORITYR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vmid_t vmid;
-    struct gicd_regs *regs;
-    struct gicd_regs_banked *regs_banked;
     uint32_t *preg;
-    vmid = get_current_vcpuid();
-    regs = &_regs[vmid];
-    regs_banked = &_regs_banked[vmid];
+    vcpuid_t vcpuid = get_current_vcpuid();
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct vmcb *vm = vm_find(vcpu->vmid);
+    struct gicd_regs *regs = &vm->vgic.gicd_regs;
+    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
+
     /* FIXME: Support 8/16/32bit access */
     offset >>= 2;
     if ((offset - __GICD_IPRIORITYR) < VGICD_BANKED_NUM_IPRIORITYR) {
@@ -391,13 +327,13 @@ static hvmm_status_t handler_IPRIORITYR(uint32_t write, uint32_t offset, uint32_
 static hvmm_status_t handler_ITARGETSR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vmid_t vmid;
-    struct gicd_regs *regs;
-    struct gicd_regs_banked *regs_banked;
+    vcpuid_t vcpuid = get_current_vcpuid();
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct vmcb *vm = vm_find(vcpu->vmid);
+    struct gicd_regs *regs = &vm->vgic.gicd_regs;
+    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
     uint32_t *preg;
-    vmid = get_current_vcpuid();
-    regs = &_regs[vmid];
-    regs_banked = &_regs_banked[vmid];
+
     if (((offset >> 2) - __GICD_ITARGETSR) < VGICD_BANKED_NUM_ITARGETSR) {
         preg = &(regs_banked->ITARGETSR[(offset >> 2) - __GICD_ITARGETSR]);
     } else {
@@ -442,13 +378,13 @@ static hvmm_status_t handler_ITARGETSR(uint32_t write, uint32_t offset, uint32_t
 static hvmm_status_t handler_ICFGR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vmid_t vmid;
-    struct gicd_regs *regs;
-    struct gicd_regs_banked *regs_banked;
+    vcpuid_t vcpuid = get_current_vcpuid();
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct vmcb *vm = vm_find(vcpu->vmid);
+    struct gicd_regs *regs = &vm->vgic.gicd_regs;
+    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
     uint32_t *preg;
-    vmid = get_current_vcpuid();
-    regs = &_regs[vmid];
-    regs_banked = &_regs_banked[vmid];
+
     /* FIXME: Support 8/16/32bit access */
     offset >>= 2;
     if ((offset - __GICD_ICFGR) == 1) {
@@ -483,7 +419,9 @@ static hvmm_status_t handler_NSACR(uint32_t write, uint32_t offset, uint32_t *pv
 static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vmid_t vmid;
+    vcpuid_t vcpuid = get_current_vcpuid();
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct vmcb *vm = vm_find(vcpu->vmid);
     struct gicd_regs_banked *regs_banked;
     uint32_t target = 0;
     uint32_t sgi_id = *pvalue & GICD_SGIR_SGI_INT_ID_MASK;
@@ -491,42 +429,36 @@ static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pval
     uint32_t *preg_s;
     uint32_t *preg_c;
 
-    vmid = get_current_vcpuid();
-
     if (((offset >> 2) == __GICD_CPENDSGIR) ||
             ((offset >> 2) == __GICD_SPENDSGIR)) {
-        regs_banked = &_regs_banked[vmid];
+        regs_banked = &vm->vgic.gicd_regs_banked;
         preg_s = &(regs_banked->CPENDSGIR[(offset >> 2) - __GICD_SPENDSGIR]);
         preg_c = &(regs_banked->CPENDSGIR[(offset >> 2) - __GICD_CPENDSGIR]);
     }
     offset >>= 2;
 
     if (offset == __GICD_SGIR) {
-        // Filter Mask
         switch (*pvalue & GICD_SGIR_TARGET_LIST_FILTER_MASK) {
         case GICD_SGIR_TARGET_LIST:
-            target = ((*pvalue & GICD_SGIR_CPU_TARGET_LIST_MASK)
-                      >>
-                      GICD_SGIR_CPU_TARGET_LIST_OFFSET);
+            target = ((*pvalue & GICD_SGIR_CPU_TARGET_LIST_MASK) >> GICD_SGIR_CPU_TARGET_LIST_OFFSET);
             break;
         case GICD_SGIR_TARGET_OTHER:
-            target = ~(0x1 << vmid);
+            target = ~(0x1 << vcpu->vmid);
             break;
         case GICD_SGIR_TARGET_SELF:
-            target = (0x1 << vmid);
+            target = (0x1 << vcpu->vmid);
             break;
         default:
             //printf();
             return result;
         }
-        // after chagne architecture, NUM_VCPU_STATIC
-        // will be now guest's vcpu number
         dsb();
 
         for (i = 0; i < NUM_GUESTS_STATIC; i++) {
             uint8_t _target = target & 0x1;
             if (_target) {
-                regs_banked = &_regs_banked[_target];
+                vm = vm_find(_target);
+                regs_banked = &vm->vgic.gicd_regs_banked;
                 (regs_banked -> CPENDSGIR[(sgi_id >> 2)]) = 0x1 << ((sgi_id & 0x3) * 8);
                 result = virq_inject(i, sgi_id, sgi_id, 0);
             }
@@ -662,86 +594,8 @@ static int32_t vdev_gicd_check(struct arch_vdev_trigger_info *info, struct core_
 
 static hvmm_status_t vdev_gicd_reset_values(void)
 {
-    int vmid;
-    hvmm_status_t result = HVMM_STATUS_SUCCESS;
-
-    printf("%s START\n", __func__);
-
-    for (vmid = 0; vmid < NUM_GUESTS_STATIC; vmid++) {
-        /*
-         * ITARGETS[0~ 7], CPU Targets are set to 0,
-         * due to current single-core support design
-         */
-        int j = 0;
-
-        _regs[vmid].CTLR  = 0;
-        _regs[vmid].TYPER = GICD_READ(GICD_TYPER_OFFSET);
-        _regs[vmid].IIDR  = GICD_READ(GICD_IIDR_OFFSET);
-
-        for (j = 0; j < VGICD_NUM_IGROUPR; j++) {
-            if (!j) {
-                _regs_banked[vmid].IGROUPR = 0;
-            } else {
-                _regs[vmid].IGROUPR[j] = 0;
-            }
-        }
-
-        for (j = 0; j < VGICE_NUM_ISCENABLER; j++) {
-            if (!j) {
-                _regs_banked[vmid].ISCENABLER = 0;
-            } else {
-                _regs[vmid].ISCENABLER[j] = 0;
-            }
-        }
-
-        for (j = 0; j < VGICE_NUM_ISCPENDR; j++) {
-            if (!j) {
-                _regs_banked[vmid].ISCPENDR = 0;
-            } else {
-                _regs[vmid].ISCPENDR[j] = 0;
-            }
-        }
-
-        for (j = 0; j < VGICE_NUM_ISCACTIVER; j++) {
-            if (!j) {
-                _regs_banked[vmid].ISCACTIVER = 0;
-            } else {
-                _regs[vmid].ISCACTIVER[j] = 0;
-            }
-        }
-
-        for (j = 0; j < VGICE_NUM_IPRIORITYR; j++) {
-            if (j < VGICD_BANKED_NUM_IPRIORITYR) {
-                _regs_banked[vmid].IPRIORITYR[j] = 0;;
-            } else {
-                _regs[vmid].IPRIORITYR[j] = 0;
-            }
-        }
-
-        for (j = 0; j < VGICE_NUM_ITARGETSR; j++) {
-            if (j < VGICD_BANKED_NUM_ITARGETSR) {
-                _regs_banked[vmid].ITARGETSR[j] = 0;
-            } else {
-                _regs[vmid].ITARGETSR[j] = 0;
-            }
-        }
-
-        for (j = 0; j < VGICE_NUM_ICFGR; j++) {
-            if (j == 1) {
-                _regs_banked[vmid].ICFGR = 0;
-            } else {
-                _regs[vmid].ICFGR[j] = 0;
-            }
-        }
-
-        _regs[vmid].SGIR = 0;
-        for (j = 0; j < VGICD_BANKED_NUM_CPENDSGIR; j++) {
-            _regs_banked[vmid].CPENDSGIR[j] = 0;
-        }
-    }
-
-    printf("%s END\n", __func__);
-    return result;
+    printf("Dummy vdev_gicd_init \n");
+    return HVMM_STATUS_SUCCESS;
 }
 
 struct vdev_ops _vdev_gicd_ops = {
@@ -767,10 +621,11 @@ hvmm_status_t vdev_gicd_init()
         printf("vdev registered:'%s'\n", _vdev_gicd_module.name);
     } else {
         printf("%s: Unable to register vdev:'%s' code=%x\n", __func__,
-               _vdev_gicd_module.name, result);
+                    _vdev_gicd_module.name, result);
     }
 
     return result;
 }
 
 vdev_module_low_init(vdev_gicd_init);
+
