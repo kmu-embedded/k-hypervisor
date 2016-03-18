@@ -7,6 +7,7 @@
 #include "paging.h"
 #include <vdev.h>
 #include <core/timer.h>
+#include <vm_map.h>
 
 extern uint32_t __HYP_PGTABLE;
 
@@ -37,6 +38,8 @@ void init_system()
         vdev_init(); /* Already we have */
 
         timer_init(26);
+
+        setup_vm_mmap();
 
 #ifdef __CONFIG_SMP__
         printf("wake up...other CPUs\n");
