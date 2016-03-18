@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <arch/irq.h>
 #include <config.h>
 #include <arch/armv7.h>
@@ -18,6 +19,8 @@ hvmm_status_t do_irq(struct core_regs *regs)
     uint32_t irq = irq_hw->ack();
 
     irq_hw->eoi(irq);
+    if (irq == 34)
+        printf("SP804 Tick interrupt occur!!!\n");
 
     is_guest_irq(irq);
 

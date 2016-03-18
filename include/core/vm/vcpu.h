@@ -21,7 +21,7 @@ struct vcpu {
     vcpuid_t vcpuid;
     vmid_t vmid;
 
-    struct arch_regs regs;
+    struct arch_regs arch_regs;
 
     struct virq virq;
 

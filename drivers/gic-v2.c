@@ -91,9 +91,9 @@ static uint32_t gic_inject_virq_sw(enum virq_state state, uint32_t priority, uin
     return slot;
 }
 
-static struct virq_entry set_virq_entry(uint32_t pirq, uint32_t virq, uint8_t hw)
+static struct lr_entry set_virq_entry(uint32_t pirq, uint32_t virq, uint8_t hw)
 {
-    struct virq_entry entry;
+    struct lr_entry entry;
 
     entry.pirq  = pirq;
     entry.virq  = virq;
@@ -111,12 +111,12 @@ static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
         uint32_t slot;
         uint32_t pirq, virq;
         vcpuid_t vcpuid = get_current_vcpuid();
-        struct virqmap_entry *map;
+        struct virq_table *map;
         struct vcpu *vcpu;
         uint32_t lr;
 
         vcpu = vcpu_find(vcpuid);
-        map = vcpu->virq.guest_virqmap->map;
+        map = vcpu->virq.map;
 
         while (eisr) {
             slot = (31 - asm_clz(eisr));
@@ -340,7 +340,7 @@ hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid)
 {
     int i;
     struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct virq_entry *entries = vcpu->virq.pending_irqs;
+    struct lr_entry *entries = vcpu->virq.pending_irqs;
 
     for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
         if (entries[i].valid) {
@@ -376,7 +376,7 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
     int i;
     struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct virq_entry *q = vcpu->virq.pending_irqs;
+    struct lr_entry *q = vcpu->virq.pending_irqs;
 
     if (vcpuid == get_current_vcpuid()) {
         uint32_t slot;
