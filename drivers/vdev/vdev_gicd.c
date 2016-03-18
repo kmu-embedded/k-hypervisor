@@ -156,15 +156,6 @@ static struct gicd_handler_entry _handler_map[0x10] = {
     { 0x0F, handler_F00 }, /* SGIR, CPENDSGIR, SPENDGIR, ICPIDR2 */
 };
 
-/* old status */
-static uint32_t old_vgicd_status[NUM_GUESTS_STATIC][NUM_STATUS_WORDS]
-= { { 0, }, };
-/*
-static uint32_t old_vgicd_status_pervcpu[NUM_VCPU_STATIC] = {0, };
-static uint32_t old_vgicd_status_perguest[NUM_GUESTS_STATIC][NUM_STATUS_WORDS-1]
-    = { { 0, }, };
-*/
-
 static hvmm_status_t handler_000(uint32_t write, uint32_t offset,
                                  uint32_t *pvalue, enum vdev_access_size access_size)
 {
@@ -227,17 +218,15 @@ static hvmm_status_t handler_000(uint32_t write, uint32_t offset,
     return result;
 }
 
-static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus,
-                                  uint8_t word_offset)
+static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus, uint8_t word_offset, uint32_t old_status)
 {
     struct vcpu *vcpu = vcpu_find(vcpuid);
     uint32_t cstatus; /* changed bits only */
     uint32_t minirq;
     int bit;
-    /* irq range: 0~31 + word_offset * size_of_istatus_in_bits */
     minirq = word_offset * 32;
-    /* find changed bits */
-    cstatus = old_vgicd_status[vcpuid][word_offset] ^ istatus;
+    cstatus = old_status ^ istatus;
+
     while (cstatus) {
         uint32_t virq;
         uint32_t pirq;
@@ -257,12 +246,10 @@ static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus,
                 gic_disable_irq(pirq);
             }
         } else {
-            printf("WARNING: Ignoring virq %d for guest %d has "
-                   "no mapped pirq\n", virq, vcpuid);
+            printf("WARNING: Ignoring virq %d for guest %d has no mapped pirq\n", virq, vcpuid);
         }
         cstatus &= ~(1 << bit);
     }
-    old_vgicd_status[vcpuid][word_offset] = istatus;
 }
 
 static hvmm_status_t handler_ISCENABLER(uint32_t write,
@@ -275,6 +262,8 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write,
     struct gicd_regs_banked *regs_banked = &_regs_banked[vmid];
     uint32_t *preg_s;
     uint32_t *preg_c;
+    uint32_t old_status;
+
     if (write && *pvalue == 0) {
         /* Writes 0 -> Has no effect. */
         result = HVMM_STATUS_SUCCESS;
@@ -292,9 +281,9 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write,
         if ((offset >> 2) < (__GICD_ISENABLER + VGICD_NUM_IENABLER)) {
             /* ISENABLER */
             if (write) {
+                old_status = *preg_s;
                 *preg_s |= *pvalue;
-                vgicd_changed_istatus(vmid, *preg_s,
-                                      (offset >> 2) - __GICD_ISENABLER);
+                vgicd_changed_istatus(vmid, *preg_s, (offset >> 2) - __GICD_ISENABLER, old_status);
             } else {
                 *pvalue = *preg_s;
             }
@@ -305,9 +294,9 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write,
                    < (__GICD_ICENABLER + VGICD_NUM_IENABLER)) {
             /* ICENABLER */
             if (write) {
+                old_status = *preg_c;
                 *preg_c &= ~(*pvalue);
-                vgicd_changed_istatus(vmid, *preg_c,
-                                      (offset >> 2) - __GICD_ICENABLER);
+                vgicd_changed_istatus(vmid, *preg_c, (offset >> 2) - __GICD_ICENABLER, old_status);
             } else {
                 *pvalue = *preg_c;
             }
@@ -319,9 +308,9 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write,
             uint16_t *preg_s16 = (uint16_t *) preg_s;
             preg_s16 += (offset & 0x3) >> 1;
             if (write) {
+                old_status = *preg_s;
                 *preg_s16 |= (uint16_t) (*pvalue & 0xFFFF);
-                vgicd_changed_istatus(vmid, *preg_s,
-                                      (offset >> 2) - __GICD_ISENABLER);
+                vgicd_changed_istatus(vmid, *preg_s, (offset >> 2) - __GICD_ISENABLER, old_status);
             } else {
                 *pvalue = (uint32_t) * preg_s16;
             }
@@ -333,9 +322,9 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write,
             uint16_t *preg_c16 = (uint16_t *) preg_c;
             preg_c16 += (offset & 0x3) >> 1;
             if (write) {
+                old_status = *preg_s;
                 *preg_c16 &= ~((uint16_t) (*pvalue & 0xFFFF));
-                vgicd_changed_istatus(vmid, *preg_c,
-                                      (offset >> 2) - __GICD_ICENABLER);
+                vgicd_changed_istatus(vmid, *preg_c, (offset >> 2) - __GICD_ICENABLER, old_status);
             } else {
                 *pvalue = (uint32_t) * preg_c16;
             }
@@ -347,9 +336,9 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write,
             uint8_t *preg_s8 = (uint8_t *) preg_s;
             preg_s8 += (offset & 0x3);
             if (write) {
+                old_status = *preg_s;
                 *preg_s8 |= (uint8_t) (*pvalue & 0xFF);
-                vgicd_changed_istatus(vmid, *preg_s,
-                                      (offset >> 2) - __GICD_ISENABLER);
+                vgicd_changed_istatus(vmid, *preg_s, (offset >> 2) - __GICD_ISENABLER, old_status);
             } else {
                 *pvalue = (uint32_t) * preg_s8;
             }
@@ -361,9 +350,9 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write,
             uint8_t *preg_c8 = (uint8_t *) preg_c;
             preg_c8 += (offset & 0x3);
             if (write) {
+                old_status = *preg_s;
                 *preg_c8 &= ~((uint8_t) (*pvalue & 0xFF));
-                vgicd_changed_istatus(vmid, *preg_c,
-                                      (offset >> 2) - __GICD_ICENABLER);
+                vgicd_changed_istatus(vmid, *preg_c, (offset >> 2) - __GICD_ICENABLER, old_status);
             } else {
                 *pvalue = (uint32_t) * preg_c8;
             }
@@ -724,7 +713,6 @@ static hvmm_status_t vdev_gicd_reset_values(void)
             } else {
                 _regs[vmid].ISCENABLER[j] = 0;
             }
-            old_vgicd_status[vmid][j] = _regs[vmid].ISCENABLER[j];
         }
 
         for (j = 0; j < VGICE_NUM_ISCPENDR; j++) {
