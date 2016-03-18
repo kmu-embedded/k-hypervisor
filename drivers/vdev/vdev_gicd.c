@@ -854,14 +854,18 @@ static hvmm_status_t vdev_gicd_reset_values(void)
     return result;
 }
 
-struct vdev_ops _vdev_gicd_ops = { .init = vdev_gicd_reset_values,
-    .check = vdev_gicd_check, .read = vdev_gicd_read, .write =
-                                          vdev_gicd_write, .post = vdev_gicd_post,
+struct vdev_ops _vdev_gicd_ops = {
+    .init = vdev_gicd_reset_values,
+    .check = vdev_gicd_check,
+    .read = vdev_gicd_read,
+    .write = vdev_gicd_write,
+    .post = vdev_gicd_post
 };
 
-struct vdev_module _vdev_gicd_module = { .name =
-        "K-Hypervisor vDevice GICD Module", .author = "Kookmin Univ.",
-                                             .ops = &_vdev_gicd_ops,
+struct vdev_module _vdev_gicd_module = {
+    .name = "K-Hypervisor vDevice GICD Module",
+    .author = "Kookmin Univ.",
+    .ops = &_vdev_gicd_ops
 };
 
 hvmm_status_t vdev_gicd_init()
