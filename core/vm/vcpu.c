@@ -8,17 +8,15 @@
 #include <stdlib.h>
 
 static struct list_head vcpu_list;
-static int nr_vcpus;
+static int nr_vcpus = 0;
 
-hvmm_status_t vcpu_setup()
+void vcpu_setup()
 {
     LIST_INITHEAD(&vcpu_list);
     if (nr_vcpus != 0) {
         /* Never this happend */
         nr_vcpus = 0;
     }
-
-    return HVMM_STATUS_SUCCESS;
 }
 
 struct vcpu *vcpu_create()
@@ -78,16 +76,16 @@ vcpu_state_t vcpu_delete(struct vcpu *vcpu)
     return VCPU_UNDEFINED;
 }
 
-hvmm_status_t vcpu_save(struct vcpu *vcpu, struct core_regs *regs)
+void vcpu_save(struct vcpu *vcpu, struct core_regs *regs)
 {
     virq_save(&vcpu->virq);
-    return  arch_regs_save(&vcpu->regs, regs);
+    arch_regs_save(&vcpu->regs, regs);
 }
 
-hvmm_status_t vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
+void vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
 {
     virq_restore(&vcpu->virq, vcpu->vmid);
-    return  arch_regs_restore(&vcpu->regs, regs);
+    arch_regs_restore(&vcpu->regs, regs);
 }
 
 struct vcpu *vcpu_find(vcpuid_t vcpuid)

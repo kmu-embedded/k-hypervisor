@@ -10,15 +10,13 @@ void print_vm(struct vmcb *vm);
 static struct list_head vm_list;
 static vmid_t vm_count;
 
-hvmm_status_t vm_setup()
+void vm_setup()
 {
     vm_count = 0;
     LIST_INITHEAD(&vm_list);
 
     vcpu_setup();
     atags_setup();
-
-    return HVMM_STATUS_SUCCESS;
 }
 
 vmid_t vm_create(uint8_t num_vcpus)
@@ -119,32 +117,26 @@ vmcb_state_t vm_delete(vmid_t vmid)
     return UNDEFINED;
 }
 
-hvmm_status_t vm_save(vmid_t save_vmid)
+void vm_save(vmid_t save_vmid)
 {
     struct vmcb *vm = vm_find(save_vmid);
     if (vm == NO_VM_FOUND) {
         debug_print("[%s]: NO VM FOUND %d\n", __func__, save_vmid);
-        return HVMM_STATUS_NOT_FOUND;
     }
 
     vmem_save();
     vdev_save(save_vmid);
-
-    return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t vm_restore(vmid_t restore_vmid)
+void vm_restore(vmid_t restore_vmid)
 {
     struct vmcb *vm = vm_find(restore_vmid);
     if (vm == NO_VM_FOUND) {
         debug_print("[%s]: NO VM FOUND %d\n", __func__, restore_vmid);
-        return HVMM_STATUS_NOT_FOUND;
     }
 
     vmem_restore(&vm->vmem);
     vdev_restore(restore_vmid);
-
-    return HVMM_STATUS_SUCCESS;
 }
 
 struct vmcb *vm_find(vmid_t vmid)

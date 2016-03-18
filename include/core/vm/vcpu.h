@@ -35,14 +35,14 @@ struct vcpu {
     struct list_head head;
 };
 
-hvmm_status_t vcpu_setup();
+void vcpu_setup();
 struct vcpu *vcpu_create();
 vcpu_state_t vcpu_init(struct vcpu *vcpu);
 vcpu_state_t vcpu_start(struct vcpu *vcpu);
 vcpu_state_t vcpu_delete(struct vcpu *vcpu);
 
-hvmm_status_t vcpu_save(struct vcpu *vcpu, struct core_regs *regs);
-hvmm_status_t vcpu_restore(struct vcpu *vcpu, struct core_regs *regs);
+void vcpu_save(struct vcpu *vcpu, struct core_regs *regs);
+void vcpu_restore(struct vcpu *vcpu, struct core_regs *regs);
 
 struct vcpu *vcpu_find(vcpuid_t vcpuid);
 void print_all_vcpu();
