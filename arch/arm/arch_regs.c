@@ -1,8 +1,6 @@
-#include <core/vm/vcpu_regs.h>
-#include <debug.h>
+#include <arch_regs.h>
 #include <stdio.h>
 #include <arch/armv7.h>
-#include <core/scheduler.h>
 #include <config.h>
 
 #define CPSR_MODE_USER  0x10
@@ -25,37 +23,37 @@
 #define CPSR_IRQ_BIT        CPSR_IRQ_DISABLE
 #define CPSR_FIQ_BIT        CPSR_FIQ_DISABLE
 
-static void core_regs_init(struct core_regs *core_regs)
+static void core_regs_init(struct core_regs *regs)
 {
     int i = 0;
     //uint32_t *atag_ptr;
 
     /* TODO(casionwoo) : Why PC should be this value */
-    core_regs->pc = CFG_GUEST_START_ADDRESS;
-    core_regs->cpsr =
-        (CPSR_ASYNC_ABT_BIT | CPSR_IRQ_BIT | CPSR_FIQ_BIT | CPSR_MODE_SVC | VALUE_ZERO);
+    regs->pc = CFG_GUEST_START_ADDRESS;
+	regs->cpsr = (CPSR_ASYNC_ABT_BIT | CPSR_IRQ_BIT | CPSR_FIQ_BIT
+			     | CPSR_MODE_SVC | VALUE_ZERO);
 
-    for (i = 0; i < ARCH_REGS_NUM_GPR ; i++) {
-        core_regs->gpr[i] = 0;
+    for (i = 0; i < NR_ARCH_GPR_REGS ; i++) {
+        regs->gpr[i] = 0;
     }
 
     /*
      * R1 : Machine Number
      * R2 : Atags Address
      */
-    core_regs->gpr[1] = MAHINE_TYPE;
-    core_regs->gpr[2] = CFG_GUEST_ATAGS_START_ADDRESS;
+    regs->gpr[1] = MAHINE_TYPE;
+    regs->gpr[2] = CFG_GUEST_ATAGS_START_ADDRESS;
 }
 
-static void cop_regs_init(struct cop_regs *cop_regs)
+static void cop_regs_init(struct cp15 *cp15)
 {
     uint32_t vmpidr = read_vmpidr();
 
-    cop_regs->vbar  = 0;
-    cop_regs->ttbr0 = 0;
-    cop_regs->ttbr1 = 0;
-    cop_regs->ttbcr = 0;
-    cop_regs->sctlr = 0;
+    cp15->vbar  = 0;
+    cp15->ttbr0 = 0;
+    cp15->ttbr1 = 0;
+    cp15->ttbcr = 0;
+    cp15->sctlr = 0;
 
     // TODO(casionwoo) : Modify the way of initialize vmpidr later?
     vmpidr &= 0xFFFFFFFC;
@@ -65,7 +63,7 @@ static void cop_regs_init(struct cop_regs *cop_regs)
      * ex) linux guest's secondary vcpu, bm guest vcpu .. etc.
      */
     vmpidr |= 0;
-    cop_regs->vmpidr = vmpidr;
+    cp15->vmpidr = vmpidr;
 }
 
 static void banked_regs_init(struct banked_regs *banked_regs)
@@ -93,26 +91,28 @@ static void banked_regs_init(struct banked_regs *banked_regs)
     /* Cortex-A15 processor does not support sp_fiq */
 }
 
-static void core_regs_copy(struct core_regs *dst, struct core_regs *src)
+static void core_regs_save(struct core_regs *dst, struct core_regs *src)
 {
     int i;
 
     dst->cpsr = src->cpsr;
     dst->pc = src->pc;
     dst->lr = src->lr;
-    for (i = 0; i < ARCH_REGS_NUM_GPR; i++) {
+    for (i = 0; i < NR_ARCH_GPR_REGS; i++) {
         dst->gpr[i] = src->gpr[i];
     }
 }
 
-static void core_regs_save(struct core_regs *core_regs, struct core_regs *current_core_regs)
+static void core_regs_restore(struct core_regs *dst, struct core_regs *src)
 {
-    core_regs_copy(core_regs, current_core_regs);
-}
+    int i;
 
-static void core_regs_restore(struct core_regs *core_regs, struct core_regs *current_core_regs)
-{
-    core_regs_copy(current_core_regs, core_regs);
+    src->cpsr = dst->cpsr;
+    src->pc = dst->pc;
+    src->lr = dst->lr;
+    for (i = 0; i < NR_ARCH_GPR_REGS; i++) {
+        src->gpr[i] = dst->gpr[i];
+    }
 }
 
 static void banked_regs_save(struct banked_regs *banked_regs)
@@ -215,134 +215,80 @@ static void banked_regs_restore(struct banked_regs *banked_regs)
                  : : "r"(banked_regs->r12_fiq) : "memory", "cc");
 }
 
-static void cop_regs_save(struct cop_regs *cop_regs)
+static void cop_regs_save(struct cp15 *cp15)
 {
-    cop_regs->vbar  = read_vbar();
-    cop_regs->ttbr0 = read_ttbr0();
-    cop_regs->ttbr1 = read_ttbr1();
-    cop_regs->ttbcr = read_ttbcr();
-    cop_regs->sctlr = read_sctlr();
-    cop_regs->vmpidr = read_vmpidr();
+    cp15->vbar  = read_vbar();
+    cp15->ttbr0 = read_ttbr0();
+    cp15->ttbr1 = read_ttbr1();
+    cp15->ttbcr = read_ttbcr();
+    cp15->sctlr = read_sctlr();
+    cp15->vmpidr = read_vmpidr();
 }
 
-static void cop_regs_restore(struct cop_regs *cop_regs)
+static void cop_regs_restore(struct cp15 *cp15)
 {
-    write_vbar(cop_regs->vbar);
-    write_ttbr0(cop_regs->ttbr0);
-    write_ttbr1(cop_regs->ttbr1);
-    write_ttbcr(cop_regs->ttbcr);
-    write_sctlr(cop_regs->sctlr);
-    write_vmpidr(cop_regs->vmpidr);
+    write_vbar(cp15->vbar);
+    write_ttbr0(cp15->ttbr0);
+    write_ttbr1(cp15->ttbr1);
+    write_ttbcr(cp15->ttbcr);
+    write_sctlr(cp15->sctlr);
+    write_vmpidr(cp15->vmpidr);
 }
 
-#if 0
-static char *_modename(uint8_t mode)
-{
-    char *name = "Unknown";
-    switch (mode) {
-    case CPSR_MODE_USER:
-        name = "User";
-        break;
-    case CPSR_MODE_FIQ:
-        name = "FIQ";
-        break;
-    case CPSR_MODE_IRQ:
-        name = "IRQ";
-        break;
-    case CPSR_MODE_SVC:
-        name = "Supervisor";
-        break;
-    case CPSR_MODE_MON:
-        name = "Monitor";
-        break;
-    case CPSR_MODE_ABT:
-        name = "Abort";
-        break;
-    case CPSR_MODE_HYP:
-        name = "Hyp";
-        break;
-    case CPSR_MODE_UND:
-        name = "Undefined";
-        break;
-    case CPSR_MODE_SYS:
-        name = "System";
-        break;
-    }
-    return name;
-}
-#endif
-
-void print_core_regs(struct core_regs *core_regs)
+void print_core_regs(struct core_regs *regs)
 {
     int i;
 
-    debug_print("cpsr: 0x%08x\n", core_regs->cpsr);
-    debug_print("cpsr mode(%x) : %s\n", core_regs->cpsr & CPSR_MODE_MASK, _modename(core_regs->cpsr & CPSR_MODE_MASK));
-    debug_print("  pc: 0x%08x\n", core_regs->pc);
-    debug_print("  lr: 0x%08x\n", core_regs->lr);
-    debug_print(" gpr:\n\r");
-    for (i = 0; i < ARCH_REGS_NUM_GPR; i++) {
-        debug_print("     0x%08x\n", core_regs->gpr[i]);
+    printf("cpsr: 0x%08x\n", regs->cpsr);
+    printf("cpsr mode(%x)\n", regs->cpsr & CPSR_MODE_MASK);
+    printf("  pc: 0x%08x\n", regs->pc);
+    printf("  lr: 0x%08x\n", regs->lr);
+    printf(" gpr:\n\r");
+    for (i = 0; i < NR_ARCH_GPR_REGS; i++) {
+        printf("     0x%08x\n", regs->gpr[i]);
     }
 
-    debug_print("cntpct: %llu\n", read_cntpct());
-    debug_print("cnth_tval:0x%08x\n", read_cnthp_tval());
+    printf("cntpct: %llu\n", read_cntpct());
+    printf("cnth_tval:0x%08x\n", read_cnthp_tval());
 
 }
 
-hvmm_status_t vcpu_regs_init(struct vcpu_regs *vcpu_regs)
+hvmm_status_t arch_regs_init(struct arch_regs *regs)
 {
-    struct context_regs *context_regs = &vcpu_regs->context_regs;
-
     // TODO(casionwoo) : Initialize loader status for reboot
-    core_regs_init(&vcpu_regs->core_regs);
-    cop_regs_init(&context_regs->cop_regs);
-    banked_regs_init(&context_regs->banked_regs);
+    core_regs_init(&regs->core_regs);
+    cop_regs_init(&regs->cp15);
+    banked_regs_init(&regs->banked_regs);
 
     return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t vcpu_regs_save(struct vcpu_regs *vcpu_regs, struct core_regs *current_regs)
+hvmm_status_t arch_regs_save(struct arch_regs *regs, struct core_regs *current_regs)
 {
-    struct context_regs *context_regs = &vcpu_regs->context_regs;
-
-    // sched_start 때는 save 필요 없음
     if (!current_regs) {
         return HVMM_STATUS_SUCCESS;
     }
 
-    core_regs_save(&vcpu_regs->core_regs, current_regs);
-    cop_regs_save(&context_regs->cop_regs);
-    banked_regs_save(&context_regs->banked_regs);
+    core_regs_save(&regs->core_regs, current_regs);
+    cop_regs_save(&regs->cp15);
+    banked_regs_save(&regs->banked_regs);
 
     return HVMM_STATUS_SUCCESS;
 }
 
-void __set_vcpu_context_first_time(struct core_regs *regs);
-hvmm_status_t vcpu_regs_restore(struct vcpu_regs *vcpu_regs, struct core_regs *current_regs)
+extern void __set_vcpu_context_first_time(struct core_regs *regs);
+hvmm_status_t arch_regs_restore(struct arch_regs *regs, struct core_regs *current_regs)
 {
-    struct context_regs *context_regs = &vcpu_regs->context_regs;
-
     // 'current_regs == 0' means there is no vcpu are running on hypervisor.
     // We need a way to boot first vcpu up as below.
     if (!current_regs) {
-        __set_vcpu_context_first_time(&vcpu_regs->core_regs);
+        __set_vcpu_context_first_time(&regs->core_regs);
         return HVMM_STATUS_SUCCESS;
     }
 
-    core_regs_restore(&vcpu_regs->core_regs, current_regs);
-    cop_regs_restore(&context_regs->cop_regs);
-    banked_regs_restore(&context_regs->banked_regs);
+    core_regs_restore(&regs->core_regs, current_regs);
+    cop_regs_restore(&regs->cp15);
+    banked_regs_restore(&regs->banked_regs);
 
     return HVMM_STATUS_SUCCESS;
 }
-
-void print_vcpu_regs(struct vcpu_regs *vcpu_regs)
-{
-    print_core_regs(&vcpu_regs->core_regs);
-
-    /* TODO(casionwoo) : Decide if print bellow count registers */
-    debug_print("cntpct: %llu\n", read_cntpct());
-    debug_print("cnth_tval:0x%08x\n", read_cnthp_tval());
-}
-

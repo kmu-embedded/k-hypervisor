@@ -10,8 +10,8 @@
 
 static irq_handler_t irq_handlers[MAX_IRQS];
 
-#include <core/vm/vcpu_regs.h>
 #include <core/vm/virq.h>
+#include <arch_regs.h>
 
 hvmm_status_t do_irq(struct core_regs *regs)
 {
