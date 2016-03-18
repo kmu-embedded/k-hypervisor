@@ -694,163 +694,86 @@ static int32_t vdev_gicd_check(struct arch_vdev_trigger_info *info,
 
 static hvmm_status_t vdev_gicd_reset_values(void)
 {
+    int vmid;
     hvmm_status_t result = HVMM_STATUS_SUCCESS;
-    //FIXME : mpidr must be changed to vcpu number
-    uint32_t mpidr = read_mpidr();
-    vmid_t vmid = mpidr & 0x0f;
-    int i;
 
-    printf("vdev init:'%s'\n", __func__);
+    printf("%s START\n", __func__);
 
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
+    for (vmid = 0; vmid < NUM_GUESTS_STATIC; vmid++) {
         /*
          * ITARGETS[0~ 7], CPU Targets are set to 0,
          * due to current single-core support design
          */
         int j = 0;
-        uint32_t inc_address = 0x00000000;
 
-        _regs[i].CTLR =
-            (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                + GICD_OFFSET)));
-        _regs[i].TYPER =
-            (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                + GICD_OFFSET + __GICD_OFFSET_TYPER)));
-        _regs[i].IIDR =
-            (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                + GICD_OFFSET + 0x8)));
-        printf("vdev init:'%s' vmid:%d, gicd TYPER:%x\n", __func__, i,
-               _regs[i].TYPER);
-        printf("vdev init:'%s' vmid:%d, gicd IIDR:%x\n", __func__, i,
-               _regs[i].IIDR);
+        _regs[vmid].CTLR  = 0;
+        _regs[vmid].TYPER = GICD_READ(GICD_TYPER_OFFSET);
+        _regs[vmid].IIDR  = GICD_READ(GICD_IIDR_OFFSET);
+
         for (j = 0; j < VGICD_NUM_IGROUPR; j++) {
             if (!j) {
-                _regs_banked[vmid].IGROUPR =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + inc_address)));
+                _regs_banked[vmid].IGROUPR = 0;
             } else {
-                _regs[i].IGROUPR[j] =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + inc_address)));
+                _regs[vmid].IGROUPR[j] = 0;
             }
-            inc_address += 0x00000004;
         }
 
-        inc_address = 0x00000000;
         for (j = 0; j < VGICE_NUM_ISCENABLER; j++) {
             if (!j) {
-                _regs_banked[vmid].ISCENABLER =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + __GICD_OFFSET_ICENABLER
-                                                        + inc_address)));
+                _regs_banked[vmid].ISCENABLER = 0;
             } else {
-                _regs[i].ISCENABLER[j] =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + __GICD_OFFSET_ICENABLER
-                                                        + inc_address)));
+                _regs[vmid].ISCENABLER[j] = 0;
             }
-            old_vgicd_status[i][(inc_address) >> 2] =
-                _regs[i].ISCENABLER[j];
-            inc_address += 0x00000004;
+            old_vgicd_status[vmid][j] = _regs[vmid].ISCENABLER[j];
         }
-        inc_address = 0x00000000;
+
         for (j = 0; j < VGICE_NUM_ISCPENDR; j++) {
             if (!j) {
-                _regs_banked[vmid].ISCPENDR =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + __GICD_OFFSET_ICPENDR
-                                                        + inc_address)));
+                _regs_banked[vmid].ISCPENDR = 0;
             } else {
-                _regs[i].ISCPENDR[j] =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + __GICD_OFFSET_ICPENDR
-                                                        + inc_address)));
+                _regs[vmid].ISCPENDR[j] = 0;
             }
-            inc_address += 0x00000004;
         }
 
-        inc_address = 0x00000000;
         for (j = 0; j < VGICE_NUM_ISCACTIVER; j++) {
             if (!j) {
-                _regs_banked[vmid].ISCACTIVER =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + __GICD_OFFSET_ISCACTIVER
-                                                        + inc_address)));
+                _regs_banked[vmid].ISCACTIVER = 0;
             } else {
-                _regs[i].ISCACTIVER[j] =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + __GICD_OFFSET_ISCACTIVER
-                                                        + inc_address)));
+                _regs[vmid].ISCACTIVER[j] = 0;
             }
-
-            inc_address += 0x00000004;
         }
 
-        inc_address = 0x00000000;
         for (j = 0; j < VGICE_NUM_IPRIORITYR; j++) {
             if (j < VGICD_BANKED_NUM_IPRIORITYR) {
-                _regs_banked[vmid].IPRIORITYR[j] =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + __GICD_OFFSET_IPRIORITYR
-                                                        + inc_address)));
+                _regs_banked[vmid].IPRIORITYR[j] = 0;;
             } else {
-                _regs[i].IPRIORITYR[j] =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + __GICD_OFFSET_IPRIORITYR
-                                                        + inc_address)));
+                _regs[vmid].IPRIORITYR[j] = 0;
             }
-
-            inc_address += 0x00000004;
         }
 
-        inc_address = 0x00000000;
         for (j = 0; j < VGICE_NUM_ITARGETSR; j++) {
             if (j < VGICD_BANKED_NUM_ITARGETSR) {
-                _regs_banked[vmid].ITARGETSR[j] =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + __GICD_OFFSET_ITARGETSR
-                                                        + inc_address)));
+                _regs_banked[vmid].ITARGETSR[j] = 0;
             } else {
-                _regs[i].ITARGETSR[j] =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + __GICD_OFFSET_ITARGETSR
-                                                        + inc_address)));
+                _regs[vmid].ITARGETSR[j] = 0;
             }
-            inc_address += 0x00000004;
         }
 
-        inc_address = 0x00000000;
         for (j = 0; j < VGICE_NUM_ICFGR; j++) {
             if (j == 1) {
-                _regs_banked[vmid].ICFGR =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + __GICD_OFFSET_ICFGR
-                                                        + inc_address)));
+                _regs_banked[vmid].ICFGR = 0;
             } else {
-                _regs[i].ICFGR[j] =
-                    (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                        + GICD_OFFSET + __GICD_OFFSET_ICFGR
-                                                        + inc_address)));
+                _regs[vmid].ICFGR[j] = 0;
             }
-            inc_address += 0x00000004;
         }
 
-        _regs[i].SGIR =
-            (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                +                        + GICD_OFFSET + __GICD_OFFSET_SGIR)));
-
-        inc_address = 0x00000000;
+        _regs[vmid].SGIR = 0;
         for (j = 0; j < VGICD_BANKED_NUM_CPENDSGIR; j++) {
-            _regs_banked[vmid].CPENDSGIR[j] =
-                (uint32_t) (*((volatile uint32_t*) (CFG_GIC_BASE_PA
-                                                    + GICD_OFFSET + __GICD_OFFSET_CPENDGIR
-                                                    + inc_address)));
-            inc_address += 0x00000004;
+            _regs_banked[vmid].CPENDSGIR[j] = 0;
         }
-
-        inc_address = 0x00000000;
     }
 
+    printf("%s END\n", __func__);
     return result;
 }
 
