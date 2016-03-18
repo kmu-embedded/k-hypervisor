@@ -44,13 +44,15 @@ struct vcpu *vcpu_create()
 
 vcpu_state_t vcpu_init(struct vcpu *vcpu)
 {
-    arch_regs_init(&vcpu->regs);
-    vcpu->state = VCPU_REGISTERED;
+    arch_regs_init(&vcpu->arch_regs);
 
+    // TODO(casionwoo): make it neat.
     virq_init(&vcpu->virq, vcpu->vmid);
 
     // TODO(casionwoo) : Check the return value after scheduler status value defined
     sched_vcpu_register(vcpu->vcpuid);
+
+    vcpu->state = VCPU_REGISTERED;
 
     return vcpu->state;
 }
@@ -59,6 +61,7 @@ vcpu_state_t vcpu_start(struct vcpu *vcpu)
 {
     // TODO(casionwoo) : Check the return value after scheduler status value defined
     sched_vcpu_attach(vcpu->vcpuid);
+
     vcpu->state = VCPU_ACTIVATED;
 
     return vcpu->state;
@@ -67,9 +70,8 @@ vcpu_state_t vcpu_start(struct vcpu *vcpu)
 vcpu_state_t vcpu_delete(struct vcpu *vcpu)
 {
     // TODO(casionwoo) : Signal scheduler to stop the vcpu
-    // TODO(casionwoo) : Unregister vcpu id from scheduler
+    // TODO(casionwoo) : Detach vcpu id from scheduler
 
-    //NO IFDEF?
     LIST_DEL(&vcpu->head);
     free(vcpu);
 
@@ -78,14 +80,14 @@ vcpu_state_t vcpu_delete(struct vcpu *vcpu)
 
 void vcpu_save(struct vcpu *vcpu, struct core_regs *regs)
 {
+    arch_regs_save(&vcpu->arch_regs, regs);
     virq_save(&vcpu->virq);
-    arch_regs_save(&vcpu->regs, regs);
 }
 
 void vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
 {
+    arch_regs_restore(&vcpu->arch_regs, regs);
     virq_restore(&vcpu->virq, vcpu->vmid);
-    arch_regs_restore(&vcpu->regs, regs);
 }
 
 struct vcpu *vcpu_find(vcpuid_t vcpuid)
@@ -96,8 +98,7 @@ struct vcpu *vcpu_find(vcpuid_t vcpuid)
             return vcpu;
         }
     }
-
-    return VCPU_NOT_EXISTED;
+    return vcpu;
 }
 
 void print_all_vcpu()
