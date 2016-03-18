@@ -11,17 +11,12 @@
 #include <core/vm/virq.h>
 
 #include "../../drivers/gic-v2.h"
+
 /* return the bit position of the first bit set from msb
  * for example, firstbit32(0x7F = 111 1111) returns 7
  */
 #define firstbit32(word) (31 - asm_clz(word))
 
-/*
- 1. High Priority Registers to be implemented first for test with linux
- 2. access size support: 8/16/32bit
- 3. notifying enable status changed interrupts to outside
- 4. API for interrupt enable status change callback registeration
- */
 
 /* Virtual GIC Distributor */
 /* Priority of implementation
@@ -34,7 +29,7 @@
  - [ ]
  */
 
-/* hard coding for arndale, fastmodel */
+// FIXME(casionwoo) : This TILinesNumber should be modified like GICv2.TILinesNumber as dynamically
 #define TILinesNumber 4
 #define NUM_MAX_VIRQS   160
 
@@ -94,70 +89,25 @@ struct gicd_regs_banked {
     uint32_t CPENDSGIR[VGICD_BANKED_NUM_CPENDSGIR]; //n
 };
 
-struct gicd_handler_entry {
-    uint32_t offset;
-    vdev_callback_t handler;
-};
-
-static hvmm_status_t
-handler_000(uint32_t write, uint32_t offset, uint32_t *pvalue,
-            enum vdev_access_size access_size);
-static hvmm_status_t
-handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_t *pvalue,
-                   enum vdev_access_size access_size);
-static hvmm_status_t
-handler_ISCPENDR(uint32_t write, uint32_t offset, uint32_t *pvalue,
-                 enum vdev_access_size access_size);
-static hvmm_status_t
-handler_ISCACTIVER(uint32_t write, uint32_t offset, uint32_t *pvalue,
-                   enum vdev_access_size access_size);
-static hvmm_status_t
-handler_IPRIORITYR(uint32_t write, uint32_t offset, uint32_t *pvalue,
-                   enum vdev_access_size access_size);
-static hvmm_status_t
-handler_ITARGETSR(uint32_t write, uint32_t offset, uint32_t *pvalue,
-                  enum vdev_access_size access_size);
-static hvmm_status_t
-handler_ICFGR(uint32_t write, uint32_t offset, uint32_t *pvalue,
-              enum vdev_access_size access_size);
-static hvmm_status_t
-handler_PPISPISR_CA15(uint32_t write, uint32_t offset,
-                      uint32_t *pvalue, enum vdev_access_size access_size);
-static hvmm_status_t
-handler_NSACR(uint32_t write, uint32_t offset, uint32_t *pvalue,
-              enum vdev_access_size access_size);
-static hvmm_status_t
-handler_F00(uint32_t write, uint32_t offset, uint32_t *pvalue,
-            enum vdev_access_size access_size);
+static hvmm_status_t handler_000(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
+static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
+static hvmm_status_t handler_ISCPENDR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
+static hvmm_status_t handler_ISCACTIVER(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
+static hvmm_status_t handler_IPRIORITYR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
+static hvmm_status_t handler_ITARGETSR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
+static hvmm_status_t handler_ICFGR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
+static hvmm_status_t handler_PPISPISR_CA15(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
+static hvmm_status_t handler_NSACR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
+static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 
 static struct vdev_memory_map _vdev_gicd_info = { .base =
         CFG_GIC_BASE_PA | GICD_OFFSET, .size = 4096,
 };
+
 static struct gicd_regs _regs[NUM_GUESTS_STATIC];
 static struct gicd_regs_banked _regs_banked[NUM_GUESTS_STATIC];
 
-static struct gicd_handler_entry _handler_map[0x10] = {
-    /* 0x00 ~ 0x0F */
-    { 0x00, handler_000 }, /* CTLR, TYPER, IIDR, IGROUPR */
-    { 0x01, handler_ISCENABLER }, /* ISENABLER, ICENABLER */
-    { 0x02, handler_ISCPENDR }, /* ISPENDR, ICPENDR */
-    { 0x03, handler_ISCACTIVER }, /* ISACTIVER */
-    { 0x04, handler_IPRIORITYR }, /* IPRIORITYR */
-    { 0x05, handler_IPRIORITYR },
-    { 0x06, handler_IPRIORITYR },
-    { 0x07, handler_IPRIORITYR },
-    { 0x08, handler_ITARGETSR }, /* ITARGETSR */
-    { 0x09, handler_ITARGETSR },
-    { 0x0A, handler_ITARGETSR },
-    { 0x0B, handler_ITARGETSR },
-    { 0x0C, handler_ICFGR }, /* ICFGR */
-    { 0x0D, handler_PPISPISR_CA15 }, /* PPISPISR */
-    { 0x0E, handler_NSACR }, /* NSACR */
-    { 0x0F, handler_F00 }, /* SGIR, CPENDSGIR, SPENDGIR, ICPIDR2 */
-};
-
-static hvmm_status_t handler_000(uint32_t write, uint32_t offset,
-                                 uint32_t *pvalue, enum vdev_access_size access_size)
+static hvmm_status_t handler_000(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     /* CTLR;              0x000 RW*/
     /* TYPER;             RO*/
@@ -252,9 +202,7 @@ static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus, uint8_t wor
     }
 }
 
-static hvmm_status_t handler_ISCENABLER(uint32_t write,
-                                        uint32_t offset, uint32_t *pvalue,
-                                        enum vdev_access_size access_size)
+static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     vmid_t vmid = get_current_vcpuid();
@@ -363,8 +311,7 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write,
     return result;
 }
 
-static hvmm_status_t handler_ISCPENDR(uint32_t write, uint32_t offset,
-                                      uint32_t *pvalue, enum vdev_access_size access_size)
+static hvmm_status_t handler_ISCPENDR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     vmid_t vmid = get_current_vcpuid();
@@ -406,18 +353,14 @@ static hvmm_status_t handler_ISCPENDR(uint32_t write, uint32_t offset,
     return result;
 }
 
-static hvmm_status_t handler_ISCACTIVER(uint32_t write,
-                                        uint32_t offset, uint32_t *pvalue,
-                                        enum vdev_access_size access_size)
+static hvmm_status_t handler_ISCACTIVER(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     printf("vgicd:%s: not implemented\n", __func__);
     return result;
 }
 
-static hvmm_status_t handler_IPRIORITYR(uint32_t write,
-                                        uint32_t offset, uint32_t *pvalue,
-                                        enum vdev_access_size access_size)
+static hvmm_status_t handler_IPRIORITYR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     vmid_t vmid;
@@ -445,9 +388,7 @@ static hvmm_status_t handler_IPRIORITYR(uint32_t write,
     return result;
 }
 
-static hvmm_status_t handler_ITARGETSR(uint32_t write,
-                                       uint32_t offset, uint32_t *pvalue,
-                                       enum vdev_access_size access_size)
+static hvmm_status_t handler_ITARGETSR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     vmid_t vmid;
@@ -498,8 +439,7 @@ static hvmm_status_t handler_ITARGETSR(uint32_t write,
     return result;
 }
 
-static hvmm_status_t handler_ICFGR(uint32_t write, uint32_t offset,
-                                   uint32_t *pvalue, enum vdev_access_size access_size)
+static hvmm_status_t handler_ICFGR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     vmid_t vmid;
@@ -526,25 +466,21 @@ static hvmm_status_t handler_ICFGR(uint32_t write, uint32_t offset,
     return result;
 }
 
-static hvmm_status_t handler_PPISPISR_CA15(uint32_t write,
-                                           uint32_t offset, uint32_t *pvalue,
-                                           enum vdev_access_size access_size)
+static hvmm_status_t handler_PPISPISR_CA15(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     printf("vgicd:%s: not implemented\n", __func__);
     return result;
 }
 
-static hvmm_status_t handler_NSACR(uint32_t write, uint32_t offset,
-                                   uint32_t *pvalue, enum vdev_access_size access_size)
+static hvmm_status_t handler_NSACR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     printf("vgicd:%s: not implemented\n", __func__);
     return result;
 }
 
-static hvmm_status_t handler_F00(uint32_t write, uint32_t offset,
-                                 uint32_t *pvalue, enum vdev_access_size access_size)
+static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     vmid_t vmid;
@@ -620,43 +556,87 @@ static hvmm_status_t handler_F00(uint32_t write, uint32_t offset,
     return result;
 }
 
-static hvmm_status_t vdev_gicd_access_handler(uint32_t write,
-                                              uint32_t offset, uint32_t *pvalue,
-                                              enum vdev_access_size access_size)
+static hvmm_status_t vdev_gicd_access_handler(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
-#if 0
-    uint32_t smp = smp_processor_id();
-    printf ("[%d]%s: %s offset:%x value:%x access_size : %d\n", smp, __func__,
-            write ? "write" : "read", offset,
-            write ? *pvalue : (uint32_t) pvalue, access_size);
-#endif
-    hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    uint8_t offsetidx = (uint8_t) ((offset & 0xF00) >> 8);
-#if 0
-    printf("offset_idx : %d\n", offsetidx);
-#endif
-    result = _handler_map[offsetidx].handler(write, offset, pvalue, access_size);
-    return result;
+    switch (offset)
+    {
+        case GICD_CTLR_OFFSET:
+            return handler_000(write, offset, pvalue, access_size);
+
+        case GICD_TYPER_OFFSET:
+            return handler_000(write, offset, pvalue, access_size);
+
+        case GICD_IIDR_OFFSET:
+            return handler_000(write, offset, pvalue, access_size);
+
+        case GICD_IGROUPR(0) ... GICD_IGROUPR_LAST:
+            return handler_000(write, offset, pvalue, access_size);
+
+        case GICD_ISENABLER(0) ... GICD_ISENABLER_LAST:
+            return handler_ISCENABLER(write, offset, pvalue, access_size);
+
+        case GICD_ICENABLER(0) ... GICD_ICENABLER_LAST:
+            return handler_ISCENABLER(write, offset, pvalue, access_size);
+
+        case GICD_ISPENDR(0) ... GICD_ISPENDR_LAST:
+            return handler_ISCPENDR(write, offset, pvalue, access_size);
+
+        case GICD_ICPENDR(0) ... GICD_ICPENDR_LAST:
+            return handler_ISCPENDR(write, offset, pvalue, access_size);
+
+        case GICD_ISACTIVER(0) ... GICD_ISACTIVER_LAST:
+            return handler_ISCACTIVER(write, offset, pvalue, access_size);
+
+        case GICD_ICACTIVER(0) ... GICD_ICACTIVER_LAST:
+            return handler_ISCACTIVER(write, offset, pvalue, access_size);
+
+        case GICD_IPRIORITYR(0) ... GICD_IPRIORITYR_LAST:
+            return handler_IPRIORITYR(write, offset, pvalue, access_size);
+
+        case GICD_ITARGETSR(0) ... GICD_ITARGETSR_LAST:
+            return handler_ITARGETSR(write, offset, pvalue, access_size);
+
+        case GICD_ICFGR(0) ... GICD_ICFGR_LAST:
+            return handler_ICFGR(write, offset, pvalue, access_size);
+
+        case GICD_NSACR(0) ... GICD_NSACR_LAST:
+            return handler_NSACR(write, offset, pvalue, access_size);
+
+        case GICD_SGIR:
+            return handler_F00(write, offset, pvalue, access_size);
+
+        case GICD_CPENDSGIR(0) ... GICD_CPENDSGIR_LAST:
+            return handler_F00(write, offset, pvalue, access_size);
+
+        case GICD_SPENDSGIR(0) ... GICD_SPENDSGIR_LAST:
+            return handler_F00(write, offset, pvalue, access_size);
+
+        case 0xD00 ... 0xDFC:
+            return handler_PPISPISR_CA15(write, offset, pvalue, access_size);
+
+        default:
+            printf("there's no corresponding address\n");
+            return HVMM_STATUS_BAD_ACCESS;
+    }
+
+    return HVMM_STATUS_SUCCESS;
 }
 
-static int32_t vdev_gicd_read(struct arch_vdev_trigger_info *info,
-                              struct core_regs *regs)
+static int32_t vdev_gicd_read(struct arch_vdev_trigger_info *info, struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
 
     return vdev_gicd_access_handler(0, offset, info->value, info->sas);
 }
 
-static int32_t vdev_gicd_write(struct arch_vdev_trigger_info *info,
-                               struct core_regs *regs)
+static int32_t vdev_gicd_write(struct arch_vdev_trigger_info *info, struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
 
     return vdev_gicd_access_handler(1, offset, info->value, info->sas);
 }
 
-static hvmm_status_t vdev_gicd_post(struct arch_vdev_trigger_info *info,
-                                    struct core_regs *regs)
+static hvmm_status_t vdev_gicd_post(struct arch_vdev_trigger_info *info, struct core_regs *regs)
 {
     uint8_t isize = 4;
 
@@ -669,8 +649,7 @@ static hvmm_status_t vdev_gicd_post(struct arch_vdev_trigger_info *info,
     return 0;
 }
 
-static int32_t vdev_gicd_check(struct arch_vdev_trigger_info *info,
-                               struct core_regs *regs)
+static int32_t vdev_gicd_check(struct arch_vdev_trigger_info *info, struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
 
@@ -793,4 +772,5 @@ hvmm_status_t vdev_gicd_init()
 
     return result;
 }
+
 vdev_module_low_init(vdev_gicd_init);
