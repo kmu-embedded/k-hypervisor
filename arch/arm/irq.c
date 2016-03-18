@@ -18,9 +18,11 @@ hvmm_status_t do_irq(struct core_regs *regs)
 {
     uint32_t irq = irq_hw->ack();
 
+    if (irq == 34) {
+        printf("SP804_TIMER IRQ!!\n");
+    }
+
     irq_hw->eoi(irq);
-    if (irq == 34)
-        printf("SP804 Tick interrupt occur!!!\n");
 
     is_guest_irq(irq);
 
