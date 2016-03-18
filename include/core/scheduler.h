@@ -2,8 +2,8 @@
 #define __SCHEDULER_H__
 
 #include <core/vm/vcpu.h>
-#include <core/vm/vcpu_regs.h>
 #include "../types.h"
+#include <arch_regs.h>
 
 #define GUEST_VERBOSE_ALL       0xFF
 #define GUEST_VERBOSE_LEVEL_0   0x01

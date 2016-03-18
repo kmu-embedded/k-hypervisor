@@ -3,7 +3,7 @@
 
 #include <lib/list.h>
 #include "../../types.h"
-#include "vcpu_regs.h"
+#include "arch_regs.h"
 #include "virq.h"
 
 #define VCPU_CREATE_FAILED    NULL
@@ -21,7 +21,7 @@ struct vcpu {
     vcpuid_t vcpuid;
     vmid_t vmid;
 
-    struct vcpu_regs vcpu_regs;
+    struct arch_regs regs;
 
     struct virq virq;
 

@@ -137,24 +137,6 @@ vcpuid_t get_current_vcpuid(void)
     return __current_vcpuid[pcpu];
 }
 
-#if 0
-vcpuid_t sched__policy_determ_next(void)
-{
-    uint32_t pcpu = smp_processor_id();
-
-    /* FIXME:(igkang) Hardcoded for rr */
-    vcpuid_t next = __policy[pcpu]->do_schedule();
-
-    if (next == VCPUID_INVALID) {
-        debug_print("policy_determ result: VCPUID_INVALID\n");
-        next = 0;
-        hyp_abort_infinite();
-    }
-
-    return next;
-}
-#endif
-
 /**
  * Register a vCPU to a scheduler
  *

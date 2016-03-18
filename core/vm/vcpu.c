@@ -46,7 +46,7 @@ struct vcpu *vcpu_create()
 
 vcpu_state_t vcpu_init(struct vcpu *vcpu)
 {
-    vcpu_regs_init(&vcpu->vcpu_regs);
+    arch_regs_init(&vcpu->regs);
     vcpu->state = VCPU_REGISTERED;
 
     virq_init(&vcpu->virq, vcpu->vmid);
@@ -81,13 +81,13 @@ vcpu_state_t vcpu_delete(struct vcpu *vcpu)
 hvmm_status_t vcpu_save(struct vcpu *vcpu, struct core_regs *regs)
 {
     virq_save(&vcpu->virq);
-    return  vcpu_regs_save(&vcpu->vcpu_regs, regs);
+    return  arch_regs_save(&vcpu->regs, regs);
 }
 
 hvmm_status_t vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
 {
     virq_restore(&vcpu->virq, vcpu->vmid);
-    return  vcpu_regs_restore(&vcpu->vcpu_regs, regs);
+    return  arch_regs_restore(&vcpu->regs, regs);
 }
 
 struct vcpu *vcpu_find(vcpuid_t vcpuid)
