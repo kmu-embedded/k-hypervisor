@@ -91,7 +91,7 @@ static void banked_regs_init(struct banked_regs *banked_regs)
     /* Cortex-A15 processor does not support sp_fiq */
 }
 
-static void core_regs_save(struct core_regs *dst, struct core_regs *src)
+static void save_core_regs(struct core_regs *dst, struct core_regs *src)
 {
     int i;
 
@@ -103,7 +103,7 @@ static void core_regs_save(struct core_regs *dst, struct core_regs *src)
     }
 }
 
-static void core_regs_restore(struct core_regs *dst, struct core_regs *src)
+static void restore_core_regs(struct core_regs *dst, struct core_regs *src)
 {
     int i;
 
@@ -115,7 +115,7 @@ static void core_regs_restore(struct core_regs *dst, struct core_regs *src)
     }
 }
 
-static void banked_regs_save(struct banked_regs *banked_regs)
+static void save_banked_regs(struct banked_regs *banked_regs)
 {
     /* USR banked register */
     asm volatile(" mrs     %0, sp_usr\n\t"
@@ -165,7 +165,7 @@ static void banked_regs_save(struct banked_regs *banked_regs)
                  : "=r"(banked_regs->r12_fiq) : : "memory", "cc");
 }
 
-static void banked_regs_restore(struct banked_regs *banked_regs)
+static void restore_banked_regs(struct banked_regs *banked_regs)
 {
     /* USR banked register */
     asm volatile(" msr    sp_usr, %0\n\t"
@@ -215,7 +215,7 @@ static void banked_regs_restore(struct banked_regs *banked_regs)
                  : : "r"(banked_regs->r12_fiq) : "memory", "cc");
 }
 
-static void cop_regs_save(struct cp15 *cp15)
+static void save_cp15(struct cp15 *cp15)
 {
     cp15->vbar  = read_vbar();
     cp15->ttbr0 = read_ttbr0();
@@ -225,7 +225,7 @@ static void cop_regs_save(struct cp15 *cp15)
     cp15->vmpidr = read_vmpidr();
 }
 
-static void cop_regs_restore(struct cp15 *cp15)
+static void restore_cp15(struct cp15 *cp15)
 {
     write_vbar(cp15->vbar);
     write_ttbr0(cp15->ttbr0);
@@ -269,9 +269,9 @@ hvmm_status_t arch_regs_save(struct arch_regs *regs, struct core_regs *current_r
         return HVMM_STATUS_SUCCESS;
     }
 
-    core_regs_save(&regs->core_regs, current_regs);
-    cop_regs_save(&regs->cp15);
-    banked_regs_save(&regs->banked_regs);
+    save_core_regs(&regs->core_regs, current_regs);
+    save_cp15(&regs->cp15);
+    save_banked_regs(&regs->banked_regs);
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -286,9 +286,9 @@ hvmm_status_t arch_regs_restore(struct arch_regs *regs, struct core_regs *curren
         return HVMM_STATUS_SUCCESS;
     }
 
-    core_regs_restore(&regs->core_regs, current_regs);
-    cop_regs_restore(&regs->cp15);
-    banked_regs_restore(&regs->banked_regs);
+    restore_core_regs(&regs->core_regs, current_regs);
+    restore_cp15(&regs->cp15);
+    restore_banked_regs(&regs->banked_regs);
 
     return HVMM_STATUS_SUCCESS;
 }
