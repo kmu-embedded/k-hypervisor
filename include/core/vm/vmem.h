@@ -2,10 +2,11 @@
 #define __VMEM_H__
 
 #include <stdint.h>
-#include "../../types.h"
+#include <vm_map.h>
+#include <types.h>
 
 struct vmem {
-    struct memdesc_t **memmap;
+    struct memdesc_t *mmap;
     uint32_t base;
     uint32_t vtcr;
     uint64_t vttbr;
