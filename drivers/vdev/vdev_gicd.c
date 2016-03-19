@@ -3,16 +3,15 @@
 #include <arch/armv7.h>
 #include <core/scheduler.h>
 #include <config.h>
-
-#define DEBUG
 #include <stdio.h>
-
 #include "vdev_gicd.h"
 #include <core/vm/virq.h>
 #include <core/vm.h>
 #include <core/vm/vcpu.h>
-
 #include "../../drivers/gic-v2.h"
+
+#define READ    0
+#define WRITE   1
 
 /* return the bit position of the first bit set from msb
  * for example, firstbit32(0x7F = 111 1111) returns 7
@@ -488,63 +487,129 @@ static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pval
     return result;
 }
 
-static hvmm_status_t vdev_gicd_access_handler(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
+static hvmm_status_t vdev_gicd_write_handler(uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     switch (offset)
     {
         case GICD_CTLR_OFFSET:
-            return handler_000(write, offset, pvalue, access_size);
+            return handler_000(WRITE, offset, pvalue, access_size);
 
         case GICD_TYPER_OFFSET:
-            return handler_000(write, offset, pvalue, access_size);
+            return handler_000(WRITE, offset, pvalue, access_size);
 
         case GICD_IIDR_OFFSET:
-            return handler_000(write, offset, pvalue, access_size);
+            return handler_000(WRITE, offset, pvalue, access_size);
 
         case GICD_IGROUPR(0) ... GICD_IGROUPR_LAST:
-            return handler_000(write, offset, pvalue, access_size);
+            return handler_000(WRITE, offset, pvalue, access_size);
 
         case GICD_ISENABLER(0) ... GICD_ISENABLER_LAST:
-            return handler_ISCENABLER(write, offset, pvalue, access_size);
+            return handler_ISCENABLER(WRITE, offset, pvalue, access_size);
 
         case GICD_ICENABLER(0) ... GICD_ICENABLER_LAST:
-            return handler_ISCENABLER(write, offset, pvalue, access_size);
+            return handler_ISCENABLER(WRITE, offset, pvalue, access_size);
 
         case GICD_ISPENDR(0) ... GICD_ISPENDR_LAST:
-            return handler_ISCPENDR(write, offset, pvalue, access_size);
+            return handler_ISCPENDR(WRITE, offset, pvalue, access_size);
 
         case GICD_ICPENDR(0) ... GICD_ICPENDR_LAST:
-            return handler_ISCPENDR(write, offset, pvalue, access_size);
+            return handler_ISCPENDR(WRITE, offset, pvalue, access_size);
 
         case GICD_ISACTIVER(0) ... GICD_ISACTIVER_LAST:
-            return handler_ISCACTIVER(write, offset, pvalue, access_size);
+            return handler_ISCACTIVER(WRITE, offset, pvalue, access_size);
 
         case GICD_ICACTIVER(0) ... GICD_ICACTIVER_LAST:
-            return handler_ISCACTIVER(write, offset, pvalue, access_size);
+            return handler_ISCACTIVER(WRITE, offset, pvalue, access_size);
 
         case GICD_IPRIORITYR(0) ... GICD_IPRIORITYR_LAST:
-            return handler_IPRIORITYR(write, offset, pvalue, access_size);
+            return handler_IPRIORITYR(WRITE, offset, pvalue, access_size);
 
         case GICD_ITARGETSR(0) ... GICD_ITARGETSR_LAST:
-            return handler_ITARGETSR(write, offset, pvalue, access_size);
+            return handler_ITARGETSR(WRITE, offset, pvalue, access_size);
 
         case GICD_ICFGR(0) ... GICD_ICFGR_LAST:
-            return handler_ICFGR(write, offset, pvalue, access_size);
+            return handler_ICFGR(WRITE, offset, pvalue, access_size);
 
         case GICD_NSACR(0) ... GICD_NSACR_LAST:
-            return handler_NSACR(write, offset, pvalue, access_size);
+            return handler_NSACR(WRITE, offset, pvalue, access_size);
 
         case GICD_SGIR:
-            return handler_F00(write, offset, pvalue, access_size);
+            return handler_F00(WRITE, offset, pvalue, access_size);
 
         case GICD_CPENDSGIR(0) ... GICD_CPENDSGIR_LAST:
-            return handler_F00(write, offset, pvalue, access_size);
+            return handler_F00(WRITE, offset, pvalue, access_size);
 
         case GICD_SPENDSGIR(0) ... GICD_SPENDSGIR_LAST:
-            return handler_F00(write, offset, pvalue, access_size);
+            return handler_F00(WRITE, offset, pvalue, access_size);
 
         case 0xD00 ... 0xDFC:
-            return handler_PPISPISR_CA15(write, offset, pvalue, access_size);
+            return handler_PPISPISR_CA15(WRITE, offset, pvalue, access_size);
+
+        default:
+            printf("there's no corresponding address\n");
+            return HVMM_STATUS_BAD_ACCESS;
+    }
+
+    return HVMM_STATUS_SUCCESS;
+}
+
+static hvmm_status_t vdev_gicd_read_handler(uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
+{
+    switch (offset)
+    {
+        case GICD_CTLR_OFFSET:
+            return handler_000(READ, offset, pvalue, access_size);
+
+        case GICD_TYPER_OFFSET:
+            return handler_000(READ, offset, pvalue, access_size);
+
+        case GICD_IIDR_OFFSET:
+            return handler_000(READ, offset, pvalue, access_size);
+
+        case GICD_IGROUPR(0) ... GICD_IGROUPR_LAST:
+            return handler_000(READ, offset, pvalue, access_size);
+
+        case GICD_ISENABLER(0) ... GICD_ISENABLER_LAST:
+            return handler_ISCENABLER(READ, offset, pvalue, access_size);
+
+        case GICD_ICENABLER(0) ... GICD_ICENABLER_LAST:
+            return handler_ISCENABLER(READ, offset, pvalue, access_size);
+
+        case GICD_ISPENDR(0) ... GICD_ISPENDR_LAST:
+            return handler_ISCPENDR(READ, offset, pvalue, access_size);
+
+        case GICD_ICPENDR(0) ... GICD_ICPENDR_LAST:
+            return handler_ISCPENDR(READ, offset, pvalue, access_size);
+
+        case GICD_ISACTIVER(0) ... GICD_ISACTIVER_LAST:
+            return handler_ISCACTIVER(READ, offset, pvalue, access_size);
+
+        case GICD_ICACTIVER(0) ... GICD_ICACTIVER_LAST:
+            return handler_ISCACTIVER(READ, offset, pvalue, access_size);
+
+        case GICD_IPRIORITYR(0) ... GICD_IPRIORITYR_LAST:
+            return handler_IPRIORITYR(READ, offset, pvalue, access_size);
+
+        case GICD_ITARGETSR(0) ... GICD_ITARGETSR_LAST:
+            return handler_ITARGETSR(READ, offset, pvalue, access_size);
+
+        case GICD_ICFGR(0) ... GICD_ICFGR_LAST:
+            return handler_ICFGR(READ, offset, pvalue, access_size);
+
+        case GICD_NSACR(0) ... GICD_NSACR_LAST:
+            return handler_NSACR(READ, offset, pvalue, access_size);
+
+        case GICD_SGIR:
+            return handler_F00(READ, offset, pvalue, access_size);
+
+        case GICD_CPENDSGIR(0) ... GICD_CPENDSGIR_LAST:
+            return handler_F00(READ, offset, pvalue, access_size);
+
+        case GICD_SPENDSGIR(0) ... GICD_SPENDSGIR_LAST:
+            return handler_F00(READ, offset, pvalue, access_size);
+
+        case 0xD00 ... 0xDFC:
+            return handler_PPISPISR_CA15(READ, offset, pvalue, access_size);
 
         default:
             printf("there's no corresponding address\n");
@@ -558,14 +623,14 @@ static int32_t vdev_gicd_read(struct arch_vdev_trigger_info *info, struct core_r
 {
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
 
-    return vdev_gicd_access_handler(0, offset, info->value, info->sas);
+    return vdev_gicd_read_handler(offset, info->value, info->sas);
 }
 
 static int32_t vdev_gicd_write(struct arch_vdev_trigger_info *info, struct core_regs *regs)
 {
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
 
-    return vdev_gicd_access_handler(1, offset, info->value, info->sas);
+    return vdev_gicd_write_handler(offset, info->value, info->sas);
 }
 
 static hvmm_status_t vdev_gicd_post(struct arch_vdev_trigger_info *info, struct core_regs *regs)
