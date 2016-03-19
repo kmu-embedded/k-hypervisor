@@ -28,8 +28,9 @@ static hvmm_status_t handler_PPISPISR_CA15(uint32_t write, uint32_t offset, uint
 static hvmm_status_t handler_NSACR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 
-static struct vdev_memory_map _vdev_gicd_info = { .base =
-        CFG_GIC_BASE_PA | GICD_OFFSET, .size = 4096,
+static struct vdev_memory_map _vdev_gicd_info = {
+    .base = CFG_GIC_BASE_PA | GICD_OFFSET,
+    .size = 4096,
 };
 
 static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus, uint8_t word_offset, uint32_t old_status)
