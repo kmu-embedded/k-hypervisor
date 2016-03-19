@@ -18,7 +18,6 @@
  */
 #define firstbit32(word) (31 - asm_clz(word))
 
-static hvmm_status_t handler_000(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_ISCPENDR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_ISCACTIVER(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
@@ -32,71 +31,6 @@ static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pval
 static struct vdev_memory_map _vdev_gicd_info = { .base =
         CFG_GIC_BASE_PA | GICD_OFFSET, .size = 4096,
 };
-
-static hvmm_status_t handler_000(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
-{
-    /* CTLR;              0x000 RW*/
-    /* TYPER;             RO*/
-    /* IIDR;              RO*/
-    /* IGROUPR[32];       0x080 ~ 0x0FF */
-    hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vcpuid_t vcpuid = get_current_vcpuid();
-    struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct vmcb *vm = vm_find(vcpu->vmid);
-
-    struct gicd_regs *regs = &vm->vgic.gicd_regs;
-    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
-    uint32_t woffset = offset / 4;
-
-    switch (woffset) {
-    case __GICD_CTLR: /* RW */
-        if (write) {
-            regs->CTLR = *pvalue;
-        } else {
-            *pvalue = regs->CTLR;
-        }
-        result = HVMM_STATUS_SUCCESS;
-        break;
-    case __GICD_TYPER: /* RO */
-        if (write == 0) {
-            *pvalue = regs->TYPER;
-            result = HVMM_STATUS_SUCCESS;
-        }
-        break;
-    case __GICD_IIDR: /* RO */
-        if (write == 0) {
-            *pvalue = regs->IIDR;
-            result = HVMM_STATUS_SUCCESS;
-        }
-        break;
-    default: { /* RW GICD_IGROUPR */
-        int igroup = woffset - __GICD_IGROUPR;
-        if ((igroup == 0) && (igroup < VGICD_NUM_IGROUPR)) {
-            if (write) {
-                regs_banked->IGROUPR = *pvalue;
-            } else {
-                *pvalue = regs_banked->IGROUPR;
-            }
-
-            result = HVMM_STATUS_SUCCESS;
-        } else if ((igroup > 0) && (igroup < VGICD_NUM_IGROUPR)) {
-            if (write) {
-                regs->IGROUPR[igroup] = *pvalue;
-            } else {
-                *pvalue = regs->IGROUPR[igroup];
-            }
-
-            result = HVMM_STATUS_SUCCESS;
-        }
-    }
-    break;
-    }
-    if (result != HVMM_STATUS_SUCCESS)
-        printf("vgicd: invalid access offset:%x write:%d\n", offset,
-               write);
-
-    return result;
-}
 
 static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus, uint8_t word_offset, uint32_t old_status)
 {
@@ -487,25 +421,42 @@ static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pval
     return result;
 }
 
-static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, struct core_regs *regs)
+static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, struct core_regs *core_regs)
 {
     uint32_t *pvalue = info->value;
     enum vdev_access_size access_size = info->sas;
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
 
+    vcpuid_t vcpuid = get_current_vcpuid();
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct vmcb *vm = vm_find(vcpu->vmid);
+
+    struct gicd_regs *regs = &vm->vgic.gicd_regs;
+    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
+
     switch (offset)
     {
         case GICD_CTLR_OFFSET:
-            return handler_000(WRITE, offset, pvalue, access_size);
+            regs->CTLR = *pvalue;
+            return HVMM_STATUS_SUCCESS;
 
         case GICD_TYPER_OFFSET:
-            return handler_000(WRITE, offset, pvalue, access_size);
+            return HVMM_STATUS_SUCCESS;
 
         case GICD_IIDR_OFFSET:
-            return handler_000(WRITE, offset, pvalue, access_size);
+            return HVMM_STATUS_SUCCESS;
 
         case GICD_IGROUPR(0) ... GICD_IGROUPR_LAST:
-            return handler_000(WRITE, offset, pvalue, access_size);
+        {
+            int igroup = (offset - GICD_IGROUPR(0)) >> 2;
+
+            if ((igroup == 0) && (igroup < VGICD_NUM_IGROUPR))
+                *pvalue = regs_banked->IGROUPR;
+            else if ((igroup > 0) && (igroup < VGICD_NUM_IGROUPR))
+                *pvalue = regs->IGROUPR[igroup];
+
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_ISENABLER(0) ... GICD_ISENABLER_LAST:
             return handler_ISCENABLER(WRITE, offset, pvalue, access_size);
@@ -557,25 +508,43 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
     return HVMM_STATUS_SUCCESS;
 }
 
-static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struct core_regs *regs)
+static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struct core_regs *core_regs)
 {
     uint32_t *pvalue = info->value;
     enum vdev_access_size access_size = info->sas;
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
 
+    vcpuid_t vcpuid = get_current_vcpuid();
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct vmcb *vm = vm_find(vcpu->vmid);
+    struct gicd_regs *regs = &vm->vgic.gicd_regs;
+    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
+
     switch (offset)
     {
         case GICD_CTLR_OFFSET:
-            return handler_000(READ, offset, pvalue, access_size);
+            *pvalue = regs->CTLR;
+            return HVMM_STATUS_SUCCESS;
 
         case GICD_TYPER_OFFSET:
-            return handler_000(READ, offset, pvalue, access_size);
+            *pvalue = regs->TYPER;
+            return HVMM_STATUS_SUCCESS;
 
         case GICD_IIDR_OFFSET:
-            return handler_000(READ, offset, pvalue, access_size);
+            *pvalue = regs->IIDR;
+            return HVMM_STATUS_SUCCESS;
 
         case GICD_IGROUPR(0) ... GICD_IGROUPR_LAST:
-            return handler_000(READ, offset, pvalue, access_size);
+        {
+            int igroup = (offset - GICD_IGROUPR(0)) >> 2;
+
+            if ((igroup == 0) && (igroup < VGICD_NUM_IGROUPR))
+                *pvalue = regs_banked->IGROUPR;
+            else if ((igroup > 0) && (igroup < VGICD_NUM_IGROUPR))
+                *pvalue = regs->IGROUPR[igroup];
+
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_ISENABLER(0) ... GICD_ISENABLER_LAST:
             return handler_ISCENABLER(READ, offset, pvalue, access_size);
