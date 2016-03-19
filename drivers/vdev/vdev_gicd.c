@@ -487,8 +487,12 @@ static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pval
     return result;
 }
 
-static hvmm_status_t vdev_gicd_write_handler(uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
+static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, struct core_regs *regs)
 {
+    uint32_t *pvalue = info->value;
+    enum vdev_access_size access_size = info->sas;
+    uint32_t offset = info->fipa - _vdev_gicd_info.base;
+
     switch (offset)
     {
         case GICD_CTLR_OFFSET:
@@ -553,8 +557,12 @@ static hvmm_status_t vdev_gicd_write_handler(uint32_t offset, uint32_t *pvalue, 
     return HVMM_STATUS_SUCCESS;
 }
 
-static hvmm_status_t vdev_gicd_read_handler(uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
+static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struct core_regs *regs)
 {
+    uint32_t *pvalue = info->value;
+    enum vdev_access_size access_size = info->sas;
+    uint32_t offset = info->fipa - _vdev_gicd_info.base;
+
     switch (offset)
     {
         case GICD_CTLR_OFFSET:
@@ -619,20 +627,6 @@ static hvmm_status_t vdev_gicd_read_handler(uint32_t offset, uint32_t *pvalue, e
     return HVMM_STATUS_SUCCESS;
 }
 
-static int32_t vdev_gicd_read(struct arch_vdev_trigger_info *info, struct core_regs *regs)
-{
-    uint32_t offset = info->fipa - _vdev_gicd_info.base;
-
-    return vdev_gicd_read_handler(offset, info->value, info->sas);
-}
-
-static int32_t vdev_gicd_write(struct arch_vdev_trigger_info *info, struct core_regs *regs)
-{
-    uint32_t offset = info->fipa - _vdev_gicd_info.base;
-
-    return vdev_gicd_write_handler(offset, info->value, info->sas);
-}
-
 static hvmm_status_t vdev_gicd_post(struct arch_vdev_trigger_info *info, struct core_regs *regs)
 {
     uint8_t isize = 4;
@@ -666,8 +660,8 @@ static hvmm_status_t vdev_gicd_reset_values(void)
 struct vdev_ops _vdev_gicd_ops = {
     .init = vdev_gicd_reset_values,
     .check = vdev_gicd_check,
-    .read = vdev_gicd_read,
-    .write = vdev_gicd_write,
+    .read = vdev_gicd_read_handler,
+    .write = vdev_gicd_write_handler,
     .post = vdev_gicd_post
 };
 
