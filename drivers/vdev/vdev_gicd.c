@@ -24,37 +24,36 @@ static struct vdev_memory_map _vdev_gicd_info = {
     .size = 4096,
 };
 
-static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus, uint8_t word_offset, uint32_t old_status)
+static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t current_status, uint8_t word_offset, uint32_t old_status)
 {
     struct vcpu *vcpu = vcpu_find(vcpuid);
-    uint32_t cstatus; /* changed bits only */
-    uint32_t minirq;
-    int bit;
-    minirq = word_offset * 32;
-    cstatus = old_status ^ istatus;
+    uint32_t changed_status; /* changed bits only */
+    uint32_t min_base_irq;
+    int checked_bit_position;
+    min_base_irq = word_offset * 32;
+    changed_status = old_status ^ current_status;
 
-    while (cstatus) {
+    while (changed_status) {
         uint32_t virq;
         uint32_t pirq;
-        bit = firstbit32(cstatus);
-        virq = minirq + bit;
+        checked_bit_position = firstbit32(changed_status);
+        virq = min_base_irq + checked_bit_position;
         pirq = virq_to_pirq(&vcpu->virq, virq);
         if (pirq != PIRQ_INVALID) {
-            /* changed bit */
-            if (istatus & (1 << bit)) {
-                printf("[%s : %d] enabled irq num is %d\n", __func__, __LINE__, bit + minirq);
+            if (current_status & (1 << checked_bit_position)) {
+                printf("[%s : %d] enabled irq num is %d\n", __func__, __LINE__, checked_bit_position + min_base_irq);
                 gic_configure_irq(pirq, IRQ_LEVEL_TRIGGERED);
                 printf("vcpuid %d\tpirq %d\n", vcpuid, pirq);
                 virq_enable(&vcpu->virq, pirq);
                 gic_enable_irq(pirq);
             } else {
-                printf("[%s : %d] disabled irq num is %d\n", __func__, __LINE__, bit + minirq);
+                printf("[%s : %d] disabled irq num is %d\n", __func__, __LINE__, checked_bit_position + min_base_irq);
                 gic_disable_irq(pirq);
             }
         } else {
             printf("WARNING: Ignoring virq %d for guest %d has no mapped pirq\n", virq, vcpuid);
         }
-        cstatus &= ~(1 << bit);
+        changed_status &= ~(1 << checked_bit_position);
     }
 }
 
@@ -271,9 +270,9 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
             }
 
             if (access_size == VDEV_ACCESS_WORD) {
-                    old_status = *preg_s;
-                    *preg_s |= *pvalue;
-                    vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ITARGETSR(0)) >> 2, old_status);
+                old_status = *preg_s;
+                *preg_s |= *pvalue;
+                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ITARGETSR(0)) >> 2, old_status);
             } else if (access_size == VDEV_ACCESS_HWORD) {
                 uint16_t *preg_s16 = (uint16_t *) preg_s;
                 preg_s16 += (offset & 0x3) >> 1;
