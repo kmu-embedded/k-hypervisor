@@ -18,7 +18,6 @@
  */
 #define firstbit32(word) (31 - asm_clz(word))
 
-static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_ISCPENDR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_ISCACTIVER(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_IPRIORITYR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
@@ -65,117 +64,6 @@ static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus, uint8_t wor
         }
         cstatus &= ~(1 << bit);
     }
-}
-
-static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
-{
-    hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vcpuid_t vcpuid = get_current_vcpuid();
-    struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct vmcb *vm = vm_find(vcpu->vmid);
-    struct gicd_regs *regs = &vm->vgic.gicd_regs;
-    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
-    uint32_t *preg_s;
-    uint32_t *preg_c;
-    uint32_t old_status;
-
-    if (write && *pvalue == 0) {
-        /* Writes 0 -> Has no effect. */
-        result = HVMM_STATUS_SUCCESS;
-        return result;
-    }
-    if (((offset >> 2) - __GICD_ISENABLER) == 0 ||
-            ((offset >> 2) - __GICD_ICENABLER) == 0) {
-        preg_s = &(regs_banked->ISENABLER);
-        preg_c = &(regs_banked->ICENABLER);
-    } else {
-        preg_s = &(regs->ISENABLER[(offset >> 2)]);
-        preg_c = &(regs->ICENABLER[(offset >> 2)]);
-    }
-    if (access_size == VDEV_ACCESS_WORD) {
-        if ((offset >> 2) < (__GICD_ISENABLER + VGICD_NUM_IENABLER)) {
-            /* ISENABLER */
-            if (write) {
-                old_status = *preg_s;
-                *preg_s |= *pvalue;
-                vgicd_changed_istatus(vcpuid, *preg_s, (offset >> 2) - __GICD_ISENABLER, old_status);
-            } else {
-                *pvalue = *preg_s;
-            }
-
-            result = HVMM_STATUS_SUCCESS;
-        } else if ((offset >> 2) >= __GICD_ICENABLER
-                   && (offset >> 2)
-                   < (__GICD_ICENABLER + VGICD_NUM_IENABLER)) {
-            /* ICENABLER */
-            if (write) {
-                old_status = *preg_c;
-                *preg_c &= ~(*pvalue);
-                vgicd_changed_istatus(vcpuid, *preg_c, (offset >> 2) - __GICD_ICENABLER, old_status);
-            } else {
-                *pvalue = *preg_c;
-            }
-
-            result = HVMM_STATUS_SUCCESS;
-        }
-    } else if (access_size == VDEV_ACCESS_HWORD) {
-        if ((offset >> 2) < (__GICD_ISENABLER + VGICD_NUM_IENABLER)) {
-            uint16_t *preg_s16 = (uint16_t *) preg_s;
-            preg_s16 += (offset & 0x3) >> 1;
-            if (write) {
-                old_status = *preg_s;
-                *preg_s16 |= (uint16_t) (*pvalue & 0xFFFF);
-                vgicd_changed_istatus(vcpuid, *preg_s, (offset >> 2) - __GICD_ISENABLER, old_status);
-            } else {
-                *pvalue = (uint32_t) * preg_s16;
-            }
-
-            result = HVMM_STATUS_SUCCESS;
-        } else if ((offset >> 2) >= __GICD_ICENABLER
-                   && (offset >> 2)
-                   < (__GICD_ICENABLER + VGICD_NUM_IENABLER)) {
-            uint16_t *preg_c16 = (uint16_t *) preg_c;
-            preg_c16 += (offset & 0x3) >> 1;
-            if (write) {
-                old_status = *preg_s;
-                *preg_c16 &= ~((uint16_t) (*pvalue & 0xFFFF));
-                vgicd_changed_istatus(vcpuid, *preg_c, (offset >> 2) - __GICD_ICENABLER, old_status);
-            } else {
-                *pvalue = (uint32_t) * preg_c16;
-            }
-
-            result = HVMM_STATUS_SUCCESS;
-        }
-    } else if (access_size == VDEV_ACCESS_BYTE) {
-        if ((offset >> 2) < (__GICD_ISENABLER + VGICD_NUM_IENABLER)) {
-            uint8_t *preg_s8 = (uint8_t *) preg_s;
-            preg_s8 += (offset & 0x3);
-            if (write) {
-                old_status = *preg_s;
-                *preg_s8 |= (uint8_t) (*pvalue & 0xFF);
-                vgicd_changed_istatus(vcpuid, *preg_s, (offset >> 2) - __GICD_ISENABLER, old_status);
-            } else {
-                *pvalue = (uint32_t) * preg_s8;
-            }
-
-            result = HVMM_STATUS_SUCCESS;
-        } else if ((offset >> 2) >= __GICD_ICENABLER
-                   && (offset >> 2)
-                   < (__GICD_ICENABLER + VGICD_NUM_IENABLER)) {
-            uint8_t *preg_c8 = (uint8_t *) preg_c;
-            preg_c8 += (offset & 0x3);
-            if (write) {
-                old_status = *preg_s;
-                *preg_c8 &= ~((uint8_t) (*pvalue & 0xFF));
-                vgicd_changed_istatus(vcpuid, *preg_c, (offset >> 2) - __GICD_ICENABLER, old_status);
-            } else {
-                *pvalue = (uint32_t) * preg_c8;
-            }
-
-            result = HVMM_STATUS_SUCCESS;
-        }
-    }
-    return result;
 }
 
 static hvmm_status_t handler_ISCPENDR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
@@ -434,6 +322,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
 
     struct gicd_regs *regs = &vm->vgic.gicd_regs;
     struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
+    uint32_t old_status;
 
     switch (offset)
     {
@@ -460,10 +349,66 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
         }
 
         case GICD_ISENABLER(0) ... GICD_ISENABLER_LAST:
-            return handler_ISCENABLER(WRITE, offset, pvalue, access_size);
+        {
+            uint32_t *preg_s;
+
+            if ((offset  - GICD_ISENABLER(0)) >> 2 == 0 ) {
+                preg_s = &(regs_banked->ISENABLER);
+            } else {
+                preg_s = &(regs->ISENABLER[(offset >> 2)]);
+            }
+
+            if (access_size == VDEV_ACCESS_WORD) {
+                old_status = *preg_s;
+                *preg_s |= *pvalue;
+                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ISENABLER(0)) >> 2, old_status);
+            } else if (access_size == VDEV_ACCESS_HWORD) {
+                uint16_t *preg_s16 = (uint16_t *) preg_s;
+                preg_s16 += (offset & 0x3) >> 1;
+                old_status = *preg_s;
+                *preg_s16 |= (uint16_t) (*pvalue & 0xFFFF);
+                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ISENABLER(0)) >> 2, old_status);
+            } else if (access_size == VDEV_ACCESS_BYTE) {
+                uint8_t *preg_s8 = (uint8_t *) preg_s;
+                preg_s8 += (offset & 0x3);
+                old_status = *preg_s;
+                *preg_s8 |= (uint8_t) (*pvalue & 0xFF);
+                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ISENABLER(0)) >> 2, old_status);
+            }
+
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_ICENABLER(0) ... GICD_ICENABLER_LAST:
-            return handler_ISCENABLER(WRITE, offset, pvalue, access_size);
+        {
+            uint32_t *preg_s;
+
+            if ((offset  - GICD_ICENABLER(0)) >> 2 == 0 ) {
+                preg_s = &(regs_banked->ICENABLER);
+            } else {
+                preg_s = &(regs->ICENABLER[(offset >> 2)]);
+            }
+
+            if (access_size == VDEV_ACCESS_WORD) {
+                    old_status = *preg_s;
+                    *preg_s |= *pvalue;
+                    vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ICENABLER(0)) >> 2, old_status);
+            } else if (access_size == VDEV_ACCESS_HWORD) {
+                uint16_t *preg_s16 = (uint16_t *) preg_s;
+                preg_s16 += (offset & 0x3) >> 1;
+                old_status = *preg_s;
+                *preg_s16 |= (uint16_t) (*pvalue & 0xFFFF);
+                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ICENABLER(0)) >> 2, old_status);
+            } else if (access_size == VDEV_ACCESS_BYTE) {
+                uint8_t *preg_s8 = (uint8_t *) preg_s;
+                preg_s8 += (offset & 0x3);
+                old_status = *preg_s;
+                *preg_s8 |= (uint8_t) (*pvalue & 0xFF);
+                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ICENABLER(0)) >> 2, old_status);
+            }
+
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_ISPENDR(0) ... GICD_ISPENDR_LAST:
             return handler_ISCPENDR(WRITE, offset, pvalue, access_size);
@@ -548,10 +493,54 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
         }
 
         case GICD_ISENABLER(0) ... GICD_ISENABLER_LAST:
-            return handler_ISCENABLER(READ, offset, pvalue, access_size);
+        {
+            uint32_t *preg_s;
+
+            if ((offset  - GICD_ISENABLER(0)) >> 2 == 0 ) {
+                preg_s = &(regs_banked->ISENABLER);
+            } else {
+                preg_s = &(regs->ISENABLER[(offset >> 2)]);
+            }
+
+            if (access_size == VDEV_ACCESS_WORD) {
+                *pvalue = *preg_s;
+            } else if (access_size == VDEV_ACCESS_HWORD) {
+                uint16_t *preg_s16 = (uint16_t *) preg_s;
+                preg_s16 += (offset & 0x3) >> 1;
+                *pvalue = (uint32_t) * preg_s16;
+            } else if (access_size == VDEV_ACCESS_BYTE) {
+                uint8_t *preg_s8 = (uint8_t *) preg_s;
+                preg_s8 += (offset & 0x3);
+                *pvalue = (uint32_t) * preg_s8;
+            }
+
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_ICENABLER(0) ... GICD_ICENABLER_LAST:
-            return handler_ISCENABLER(READ, offset, pvalue, access_size);
+        {
+            uint32_t *preg_s;
+
+            if ((offset  - GICD_ICENABLER(0)) >> 2 == 0 ) {
+                preg_s = &(regs_banked->ICENABLER);
+            } else {
+                preg_s = &(regs->ICENABLER[(offset >> 2)]);
+            }
+
+            if (access_size == VDEV_ACCESS_WORD) {
+                *pvalue = *preg_s;
+            } else if (access_size == VDEV_ACCESS_HWORD) {
+                uint16_t *preg_s16 = (uint16_t *) preg_s;
+                preg_s16 += (offset & 0x3) >> 1;
+                *pvalue = (uint32_t) * preg_s16;
+            } else if (access_size == VDEV_ACCESS_BYTE) {
+                uint8_t *preg_s8 = (uint8_t *) preg_s;
+                preg_s8 += (offset & 0x3);
+                *pvalue = (uint32_t) * preg_s8;
+            }
+
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_ISPENDR(0) ... GICD_ISPENDR_LAST:
             return handler_ISCPENDR(READ, offset, pvalue, access_size);
