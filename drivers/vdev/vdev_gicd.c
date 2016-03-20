@@ -18,8 +18,6 @@
  */
 #define firstbit32(word) (31 - asm_clz(word))
 
-static hvmm_status_t handler_ISCPENDR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
-static hvmm_status_t handler_ISCACTIVER(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_IPRIORITYR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_ITARGETSR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_ICFGR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
@@ -64,58 +62,6 @@ static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus, uint8_t wor
         }
         cstatus &= ~(1 << bit);
     }
-}
-
-static hvmm_status_t handler_ISCPENDR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
-{
-    hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vcpuid_t vcpuid = get_current_vcpuid();
-    struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct vmcb *vm = vm_find(vcpu->vmid);
-    struct gicd_regs *regs = &vm->vgic.gicd_regs;
-    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
-    uint32_t *preg_s;
-    uint32_t *preg_c;
-
-    if (((offset >> 2) - __GICD_ISPENDR) == 0 ||
-            ((offset >> 2) - __GICD_ICPENDR) == 0) {
-        preg_s = &(regs_banked->ISPENDR);
-        preg_c = &(regs_banked->ICPENDR);
-    } else {
-        preg_s = &(regs->ISPENDR[(offset >> 2) - __GICD_ISPENDR]);
-        preg_c = &(regs->ICPENDR[(offset >> 2) - __GICD_ICPENDR]);
-    }
-    offset >>= 2;
-    if (access_size == VDEV_ACCESS_WORD) {
-        if ((offset >> 2) < (__GICD_ISPENDR + VGICD_NUM_IENABLER)) {
-            /* ISPEND */
-            if (write) {
-                *preg_s |= *pvalue;
-            } else {
-                *pvalue = *preg_s;
-            }
-            result = HVMM_STATUS_SUCCESS;
-        } else if ((offset >> 2) >= __GICD_ICPENDR
-                   && (offset >> 2)
-                   < (__GICD_ICPENDR + VGICD_NUM_IENABLER)) {
-            /* ICPEND */
-            if (write) {
-                *preg_c &= ~(*pvalue);
-            } else {
-                *pvalue = *preg_c;
-            }
-            result = HVMM_STATUS_SUCCESS;
-        }
-    }
-    printf("vgicd:%s: not implemented\n", __func__);
-    return result;
-}
-
-static hvmm_status_t handler_ISCACTIVER(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
-{
-    hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    printf("vgicd:%s: not implemented\n", __func__);
-    return result;
 }
 
 static hvmm_status_t handler_IPRIORITYR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
@@ -411,16 +357,46 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
         }
 
         case GICD_ISPENDR(0) ... GICD_ISPENDR_LAST:
-            return handler_ISCPENDR(WRITE, offset, pvalue, access_size);
+        {
+            uint32_t *preg_s;
+
+            if ((offset  - GICD_ISPENDR(0)) >> 2 == 0 ) {
+                preg_s = &(regs_banked->ISPENDR);
+            } else {
+                preg_s = &(regs->ISPENDR[(offset >> 2)]);
+            }
+
+            if (access_size == VDEV_ACCESS_WORD) {
+                *preg_s |= *pvalue;
+            }
+
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_ICPENDR(0) ... GICD_ICPENDR_LAST:
-            return handler_ISCPENDR(WRITE, offset, pvalue, access_size);
+        {
+            uint32_t *preg_s;
+
+            if ((offset  - GICD_ICPENDR(0)) >> 2 == 0 ) {
+                preg_s = &(regs_banked->ICPENDR);
+            } else {
+                preg_s = &(regs->ICPENDR[(offset >> 2)]);
+            }
+
+            if (access_size == VDEV_ACCESS_WORD) {
+                *preg_s &= ~(*pvalue);
+            }
+
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_ISACTIVER(0) ... GICD_ISACTIVER_LAST:
-            return handler_ISCACTIVER(WRITE, offset, pvalue, access_size);
+            printf("vgicd: GICD_ISATIVER wite not implemented\n", __func__);
+            return HVMM_STATUS_BAD_ACCESS;
 
         case GICD_ICACTIVER(0) ... GICD_ICACTIVER_LAST:
-            return handler_ISCACTIVER(WRITE, offset, pvalue, access_size);
+            printf("vgicd: GICD_ICATIVER wite not implemented\n", __func__);
+            return HVMM_STATUS_BAD_ACCESS;
 
         case GICD_IPRIORITYR(0) ... GICD_IPRIORITYR_LAST:
             return handler_IPRIORITYR(WRITE, offset, pvalue, access_size);
@@ -543,16 +519,46 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
         }
 
         case GICD_ISPENDR(0) ... GICD_ISPENDR_LAST:
-            return handler_ISCPENDR(READ, offset, pvalue, access_size);
+        {
+            uint32_t *preg_s;
+
+            if ((offset  - GICD_ISPENDR(0)) >> 2 == 0 ) {
+                preg_s = &(regs_banked->ISPENDR);
+            } else {
+                preg_s = &(regs->ISPENDR[(offset >> 2)]);
+            }
+
+            if (access_size == VDEV_ACCESS_WORD) {
+                *pvalue = *preg_s;
+            }
+
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_ICPENDR(0) ... GICD_ICPENDR_LAST:
-            return handler_ISCPENDR(READ, offset, pvalue, access_size);
+        {
+            uint32_t *preg_s;
+
+            if ((offset  - GICD_ICPENDR(0)) >> 2 == 0 ) {
+                preg_s = &(regs_banked->ICPENDR);
+            } else {
+                preg_s = &(regs->ICPENDR[(offset >> 2)]);
+            }
+
+            if (access_size == VDEV_ACCESS_WORD) {
+                *pvalue = *preg_s;
+            }
+
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_ISACTIVER(0) ... GICD_ISACTIVER_LAST:
-            return handler_ISCACTIVER(READ, offset, pvalue, access_size);
+            printf("vgicd: GICD_ISACTIVER read not implemented\n", __func__);
+            return HVMM_STATUS_BAD_ACCESS;
 
         case GICD_ICACTIVER(0) ... GICD_ICACTIVER_LAST:
-            return handler_ISCACTIVER(READ, offset, pvalue, access_size);
+            printf("vgicd: GICD_ICACTIVER read not implemented\n", __func__);
+            return HVMM_STATUS_BAD_ACCESS;
 
         case GICD_IPRIORITYR(0) ... GICD_IPRIORITYR_LAST:
             return handler_IPRIORITYR(READ, offset, pvalue, access_size);
