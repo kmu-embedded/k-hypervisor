@@ -21,8 +21,6 @@
 static hvmm_status_t handler_IPRIORITYR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_ITARGETSR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_ICFGR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
-static hvmm_status_t handler_PPISPISR_CA15(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
-static hvmm_status_t handler_NSACR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 
 static struct vdev_memory_map _vdev_gicd_info = {
@@ -167,20 +165,6 @@ static hvmm_status_t handler_ICFGR(uint32_t write, uint32_t offset, uint32_t *pv
         *pvalue = *preg;
     }
     result = HVMM_STATUS_SUCCESS;
-    return result;
-}
-
-static hvmm_status_t handler_PPISPISR_CA15(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
-{
-    hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    printf("vgicd:%s: not implemented\n", __func__);
-    return result;
-}
-
-static hvmm_status_t handler_NSACR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
-{
-    hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    printf("vgicd:%s: not implemented\n", __func__);
     return result;
 }
 
@@ -408,7 +392,8 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
             return handler_ICFGR(WRITE, offset, pvalue, access_size);
 
         case GICD_NSACR(0) ... GICD_NSACR_LAST:
-            return handler_NSACR(WRITE, offset, pvalue, access_size);
+            printf("vgicd: GICD_NSACR write not implemented\n", __func__);
+            return HVMM_STATUS_BAD_ACCESS;
 
         case GICD_SGIR:
             return handler_F00(WRITE, offset, pvalue, access_size);
@@ -420,7 +405,8 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
             return handler_F00(WRITE, offset, pvalue, access_size);
 
         case 0xD00 ... 0xDFC:
-            return handler_PPISPISR_CA15(WRITE, offset, pvalue, access_size);
+            printf("vgicd: GICD_PPISPISR_CA15 write not implemented\n", __func__);
+            return HVMM_STATUS_BAD_ACCESS;
 
         default:
             printf("there's no corresponding address\n");
@@ -570,7 +556,8 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
             return handler_ICFGR(READ, offset, pvalue, access_size);
 
         case GICD_NSACR(0) ... GICD_NSACR_LAST:
-            return handler_NSACR(READ, offset, pvalue, access_size);
+            printf("vgicd: GICD_NSACR read not implemented\n", __func__);
+            return HVMM_STATUS_BAD_ACCESS;
 
         case GICD_SGIR:
             return handler_F00(READ, offset, pvalue, access_size);
@@ -582,7 +569,8 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
             return handler_F00(READ, offset, pvalue, access_size);
 
         case 0xD00 ... 0xDFC:
-            return handler_PPISPISR_CA15(READ, offset, pvalue, access_size);
+            printf("vgicd: GICD_PPISPISR_CA15 read not implemented\n", __func__);
+            return HVMM_STATUS_BAD_ACCESS;
 
         default:
             printf("there's no corresponding address\n");
