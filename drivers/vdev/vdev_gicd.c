@@ -4,7 +4,6 @@
 #include <core/scheduler.h>
 #include <config.h>
 #include <stdio.h>
-#include "vdev_gicd.h"
 #include <core/vm/virq.h>
 #include <core/vm.h>
 #include <core/vm/vcpu.h>
