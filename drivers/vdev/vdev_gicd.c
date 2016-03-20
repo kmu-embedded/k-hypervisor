@@ -75,7 +75,7 @@ static hvmm_status_t handler_IPRIORITYR(uint32_t write, uint32_t offset, uint32_
     /* FIXME: Support 8/16/32bit access */
     offset >>= 2;
     if ((offset - __GICD_IPRIORITYR) < VGICD_BANKED_NUM_IPRIORITYR) {
-        preg = &(regs_banked->ICFGR);
+        preg = &(regs_banked->IPRIORITYR[offset - __GICD_IPRIORITYR]);
     } else {
         preg = &(regs->IPRIORITYR[offset - __GICD_IPRIORITYR]);
     }
