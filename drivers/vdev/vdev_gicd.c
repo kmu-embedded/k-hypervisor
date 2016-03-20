@@ -72,8 +72,7 @@ static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pval
     uint32_t *preg_s;
     uint32_t *preg_c;
 
-    if (((offset >> 2) == __GICD_CPENDSGIR) ||
-            ((offset >> 2) == __GICD_SPENDSGIR)) {
+    if (((offset >> 2) == __GICD_CPENDSGIR) || ((offset >> 2) == __GICD_SPENDSGIR)) {
         regs_banked = &vm->vgic.gicd_regs_banked;
         preg_s = &(regs_banked->SPENDSGIR[(offset >> 2) - __GICD_SPENDSGIR]);
         preg_c = &(regs_banked->CPENDSGIR[(offset >> 2) - __GICD_CPENDSGIR]);
@@ -343,10 +342,20 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
             return handler_F00(WRITE, offset, pvalue, access_size);
 
         case GICD_CPENDSGIR(0) ... GICD_CPENDSGIR_LAST:
-            return handler_F00(WRITE, offset, pvalue, access_size);
+        {
+            uint32_t *preg = &(regs_banked->CPENDSGIR[offset - GICD_CPENDSGIR(0)]);
+
+            *preg |= ~(*pvalue);
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_SPENDSGIR(0) ... GICD_SPENDSGIR_LAST:
-            return handler_F00(WRITE, offset, pvalue, access_size);
+        {
+            uint32_t *preg = &(regs_banked->SPENDSGIR[offset - GICD_SPENDSGIR(0)]);
+
+            *preg |= (*pvalue);
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case 0xD00 ... 0xDFC:
             printf("vgicd: GICD_PPISPISR_CA15 write not implemented\n", __func__);
@@ -553,10 +562,20 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
             return handler_F00(READ, offset, pvalue, access_size);
 
         case GICD_CPENDSGIR(0) ... GICD_CPENDSGIR_LAST:
-            return handler_F00(READ, offset, pvalue, access_size);
+        {
+            uint32_t *preg = &(regs_banked->CPENDSGIR[offset - GICD_CPENDSGIR(0)]);
+
+            *pvalue = *preg;
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_SPENDSGIR(0) ... GICD_SPENDSGIR_LAST:
-            return handler_F00(READ, offset, pvalue, access_size);
+        {
+            uint32_t *preg = &(regs_banked->SPENDSGIR[offset - GICD_SPENDSGIR(0)]);
+
+            *pvalue = *preg;
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case 0xD00 ... 0xDFC:
             printf("vgicd: GICD_PPISPISR_CA15 read not implemented\n", __func__);
