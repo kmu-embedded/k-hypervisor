@@ -25,25 +25,31 @@ void vgic_init(struct vgic *vgic)
 
     for (i = 0; i < VGICE_NUM_ISCENABLER; i++) {
         if (!i) {
-            gicd_regs_banked->ISCENABLER = 0;
+            gicd_regs_banked->ISENABLER = 0;
+            gicd_regs_banked->ICENABLER = 0;
         } else {
-            gicd_regs->ISCENABLER[i] = 0;
+            gicd_regs->ISENABLER[i] = 0;
+            gicd_regs->ICENABLER[i] = 0;
         }
     }
 
     for (i = 0; i < VGICE_NUM_ISCPENDR; i++) {
         if (!i) {
-            gicd_regs_banked->ISCPENDR = 0;
+            gicd_regs_banked->ISPENDR = 0;
+            gicd_regs_banked->ICPENDR = 0;
         } else {
-            gicd_regs->ISCPENDR[i] = 0;
+            gicd_regs->ISPENDR[i] = 0;
+            gicd_regs->ICPENDR[i] = 0;
         }
     }
 
     for (i = 0; i < VGICE_NUM_ISCACTIVER; i++) {
         if (!i) {
-            gicd_regs_banked->ISCACTIVER = 0;
+            gicd_regs_banked->ISACTIVER = 0;
+            gicd_regs_banked->ICACTIVER = 0;
         } else {
-            gicd_regs->ISCACTIVER[i] = 0;
+            gicd_regs->ISACTIVER[i] = 0;
+            gicd_regs->ICACTIVER[i] = 0;
         }
     }
 
@@ -73,6 +79,7 @@ void vgic_init(struct vgic *vgic)
 
     gicd_regs->SGIR = 0;
     for (i = 0; i < VGICD_BANKED_NUM_CPENDSGIR; i++) {
+        gicd_regs_banked->SPENDSGIR[i] = 0;
         gicd_regs_banked->CPENDSGIR[i] = 0;
     }
 

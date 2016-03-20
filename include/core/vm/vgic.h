@@ -33,9 +33,12 @@ struct gicd_regs {
     uint32_t IIDR;                              /*      RO*/
 
     uint32_t IGROUPR[VGICD_NUM_IGROUPR];        /* 0x080 */
-    uint32_t ISCENABLER[VGICE_NUM_ISCENABLER];  /* 0x100, ISENABLER/ICENABLER */
-    uint32_t ISCPENDR[VGICE_NUM_ISCPENDR];      /* 0x200, ISPENDR/ICPENDR */
-    uint32_t ISCACTIVER[VGICE_NUM_ISCACTIVER];  /* 0x300, ISACTIVER/ICACTIVER */
+    uint32_t ISENABLER[VGICE_NUM_ISCENABLER];  /* 0x100, ISENABLER/ICENABLER */
+    uint32_t ICENABLER[VGICE_NUM_ISCENABLER];  /* 0x100, ISENABLER/ICENABLER */
+    uint32_t ISPENDR[VGICE_NUM_ISCPENDR];      /* 0x200, ISPENDR/ICPENDR */
+    uint32_t ICPENDR[VGICE_NUM_ISCPENDR];      /* 0x200, ISPENDR/ICPENDR */
+    uint32_t ISACTIVER[VGICE_NUM_ISCACTIVER];  /* 0x300, ISACTIVER/ICACTIVER */
+    uint32_t ICACTIVER[VGICE_NUM_ISCACTIVER];  /* 0x300, ISACTIVER/ICACTIVER */
     uint32_t IPRIORITYR[VGICE_NUM_IPRIORITYR];  /* 0x400 */
     uint32_t ITARGETSR[VGICE_NUM_ITARGETSR];    /* 0x800 [0]: RO, Otherwise, RW */
     uint32_t ICFGR[VGICE_NUM_ICFGR];            /* 0xC00 */
@@ -54,13 +57,17 @@ struct gicd_regs {
 
 struct gicd_regs_banked {
     uint32_t IGROUPR;                                   //0
-    uint32_t ISCENABLER;                                //0
-    uint32_t ISCPENDR;                                  //0
-    uint32_t ISCACTIVER;                                //0
+    uint32_t ISENABLER;                                //0
+    uint32_t ICENABLER;                                //0
+    uint32_t ISPENDR;                                  //0
+    uint32_t ICPENDR;                                  //0
+    uint32_t ISACTIVER;                                //0
+    uint32_t ICACTIVER;                                //0
     uint32_t IPRIORITYR[VGICD_BANKED_NUM_IPRIORITYR];   //0~7
     uint32_t ITARGETSR[VGICD_BANKED_NUM_ITARGETSR];     //0~7
     uint32_t ICFGR;                                     //1
     uint32_t CPENDSGIR[VGICD_BANKED_NUM_CPENDSGIR];     //n
+    uint32_t SPENDSGIR[VGICD_BANKED_NUM_CPENDSGIR];     //n
 };
 
 struct vgic {

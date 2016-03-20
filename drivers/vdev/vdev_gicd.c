@@ -86,11 +86,11 @@ static hvmm_status_t handler_ISCENABLER(uint32_t write, uint32_t offset, uint32_
     }
     if (((offset >> 2) - __GICD_ISENABLER) == 0 ||
             ((offset >> 2) - __GICD_ICENABLER) == 0) {
-        preg_s = &(regs_banked->ISCENABLER);
-        preg_c = &(regs_banked->ISCENABLER);
+        preg_s = &(regs_banked->ISENABLER);
+        preg_c = &(regs_banked->ICENABLER);
     } else {
-        preg_s = &(regs->ISCENABLER[(offset >> 2) - __GICD_ISENABLER]);
-        preg_c = &(regs->ISCENABLER[(offset >> 2) - __GICD_ICENABLER]);
+        preg_s = &(regs->ISENABLER[(offset >> 2)]);
+        preg_c = &(regs->ICENABLER[(offset >> 2)]);
     }
     if (access_size == VDEV_ACCESS_WORD) {
         if ((offset >> 2) < (__GICD_ISENABLER + VGICD_NUM_IENABLER)) {
@@ -191,11 +191,11 @@ static hvmm_status_t handler_ISCPENDR(uint32_t write, uint32_t offset, uint32_t 
 
     if (((offset >> 2) - __GICD_ISPENDR) == 0 ||
             ((offset >> 2) - __GICD_ICPENDR) == 0) {
-        preg_s = &(regs_banked->ISCPENDR);
-        preg_c = &(regs_banked->ISCPENDR);
+        preg_s = &(regs_banked->ISPENDR);
+        preg_c = &(regs_banked->ICPENDR);
     } else {
-        preg_s = &(regs->ISCPENDR[(offset >> 2) - __GICD_ISPENDR]);
-        preg_c = &(regs->ISCPENDR[(offset >> 2) - __GICD_ICPENDR]);
+        preg_s = &(regs->ISPENDR[(offset >> 2) - __GICD_ISPENDR]);
+        preg_c = &(regs->ICPENDR[(offset >> 2) - __GICD_ICPENDR]);
     }
     offset >>= 2;
     if (access_size == VDEV_ACCESS_WORD) {
@@ -366,7 +366,7 @@ static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pval
     if (((offset >> 2) == __GICD_CPENDSGIR) ||
             ((offset >> 2) == __GICD_SPENDSGIR)) {
         regs_banked = &vm->vgic.gicd_regs_banked;
-        preg_s = &(regs_banked->CPENDSGIR[(offset >> 2) - __GICD_SPENDSGIR]);
+        preg_s = &(regs_banked->SPENDSGIR[(offset >> 2) - __GICD_SPENDSGIR]);
         preg_c = &(regs_banked->CPENDSGIR[(offset >> 2) - __GICD_CPENDSGIR]);
     }
     offset >>= 2;
