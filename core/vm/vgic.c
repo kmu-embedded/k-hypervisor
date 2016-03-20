@@ -23,7 +23,7 @@ void vgic_init(struct vgic *vgic)
         }
     }
 
-    for (i = 0; i < VGICE_NUM_ISCENABLER; i++) {
+    for (i = 0; i < VGICD_NUM_ISCENABLER; i++) {
         if (!i) {
             gicd_regs_banked->ISENABLER = 0;
             gicd_regs_banked->ICENABLER = 0;
@@ -33,7 +33,7 @@ void vgic_init(struct vgic *vgic)
         }
     }
 
-    for (i = 0; i < VGICE_NUM_ISCPENDR; i++) {
+    for (i = 0; i < VGICD_NUM_ISCPENDR; i++) {
         if (!i) {
             gicd_regs_banked->ISPENDR = 0;
             gicd_regs_banked->ICPENDR = 0;
@@ -43,7 +43,7 @@ void vgic_init(struct vgic *vgic)
         }
     }
 
-    for (i = 0; i < VGICE_NUM_ISCACTIVER; i++) {
+    for (i = 0; i < VGICD_NUM_ISCACTIVER; i++) {
         if (!i) {
             gicd_regs_banked->ISACTIVER = 0;
             gicd_regs_banked->ICACTIVER = 0;
@@ -53,7 +53,7 @@ void vgic_init(struct vgic *vgic)
         }
     }
 
-    for (i = 0; i < VGICE_NUM_IPRIORITYR; i++) {
+    for (i = 0; i < VGICD_NUM_IPRIORITYR; i++) {
         if (i < VGICD_BANKED_NUM_IPRIORITYR) {
             gicd_regs_banked->IPRIORITYR[i] = 0;;
         } else {
@@ -61,7 +61,7 @@ void vgic_init(struct vgic *vgic)
         }
     }
 
-    for (i = 0; i < VGICE_NUM_ITARGETSR; i++) {
+    for (i = 0; i < VGICD_NUM_ITARGETSR; i++) {
         if (i < VGICD_BANKED_NUM_ITARGETSR) {
             gicd_regs_banked->ITARGETSR[i] = 0;
         } else {
@@ -69,7 +69,7 @@ void vgic_init(struct vgic *vgic)
         }
     }
 
-    for (i = 0; i < VGICE_NUM_ICFGR; i++) {
+    for (i = 0; i < VGICD_NUM_ICFGR; i++) {
         if (i == 1) {
             gicd_regs_banked->ICFGR = 0;
         } else {
