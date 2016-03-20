@@ -18,7 +18,7 @@
  */
 #define firstbit32(word) (31 - asm_clz(word))
 
-static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
+static hvmm_status_t handler_SGIR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 
 static struct vdev_memory_map _vdev_gicd_info = {
     .base = CFG_GIC_BASE_PA | GICD_OFFSET,
@@ -59,7 +59,7 @@ static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus, uint8_t wor
     }
 }
 
-static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
+static hvmm_status_t handler_SGIR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     vcpuid_t vcpuid = get_current_vcpuid();
@@ -69,64 +69,37 @@ static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pval
     uint32_t target = 0;
     uint32_t sgi_id = *pvalue & GICD_SGIR_SGI_INT_ID_MASK;
     uint32_t i;
-    uint32_t *preg_s;
-    uint32_t *preg_c;
 
-    if (((offset >> 2) == __GICD_CPENDSGIR) || ((offset >> 2) == __GICD_SPENDSGIR)) {
-        regs_banked = &vm->vgic.gicd_regs_banked;
-        preg_s = &(regs_banked->SPENDSGIR[(offset >> 2) - __GICD_SPENDSGIR]);
-        preg_c = &(regs_banked->CPENDSGIR[(offset >> 2) - __GICD_CPENDSGIR]);
-    }
-    offset >>= 2;
-
-    if (offset == __GICD_SGIR) {
-        switch (*pvalue & GICD_SGIR_TARGET_LIST_FILTER_MASK) {
+    switch (*pvalue & GICD_SGIR_TARGET_LIST_FILTER_MASK) {
         case GICD_SGIR_TARGET_LIST:
             target = ((*pvalue & GICD_SGIR_CPU_TARGET_LIST_MASK) >> GICD_SGIR_CPU_TARGET_LIST_OFFSET);
             break;
+
         case GICD_SGIR_TARGET_OTHER:
             target = ~(0x1 << vcpu->vmid);
             break;
+
         case GICD_SGIR_TARGET_SELF:
             target = (0x1 << vcpu->vmid);
             break;
-        default:
-            //printf();
-            return result;
-        }
-        dsb();
 
-        for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-            uint8_t _target = target & 0x1;
-            if (_target) {
-                vm = vm_find(_target);
-                regs_banked = &vm->vgic.gicd_regs_banked;
-                (regs_banked -> CPENDSGIR[(sgi_id >> 2)]) = 0x1 << ((sgi_id & 0x3) * 8);
-                result = virq_inject(i, sgi_id, sgi_id, 0);
-            }
-            target = target >> 1;
-        }
-    } else if (offset == __GICD_CPENDSGIR) {
-        if (write) {
-            if (*pvalue) {
-                *preg_c |= ~(*pvalue);
-            }
-        } else { // read
-            *pvalue = *preg_c;
-        }
-        result = HVMM_STATUS_SUCCESS;
-    } else if (offset == __GICD_SPENDSGIR) {
-        if (write) {
-            if (*pvalue) {
-                *preg_s |= *pvalue;
-            }
-        } else { // read
-            *pvalue = *preg_s;
-        }
-        result = HVMM_STATUS_SUCCESS;
-    } else { //ICPIDR2 is not implemented
-        printf("vgicd:%s: not implemented\n", __func__);
+        default:
+            return result;
     }
+    dsb();
+
+    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
+        uint8_t _target = target & 0x1;
+
+        if (_target) {
+            vm = vm_find(_target);
+            regs_banked = &vm->vgic.gicd_regs_banked;
+            (regs_banked -> CPENDSGIR[(sgi_id >> 2)]) = 0x1 << ((sgi_id & 0x3) * 8);
+            result = virq_inject(i, sgi_id, sgi_id, 0);
+        }
+        target = target >> 1;
+    }
+
     return result;
 }
 
@@ -339,7 +312,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
             return HVMM_STATUS_BAD_ACCESS;
 
         case GICD_SGIR:
-            return handler_F00(WRITE, offset, pvalue, access_size);
+            return handler_SGIR(WRITE, offset, pvalue, access_size);
 
         case GICD_CPENDSGIR(0) ... GICD_CPENDSGIR_LAST:
         {
@@ -559,7 +532,8 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
             return HVMM_STATUS_BAD_ACCESS;
 
         case GICD_SGIR:
-            return handler_F00(READ, offset, pvalue, access_size);
+            printf("GICD_SGIR is WO\n");
+            return HVMM_STATUS_SUCCESS;
 
         case GICD_CPENDSGIR(0) ... GICD_CPENDSGIR_LAST:
         {
