@@ -18,7 +18,6 @@
  */
 #define firstbit32(word) (31 - asm_clz(word))
 
-static hvmm_status_t handler_ICFGR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 
 static struct vdev_memory_map _vdev_gicd_info = {
@@ -58,33 +57,6 @@ static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus, uint8_t wor
         }
         cstatus &= ~(1 << bit);
     }
-}
-
-static hvmm_status_t handler_ICFGR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
-{
-    hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vcpuid_t vcpuid = get_current_vcpuid();
-    struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct vmcb *vm = vm_find(vcpu->vmid);
-    struct gicd_regs *regs = &vm->vgic.gicd_regs;
-    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
-    uint32_t *preg;
-
-    /* FIXME: Support 8/16/32bit access */
-    offset >>= 2;
-    if ((offset - __GICD_ICFGR) == 1) {
-        preg = &(regs_banked->ICFGR);
-    } else {
-        preg = &(regs->ICFGR[offset - __GICD_ICFGR]);
-    }
-
-    if (write) {
-        *preg = *pvalue;
-    } else {
-        *pvalue = *preg;
-    }
-    result = HVMM_STATUS_SUCCESS;
-    return result;
 }
 
 static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
@@ -349,7 +321,19 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
         }
 
         case GICD_ICFGR(0) ... GICD_ICFGR_LAST:
-            return handler_ICFGR(WRITE, offset, pvalue, access_size);
+        {
+            uint32_t *preg;
+
+            if ((offset - GICD_ICFGR(0)) == 1) {
+                preg = &regs_banked->ICFGR;
+            } else {
+                preg = &regs->ICFGR[(offset - GICD_ICFGR(0)) >> 2];
+            }
+
+            *preg = *pvalue;
+
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_NSACR(0) ... GICD_NSACR_LAST:
             printf("vgicd: GICD_NSACR write not implemented\n", __func__);
@@ -547,7 +531,19 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
         }
 
         case GICD_ICFGR(0) ... GICD_ICFGR_LAST:
-            return handler_ICFGR(READ, offset, pvalue, access_size);
+        {
+            uint32_t *preg;
+
+            if ((offset - GICD_ICFGR(0)) == 1) {
+                preg = &regs_banked->ICFGR;
+            } else {
+                preg = &regs->ICFGR[(offset - GICD_ICFGR(0)) >> 2];
+            }
+
+            *pvalue = *preg;
+
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_NSACR(0) ... GICD_NSACR_LAST:
             printf("vgicd: GICD_NSACR read not implemented\n", __func__);
