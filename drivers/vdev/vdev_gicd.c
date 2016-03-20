@@ -18,7 +18,6 @@
  */
 #define firstbit32(word) (31 - asm_clz(word))
 
-static hvmm_status_t handler_IPRIORITYR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_ITARGETSR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_ICFGR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
 static hvmm_status_t handler_F00(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size);
@@ -60,34 +59,6 @@ static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t istatus, uint8_t wor
         }
         cstatus &= ~(1 << bit);
     }
-}
-
-static hvmm_status_t handler_IPRIORITYR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
-{
-    hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    uint32_t *preg;
-    vcpuid_t vcpuid = get_current_vcpuid();
-    struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct vmcb *vm = vm_find(vcpu->vmid);
-    struct gicd_regs *regs = &vm->vgic.gicd_regs;
-    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
-
-    /* FIXME: Support 8/16/32bit access */
-    offset >>= 2;
-    if ((offset - __GICD_IPRIORITYR) < VGICD_BANKED_NUM_IPRIORITYR) {
-        preg = &(regs_banked->IPRIORITYR[offset - __GICD_IPRIORITYR]);
-    } else {
-        preg = &(regs->IPRIORITYR[offset - __GICD_IPRIORITYR]);
-    }
-
-    if (write) {
-        *preg = *pvalue;
-    } else {
-        *pvalue = *preg;
-    }
-
-    result = HVMM_STATUS_SUCCESS;
-    return result;
 }
 
 static hvmm_status_t handler_ITARGETSR(uint32_t write, uint32_t offset, uint32_t *pvalue, enum vdev_access_size access_size)
@@ -383,7 +354,20 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
             return HVMM_STATUS_BAD_ACCESS;
 
         case GICD_IPRIORITYR(0) ... GICD_IPRIORITYR_LAST:
-            return handler_IPRIORITYR(WRITE, offset, pvalue, access_size);
+        {
+            uint32_t *preg;
+
+            if ( ((offset - GICD_IPRIORITYR(0)) >> 2) < VGICD_BANKED_NUM_IPRIORITYR) {
+                preg = &(regs_banked->IPRIORITYR[(offset - GICD_IPRIORITYR(0)) >> 2]);
+            } else {
+                preg = &(regs->IPRIORITYR[(offset - GICD_IPRIORITYR(0)) >> 2]);
+            }
+
+            *preg = *pvalue;
+
+            return HVMM_STATUS_SUCCESS;
+        }
+
 
         case GICD_ITARGETSR(0) ... GICD_ITARGETSR_LAST:
             return handler_ITARGETSR(WRITE, offset, pvalue, access_size);
@@ -547,7 +531,19 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
             return HVMM_STATUS_BAD_ACCESS;
 
         case GICD_IPRIORITYR(0) ... GICD_IPRIORITYR_LAST:
-            return handler_IPRIORITYR(READ, offset, pvalue, access_size);
+        {
+            uint32_t *preg;
+
+            if ( ((offset - GICD_IPRIORITYR(0)) >> 2) < VGICD_BANKED_NUM_IPRIORITYR) {
+                preg = &(regs_banked->IPRIORITYR[(offset - GICD_IPRIORITYR(0)) >> 2]);
+            } else {
+                preg = &(regs->IPRIORITYR[(offset - GICD_IPRIORITYR(0)) >> 2]);
+            }
+
+            *pvalue = *preg;
+
+            return HVMM_STATUS_SUCCESS;
+        }
 
         case GICD_ITARGETSR(0) ... GICD_ITARGETSR_LAST:
             return handler_ITARGETSR(READ, offset, pvalue, access_size);
