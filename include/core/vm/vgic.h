@@ -8,15 +8,15 @@
 #define NUM_MAX_VIRQS   160
 
 #define NUM_STATUS_WORDS    (NUM_MAX_VIRQS / 32)
-#define VGICE_NUM_ISCPENDR (TILinesNumber + 1)
-#define VGICE_NUM_ISCENABLER (TILinesNumber + 1)
-#define VGICE_NUM_ISCACTIVER (TILinesNumber + 1)
-#define VGICE_NUM_IPRIORITYR (8*(TILinesNumber + 1))
-#define VGICE_NUM_ITARGETSR (8*(TILinesNumber + 1))
-#define VGICE_NUM_ICFGR (2*(TILinesNumber + 1))
-#define VGICE_NUM_SPISR (TILinesNumber + 1)
-#define VGICE_NUM_CPENDSGIR (TILinesNumber + 1)
-#define VGICE_NUM_SPENDSGIR (TILinesNumber + 1)
+#define VGICD_NUM_ISCPENDR (TILinesNumber + 1)
+#define VGICD_NUM_ISCENABLER (TILinesNumber + 1)
+#define VGICD_NUM_ISCACTIVER (TILinesNumber + 1)
+#define VGICD_NUM_IPRIORITYR (8*(TILinesNumber + 1))
+#define VGICD_NUM_ITARGETSR (8*(TILinesNumber + 1))
+#define VGICD_NUM_ICFGR (2*(TILinesNumber + 1))
+#define VGICD_NUM_SPISR (TILinesNumber + 1)
+#define VGICD_NUM_CPENDSGIR (TILinesNumber + 1)
+#define VGICD_NUM_SPENDSGIR (TILinesNumber + 1)
 #define VGICD_NUM_IGROUPR (TILinesNumber + 1)
 #define VGICD_NUM_IENABLER (TILinesNumber + 1)
 
@@ -24,7 +24,7 @@
 
 #define VGICD_BANKED_NUM_IPRIORITYR  8
 #define VGICD_BANKED_NUM_ITARGETSR  8
-#define VGICD_BANKED_NUM_CPENDSGIR  VGICE_NUM_CPENDSGIR
+#define VGICD_BANKED_NUM_CPENDSGIR  VGICD_NUM_CPENDSGIR
 #define VGICD_BANKED_NUM_SPENDSGIR  VGICD_NUM_SPENDSGIR
 
 struct gicd_regs {
@@ -33,45 +33,46 @@ struct gicd_regs {
     uint32_t IIDR;                              /*      RO*/
 
     uint32_t IGROUPR[VGICD_NUM_IGROUPR];        /* 0x080 */
-    uint32_t ISENABLER[VGICE_NUM_ISCENABLER];  /* 0x100, ISENABLER/ICENABLER */
-    uint32_t ICENABLER[VGICE_NUM_ISCENABLER];  /* 0x100, ISENABLER/ICENABLER */
-    uint32_t ISPENDR[VGICE_NUM_ISCPENDR];      /* 0x200, ISPENDR/ICPENDR */
-    uint32_t ICPENDR[VGICE_NUM_ISCPENDR];      /* 0x200, ISPENDR/ICPENDR */
-    uint32_t ISACTIVER[VGICE_NUM_ISCACTIVER];  /* 0x300, ISACTIVER/ICACTIVER */
-    uint32_t ICACTIVER[VGICE_NUM_ISCACTIVER];  /* 0x300, ISACTIVER/ICACTIVER */
-    uint32_t IPRIORITYR[VGICE_NUM_IPRIORITYR];  /* 0x400 */
-    uint32_t ITARGETSR[VGICE_NUM_ITARGETSR];    /* 0x800 [0]: RO, Otherwise, RW */
-    uint32_t ICFGR[VGICE_NUM_ICFGR];            /* 0xC00 */
+    uint32_t ISENABLER[VGICD_NUM_ISCENABLER];   /* 0x100, ISENABLER/ICENABLER */
+    uint32_t ICENABLER[VGICD_NUM_ISCENABLER];   /* 0x100, ISENABLER/ICENABLER */
+    uint32_t ISPENDR[VGICD_NUM_ISCPENDR];       /* 0x200, ISPENDR/ICPENDR */
+    uint32_t ICPENDR[VGICD_NUM_ISCPENDR];       /* 0x200, ISPENDR/ICPENDR */
+    uint32_t ISACTIVER[VGICD_NUM_ISCACTIVER];   /* 0x300, ISACTIVER/ICACTIVER */
+    uint32_t ICACTIVER[VGICD_NUM_ISCACTIVER];   /* 0x300, ISACTIVER/ICACTIVER */
+    uint32_t IPRIORITYR[VGICD_NUM_IPRIORITYR];  /* 0x400 */
+    uint32_t ITARGETSR[VGICD_NUM_ITARGETSR];    /* 0x800 [0]: RO, Otherwise, RW */
+    uint32_t ICFGR[VGICD_NUM_ICFGR];            /* 0xC00 */
 
     /* Cortex-A15 */
     /* 0xD00 GICD_PPISR RO */
     /* 0xD04 ~ 0xD1C GICD_SPISRn RO */
 
-    uint32_t NSACR[64]; /* 0xE00 */
-    uint32_t SGIR; /* 0xF00 WO */
-    //uint32_t CPENDSGIR[VGICE_NUM_CPENDSGIR];
-    /* 0xF10 CPENDSGIR 0xF20 SPENDGIR */
-
-    /* 0xFD0 ~ 0xFFC RO Cortex-A15 PIDRn, CIDRn */
+    uint32_t NSACR[64];                         /* 0xE00 */
+    uint32_t SGIR;                              /* 0xF00 WO */
 };
 
 struct gicd_regs_banked {
-    uint32_t IGROUPR;                                   //0
+    uint32_t IGROUPR;                                  //0
     uint32_t ISENABLER;                                //0
     uint32_t ICENABLER;                                //0
     uint32_t ISPENDR;                                  //0
     uint32_t ICPENDR;                                  //0
     uint32_t ISACTIVER;                                //0
     uint32_t ICACTIVER;                                //0
-    uint32_t IPRIORITYR[VGICD_BANKED_NUM_IPRIORITYR];   //0~7
-    uint32_t ITARGETSR[VGICD_BANKED_NUM_ITARGETSR];     //0~7
-    uint32_t ICFGR;                                     //1
-    uint32_t CPENDSGIR[VGICD_BANKED_NUM_CPENDSGIR];     //n
-    uint32_t SPENDSGIR[VGICD_BANKED_NUM_CPENDSGIR];     //n
+    uint32_t IPRIORITYR[VGICD_BANKED_NUM_IPRIORITYR];  //0~7
+    uint32_t ITARGETSR[VGICD_BANKED_NUM_ITARGETSR];    //0~7
+    uint32_t ICFGR;                                    //1
+    uint32_t CPENDSGIR[VGICD_BANKED_NUM_CPENDSGIR];    //n
+    uint32_t SPENDSGIR[VGICD_BANKED_NUM_SPENDSGIR];    //n
 };
 
 struct vgic {
     struct gicd_regs gicd_regs;
+    /*
+        TODO(casionwoo) : nr_gicd_regs_bankded should be nr_vcpus
+                          like gicd_regs_banked[nr_vcpus]
+                          So gicd_regs_banked should be in vcpu
+     */
     struct gicd_regs_banked gicd_regs_banked;
 };
 
