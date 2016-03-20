@@ -282,10 +282,10 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
         {
             uint32_t *preg_s;
 
-            if ((offset  - GICD_ISENABLER(0)) >> 2 == 0 ) {
+            if ((offset - GICD_ISENABLER(0)) >> 2 == 0 ) {
                 preg_s = &(regs_banked->ISENABLER);
             } else {
-                preg_s = &(regs->ISENABLER[(offset >> 2)]);
+                preg_s = &(regs->ISENABLER[((offset - GICD_ISENABLER(0)) >> 2)]);
             }
 
             if (access_size == VDEV_ACCESS_WORD) {
@@ -313,10 +313,10 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
         {
             uint32_t *preg_s;
 
-            if ((offset  - GICD_ICENABLER(0)) >> 2 == 0 ) {
+            if ((offset - GICD_ICENABLER(0)) >> 2 == 0 ) {
                 preg_s = &(regs_banked->ICENABLER);
             } else {
-                preg_s = &(regs->ICENABLER[(offset >> 2)]);
+                preg_s = &(regs->ICENABLER[((offset - GICD_ICENABLER(0)) >> 2)]);
             }
 
             if (access_size == VDEV_ACCESS_WORD) {
@@ -344,10 +344,10 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
         {
             uint32_t *preg_s;
 
-            if ((offset  - GICD_ISPENDR(0)) >> 2 == 0 ) {
+            if ((offset - GICD_ISPENDR(0)) >> 2 == 0 ) {
                 preg_s = &(regs_banked->ISPENDR);
             } else {
-                preg_s = &(regs->ISPENDR[(offset >> 2)]);
+                preg_s = &(regs->ISPENDR[((offset - GICD_ISPENDR(0))>> 2)]);
             }
 
             if (access_size == VDEV_ACCESS_WORD) {
@@ -361,10 +361,10 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
         {
             uint32_t *preg_s;
 
-            if ((offset  - GICD_ICPENDR(0)) >> 2 == 0 ) {
+            if ((offset - GICD_ICPENDR(0)) >> 2 == 0 ) {
                 preg_s = &(regs_banked->ICPENDR);
             } else {
-                preg_s = &(regs->ICPENDR[(offset >> 2)]);
+                preg_s = &(regs->ICPENDR[((offset - GICD_ICPENDR(0))>> 2)]);
             }
 
             if (access_size == VDEV_ACCESS_WORD) {
@@ -458,10 +458,10 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
         {
             uint32_t *preg_s;
 
-            if ((offset  - GICD_ISENABLER(0)) >> 2 == 0 ) {
+            if ((offset - GICD_ISENABLER(0)) >> 2 == 0 ) {
                 preg_s = &(regs_banked->ISENABLER);
             } else {
-                preg_s = &(regs->ISENABLER[(offset >> 2)]);
+                preg_s = &(regs->ISENABLER[((offset - GICD_ISENABLER(0)) >> 2)]);
             }
 
             if (access_size == VDEV_ACCESS_WORD) {
@@ -483,10 +483,10 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
         {
             uint32_t *preg_s;
 
-            if ((offset  - GICD_ICENABLER(0)) >> 2 == 0 ) {
+            if ((offset - GICD_ICENABLER(0)) >> 2 == 0 ) {
                 preg_s = &(regs_banked->ICENABLER);
             } else {
-                preg_s = &(regs->ICENABLER[(offset >> 2)]);
+                preg_s = &(regs->ICENABLER[((offset - GICD_ICENABLER(0))>> 2)]);
             }
 
             if (access_size == VDEV_ACCESS_WORD) {
@@ -508,10 +508,10 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
         {
             uint32_t *preg_s;
 
-            if ((offset  - GICD_ISPENDR(0)) >> 2 == 0 ) {
+            if ((offset - GICD_ISPENDR(0)) >> 2 == 0 ) {
                 preg_s = &(regs_banked->ISPENDR);
             } else {
-                preg_s = &(regs->ISPENDR[(offset >> 2)]);
+                preg_s = &(regs->ISPENDR[((offset - GICD_ISPENDR(0)) >> 2)]);
             }
 
             if (access_size == VDEV_ACCESS_WORD) {
@@ -525,10 +525,10 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
         {
             uint32_t *preg_s;
 
-            if ((offset  - GICD_ICPENDR(0)) >> 2 == 0 ) {
+            if ((offset - GICD_ICPENDR(0)) >> 2 == 0 ) {
                 preg_s = &(regs_banked->ICPENDR);
             } else {
-                preg_s = &(regs->ICPENDR[(offset >> 2)]);
+                preg_s = &(regs->ICPENDR[((offset - GICD_ICPENDR(0)) >> 2)]);
             }
 
             if (access_size == VDEV_ACCESS_WORD) {
