@@ -16,6 +16,7 @@ void vm_setup()
     LIST_INITHEAD(&vm_list);
 
     vcpu_setup();
+    vgic_setup();
     atags_setup();
 }
 
@@ -48,6 +49,7 @@ vmid_t vm_create(uint8_t num_vcpus)
     }
 
     vmem_create(&vm->vmem, vm->vmid);
+    vgic_create(&vm->vgic);
 
     LIST_ADDTAIL(&vm->head, &vm_list);
 
@@ -72,6 +74,7 @@ vmcb_state_t vm_init(vmid_t vmid)
     vm->state = HALTED;
 
     vmem_init(&vm->vmem);
+    vgic_init(&vm->vgic);
 
     return vm->state;
 }

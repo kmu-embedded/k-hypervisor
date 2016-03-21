@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include "../../types.h"
+#include <core/vm/vgic.h>
 
 #define MAX_PENDING_VIRQS    128
 #define MAX_NR_IRQ           1024
@@ -30,6 +31,7 @@ struct vgic_status {
 };
 
 struct virq {
+    struct gicd_regs_banked gicd_regs_banked;
     struct vgic_status vgic_status;
     struct virq_table map[MAX_NR_IRQ];
     struct lr_entry pending_irqs[MAX_PENDING_VIRQS +1];

@@ -8,21 +8,36 @@
 #define GICV_OFFSET     0x6000
 
 /* Distributor Registers */
-#define GICD_CTLR_OFFSET        0x000			/* v1 ICDDCR */
-#define GICD_TYPER_OFFSET       0x004			/* v1 ICDICTR */
-#define GICD_IIDR_OFFSET        0x008			/* v1 ICDIIDR */
-#define GICD_IGROUPR(n)		    (0x0080 + ((n) * 4))	/* v1 ICDISER */
-#define GICD_ISENABLER(n)	    (0x0100 + ((n) * 4))	/* v1 ICDISER */
-#define GICD_ICENABLER(n)	    (0x0180 + ((n) * 4))	/* v1 ICDICER */
-#define GICD_ISPENDR(n)		    (0x0200 + ((n) * 4))	/* v1 ICDISPR */
-#define GICD_ICPENDR(n)		    (0x0280 + ((n) * 4))	/* v1 ICDICPR */
-#define GICD_ISACTIVER(n)	    (0x0300 + ((n) * 4))	/* v1 ICDABR */
-#define GICD_ICACTIVER(n)	    (0x0380 + ((n) * 4))	/* v1 ICDABR */
-#define GICD_IPRIORITYR(n)	    (0x0400 + ((n) * 4))	/* v1 ICDIPR */
-#define GICD_ITARGETSR(n)	    (0x0800 + ((n) * 4))	/* v1 ICDIPTR */
-#define GICD_ICFGR(n)		    (0x0C00 + ((n) * 4))	/* v1 ICDICFR */
-#define GICD_SGIR(n)		    (0x0F00 + ((n) * 4))	/* v1 ICDSGIR */
-#define GICD_CPENDSGIR(n)		(0x0F10 + ((n) * 4))	/* v1 ICDICFR */
+#define GICD_CTLR_OFFSET        0x000
+#define GICD_TYPER_OFFSET       0x004
+#define GICD_IIDR_OFFSET        0x008
+#define GICD_IGROUPR(n)		    (0x0080 + ((n) * 4))
+#define GICD_IGROUPR_LAST       0x00FC
+#define GICD_ISENABLER(n)	    (0x0100 + ((n) * 4))
+#define GICD_ISENABLER_LAST	    0x017C
+#define GICD_ICENABLER(n)	    (0x0180 + ((n) * 4))
+#define GICD_ICENABLER_LAST	    0x01FC
+#define GICD_ISPENDR(n)		    (0x0200 + ((n) * 4))
+#define GICD_ISPENDR_LAST		0x027C
+#define GICD_ICPENDR(n)		    (0x0280 + ((n) * 4))
+#define GICD_ICPENDR_LAST		0x02FC
+#define GICD_ISACTIVER(n)	    (0x0300 + ((n) * 4))
+#define GICD_ISACTIVER_LAST	    0x037C
+#define GICD_ICACTIVER(n)	    (0x0380 + ((n) * 4))
+#define GICD_ICACTIVER_LAST	    0x03FC
+#define GICD_IPRIORITYR(n)	    (0x0400 + ((n) * 4))
+#define GICD_IPRIORITYR_LAST	0x07F8
+#define GICD_ITARGETSR(n)	    (0x0800 + ((n) * 4))
+#define GICD_ITARGETSR_LAST	    0x0BF8
+#define GICD_ICFGR(n)		    (0x0C00 + ((n) * 4))
+#define GICD_ICFGR_LAST		    0x0CFC
+#define GICD_NSACR(n)		    (0x0E00 + ((n) * 4))
+#define GICD_NSACR_LAST		    0x0EFC
+#define GICD_SGIR		        0x0F00
+#define GICD_CPENDSGIR(n)		(0x0F10 + ((n) * 4))
+#define GICD_CPENDSGIR_LAST		0x0F1C
+#define GICD_SPENDSGIR(n)		(0x0F20 + ((n) * 4))
+#define GICD_SPENDSGIR_LAST		0x0F2C
 
 /* CPU Registers */
 #define GICC_CTLR_OFFSET	    0x0000			/* v1 ICCICR */
