@@ -3,7 +3,6 @@
     .syntax unified
     .arch_extension sec
     .arch_extension virt
-    .section .text.head
 BEGIN_PROC(__monitor_vector)
     .word   0                       /* reset */
     nop                             /* und */
@@ -43,7 +42,6 @@ hvc_handler:
     mov     pc, lr
 
     .align 5
-    .section .text.vector
 BEGIN_PROC(__hvc_vector)
     .word   0                   /* reset */
     nop                         /* undef */
