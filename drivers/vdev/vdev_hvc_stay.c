@@ -2,15 +2,13 @@
 #define DEBUG
 #include <stdio.h>
 
-static int32_t vdev_hvc_stay_write(struct arch_vdev_trigger_info *info,
-                                   struct core_regs *regs)
+static int32_t vdev_hvc_stay_write(struct arch_vdev_trigger_info *info)
 {
     printf("[hyp] _hyp_hvc_service:stay\n\r");
     return 0;
 }
 
-static int32_t vdev_hvc_stay_check(struct arch_vdev_trigger_info *info,
-                                   struct core_regs *regs)
+static int32_t vdev_hvc_stay_check(struct arch_vdev_trigger_info *info)
 {
     if ((info->iss & 0xFFFF) == 0xFFFF) {
         return 0;

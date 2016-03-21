@@ -66,7 +66,7 @@ int32_t vdev_find(int level, struct arch_vdev_trigger_info *info,
         if (!vdev->ops->check) {
             continue;
         }
-        if (!vdev->ops->check(info, regs)) {
+        if (!vdev->ops->check(info)) {
             vdev_num = i;
             break;
         }
@@ -94,7 +94,7 @@ int32_t vdev_read(int level, int num, struct arch_vdev_trigger_info *info,
     }
 
     if (vdev->ops->read) {
-        size = vdev->ops->read(info, regs);
+        size = vdev->ops->read(info);
     }
 
     return size;
@@ -119,7 +119,7 @@ int32_t vdev_write(int level, int num, struct arch_vdev_trigger_info *info,
     }
 
     if (vdev->ops->write) {
-        size = vdev->ops->write(info, regs);
+        size = vdev->ops->write(info);
     }
 
     return size;
@@ -144,7 +144,7 @@ hvmm_status_t vdev_post(int level, int num, struct arch_vdev_trigger_info *info,
     }
 
     if (vdev->ops->post) {
-        result = vdev->ops->post(info, regs);
+        result = vdev->ops->post(regs);
     }
 
     return result;

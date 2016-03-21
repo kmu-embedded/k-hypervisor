@@ -7,6 +7,7 @@
 #define VGICD_BANKED_NUM_IPRIORITYR  8
 #define VGICD_BANKED_NUM_ITARGETSR   8
 
+// Per VM
 struct gicd_regs {
     uint32_t CTLR;          /*0x000 RW*/
     uint32_t TYPER;         /*      RO*/
@@ -27,6 +28,7 @@ struct gicd_regs {
     uint32_t SGIR;          /* 0xF00 WO */
 };
 
+// Per Core
 struct gicd_regs_banked {
     uint32_t IGROUPR;
     uint32_t ISENABLER;

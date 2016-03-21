@@ -36,6 +36,7 @@ struct vcpu {
 };
 
 void vcpu_setup();
+
 struct vcpu *vcpu_create();
 vcpu_state_t vcpu_init(struct vcpu *vcpu);
 vcpu_state_t vcpu_start(struct vcpu *vcpu);

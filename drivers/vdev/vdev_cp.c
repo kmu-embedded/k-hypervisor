@@ -194,8 +194,7 @@ void emulate_wfi_wfe(uint32_t iss, uint32_t il)
 
 }
 
-static int32_t vdev_cp_read(struct arch_vdev_trigger_info *info,
-                            struct core_regs *regs)
+static int32_t vdev_cp_read(struct arch_vdev_trigger_info *info)
 {
     uint32_t ec = info->ec;
     uint32_t hsr = read_hsr();
@@ -241,8 +240,7 @@ static int32_t vdev_cp_read(struct arch_vdev_trigger_info *info,
     return 0;
 }
 
-static int32_t vdev_cp_write(struct arch_vdev_trigger_info *info,
-                             struct core_regs *regs)
+static int32_t vdev_cp_write(struct arch_vdev_trigger_info *info)
 {
     uint32_t ec = info->ec;
     uint32_t hsr = read_hsr();
@@ -288,8 +286,7 @@ static int32_t vdev_cp_write(struct arch_vdev_trigger_info *info,
     return 0;
 }
 
-static hvmm_status_t vdev_cp_post(struct arch_vdev_trigger_info *info,
-                                  struct core_regs *regs)
+static hvmm_status_t vdev_cp_post(struct core_regs *regs)
 {
     uint8_t isize = 4;
 
@@ -302,8 +299,7 @@ static hvmm_status_t vdev_cp_post(struct arch_vdev_trigger_info *info,
     return 0;
 }
 
-static int32_t vdev_cp_check(struct arch_vdev_trigger_info *info,
-                             struct core_regs *regs)
+static int32_t vdev_cp_check(struct arch_vdev_trigger_info *info)
 {
     uint32_t ec = info->ec;
 
