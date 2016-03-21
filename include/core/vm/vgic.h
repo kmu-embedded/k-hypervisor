@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-// FIXME(casionwoo) : This TILinesNumber should be modified like GICv2.TILinesNumber as dynamically
+// FIXME(casionwoo) : This TILinesNumber should be modified like GICv2.TILinesNumber as dynamically and also size of virtual registers also should be set dinamically
 #define TILinesNumber 4
 #define NUM_MAX_VIRQS   160
 
@@ -68,15 +68,10 @@ struct gicd_regs_banked {
 
 struct vgic {
     struct gicd_regs gicd_regs;
-    /*
-        TODO(casionwoo) : nr_gicd_regs_bankded should be nr_vcpus
-                          like gicd_regs_banked[nr_vcpus]
-                          So gicd_regs_banked should be in vcpu
-     */
-    struct gicd_regs_banked gicd_regs_banked;
 };
 
 void vgic_init(struct vgic *vgic);
+void gicd_regs_banked_init(struct gicd_regs_banked *regs_banked);
 
 #endif /* __VGIC_H__ */
 
