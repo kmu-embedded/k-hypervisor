@@ -30,12 +30,14 @@ static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t current_status, uint
     uint32_t changed_status; /* changed bits only */
     uint32_t min_base_irq;
     int checked_bit_position;
+
     min_base_irq = word_offset * 32;
     changed_status = old_status ^ current_status;
 
     while (changed_status) {
         uint32_t virq;
         uint32_t pirq;
+
         checked_bit_position = firstbit32(changed_status);
         virq = min_base_irq + checked_bit_position;
         pirq = virq_to_pirq(&vcpu->virq, virq);
@@ -53,6 +55,7 @@ static void vgicd_changed_istatus(vcpuid_t vcpuid, uint32_t current_status, uint
         } else {
             printf("WARNING: Ignoring virq %d for guest %d has no mapped pirq\n", virq, vcpuid);
         }
+
         changed_status &= ~(1 << checked_bit_position);
     }
 }
@@ -86,6 +89,7 @@ static hvmm_status_t handler_SGIR(uint32_t write, uint32_t offset, uint32_t *pva
     }
     dsb();
 
+    // FIXME(casionwoo) : This part should have some policy for interprocessor communication
     for (i = 0; i < NUM_GUESTS_STATIC; i++) {
         uint8_t _target = target & 0x1;
 
