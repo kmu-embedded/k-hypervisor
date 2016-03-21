@@ -18,9 +18,11 @@ hvmm_status_t do_irq(struct core_regs *regs)
 {
     uint32_t irq = irq_hw->ack();
 
+#if 0
     if (irq == 34) {
         printf("SP804_TIMER IRQ!!\n");
     }
+#endif
 
     irq_hw->eoi(irq);
 

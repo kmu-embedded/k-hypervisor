@@ -3,8 +3,7 @@
 #include <stdio.h>
 #include <core/scheduler.h>
 
-static int32_t vdev_hvc_yield_write(struct arch_vdev_trigger_info *info,
-                                    struct core_regs *regs)
+static int32_t vdev_hvc_yield_write(struct arch_vdev_trigger_info *info)
 {
     printf("[hyp] _hyp_hvc_service:yield\n\r");
 
@@ -12,8 +11,7 @@ static int32_t vdev_hvc_yield_write(struct arch_vdev_trigger_info *info,
     return 0;
 }
 
-static int32_t vdev_hvc_yield_check(struct arch_vdev_trigger_info *info,
-                                    struct core_regs *regs)
+static int32_t vdev_hvc_yield_check(struct arch_vdev_trigger_info *info)
 {
     if ((info->iss & 0xFFFF) == 0xFFFD) {
         return 0;

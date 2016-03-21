@@ -13,18 +13,18 @@ static void _trap_dump_bregs(void)
 {
     uint32_t spsr, lr, sp;
 
-    debug_print(" - banked regs\n");
+    printf(" - banked regs\n");
     asm volatile(" mrs     %0, sp_usr\n\t" : "=r"(sp) : : "memory", "cc");
     asm volatile(" mrs     %0, lr_usr\n\t" : "=r"(lr) : : "memory", "cc");
-    debug_print(" - usr: sp:%x lr:%x\n", sp, lr);
+    printf(" - usr: sp:%x lr:%x\n", sp, lr);
     asm volatile(" mrs     %0, spsr_svc\n\t" : "=r"(spsr) : : "memory", "cc");
     asm volatile(" mrs     %0, sp_svc\n\t" : "=r"(sp) : : "memory", "cc");
     asm volatile(" mrs     %0, lr_svc\n\t" : "=r"(lr) : : "memory", "cc");
-    debug_print(" - svc: spsr:%x sp:%x lr:%x\n", spsr, sp, lr);
+    printf(" - svc: spsr:%x sp:%x lr:%x\n", spsr, sp, lr);
     asm volatile(" mrs     %0, spsr_irq\n\t" : "=r"(spsr) : : "memory", "cc");
     asm volatile(" mrs     %0, sp_irq\n\t" : "=r"(sp) : : "memory", "cc");
     asm volatile(" mrs     %0, lr_irq\n\t" : "=r"(lr) : : "memory", "cc");
-    debug_print(" - irq: spsr:%x sp:%x lr:%x\n", spsr, sp, lr);
+    printf(" - irq: spsr:%x sp:%x lr:%x\n", spsr, sp, lr);
 }
 
 int do_hvc_trap(struct core_regs *regs)
@@ -44,12 +44,15 @@ int do_hvc_trap(struct core_regs *regs)
     fipa = (read_hpfar() & HPFAR_FIPA_MASK) >> HPFAR_FIPA_SHIFT;
     fipa = fipa << HPFAR_FIPA_PAGE_SHIFT;
     fipa = fipa | (far & HPFAR_FIPA_PAGE_MASK);
+
     info.ec = ec;
     info.iss = iss;
     info.fipa = fipa;
     info.sas = (iss & ISS_SAS_MASK) >> ISS_SAS_SHIFT;
+
     srt = (iss & ISS_SRT_MASK) >> ISS_SRT_SHIFT;
     info.value = &(regs->gpr[srt]);
+    info.raw = (uint32_t) &(regs->gpr[srt]);
 
     switch (ec) {
     case TRAP_EC_ZERO_UNKNOWN:
@@ -102,7 +105,9 @@ int do_hvc_trap(struct core_regs *regs)
 
 trap_error:
     _trap_dump_bregs();
-    debug_print("fipa is %x guest pc is %x\n", fipa, regs->pc);
-    abort();
+    printf("fipa is %x guest pc is %x\n", fipa, regs->pc);
+    while(1)
+        ;
+    //abort();
     return -1;
 }

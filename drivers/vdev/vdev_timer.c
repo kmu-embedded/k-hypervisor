@@ -57,24 +57,21 @@ static hvmm_status_t vdev_vtimer_access_handler(uint32_t write,
     return result;
 }
 
-static int32_t vdev_vtimer_read(struct arch_vdev_trigger_info *info,
-                                struct core_regs *regs)
+static int32_t vdev_vtimer_read(struct arch_vdev_trigger_info *info)
 {
     uint32_t offset = info->fipa - _vdev_timer_info.base;
 
     return vdev_vtimer_access_handler(0, offset, info->value, info->sas);
 }
 
-static int32_t vdev_vtimer_write(struct arch_vdev_trigger_info *info,
-                                 struct core_regs *regs)
+static int32_t vdev_vtimer_write(struct arch_vdev_trigger_info *info)
 {
     uint32_t offset = info->fipa - _vdev_timer_info.base;
 
     return vdev_vtimer_access_handler(1, offset, info->value, info->sas);
 }
 
-static hvmm_status_t vdev_vtimer_post(struct arch_vdev_trigger_info *info,
-                                      struct core_regs *regs)
+static hvmm_status_t vdev_vtimer_post(struct core_regs *regs)
 {
     uint8_t isize = 4;
 
@@ -87,8 +84,7 @@ static hvmm_status_t vdev_vtimer_post(struct arch_vdev_trigger_info *info,
     return 0;
 }
 
-static int32_t vdev_vtimer_check(struct arch_vdev_trigger_info *info,
-                                 struct core_regs *regs)
+static int32_t vdev_vtimer_check(struct arch_vdev_trigger_info *info)
 {
     uint32_t offset = info->fipa - _vdev_timer_info.base;
 

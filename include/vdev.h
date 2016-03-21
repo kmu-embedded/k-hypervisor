@@ -32,6 +32,7 @@ struct arch_vdev_trigger_info {
     uint32_t il;
     enum vdev_access_size sas;
     uint32_t *value;
+    uint32_t raw;
 };
 
 typedef hvmm_status_t (*vdev_callback_t)(uint32_t wnr, uint32_t offset,
@@ -67,13 +68,13 @@ struct vdev_ops {
      *  This function is used by the virtual device framework, when the
      *  trap is occurred, finding the virtual device using the this function.
      */
-    int32_t (*check)(struct arch_vdev_trigger_info *, struct core_regs *);
+    int32_t (*check)(struct arch_vdev_trigger_info *);
 
     /** Read a virtual register */
-    int32_t (*read)(struct arch_vdev_trigger_info *, struct core_regs *);
+    int32_t (*read)(struct arch_vdev_trigger_info *);
 
     /** Write a virtual register */
-    int32_t (*write)(struct arch_vdev_trigger_info *, struct core_regs *);
+    int32_t (*write)(struct arch_vdev_trigger_info *);
 
     /** Currently unused function */
     hvmm_status_t (*enable)(void);
@@ -88,7 +89,7 @@ struct vdev_ops {
     hvmm_status_t (*notify_irq)(uint32_t);
 
     /** Post for remain on the job */
-    hvmm_status_t (*post)(struct arch_vdev_trigger_info *, struct core_regs *);
+    hvmm_status_t (*post)(struct core_regs *);
 
     /** Save virtual device state */
     hvmm_status_t (*save)(vmid_t vmid);
