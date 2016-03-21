@@ -24,6 +24,7 @@ void virq_create(struct virq *virq)
     for (i = 0; i < MAX_PENDING_VIRQS; i++) {
         virq->pending_irqs[i].valid = 0;
     }
+    gicd_regs_banked_create(&virq->gicd_regs_banked);
 }
 
 void vgic_init_status(struct vgic_status *status)

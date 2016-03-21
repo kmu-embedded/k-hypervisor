@@ -18,6 +18,7 @@
  */
 #define firstbit32(word) (31 - asm_clz(word))
 
+static uint32_t ITLinesNumber = 0;
 static struct vdev_memory_map _vdev_gicd_info = {
     .base = CFG_GIC_BASE_PA | GICD_OFFSET,
     .size = 4096,
@@ -163,9 +164,9 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
         {
             int igroup = (offset - GICD_IGROUPR(0)) >> 2;
 
-            if ((igroup == 0) && (igroup < VGICD_NUM_IGROUPR))
+            if (igroup == 0)
                 *pvalue = regs_banked->IGROUPR;
-            else if ((igroup > 0) && (igroup < VGICD_NUM_IGROUPR))
+            else if ((igroup > 0) && (igroup < (ITLinesNumber + 1)))
                 *pvalue = regs->IGROUPR[igroup];
 
             return HVMM_STATUS_SUCCESS;
@@ -372,9 +373,9 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
         {
             int igroup = (offset - GICD_IGROUPR(0)) >> 2;
 
-            if ((igroup == 0) && (igroup < VGICD_NUM_IGROUPR))
+            if (igroup == 0)
                 *pvalue = regs_banked->IGROUPR;
-            else if ((igroup > 0) && (igroup < VGICD_NUM_IGROUPR))
+            else if ((igroup > 0) && (igroup < (ITLinesNumber + 1)))
                 *pvalue = regs->IGROUPR[igroup];
 
             return HVMM_STATUS_SUCCESS;
@@ -571,7 +572,7 @@ static int32_t vdev_gicd_check(struct arch_vdev_trigger_info *info, struct core_
 
 static hvmm_status_t vdev_gicd_reset_values(void)
 {
-    printf("Dummy vdev_gicd_init \n");
+    ITLinesNumber = GICv2.ITLinesNumber;
     return HVMM_STATUS_SUCCESS;
 }
 
