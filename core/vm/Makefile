@@ -5,3 +5,4 @@ VM_SRCS += vcpu.c
 VM_SRCS += virq.c
 VM_SRCS += vm.c
 VM_SRCS += vmem.c
+VM_SRCS += vgic.c

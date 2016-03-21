@@ -292,7 +292,7 @@ void gic_set_sgi(const uint32_t target, uint32_t sgi)
         return ;
     }
 
-    GICD_WRITE(GICD_SGIR(0), GICD_SGIR_TARGET_LIST |
+    GICD_WRITE(GICD_SGIR, GICD_SGIR_TARGET_LIST |
                (target << GICD_SGIR_CPU_TARGET_LIST_OFFSET) |
                (sgi & GICD_SGIR_SGI_INT_ID_MASK));
 }
