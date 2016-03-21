@@ -20,7 +20,10 @@ static uint32_t __host_tickcount[NR_CPUS];
 static uint32_t __guest_tickcount[NR_CPUS];
 static struct timer_ops *__ops;
 
-/* TODO:(igkang) Conditional timeunit function definition based on CFG_CNTFRQ */
+/* TODO:(igkang) Let definitions of time unit conversion functions be available
+ *  conditionally by config macro variables (if < 0 then don't define)
+ */
+
 /*
  * Converts time unit from/to microseconds to/from system counter count.
  */
@@ -151,7 +154,7 @@ static hvmm_status_t timer_set_interval(uint32_t interval_us)
 static hvmm_status_t timer_set_absolute(uint64_t absolute_us)
 {
     /* timer_set_tval() */
-    if (__ops->set_interval) {
+    if (__ops->set_absolute) {
         return __ops->set_absolute(us_to_count(absolute_us));
     }
 
