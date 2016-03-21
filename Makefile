@@ -90,12 +90,12 @@ LD_SCRIPT		= ${PROJECT}.lds.S
 OUTPUT			= khypervisor-${TARGET}
 ELF				= ${OUTPUT}.axf
 MAP				= ${OUTPUT}.map
-BIN				= ${BUILD_PATH}/${OUTPUT}.bin
+BIN				= ${OUTPUT}.bin
 
 ######################################################
 # BUILD RULES
 ######################################################
-all: ${ELF} ${TARGET}.lds ${MAP}
+all: ${ELF} ${TARGET}.lds ${MAP} ${BIN}
 
 ${ELF}: ${OBJS} ${TARGET}.lds
 	${Q}echo "[LD] $@"
@@ -119,6 +119,10 @@ ${DIRECTORIES}:
 ${MAP}: ${ELF}
 	${Q}echo "[NM] $@"
 	${Q}${NM} $< > ${BUILD_PATH}/$@
+
+${BIN}: ${ELF}
+	${Q}echo "[BIN] $@"
+	${Q}${OBJCOPY} -O binary $< ${BUILD_PATH}/$@
 
 style:
 	astyle --max-instatement-indent=120 --style=otbs --pad-header --recursive --indent=spaces=4 --pad-oper "*.c"

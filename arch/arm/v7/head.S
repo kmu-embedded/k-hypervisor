@@ -4,7 +4,6 @@
     .arch_extension sec
     .arch_extension virt
 
-    .section .init.head
 BEGIN_PROC(__start)
     @ Disable interrupts
     cpsid   aif
