@@ -8,6 +8,7 @@
 #include <core/vm.h>
 #include <core/vm/vcpu.h>
 #include "../../drivers/gic-v2.h"
+#include <core/vm/vgic.h>
 
 #define READ    0
 #define WRITE   1
@@ -65,7 +66,6 @@ static hvmm_status_t handler_SGIR(uint32_t write, uint32_t offset, uint32_t *pva
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     vcpuid_t vcpuid = get_current_vcpuid();
     struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct vmcb *vm = vm_find(vcpu->vmid);
     struct gicd_regs_banked *regs_banked;
     uint32_t target = 0;
     uint32_t sgi_id = *pvalue & GICD_SGIR_SGI_INT_ID_MASK;
@@ -94,9 +94,9 @@ static hvmm_status_t handler_SGIR(uint32_t write, uint32_t offset, uint32_t *pva
         uint8_t _target = target & 0x1;
 
         if (_target) {
-            vm = vm_find(_target);
-            regs_banked = &vm->vgic.gicd_regs_banked;
-            (regs_banked -> CPENDSGIR[(sgi_id >> 2)]) = 0x1 << ((sgi_id & 0x3) * 8);
+            vcpu = vcpu_find(_target);
+            regs_banked = &vcpu->virq.gicd_regs_banked;
+            (regs_banked->CPENDSGIR[(sgi_id >> 2)]) = 0x1 << ((sgi_id & 0x3) * 8);
             result = virq_inject(i, sgi_id, sgi_id, 0);
         }
         target = target >> 1;
@@ -116,7 +116,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
     struct vmcb *vm = vm_find(vcpu->vmid);
 
     struct gicd_regs *regs = &vm->vgic.gicd_regs;
-    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
+    struct gicd_regs_banked *regs_banked = &vcpu->virq.gicd_regs_banked;
     uint32_t old_status;
 
     switch (offset)
@@ -354,7 +354,7 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info, struc
     struct vcpu *vcpu = vcpu_find(vcpuid);
     struct vmcb *vm = vm_find(vcpu->vmid);
     struct gicd_regs *regs = &vm->vgic.gicd_regs;
-    struct gicd_regs_banked *regs_banked = &vm->vgic.gicd_regs_banked;
+    struct gicd_regs_banked *regs_banked = &vcpu->virq.gicd_regs_banked;
 
     switch (offset)
     {
