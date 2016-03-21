@@ -153,23 +153,20 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
                 preg_s = &(regs->ISENABLER[((offset - GICD_ISENABLER(0)) >> 2)]);
             }
 
+            old_status = *preg_s;
             if (access_size == VDEV_ACCESS_WORD) {
-                old_status = *preg_s;
                 *preg_s |= *pvalue;
-                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ISENABLER(0)) >> 2, old_status);
             } else if (access_size == VDEV_ACCESS_HWORD) {
                 uint16_t *preg_s16 = (uint16_t *) preg_s;
                 preg_s16 += (offset & 0x3) >> 1;
-                old_status = *preg_s;
                 *preg_s16 |= (uint16_t) (*pvalue & 0xFFFF);
-                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ISENABLER(0)) >> 2, old_status);
             } else if (access_size == VDEV_ACCESS_BYTE) {
                 uint8_t *preg_s8 = (uint8_t *) preg_s;
                 preg_s8 += (offset & 0x3);
-                old_status = *preg_s;
                 *preg_s8 |= (uint8_t) (*pvalue & 0xFF);
-                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ISENABLER(0)) >> 2, old_status);
             }
+
+            vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ISENABLER(0)) >> 2, old_status);
 
             return HVMM_STATUS_SUCCESS;
         }
@@ -184,23 +181,20 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
                 preg_s = &(regs->ICENABLER[((offset - GICD_ICENABLER(0)) >> 2)]);
             }
 
+            old_status = *preg_s;
             if (access_size == VDEV_ACCESS_WORD) {
-                    old_status = *preg_s;
-                    *preg_s |= *pvalue;
-                    vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ICENABLER(0)) >> 2, old_status);
+                *preg_s |= *pvalue;
             } else if (access_size == VDEV_ACCESS_HWORD) {
                 uint16_t *preg_s16 = (uint16_t *) preg_s;
                 preg_s16 += (offset & 0x3) >> 1;
-                old_status = *preg_s;
                 *preg_s16 |= (uint16_t) (*pvalue & 0xFFFF);
-                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ICENABLER(0)) >> 2, old_status);
             } else if (access_size == VDEV_ACCESS_BYTE) {
                 uint8_t *preg_s8 = (uint8_t *) preg_s;
                 preg_s8 += (offset & 0x3);
-                old_status = *preg_s;
                 *preg_s8 |= (uint8_t) (*pvalue & 0xFF);
-                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ICENABLER(0)) >> 2, old_status);
             }
+
+            vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ICENABLER(0)) >> 2, old_status);
 
             return HVMM_STATUS_SUCCESS;
         }
@@ -273,23 +267,20 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info, stru
                 preg_s = &(regs->ITARGETSR[((offset - GICD_ITARGETSR(0)) >> 2)]);
             }
 
+            old_status = *preg_s;
             if (access_size == VDEV_ACCESS_WORD) {
-                old_status = *preg_s;
                 *preg_s |= *pvalue;
-                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ITARGETSR(0)) >> 2, old_status);
             } else if (access_size == VDEV_ACCESS_HWORD) {
                 uint16_t *preg_s16 = (uint16_t *) preg_s;
                 preg_s16 += (offset & 0x3) >> 1;
-                old_status = *preg_s;
                 *preg_s16 |= (uint16_t) (*pvalue & 0xFFFF);
-                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ITARGETSR(0)) >> 2, old_status);
             } else if (access_size == VDEV_ACCESS_BYTE) {
                 uint8_t *preg_s8 = (uint8_t *) preg_s;
                 preg_s8 += (offset & 0x3);
-                old_status = *preg_s;
                 *preg_s8 |= (uint8_t) (*pvalue & 0xFF);
-                vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ITARGETSR(0)) >> 2, old_status);
             }
+
+            vgicd_changed_istatus(vcpuid, *preg_s, (offset - GICD_ITARGETSR(0)) >> 2, old_status);
 
             return HVMM_STATUS_SUCCESS;
         }
