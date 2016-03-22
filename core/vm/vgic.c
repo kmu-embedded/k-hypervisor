@@ -77,8 +77,8 @@ void vgic_init(struct vgic *vgic)
 
 void gicd_banked_regs_create(struct gicd_banked_regs *regs_banked)
 {
-    regs_banked->IPRIORITYR = malloc(sizeof(uint32_t) * VGICD_BANKED_NUM_IPRIORITYR);
-    regs_banked->ITARGETSR  = malloc(sizeof(uint32_t) * VGICD_BANKED_NUM_ITARGETSR);
+    regs_banked->IPRIORITYR = malloc(sizeof(uint32_t) * NR_BANKED_IPRIORITYR);
+    regs_banked->ITARGETSR  = malloc(sizeof(uint32_t) * NR_BANKED_ITARGETSR);
     regs_banked->CPENDSGIR  = malloc(sizeof(uint32_t) * (ITLinesNumber + 1));
     regs_banked->SPENDSGIR  = malloc(sizeof(uint32_t) * (ITLinesNumber + 1));
 }
@@ -95,11 +95,11 @@ void gicd_banked_regs_init(struct gicd_banked_regs *gicd_banked_regs)
     gicd_banked_regs->ISACTIVER = 0;
     gicd_banked_regs->ICACTIVER = 0;
 
-    for (i = 0; i < VGICD_BANKED_NUM_IPRIORITYR; i++) {
+    for (i = 0; i < NR_BANKED_IPRIORITYR; i++) {
         gicd_banked_regs->IPRIORITYR[i] = 0;;
     }
 
-    for (i = 0; i < VGICD_BANKED_NUM_ITARGETSR; i++) {
+    for (i = 0; i < NR_BANKED_ITARGETSR; i++) {
         gicd_banked_regs->ITARGETSR[i] = 0;
     }
 

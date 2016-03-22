@@ -4,8 +4,8 @@
 #include <stdlib.h>
 
 /* Banked Registers Size */
-#define VGICD_BANKED_NUM_IPRIORITYR  8
-#define VGICD_BANKED_NUM_ITARGETSR   8
+#define NR_BANKED_IPRIORITYR  8
+#define NR_BANKED_ITARGETSR   8
 
 // Per VM
 struct gicd_regs {
