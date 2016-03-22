@@ -24,7 +24,7 @@ void virq_create(struct virq *virq)
     for (i = 0; i < MAX_PENDING_VIRQS; i++) {
         virq->pending_irqs[i].valid = 0;
     }
-    gicd_banked_regs_create(&virq->gicd_banked_regs);
+    gicd_banked_create(&virq->gicd_banked);
 }
 
 void vgic_init_status(struct vgic_status *status)
@@ -63,7 +63,7 @@ void virq_init(struct virq *virq, vmid_t vmid)
 
     /* vgic_status initialization */
     memset(&virq->vgic_status, 0, sizeof(struct vgic_status));
-    gicd_banked_regs_init(&virq->gicd_banked_regs);
+    gicd_banked_init(&virq->gicd_banked);
 }
 
 uint32_t virq_to_pirq(struct virq *v, uint32_t virq)
