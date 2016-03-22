@@ -16,9 +16,7 @@
 #define GUEST_VERBOSE_LEVEL_7   0x80
 
 void sched_init();
-//sched_register_vcpu?
 int sched_vcpu_register(vcpuid_t vcpuid);
-//sched_unregister_vcpu?
 int sched_vcpu_unregister();
 int sched_vcpu_attach(vcpuid_t vcpuid);
 int sched_vcpu_detach();
@@ -26,9 +24,10 @@ void do_schedule(void *pdata, uint32_t *delay_tick);
 
 void sched_start(void);
 vmid_t get_current_vcpuid(void);
+struct vcpu *get_current_vcpu(void);
 
-hvmm_status_t sched_perform_switch(struct core_regs *regs);
 hvmm_status_t guest_switchto(vmid_t vmid);
+hvmm_status_t sched_perform_switch(struct core_regs *regs);
 
 struct running_vcpus_entry_t {
     struct list_head head;
