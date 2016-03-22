@@ -75,38 +75,3 @@ void vgic_init(struct vgic *vgic)
     printf("%s END\n", __func__);
 }
 
-void gicd_banked_create(struct gicd_banked *gicd_banked)
-{
-    gicd_banked->IPRIORITYR = malloc(sizeof(uint32_t) * NR_BANKED_IPRIORITYR);
-    gicd_banked->ITARGETSR  = malloc(sizeof(uint32_t) * NR_BANKED_ITARGETSR);
-    gicd_banked->CPENDSGIR  = malloc(sizeof(uint32_t) * (ITLinesNumber + 1));
-    gicd_banked->SPENDSGIR  = malloc(sizeof(uint32_t) * (ITLinesNumber + 1));
-}
-
-void gicd_banked_init(struct gicd_banked *gicd_banked)
-{
-    int i = 0;
-
-    gicd_banked->IGROUPR = 0;
-    gicd_banked->ISENABLER = 0;
-    gicd_banked->ICENABLER = 0;
-    gicd_banked->ISPENDR = 0;
-    gicd_banked->ICPENDR = 0;
-    gicd_banked->ISACTIVER = 0;
-    gicd_banked->ICACTIVER = 0;
-
-    for (i = 0; i < NR_BANKED_IPRIORITYR; i++) {
-        gicd_banked->IPRIORITYR[i] = 0;
-    }
-
-    for (i = 0; i < NR_BANKED_ITARGETSR; i++) {
-        gicd_banked->ITARGETSR[i] = 0;
-    }
-
-    gicd_banked->ICFGR = 0;
-
-    for (i = 0; i < (ITLinesNumber + 1); i++) {
-        gicd_banked->SPENDSGIR[i] = 0;
-        gicd_banked->CPENDSGIR[i] = 0;
-    }
-}
