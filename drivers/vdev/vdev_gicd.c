@@ -226,7 +226,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
         {
             uint32_t n = ((offset - GICD_IPRIORITYR(0)) >> 2);
 
-            if ( n < NR_BANKED_IPRIORITYR) {
+            if (n < NR_BANKED_IPRIORITYR) {
                 banked_regs->IPRIORITYR[n] = readl(info->raw);
             } else {
                 regs->IPRIORITYR[n] = readl(info->raw);
@@ -408,7 +408,7 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
         {
             uint32_t n = ((offset - GICD_IPRIORITYR(0)) >> 2);
 
-            if ( n < NR_BANKED_IPRIORITYR) {
+            if (n < NR_BANKED_IPRIORITYR) {
                 writel(banked_regs->IPRIORITYR[n], info->raw);
             } else {
                 writel(regs->IPRIORITYR[n], info->raw);

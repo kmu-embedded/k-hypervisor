@@ -132,12 +132,9 @@ struct vdev_module {
 };
 
 hvmm_status_t vdev_register(int level, struct vdev_module *module);
-int32_t vdev_find(int level, struct arch_vdev_trigger_info *info,
-                  struct core_regs *regs);
-int32_t vdev_read(int level, int num, struct arch_vdev_trigger_info *info,
-                  struct core_regs *regs);
-int32_t vdev_write(int level, int num, struct arch_vdev_trigger_info *info,
-                   struct core_regs *regs);
+int32_t vdev_find(int level, struct arch_vdev_trigger_info *info);
+int32_t vdev_read(int level, int num, struct arch_vdev_trigger_info *info);
+int32_t vdev_write(int level, int num, struct arch_vdev_trigger_info *info);
 hvmm_status_t vdev_post(int level, int num, struct arch_vdev_trigger_info *info,
                         struct core_regs *regs);
 hvmm_status_t vdev_save(vmid_t vmid);
