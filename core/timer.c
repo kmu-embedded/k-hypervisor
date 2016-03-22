@@ -182,6 +182,15 @@ static void timer_handler(int irq, void *pregs, void *pdata)
     timer_stop();
 
     // TODO(igkang): remove __host_tickcount.
+#ifdef __CONFIG_TICKLESS_TIMER__
+    if (__host_callback[pcpu]) {
+        __host_callback[pcpu](pregs, &__host_tickcount[pcpu]);
+    }
+    if (__guest_callback[pcpu]) {
+        __guest_callback[pcpu](pregs, &__guest_tickcount[pcpu]);
+    }
+    timer_set_absolute(__host_tickcount[pcpu]);
+#else /* USE TICK */
     if (__host_callback[pcpu] && --__host_tickcount[pcpu] == 0) {
         __host_callback[pcpu](pregs, &__host_tickcount[pcpu]);
         __host_tickcount[pcpu] /= TICK_PERIOD_US;
@@ -190,8 +199,9 @@ static void timer_handler(int irq, void *pregs, void *pdata)
         __guest_callback[pcpu](pregs, &__guest_tickcount[pcpu]);
         __guest_tickcount[pcpu] /= TICK_PERIOD_US;
     }
-
     timer_set_absolute(TICK_PERIOD_US);
+#endif
+
     timer_start();
 }
 
@@ -207,7 +217,11 @@ static hvmm_status_t timer_host_set_callback(timer_callback_t func, uint32_t int
     uint32_t pcpu = smp_processor_id();
 
     __host_callback[pcpu] = func;
+#ifdef __CONFIG_TICKLESS_TIMER__
+    __host_tickcount[pcpu] = interval_us;
+#else /* USE TICK */
     __host_tickcount[pcpu] = interval_us / TICK_PERIOD_US;
+#endif
     /* FIXME:(igkang) hardcoded */
 
     return HVMM_STATUS_SUCCESS;
@@ -218,7 +232,11 @@ static hvmm_status_t timer_guest_set_callback(timer_callback_t func, uint32_t in
     uint32_t pcpu = smp_processor_id();
 
     __guest_callback[pcpu] = func;
+#ifdef __CONFIG_TICKLESS_TIMER__
+    __guest_tickcount[pcpu] = interval_us;
+#else /* USE TICK */
     __guest_tickcount[pcpu] = interval_us / TICK_PERIOD_US;
+#endif
     /* FIXME:(igkang) hardcoded */
 
     return HVMM_STATUS_SUCCESS;
@@ -229,7 +247,11 @@ hvmm_status_t timer_set(struct timer *timer, uint32_t host)
     if (host) {
         timer_stop();
         timer_host_set_callback(timer->callback, timer->interval);
+#ifdef __CONFIG_TICKLESS_TIMER__
+        timer_set_absolute(timer->interval);
+#else /* USE TICK */
         timer_set_absolute(TICK_PERIOD_US);
+#endif
         timer_start();
     } else {
         timer_guest_set_callback(timer->callback, timer->interval);
