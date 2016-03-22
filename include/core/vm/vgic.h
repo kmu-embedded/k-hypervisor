@@ -6,6 +6,8 @@
 /* Banked Registers Size */
 #define NR_BANKED_IPRIORITYR  8
 #define NR_BANKED_ITARGETSR   8
+#define NR_BANKED_CPENDSGIR   4
+#define NR_BANKED_SPENDSGIR   4
 
 // Per VM
 struct gicd {
@@ -37,11 +39,11 @@ struct gicd_banked {
     uint32_t ICPENDR;
     uint32_t ISACTIVER;
     uint32_t ICACTIVER;
-    uint32_t *IPRIORITYR;
-    uint32_t *ITARGETSR;
+    uint32_t IPRIORITYR[NR_BANKED_IPRIORITYR];
+    uint32_t ITARGETSR[NR_BANKED_ITARGETSR];
     uint32_t ICFGR;
-    uint32_t *CPENDSGIR;
-    uint32_t *SPENDSGIR;
+    uint32_t CPENDSGIR[NR_BANKED_CPENDSGIR];
+    uint32_t SPENDSGIR[NR_BANKED_SPENDSGIR];
 };
 
 struct vgic {
@@ -52,8 +54,6 @@ void vgic_setup();
 
 void vgic_create(struct vgic *vgic);
 void vgic_init(struct vgic *vgic);
-void gicd_banked_create(struct gicd_banked *regs_banked);
-void gicd_banked_init(struct gicd_banked *regs_banked);
 
 #endif /* __VGIC_H__ */
 
