@@ -64,7 +64,7 @@ static void set_clear(vcpuid_t vcpuid, uint32_t current_status, uint8_t n, uint3
     }
 }
 
-static hvmm_status_t handler_SGIR(uint32_t write, uint32_t offset, uint32_t value)
+static hvmm_status_t handler_SGIR(uint32_t offset, uint32_t value)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     vcpuid_t vcpuid = get_current_vcpuid();
@@ -267,7 +267,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             return HVMM_STATUS_BAD_ACCESS;
 
         case GICD_SGIR:
-            return handler_SGIR(WRITE, offset, readl(info->raw));
+            return handler_SGIR(offset, readl(info->raw));
 
         case GICD_CPENDSGIR(0) ... GICD_CPENDSGIR_LAST:
         {
