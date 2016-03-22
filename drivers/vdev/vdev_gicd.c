@@ -34,13 +34,12 @@ static void set_enable(vcpuid_t vcpuid, uint32_t current_status, uint8_t n, uint
         uint32_t virq = offset + (32 * n);
         uint32_t pirq = virq_to_pirq(&vcpu->virq, virq);
 
-        if (pirq != PIRQ_INVALID) {
-            virq_enable(&vcpu->virq, pirq);
-            gic_enable_irq(pirq);
-        } else {
-            // nop
-            // printf("WARNING: Ignoring virq %d for guest %d has no mapped pirq\n", virq, vcpuid);
-        }
+        pirq = (pirq == PIRQ_INVALID ? virq : pirq);
+
+        virq_enable(&vcpu->virq, pirq, virq);
+        pirq_enable(&vcpu->virq, pirq, virq);
+        gic_enable_irq(pirq);
+
         delta &= ~(1 << offset);
     }
 }
@@ -56,14 +55,11 @@ static void set_clear(vcpuid_t vcpuid, uint32_t current_status, uint8_t n, uint3
         uint32_t virq = offset + (32 * n);
         uint32_t pirq = virq_to_pirq(&vcpu->virq, virq);
 
-        if (pirq != PIRQ_INVALID) {
-            virq_disable(&vcpu->virq, pirq);
-            // TODO(casionwoo) : When VM try to interrupt clear, must be checked every VM clear the interrupt to really clear the irq
-//            gic_disable_irq(pirq);
-        } else {
-            // nop
-            // printf("WARNING: Ignoring virq %d for guest %d has no mapped pirq\n", virq, vcpuid);
-        }
+        virq_disable(&vcpu->virq, virq);
+        pirq_disable(&vcpu->virq, pirq);
+        // TODO(casionwoo) : When VM try to interrupt clear, must be checked every VM clear the interrupt. Then clear the irq
+        // gic_disable_irq(pirq);
+
         delta &= ~(1 << offset);
     }
 }
