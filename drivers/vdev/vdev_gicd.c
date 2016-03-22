@@ -94,10 +94,10 @@ static hvmm_status_t handler_SGIR(uint32_t write, uint32_t offset, uint32_t valu
 
     // FIXME(casionwoo) : This part should have some policy for interprocessor communication
     for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        uint8_t _target = target & 0x1;
+        uint8_t target_vcpuid = target & 0x1;
 
-        if (_target) {
-            vcpu = vcpu_find(_target);
+        if (target_vcpuid) {
+            vcpu = vcpu_find(target_vcpuid);
             banked_regs = &vcpu->virq.gicd_banked_regs;
             (banked_regs->CPENDSGIR[(sgi_id >> 2)]) = 0x1 << ((sgi_id & 0x3) * 8);
             result = virq_inject(i, sgi_id, sgi_id, 0);
