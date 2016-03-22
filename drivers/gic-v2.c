@@ -198,9 +198,9 @@ void gic_init(void)
         // Currently, we set the base address of gic to 0x2C000000, it is for RTSM.
         periphbase = 0x2C000000;
     }
-    GICv2.gicd = periphbase + GICD_OFFSET;
-    GICv2.gicc = periphbase + GICC_OFFSET;
-    GICv2.gich = periphbase + GICH_OFFSET;
+    GICv2.gicd_base = periphbase + GICD_OFFSET;
+    GICv2.gicc_base = periphbase + GICC_OFFSET;
+    GICv2.gich_base = periphbase + GICH_OFFSET;
 
     /*
      * We usually use the name of variables in lower case, but
