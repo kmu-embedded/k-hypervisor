@@ -22,9 +22,9 @@ enum virq_state {
 };
 
 struct GICv2_HW {
-    uint32_t gicd;
-    uint32_t gicc;
-    uint32_t gich;
+    uint32_t gicd_base;
+    uint32_t gicc_base;
+    uint32_t gich_base;
     uint32_t ITLinesNumber;
     uint32_t CPUNumber;
     uint32_t num_lr;
@@ -59,14 +59,14 @@ void update_lr(uint32_t offset, uint32_t value);
 uint32_t gic_inject_virq(uint32_t hw, enum virq_state state, uint32_t priority, uint32_t physicalid, uint32_t virtualid, uint32_t slot);
 
 #include <io.h>
-#define GICD_READ(offset)           __readl(GICv2.gicd + offset)
-#define GICD_WRITE(offset, value)   __writel(value, GICv2.gicd + offset)
+#define GICD_READ(offset)           __readl(GICv2.gicd_base + offset)
+#define GICD_WRITE(offset, value)   __writel(value, GICv2.gicd_base + offset)
 
-#define GICC_READ(offset)           __readl(GICv2.gicc + offset)
-#define GICC_WRITE(offset, value)   __writel(value, GICv2.gicc + offset)
+#define GICC_READ(offset)           __readl(GICv2.gicc_base + offset)
+#define GICC_WRITE(offset, value)   __writel(value, GICv2.gicc_base + offset)
 
-#define GICH_READ(offset)           __readl(GICv2.gich + offset)
-#define GICH_WRITE(offset, value)   __writel(value, GICv2.gich + offset)
+#define GICH_READ(offset)           __readl(GICv2.gich_base + offset)
+#define GICH_WRITE(offset, value)   __writel(value, GICv2.gich_base + offset)
 
 #endif
 
