@@ -2,6 +2,7 @@
 #include <config.h>
 #include <core/timer.h>
 #include <arch/irq.h>
+#include <core/vm/vcpu.h>
 #include <core/context_switch.h>
 #include <core/scheduler.h>
 #include <core/sched/scheduler_skeleton.h>
@@ -11,9 +12,11 @@
 #include <stdio.h>
 #include <lib/list.h>
 
-vcpuid_t __current_vcpuid[NR_CPUS];// = {VCPUID_INVALID, VCPUID_INVALID};
-vcpuid_t __next_vcpuid[NR_CPUS];// = {VCPUID_INVALID, };
 const struct scheduler *__policy[NR_CPUS];
+
+vcpuid_t __current_vcpuid[NR_CPUS];
+vcpuid_t __next_vcpuid[NR_CPUS];
+struct vcpu *__current_vcpu[NR_CPUS];
 
 /* TODO:(igkang) redesign runqueue & registered list structure for external external access */
 struct list_head __running_vcpus[NR_CPUS];
@@ -34,6 +37,7 @@ void sched_init()
     /* Initialize data */
     __current_vcpuid[pcpu] = VCPUID_INVALID;
     __next_vcpuid[pcpu] = VCPUID_INVALID;
+    __current_vcpu[pcpu] = NULL;
 
     LIST_INITHEAD(&__running_vcpus[pcpu]);
 
@@ -86,6 +90,7 @@ hvmm_status_t sched_perform_switch(struct core_regs *regs)
         next = __next_vcpuid[pcpu];
         __current_vcpuid[pcpu] = __next_vcpuid[pcpu];
         __next_vcpuid[pcpu] = VCPUID_INVALID;
+        __current_vcpu[pcpu] = vcpu_find(__next_vcpuid[pcpu]);
 
         do_context_switch(previous, next, param_regs);
         /* MUST NOT COME BACK HERE IF regs == NULL */
@@ -135,6 +140,13 @@ vcpuid_t get_current_vcpuid(void)
      *   instead of globally defined array */
 
     return __current_vcpuid[pcpu];
+}
+
+struct vcpu *get_current_vcpu(void)
+{
+    uint32_t pcpu = smp_processor_id();
+
+    return __current_vcpu[pcpu];
 }
 
 /**
