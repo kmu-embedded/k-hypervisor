@@ -35,7 +35,6 @@ static void set_enable(vcpuid_t vcpuid, uint32_t current_status, uint8_t n, uint
         uint32_t pirq = virq_to_pirq(&vcpu->virq, virq);
 
         if (pirq != PIRQ_INVALID) {
-            gic_configure_irq(pirq, IRQ_LEVEL_TRIGGERED);
             virq_enable(&vcpu->virq, pirq);
             gic_enable_irq(pirq);
         } else {
@@ -58,6 +57,7 @@ static void set_clear(vcpuid_t vcpuid, uint32_t current_status, uint8_t n, uint3
         uint32_t pirq = virq_to_pirq(&vcpu->virq, virq);
 
         if (pirq != PIRQ_INVALID) {
+            virq_disable(&vcpu->virq, pirq);
             gic_disable_irq(pirq);
         } else {
             // nop
@@ -114,9 +114,6 @@ static hvmm_status_t handler_SGIR(uint32_t write, uint32_t offset, uint32_t valu
 static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
 {
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
-
-    //printf("[%s] OFFSET:%x, address: %x value: %x\n", __func__, offset, info->raw, readl(info->raw));
-
     vcpuid_t vcpuid = get_current_vcpuid();
     struct vcpu *vcpu = vcpu_find(vcpuid);
     struct vmcb *vm = vm_find(vcpu->vmid);
@@ -135,7 +132,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
         {
             uint32_t n = (offset - GICD_IGROUPR(0)) >> 2;
 
-            if (n == 0) { // PPI & SGI?
+            if (n == 0) {
                 regs_banked->IGROUPR = readl(info->raw);
             } else if ((n > 0) && (n < (ITLinesNumber + 1))) {
                 regs->IGROUPR[n] = readl(info->raw);
@@ -191,7 +188,6 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             return HVMM_STATUS_SUCCESS;
         }
 
-        // ???
         case GICD_ICPENDR(0) ... GICD_ICPENDR_LAST:
         {
             uint32_t n = (offset - GICD_ICPENDR(0)) >> 2;
@@ -243,7 +239,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
         {
             uint32_t n = (offset - GICD_ITARGETSR(0)) >> 2;
 
-            if (n == 0) {
+            if (n < VGICD_BANKED_NUM_ITARGETSR) {
                 old_status = regs_banked->ITARGETSR[n];
                 regs_banked->ITARGETSR[n] |= readl(info->raw);
             } else {
@@ -257,7 +253,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
         case GICD_ICFGR(0) ... GICD_ICFGR_LAST:
         {
             uint32_t n = (offset - GICD_ICFGR(0));
-            // n == 0 ?
+
             if (n == 1) {
                 regs_banked->ICFGR = readl(info->raw);
             } else {
@@ -312,8 +308,6 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
     struct vmcb *vm = vm_find(vcpu->vmid);
     struct gicd_regs *regs = &vm->vgic.gicd_regs;
     struct gicd_regs_banked *regs_banked = &vcpu->virq.gicd_regs_banked;
-
-    //printf("[%s] OFFSET:%x, address: %x\n", __func__, offset, info->raw);
 
     switch (offset)
     {
@@ -428,7 +422,7 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
         {
             uint32_t n = (offset - GICD_ITARGETSR(0)) >> 2;
 
-            if (n == 0) {
+            if (n < VGICD_BANKED_NUM_ITARGETSR) {
                 writel(regs_banked->ITARGETSR[n], info->raw);
             } else {
                 writel(regs->ITARGETSR[n], info->raw);

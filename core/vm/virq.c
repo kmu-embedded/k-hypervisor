@@ -122,6 +122,11 @@ void virq_enable(struct virq *v, uint32_t virq)
     v->map[virq].enabled = GUEST_IRQ_ENABLE;
 }
 
+void virq_disable(struct virq *v, uint32_t virq)
+{
+    v->map[virq].enabled = GUEST_IRQ_DISABLE;
+}
+
 #include <arch/gic_regs.h>
 #include <irq-chip.h>
 
