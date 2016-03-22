@@ -68,7 +68,8 @@ CFLAGS+= -Wall -Werror
 CFLAGS+= -mcpu=${CPU} -marm
 CFLAGS += --std=c99
 
-DEFINES= -D__CONFIG_MUTEX__#-D__CONFIG_SMP__ #-D__TEST_TIMER__
+DEFINES= -D__CONFIG_MUTEX__ #-D__CONFIG_SMP__
+DEFINES+=-D__CONFIG_TICKLESS_TIMER__ #-D__TEST_TIMER__
 DEFINES+=-DCONFIG_C99
 CFLAGS+=${DEFINES}
 # BUILD: Passed --std==gnu90, --std==gnu99, --std=gnu11
