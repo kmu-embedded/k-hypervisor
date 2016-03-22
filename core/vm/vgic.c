@@ -12,7 +12,7 @@ void vgic_setup()
 
 void vgic_create(struct vgic *vgic)
 {
-    struct gicd_regs *regs = &vgic->gicd_regs;
+    struct gicd *regs = &vgic->gicd;
 
     regs->IGROUPR       = malloc(sizeof(uint32_t) * (ITLinesNumber + 1));
     regs->ISENABLER     = malloc(sizeof(uint32_t) * (ITLinesNumber + 1));
@@ -33,44 +33,44 @@ void vgic_init(struct vgic *vgic)
     printf("%s START\n", __func__);
 
     int i = 0;
-    struct gicd_regs *gicd_regs = &vgic->gicd_regs;
+    struct gicd *gicd = &vgic->gicd;
 
-    gicd_regs->CTLR  = 0;
-    gicd_regs->TYPER = GICD_READ(GICD_TYPER_OFFSET);
-    gicd_regs->IIDR  = GICD_READ(GICD_IIDR_OFFSET);
+    gicd->CTLR  = 0;
+    gicd->TYPER = GICD_READ(GICD_TYPER_OFFSET);
+    gicd->IIDR  = GICD_READ(GICD_IIDR_OFFSET);
 
     for (i = 0; i < (ITLinesNumber + 1); i++) {
-        gicd_regs->IGROUPR[i] = 0;
+        gicd->IGROUPR[i] = 0;
     }
 
     for (i = 0; i < (ITLinesNumber + 1); i++) {
-        gicd_regs->ISENABLER[i] = 0;
-        gicd_regs->ICENABLER[i] = 0;
+        gicd->ISENABLER[i] = 0;
+        gicd->ICENABLER[i] = 0;
     }
 
     for (i = 0; i < (ITLinesNumber + 1); i++) {
-        gicd_regs->ISPENDR[i] = 0;
-        gicd_regs->ICPENDR[i] = 0;
+        gicd->ISPENDR[i] = 0;
+        gicd->ICPENDR[i] = 0;
     }
 
     for (i = 0; i < (ITLinesNumber + 1); i++) {
-        gicd_regs->ISACTIVER[i] = 0;
-        gicd_regs->ICACTIVER[i] = 0;
+        gicd->ISACTIVER[i] = 0;
+        gicd->ICACTIVER[i] = 0;
     }
 
     for (i = 0; i < 8*(ITLinesNumber + 1); i++) {
-        gicd_regs->IPRIORITYR[i] = 0;
+        gicd->IPRIORITYR[i] = 0;
     }
 
     for (i = 0; i < 8*(ITLinesNumber + 1); i++) {
-        gicd_regs->ITARGETSR[i] = 0;
+        gicd->ITARGETSR[i] = 0;
     }
 
     for (i = 0; i < 2*(ITLinesNumber + 1); i++) {
-        gicd_regs->ICFGR[i] = 0;
+        gicd->ICFGR[i] = 0;
     }
 
-    gicd_regs->SGIR = 0;
+    gicd->SGIR = 0;
 
     printf("%s END\n", __func__);
 }

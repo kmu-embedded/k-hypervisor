@@ -8,7 +8,7 @@
 #define NR_BANKED_ITARGETSR   8
 
 // Per VM
-struct gicd_regs {
+struct gicd {
     uint32_t CTLR;          /*0x000 RW*/
     uint32_t TYPER;         /*      RO*/
     uint32_t IIDR;          /*      RO*/
@@ -45,7 +45,7 @@ struct gicd_banked_regs {
 };
 
 struct vgic {
-    struct gicd_regs gicd_regs;
+    struct gicd gicd;
 };
 
 void vgic_setup();
