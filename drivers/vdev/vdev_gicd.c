@@ -71,21 +71,21 @@ static hvmm_status_t handler_SGIR(uint32_t write, uint32_t offset, uint32_t valu
     struct vcpu *vcpu = vcpu_find(vcpuid);
     struct gicd_banked_regs *banked_regs;
 
-    uint32_t target = 0;
+    uint32_t target_cpu_interfaces = 0;
     uint32_t sgi_id = value & GICD_SGIR_SGI_INT_ID_MASK;
-    uint32_t i;
+    uint8_t target_vcpuid;
 
     switch (value & GICD_SGIR_TARGET_LIST_FILTER_MASK) {
         case GICD_SGIR_TARGET_LIST:
-            target = ((value & GICD_SGIR_CPU_TARGET_LIST_MASK) >> GICD_SGIR_CPU_TARGET_LIST_OFFSET);
+            target_cpu_interfaces = ((value & GICD_SGIR_CPU_TARGET_LIST_MASK) >> GICD_SGIR_CPU_TARGET_LIST_OFFSET);
             break;
 
         case GICD_SGIR_TARGET_OTHER:
-            target = ~(0x1 << vcpu->vmid);
+            target_cpu_interfaces = ~(0x1 << vcpu->vmid);
             break;
 
         case GICD_SGIR_TARGET_SELF:
-            target = (0x1 << vcpu->vmid);
+            target_cpu_interfaces = (0x1 << vcpu->vmid);
             break;
 
         default:
@@ -93,16 +93,20 @@ static hvmm_status_t handler_SGIR(uint32_t write, uint32_t offset, uint32_t valu
     }
 
     // FIXME(casionwoo) : This part should have some policy for interprocessor communication
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        uint8_t target_vcpuid = target & 0x1;
+    while (target_cpu_interfaces) {
+        uint8_t target_cpu_interface = target_cpu_interfaces & 0x01;
 
-        if (target_vcpuid) {
-            vcpu = vcpu_find(target_vcpuid);
+        if (target_cpu_interface && (vcpu = vcpu_find(target_vcpuid))) {
+            uint32_t n = sgi_id >> 2;
+            uint32_t reg_offset = sgi_id % 4;
+
             banked_regs = &vcpu->virq.gicd_banked_regs;
-            (banked_regs->CPENDSGIR[(sgi_id >> 2)]) = 0x1 << ((sgi_id & 0x3) * 8);
-            result = virq_inject(i, sgi_id, sgi_id, 0);
+            banked_regs->SPENDSGIR[n] = 0x1 << ((reg_offset * 8) + target_cpu_interface);
+            result = virq_inject(target_vcpuid, sgi_id, sgi_id, SW_IRQ);
         }
-        target = target >> 1;
+
+        target_vcpuid++;
+        target_cpu_interfaces = target_cpu_interfaces >> 1;
     }
 
     return result;
