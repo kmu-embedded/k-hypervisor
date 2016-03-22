@@ -85,22 +85,23 @@ int do_hvc_trap(struct core_regs *regs)
         goto trap_error;
     }
 
-    vdev_num = vdev_find(level, &info, regs);
+    vdev_num = vdev_find(level, &info);
     if (vdev_num < 0) {
         debug_print("[hvc] cann't search vdev number\n\r");
         goto trap_error;
     }
 
     if (iss & ISS_WNR) {
-        if (vdev_write(level, vdev_num, &info, regs) < 0) {
+        if (vdev_write(level, vdev_num, &info) < 0) {
             goto trap_error;
         }
     } else {
-        if (vdev_read(level, vdev_num, &info, regs) < 0) {
+        if (vdev_read(level, vdev_num, &info) < 0) {
             goto trap_error;
         }
     }
     vdev_post(level, vdev_num, &info, regs);
+
     return 0;
 
 trap_error:
