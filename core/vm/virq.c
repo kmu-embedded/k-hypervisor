@@ -5,10 +5,6 @@
 #include <string.h>
 #include "../../drivers/gic-v2.h"
 
-
-
-#include <core/scheduler.h>
-
 #define SET_VIRQMAP(map, _pirq, _virq) \
     do {                                 \
         map[_pirq].virq = _virq;   \
@@ -68,11 +64,6 @@ void virq_init(struct virq *virq, vmid_t vmid)
     /* vgic_status initialization */
     memset(&virq->vgic_status, 0, sizeof(struct vgic_status));
     gicd_banked_regs_init(&virq->gicd_banked_regs);
-}
-
-uint32_t pirq_to_virq(struct virq *v, uint32_t pirq)
-{
-    return v->map[pirq].virq;
 }
 
 uint32_t virq_to_pirq(struct virq *v, uint32_t virq)
