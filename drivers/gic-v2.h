@@ -7,6 +7,9 @@
 #include "../include/types.h"
 //#include <core/interrupt.h>
 
+#define HW_IRQ      1
+#define SW_IRQ      0
+
 #define GIC_NUM_MAX_IRQS                1024
 #define GIC_INT_PRIORITY_DEFAULT        0xa0
 #define VGIC_NUM_MAX_SLOTS              64

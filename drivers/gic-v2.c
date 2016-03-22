@@ -11,9 +11,6 @@
 
 #include <arch/irq.h>
 
-#define HW_IRQ      1
-#define SW_IRQ      0
-
 #define EOI_ENABLE      1
 #define EOI_DISABLE     0
 
@@ -384,8 +381,7 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
         if (hw)
             slot = gic_inject_virq_hw(VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT, pirq, virq);
         else
-            slot = gic_inject_virq_sw(VIRQ_STATE_PENDING, HIGHEST_PRIORITY,
-                                    vcpuid, EOI_ENABLE, virq);
+            slot = gic_inject_virq_sw(VIRQ_STATE_PENDING, HIGHEST_PRIORITY, vcpuid, EOI_ENABLE, virq);
 
         if (slot == VGIC_SLOT_NOTFOUND) {
             return false;
