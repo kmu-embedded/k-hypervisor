@@ -225,6 +225,8 @@ static hvmm_status_t generic_timer_enable(enum generic_timer_type timer_type)
         result = HVMM_STATUS_SUCCESS;
     }
 
+    /* TODO:(igkang) add routine for NSP(Non-Secure Physical - PL1) timer */
+
     return result;
 }
 
@@ -249,6 +251,8 @@ static hvmm_status_t generic_timer_disable(enum generic_timer_type timer_type)
         generic_timer_reg_write(GENERIC_TIMER_REG_VIRT_CTRL, ctrl);
         result = HVMM_STATUS_SUCCESS;
     }
+
+    /* TODO:(igkang) add routine for NSP(Non-Secure Physical - PL1) timer */
 
     return result;
 }

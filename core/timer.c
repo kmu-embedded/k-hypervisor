@@ -20,7 +20,10 @@ static uint32_t __host_tickcount[NR_CPUS];
 static uint32_t __guest_tickcount[NR_CPUS];
 static struct timer_ops *__ops;
 
-/* TODO:(igkang) Conditional timeunit function definition based on CFG_CNTFRQ */
+/* TODO:(igkang) Let definitions of time unit conversion functions be available
+ *  conditionally by config macro variables (if < 0 then don't define)
+ */
+
 /*
  * Converts time unit from/to microseconds to/from system counter count.
  */
@@ -151,7 +154,7 @@ static hvmm_status_t timer_set_interval(uint32_t interval_us)
 static hvmm_status_t timer_set_absolute(uint64_t absolute_us)
 {
     /* timer_set_tval() */
-    if (__ops->set_interval) {
+    if (__ops->set_absolute) {
         return __ops->set_absolute(us_to_count(absolute_us));
     }
 
@@ -179,6 +182,15 @@ static void timer_handler(int irq, void *pregs, void *pdata)
     timer_stop();
 
     // TODO(igkang): remove __host_tickcount.
+#ifdef __CONFIG_TICKLESS_TIMER__
+    if (__host_callback[pcpu]) {
+        __host_callback[pcpu](pregs, &__host_tickcount[pcpu]);
+    }
+    if (__guest_callback[pcpu]) {
+        __guest_callback[pcpu](pregs, &__guest_tickcount[pcpu]);
+    }
+    timer_set_absolute(__host_tickcount[pcpu]);
+#else /* USE TICK */
     if (__host_callback[pcpu] && --__host_tickcount[pcpu] == 0) {
         __host_callback[pcpu](pregs, &__host_tickcount[pcpu]);
         __host_tickcount[pcpu] /= TICK_PERIOD_US;
@@ -187,8 +199,9 @@ static void timer_handler(int irq, void *pregs, void *pdata)
         __guest_callback[pcpu](pregs, &__guest_tickcount[pcpu]);
         __guest_tickcount[pcpu] /= TICK_PERIOD_US;
     }
-
     timer_set_absolute(TICK_PERIOD_US);
+#endif
+
     timer_start();
 }
 
@@ -204,7 +217,11 @@ static hvmm_status_t timer_host_set_callback(timer_callback_t func, uint32_t int
     uint32_t pcpu = smp_processor_id();
 
     __host_callback[pcpu] = func;
+#ifdef __CONFIG_TICKLESS_TIMER__
+    __host_tickcount[pcpu] = interval_us;
+#else /* USE TICK */
     __host_tickcount[pcpu] = interval_us / TICK_PERIOD_US;
+#endif
     /* FIXME:(igkang) hardcoded */
 
     return HVMM_STATUS_SUCCESS;
@@ -215,7 +232,11 @@ static hvmm_status_t timer_guest_set_callback(timer_callback_t func, uint32_t in
     uint32_t pcpu = smp_processor_id();
 
     __guest_callback[pcpu] = func;
+#ifdef __CONFIG_TICKLESS_TIMER__
+    __guest_tickcount[pcpu] = interval_us;
+#else /* USE TICK */
     __guest_tickcount[pcpu] = interval_us / TICK_PERIOD_US;
+#endif
     /* FIXME:(igkang) hardcoded */
 
     return HVMM_STATUS_SUCCESS;
@@ -226,7 +247,11 @@ hvmm_status_t timer_set(struct timer *timer, uint32_t host)
     if (host) {
         timer_stop();
         timer_host_set_callback(timer->callback, timer->interval);
+#ifdef __CONFIG_TICKLESS_TIMER__
+        timer_set_absolute(timer->interval);
+#else /* USE TICK */
         timer_set_absolute(TICK_PERIOD_US);
+#endif
         timer_start();
     } else {
         timer_guest_set_callback(timer->callback, timer->interval);
