@@ -31,7 +31,7 @@ struct vgic_status {
 };
 
 struct virq {
-    struct gicd_regs_banked gicd_regs_banked;
+    struct gicd_banked_regs gicd_banked_regs;
     struct vgic_status vgic_status;
     struct virq_table map[MAX_NR_IRQ];
     struct lr_entry pending_irqs[MAX_PENDING_VIRQS +1];
