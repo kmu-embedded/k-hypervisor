@@ -240,10 +240,8 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_ITARGETSR(0)) >> 2;
 
             if (n < VGICD_BANKED_NUM_ITARGETSR) {
-                old_status = banked_regs->ITARGETSR[n];
                 banked_regs->ITARGETSR[n] |= readl(info->raw);
             } else {
-                old_status = regs->ITARGETSR[n];
                 regs->ITARGETSR[n] |= readl(info->raw);
             }
 
