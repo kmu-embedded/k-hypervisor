@@ -75,38 +75,38 @@ void vgic_init(struct vgic *vgic)
     printf("%s END\n", __func__);
 }
 
-void gicd_banked_regs_create(struct gicd_banked_regs *regs_banked)
+void gicd_banked_create(struct gicd_banked *gicd_banked)
 {
-    regs_banked->IPRIORITYR = malloc(sizeof(uint32_t) * NR_BANKED_IPRIORITYR);
-    regs_banked->ITARGETSR  = malloc(sizeof(uint32_t) * NR_BANKED_ITARGETSR);
-    regs_banked->CPENDSGIR  = malloc(sizeof(uint32_t) * (ITLinesNumber + 1));
-    regs_banked->SPENDSGIR  = malloc(sizeof(uint32_t) * (ITLinesNumber + 1));
+    gicd_banked->IPRIORITYR = malloc(sizeof(uint32_t) * NR_BANKED_IPRIORITYR);
+    gicd_banked->ITARGETSR  = malloc(sizeof(uint32_t) * NR_BANKED_ITARGETSR);
+    gicd_banked->CPENDSGIR  = malloc(sizeof(uint32_t) * (ITLinesNumber + 1));
+    gicd_banked->SPENDSGIR  = malloc(sizeof(uint32_t) * (ITLinesNumber + 1));
 }
 
-void gicd_banked_regs_init(struct gicd_banked_regs *gicd_banked_regs)
+void gicd_banked_init(struct gicd_banked *gicd_banked)
 {
     int i = 0;
 
-    gicd_banked_regs->IGROUPR = 0;
-    gicd_banked_regs->ISENABLER = 0;
-    gicd_banked_regs->ICENABLER = 0;
-    gicd_banked_regs->ISPENDR = 0;
-    gicd_banked_regs->ICPENDR = 0;
-    gicd_banked_regs->ISACTIVER = 0;
-    gicd_banked_regs->ICACTIVER = 0;
+    gicd_banked->IGROUPR = 0;
+    gicd_banked->ISENABLER = 0;
+    gicd_banked->ICENABLER = 0;
+    gicd_banked->ISPENDR = 0;
+    gicd_banked->ICPENDR = 0;
+    gicd_banked->ISACTIVER = 0;
+    gicd_banked->ICACTIVER = 0;
 
     for (i = 0; i < NR_BANKED_IPRIORITYR; i++) {
-        gicd_banked_regs->IPRIORITYR[i] = 0;;
+        gicd_banked->IPRIORITYR[i] = 0;
     }
 
     for (i = 0; i < NR_BANKED_ITARGETSR; i++) {
-        gicd_banked_regs->ITARGETSR[i] = 0;
+        gicd_banked->ITARGETSR[i] = 0;
     }
 
-    gicd_banked_regs->ICFGR = 0;
+    gicd_banked->ICFGR = 0;
 
     for (i = 0; i < (ITLinesNumber + 1); i++) {
-        gicd_banked_regs->SPENDSGIR[i] = 0;
-        gicd_banked_regs->CPENDSGIR[i] = 0;
+        gicd_banked->SPENDSGIR[i] = 0;
+        gicd_banked->CPENDSGIR[i] = 0;
     }
 }

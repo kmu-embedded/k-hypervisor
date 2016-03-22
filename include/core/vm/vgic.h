@@ -29,7 +29,7 @@ struct gicd {
 };
 
 // Per Core
-struct gicd_banked_regs {
+struct gicd_banked {
     uint32_t IGROUPR;
     uint32_t ISENABLER;
     uint32_t ICENABLER;
@@ -52,8 +52,8 @@ void vgic_setup();
 
 void vgic_create(struct vgic *vgic);
 void vgic_init(struct vgic *vgic);
-void gicd_banked_regs_create(struct gicd_banked_regs *regs_banked);
-void gicd_banked_regs_init(struct gicd_banked_regs *regs_banked);
+void gicd_banked_create(struct gicd_banked *regs_banked);
+void gicd_banked_init(struct gicd_banked *regs_banked);
 
 #endif /* __VGIC_H__ */
 
