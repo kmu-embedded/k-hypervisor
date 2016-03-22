@@ -58,7 +58,8 @@ static void set_clear(vcpuid_t vcpuid, uint32_t current_status, uint8_t n, uint3
 
         if (pirq != PIRQ_INVALID) {
             virq_disable(&vcpu->virq, pirq);
-            gic_disable_irq(pirq);
+            // TODO(casionwoo) : When VM try to interrupt clear, must be checked every VM clear the interrupt to really clear the irq
+//            gic_disable_irq(pirq);
         } else {
             // nop
             // printf("WARNING: Ignoring virq %d for guest %d has no mapped pirq\n", virq, vcpuid);
