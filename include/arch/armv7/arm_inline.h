@@ -13,19 +13,18 @@
 #define dmb() asm __volatile__ ("dmb" : : : "memory")
 
 #define asm_clz(x)      ({ uint32_t rval; asm volatile(\
-                                " clz %0, %1\n\t" \
-                                : "=r" (rval) : "r" (x) : ); rval; })
+                         " clz %0, %1\n\t" \
+                         : "=r" (rval) : "r" (x) : ); rval; })
 
 #define irq_enable() asm volatile("cpsie i" : : : "memory")
 #define irq_disable() asm volatile ("cpsid i" : : : "memory")
 
 #define irq_disabled() ({ unsigned long tf; \
-                asm volatile (" mrs     %0, cpsr\n\t" \
+                          asm volatile (" mrs     %0, cpsr\n\t" \
                           : "=r" (tf) \
                           :  \
                           : "memory", "cc"); \
-                (tf & CPSR_IRQ_DISABLED) ? TRUE : FALSE; \
-                })
+                          (tf & CPSR_IRQ_DISABLED) ? TRUE : FALSE; })
 
 
 #define irq_save(flags)    do { \
