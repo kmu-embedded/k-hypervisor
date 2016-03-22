@@ -51,8 +51,10 @@ uint32_t virq_to_pirq(struct virq *v, uint32_t virq);
 uint32_t pirq_to_enabled_virq(struct virq *v, uint32_t pirq);
 uint32_t virq_to_enabled_pirq(struct virq *v, uint32_t virq);
 
-void virq_enable(struct virq *v, uint32_t virq);
+void virq_enable(struct virq *v, uint32_t pirq, uint32_t virq);
 void virq_disable(struct virq *v, uint32_t virq);
+void pirq_enable(struct virq *v, uint32_t pirq, uint32_t virq);
+void pirq_disable(struct virq *v, uint32_t pirq);
 
 void virq_save(struct virq *virq);
 void virq_restore(struct virq *virq, vmid_t vmid);

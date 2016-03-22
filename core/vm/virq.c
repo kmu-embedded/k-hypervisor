@@ -5,6 +5,10 @@
 #include <string.h>
 #include "../../drivers/gic-v2.h"
 
+
+
+#include <core/scheduler.h>
+
 #define SET_VIRQMAP(map, _pirq, _virq) \
     do {                                 \
         map[_pirq].virq = _virq;   \
@@ -42,26 +46,6 @@ void vgic_init_status(struct vgic_status *status)
 
 void virq_init(struct virq *virq, vmid_t vmid)
 {
-    SET_VIRQMAP(virq->map, 1, 1);
-    SET_VIRQMAP(virq->map, 16, 16);
-    SET_VIRQMAP(virq->map, 17, 17);
-    SET_VIRQMAP(virq->map, 18, 18);
-    SET_VIRQMAP(virq->map, 19, 19);
-    SET_VIRQMAP(virq->map, 31, 31);
-    SET_VIRQMAP(virq->map, 32, 32);
-    SET_VIRQMAP(virq->map, 33, 33);
-    SET_VIRQMAP(virq->map, 34, 34);
-    SET_VIRQMAP(virq->map, 35, 35);
-    SET_VIRQMAP(virq->map, 36, 36);
-    SET_VIRQMAP(virq->map, 41, 41);
-    SET_VIRQMAP(virq->map, 42, 42);
-    SET_VIRQMAP(virq->map, 43, 43);
-    SET_VIRQMAP(virq->map, 44, 44);
-    SET_VIRQMAP(virq->map, 45, 45);
-    SET_VIRQMAP(virq->map, 46, 46);
-    SET_VIRQMAP(virq->map, 47, 47);
-    SET_VIRQMAP(virq->map, 69, 69);
-
     // virq virq->mapping for serial
     switch (vmid) {
         case 0:
@@ -116,14 +100,26 @@ uint32_t virq_to_enabled_pirq(struct virq *v, uint32_t virq)
     return pirq;
 }
 
-void virq_enable(struct virq *v, uint32_t virq)
+void virq_enable(struct virq *v, uint32_t pirq, uint32_t virq)
 {
+    v->map[virq].pirq    = pirq;
     v->map[virq].enabled = GUEST_IRQ_ENABLE;
 }
 
 void virq_disable(struct virq *v, uint32_t virq)
 {
     v->map[virq].enabled = GUEST_IRQ_DISABLE;
+}
+
+void pirq_enable(struct virq *v, uint32_t pirq, uint32_t virq)
+{
+    v->map[pirq].virq    = virq;
+    v->map[pirq].enabled = GUEST_IRQ_ENABLE;
+}
+
+void pirq_disable(struct virq *v, uint32_t pirq)
+{
+    v->map[pirq].enabled = GUEST_IRQ_DISABLE;
 }
 
 #include <arch/gic_regs.h>
