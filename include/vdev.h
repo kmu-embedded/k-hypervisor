@@ -32,7 +32,7 @@ struct arch_vdev_trigger_info {
     uint32_t il;
     enum vdev_access_size sas;
     uint32_t *value;
-    uint32_t raw;
+    uint32_t *raw;
 };
 
 typedef hvmm_status_t (*vdev_callback_t)(uint32_t wnr, uint32_t offset,

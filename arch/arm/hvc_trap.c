@@ -52,7 +52,7 @@ int do_hvc_trap(struct core_regs *regs)
 
     srt = (iss & ISS_SRT_MASK) >> ISS_SRT_SHIFT;
     info.value = &(regs->gpr[srt]);
-    info.raw = (uint32_t) &(regs->gpr[srt]);
+    info.raw = &(regs->gpr[srt]);
 
     switch (ec) {
     case TRAP_EC_ZERO_UNKNOWN:
