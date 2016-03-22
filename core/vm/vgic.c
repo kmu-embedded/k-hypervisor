@@ -75,7 +75,7 @@ void vgic_init(struct vgic *vgic)
     printf("%s END\n", __func__);
 }
 
-void gicd_regs_banked_create(struct gicd_regs_banked *regs_banked)
+void gicd_banked_regs_create(struct gicd_banked_regs *regs_banked)
 {
     regs_banked->IPRIORITYR = malloc(sizeof(uint32_t) * VGICD_BANKED_NUM_IPRIORITYR);
     regs_banked->ITARGETSR  = malloc(sizeof(uint32_t) * VGICD_BANKED_NUM_ITARGETSR);
@@ -83,30 +83,30 @@ void gicd_regs_banked_create(struct gicd_regs_banked *regs_banked)
     regs_banked->SPENDSGIR  = malloc(sizeof(uint32_t) * (ITLinesNumber + 1));
 }
 
-void gicd_regs_banked_init(struct gicd_regs_banked *gicd_regs_banked)
+void gicd_banked_regs_init(struct gicd_banked_regs *gicd_banked_regs)
 {
     int i = 0;
 
-    gicd_regs_banked->IGROUPR = 0;
-    gicd_regs_banked->ISENABLER = 0;
-    gicd_regs_banked->ICENABLER = 0;
-    gicd_regs_banked->ISPENDR = 0;
-    gicd_regs_banked->ICPENDR = 0;
-    gicd_regs_banked->ISACTIVER = 0;
-    gicd_regs_banked->ICACTIVER = 0;
+    gicd_banked_regs->IGROUPR = 0;
+    gicd_banked_regs->ISENABLER = 0;
+    gicd_banked_regs->ICENABLER = 0;
+    gicd_banked_regs->ISPENDR = 0;
+    gicd_banked_regs->ICPENDR = 0;
+    gicd_banked_regs->ISACTIVER = 0;
+    gicd_banked_regs->ICACTIVER = 0;
 
     for (i = 0; i < VGICD_BANKED_NUM_IPRIORITYR; i++) {
-        gicd_regs_banked->IPRIORITYR[i] = 0;;
+        gicd_banked_regs->IPRIORITYR[i] = 0;;
     }
 
     for (i = 0; i < VGICD_BANKED_NUM_ITARGETSR; i++) {
-        gicd_regs_banked->ITARGETSR[i] = 0;
+        gicd_banked_regs->ITARGETSR[i] = 0;
     }
 
-    gicd_regs_banked->ICFGR = 0;
+    gicd_banked_regs->ICFGR = 0;
 
     for (i = 0; i < (ITLinesNumber + 1); i++) {
-        gicd_regs_banked->SPENDSGIR[i] = 0;
-        gicd_regs_banked->CPENDSGIR[i] = 0;
+        gicd_banked_regs->SPENDSGIR[i] = 0;
+        gicd_banked_regs->CPENDSGIR[i] = 0;
     }
 }

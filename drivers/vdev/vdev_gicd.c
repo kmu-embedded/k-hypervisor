@@ -72,7 +72,7 @@ static hvmm_status_t handler_SGIR(uint32_t write, uint32_t offset, uint32_t valu
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
     vcpuid_t vcpuid = get_current_vcpuid();
     struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct gicd_regs_banked *regs_banked;
+    struct gicd_banked_regs *banked_regs;
 
     uint32_t target = 0;
     uint32_t sgi_id = value & GICD_SGIR_SGI_INT_ID_MASK;
@@ -101,8 +101,8 @@ static hvmm_status_t handler_SGIR(uint32_t write, uint32_t offset, uint32_t valu
 
         if (_target) {
             vcpu = vcpu_find(_target);
-            regs_banked = &vcpu->virq.gicd_regs_banked;
-            (regs_banked->CPENDSGIR[(sgi_id >> 2)]) = 0x1 << ((sgi_id & 0x3) * 8);
+            banked_regs = &vcpu->virq.gicd_banked_regs;
+            (banked_regs->CPENDSGIR[(sgi_id >> 2)]) = 0x1 << ((sgi_id & 0x3) * 8);
             result = virq_inject(i, sgi_id, sgi_id, 0);
         }
         target = target >> 1;
@@ -118,7 +118,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
     struct vcpu *vcpu = vcpu_find(vcpuid);
     struct vmcb *vm = vm_find(vcpu->vmid);
     struct gicd_regs *regs = &vm->vgic.gicd_regs;
-    struct gicd_regs_banked *regs_banked = &vcpu->virq.gicd_regs_banked;
+    struct gicd_banked_regs *banked_regs = &vcpu->virq.gicd_banked_regs;
 
     uint32_t old_status;
 
@@ -133,7 +133,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_IGROUPR(0)) >> 2;
 
             if (n == 0) {
-                regs_banked->IGROUPR = readl(info->raw);
+                banked_regs->IGROUPR = readl(info->raw);
             } else if ((n > 0) && (n < (ITLinesNumber + 1))) {
                 regs->IGROUPR[n] = readl(info->raw);
             }
@@ -146,9 +146,9 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_ISENABLER(0)) >> 2;
 
             if (n == 0) {
-                old_status = regs_banked->ISENABLER;
-                regs_banked->ISENABLER |= readl(info->raw);
-                set_enable(vcpuid, regs_banked->ISENABLER, n, old_status);
+                old_status = banked_regs->ISENABLER;
+                banked_regs->ISENABLER |= readl(info->raw);
+                set_enable(vcpuid, banked_regs->ISENABLER, n, old_status);
             } else {
                 old_status = regs->ISENABLER[n];
                 regs->ISENABLER[n] |= readl(info->raw);
@@ -163,9 +163,9 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_ICENABLER(0)) >> 2;
 
             if (n == 0) {
-                old_status = regs_banked->ICENABLER;
-                regs_banked->ICENABLER |= readl(info->raw);
-                set_clear(vcpuid, regs_banked->ICENABLER, n, old_status);
+                old_status = banked_regs->ICENABLER;
+                banked_regs->ICENABLER |= readl(info->raw);
+                set_clear(vcpuid, banked_regs->ICENABLER, n, old_status);
             } else {
                 old_status = regs->ICENABLER[n];
                 regs->ICENABLER[n] |= readl(info->raw);
@@ -180,7 +180,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_ISPENDR(0)) >> 2;
 
             if (n == 0) {
-                regs_banked->ISPENDR |= readl(info->raw);
+                banked_regs->ISPENDR |= readl(info->raw);
             } else {
                 regs->ISPENDR[n] |= readl(info->raw);
             }
@@ -193,7 +193,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_ICPENDR(0)) >> 2;
 
             if (n == 0) {
-                regs_banked->ICPENDR = ~(readl(info->raw));
+                banked_regs->ICPENDR = ~(readl(info->raw));
 
             } else {
                 regs->ICPENDR[n] = ~(readl(info->raw));
@@ -226,7 +226,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = ((offset - GICD_IPRIORITYR(0)) >> 2);
 
             if ( n < VGICD_BANKED_NUM_IPRIORITYR) {
-                regs_banked->IPRIORITYR[n] = readl(info->raw);
+                banked_regs->IPRIORITYR[n] = readl(info->raw);
             } else {
                 regs->IPRIORITYR[n] = readl(info->raw);
             }
@@ -240,8 +240,8 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_ITARGETSR(0)) >> 2;
 
             if (n < VGICD_BANKED_NUM_ITARGETSR) {
-                old_status = regs_banked->ITARGETSR[n];
-                regs_banked->ITARGETSR[n] |= readl(info->raw);
+                old_status = banked_regs->ITARGETSR[n];
+                banked_regs->ITARGETSR[n] |= readl(info->raw);
             } else {
                 old_status = regs->ITARGETSR[n];
                 regs->ITARGETSR[n] |= readl(info->raw);
@@ -255,7 +255,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_ICFGR(0));
 
             if (n == 1) {
-                regs_banked->ICFGR = readl(info->raw);
+                banked_regs->ICFGR = readl(info->raw);
             } else {
                 regs->ICFGR[n] = readl(info->raw);
             }
@@ -274,7 +274,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
         {
             uint32_t n = offset - GICD_CPENDSGIR(0);
 
-            regs_banked->CPENDSGIR[n] = ~(readl(info->raw));
+            banked_regs->CPENDSGIR[n] = ~(readl(info->raw));
 
             return HVMM_STATUS_SUCCESS;
         }
@@ -283,7 +283,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
         {
             uint32_t n = offset - GICD_SPENDSGIR(0);
 
-            regs_banked->SPENDSGIR[n] = ~(readl(info->raw));
+            banked_regs->SPENDSGIR[n] = ~(readl(info->raw));
 
             return HVMM_STATUS_SUCCESS;
         }
@@ -307,7 +307,7 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
     struct vcpu *vcpu = vcpu_find(vcpuid);
     struct vmcb *vm = vm_find(vcpu->vmid);
     struct gicd_regs *regs = &vm->vgic.gicd_regs;
-    struct gicd_regs_banked *regs_banked = &vcpu->virq.gicd_regs_banked;
+    struct gicd_banked_regs *banked_regs = &vcpu->virq.gicd_banked_regs;
 
     switch (offset)
     {
@@ -328,7 +328,7 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_IGROUPR(0)) >> 2;
 
             if (n == 0) {
-                writel(regs_banked->IGROUPR, info->raw);
+                writel(banked_regs->IGROUPR, info->raw);
             }
             else if ((n > 0) && (n < (ITLinesNumber + 1))) {
                 writel(regs->IGROUPR[n], info->raw);
@@ -342,7 +342,7 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_ISENABLER(0)) >> 2;
 
             if (n == 0) {
-                writel(regs_banked->ISENABLER, info->raw);
+                writel(banked_regs->ISENABLER, info->raw);
             } else {
                 writel(regs->ISENABLER[n], info->raw);
             }
@@ -355,7 +355,7 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_ICENABLER(0)) >> 2;
 
             if (n == 0) {
-                writel(regs_banked->ICENABLER, info->raw);
+                writel(banked_regs->ICENABLER, info->raw);
             } else {
                 writel(regs->ICENABLER[n], info->raw);
             }
@@ -367,7 +367,7 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_ISPENDR(0)) >> 2;
 
             if (n == 0) {
-                writel(regs_banked->ISPENDR, info->raw);
+                writel(banked_regs->ISPENDR, info->raw);
             } else {
                 writel(regs->ISPENDR[n], info->raw);
             }
@@ -379,7 +379,7 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_ICPENDR(0)) >> 2;
 
             if (n == 0) {
-                writel(regs_banked->ICPENDR, info->raw);
+                writel(banked_regs->ICPENDR, info->raw);
             } else {
                 writel(regs->ICPENDR[n], info->raw);
             }
@@ -410,7 +410,7 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = ((offset - GICD_IPRIORITYR(0)) >> 2);
 
             if ( n < VGICD_BANKED_NUM_IPRIORITYR) {
-                writel(regs_banked->IPRIORITYR[n], info->raw);
+                writel(banked_regs->IPRIORITYR[n], info->raw);
             } else {
                 writel(regs->IPRIORITYR[n], info->raw);
             }
@@ -423,7 +423,7 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_ITARGETSR(0)) >> 2;
 
             if (n < VGICD_BANKED_NUM_ITARGETSR) {
-                writel(regs_banked->ITARGETSR[n], info->raw);
+                writel(banked_regs->ITARGETSR[n], info->raw);
             } else {
                 writel(regs->ITARGETSR[n], info->raw);
             }
@@ -435,7 +435,7 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
             uint32_t n = (offset - GICD_ICFGR(0));
 
             if (n == 1) {
-                writel(regs_banked->ICFGR, info->raw);
+                writel(banked_regs->ICFGR, info->raw);
             } else {
                 writel(regs->ICFGR[n], info->raw);
             }
@@ -452,13 +452,13 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
 
         case GICD_CPENDSGIR(0) ... GICD_CPENDSGIR_LAST:
         {
-            writel(regs_banked->CPENDSGIR[offset - GICD_CPENDSGIR(0)], info->raw);
+            writel(banked_regs->CPENDSGIR[offset - GICD_CPENDSGIR(0)], info->raw);
             return HVMM_STATUS_SUCCESS;
         }
 
         case GICD_SPENDSGIR(0) ... GICD_SPENDSGIR_LAST:
         {
-            writel(regs_banked->SPENDSGIR[offset - GICD_SPENDSGIR(0)], info->raw);
+            writel(banked_regs->SPENDSGIR[offset - GICD_SPENDSGIR(0)], info->raw);
             return HVMM_STATUS_SUCCESS;
         }
 
