@@ -20,6 +20,21 @@ enum virq_state {
     VIRQ_STATE_PENDING_ACTIVE = 0x03,
 };
 
+union LR {
+    uint32_t raw;
+    struct {
+        uint32_t virtualid:10;
+        uint32_t physicalid:10;
+        uint32_t reserved:3;
+        uint32_t priority:5;
+        uint32_t state:2;
+        uint32_t grp1:1;
+        uint32_t hw:1;
+    } entry __attribute__((__packed__));
+};
+
+typedef union LR lr_entry_t;
+
 struct GICv2_HW {
     uint32_t gicd_base;
     uint32_t gicc_base;
