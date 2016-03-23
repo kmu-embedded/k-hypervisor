@@ -24,9 +24,8 @@ static struct vdev_memory_map _vdev_gicd_info = {
     .size = 4096,
 };
 
-static void set_enable(vcpuid_t vcpuid, uint32_t current_status, uint8_t n, uint32_t old_status)
+static void set_enable(struct vcpu* vcpu, uint32_t current_status, uint8_t n, uint32_t old_status)
 {
-    struct vcpu *vcpu = vcpu_find(vcpuid); // get current vcpu
     uint32_t delta = old_status ^ current_status;
 
     while (delta) {
@@ -44,9 +43,8 @@ static void set_enable(vcpuid_t vcpuid, uint32_t current_status, uint8_t n, uint
     }
 }
 
-static void set_clear(vcpuid_t vcpuid, uint32_t current_status, uint8_t n, uint32_t old_status)
+static void set_clear(struct vcpu *vcpu, uint32_t current_status, uint8_t n, uint32_t old_status)
 {
-    struct vcpu *vcpu = vcpu_find(vcpuid); // get current vcpu
     uint32_t delta = old_status ^ current_status;
 
     while (delta) {
@@ -64,11 +62,9 @@ static void set_clear(vcpuid_t vcpuid, uint32_t current_status, uint8_t n, uint3
     }
 }
 
-static hvmm_status_t handler_SGIR(uint32_t offset, uint32_t value)
+static hvmm_status_t handler_SGIR(struct vcpu *vcpu, uint32_t offset, uint32_t value)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    vcpuid_t vcpuid = get_current_vcpuid();
-    struct vcpu *vcpu = vcpu_find(vcpuid);
     struct gicd_banked *gicd_banked;
 
     uint32_t target_cpu_interfaces = 0;
@@ -115,8 +111,7 @@ static hvmm_status_t handler_SGIR(uint32_t offset, uint32_t value)
 static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
 {
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
-    vcpuid_t vcpuid = get_current_vcpuid();
-    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct vcpu *vcpu = get_current_vcpu();
     struct vmcb *vm = vm_find(vcpu->vmid);
     struct gicd *gicd = &vm->vgic.gicd;
     struct gicd_banked *gicd_banked = &vcpu->virq.gicd_banked;
@@ -149,11 +144,11 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             if (n == 0) {
                 old_status = gicd_banked->ISENABLER;
                 gicd_banked->ISENABLER |= readl(info->raw);
-                set_enable(vcpuid, gicd_banked->ISENABLER, n, old_status);
+                set_enable(vcpu, gicd_banked->ISENABLER, n, old_status);
             } else {
                 old_status = gicd->ISENABLER[n];
                 gicd->ISENABLER[n] |= readl(info->raw);
-                set_enable(vcpuid, gicd->ISENABLER[n], n, old_status);
+                set_enable(vcpu, gicd->ISENABLER[n], n, old_status);
             }
 
             return HVMM_STATUS_SUCCESS;
@@ -166,11 +161,11 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             if (n == 0) {
                 old_status = gicd_banked->ICENABLER;
                 gicd_banked->ICENABLER |= readl(info->raw);
-                set_clear(vcpuid, gicd_banked->ICENABLER, n, old_status);
+                set_clear(vcpu, gicd_banked->ICENABLER, n, old_status);
             } else {
                 old_status = gicd->ICENABLER[n];
                 gicd->ICENABLER[n] |= readl(info->raw);
-                set_clear(vcpuid, gicd->ICENABLER[n], n, old_status);
+                set_clear(vcpu, gicd->ICENABLER[n], n, old_status);
             }
 
             return HVMM_STATUS_SUCCESS;
@@ -267,7 +262,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
             return HVMM_STATUS_BAD_ACCESS;
 
         case GICD_SGIR:
-            return handler_SGIR(offset, readl(info->raw));
+            return handler_SGIR(vcpu, offset, readl(info->raw));
 
         case GICD_CPENDSGIR(0) ... GICD_CPENDSGIR_LAST:
         {
@@ -302,8 +297,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
 static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
 {
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
-    vcpuid_t vcpuid = get_current_vcpuid();
-    struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct vcpu *vcpu = get_current_vcpu();
     struct vmcb *vm = vm_find(vcpu->vmid);
     struct gicd *gicd = &vm->vgic.gicd;
     struct gicd_banked *gicd_banked = &vcpu->virq.gicd_banked;
