@@ -9,25 +9,39 @@
 #define NR_BANKED_CPENDSGIR   4
 #define NR_BANKED_SPENDSGIR   4
 
+/* We assume that ITLinesNumber has maximum number */
+#define MAX_ITLinesNumber             31
+
+#define NR_IGROUPR          (MAX_ITLinesNumber + 1)
+#define NR_ISENABLER        (MAX_ITLinesNumber + 1)
+#define NR_ICENABLER        (MAX_ITLinesNumber + 1)
+#define NR_ISPENDR          (MAX_ITLinesNumber + 1)
+#define NR_ICPENDR          (MAX_ITLinesNumber + 1)
+#define NR_ISACTIVER        (MAX_ITLinesNumber + 1)
+#define NR_ICACTIVER        (MAX_ITLinesNumber + 1)
+#define NR_IPRIORITYR       (8 * (MAX_ITLinesNumber + 1))
+#define NR_ITARGETSR        (8 * (MAX_ITLinesNumber + 1))
+#define NR_ICFGR            (2 * (MAX_ITLinesNumber + 1))
+#define NR_NSACR            32
+
 // Per VM
 struct gicd {
-    uint32_t CTLR;          /*0x000 RW*/
-    uint32_t TYPER;         /*      RO*/
-    uint32_t IIDR;          /*      RO*/
+    uint32_t CTLR;
+    uint32_t TYPER;
+    uint32_t IIDR;
 
-    uint32_t *IGROUPR;      /* 0x080 */
-    uint32_t *ISENABLER;    /* 0x100, ISENABLER/ICENABLER */
-    uint32_t *ICENABLER;    /* 0x100, ISENABLER/ICENABLER */
-    uint32_t *ISPENDR;      /* 0x200, ISPENDR/ICPENDR */
-    uint32_t *ICPENDR;      /* 0x200, ISPENDR/ICPENDR */
-    uint32_t *ISACTIVER;    /* 0x300, ISACTIVER/ICACTIVER */
-    uint32_t *ICACTIVER;    /* 0x300, ISACTIVER/ICACTIVER */
-    uint32_t *IPRIORITYR;   /* 0x400 */
-    uint32_t *ITARGETSR;    /* 0x800 [0]: RO, Otherwise, RW */
-    uint32_t *ICFGR;        /* 0xC00 */
-
-    uint32_t *NSACR;        /* 0xE00 */
-    uint32_t SGIR;          /* 0xF00 WO */
+    uint32_t IGROUPR[NR_IGROUPR];
+    uint32_t ISENABLER[NR_ISENABLER];
+    uint32_t ICENABLER[NR_ICENABLER];
+    uint32_t ISPENDR[NR_ISPENDR];
+    uint32_t ICPENDR[NR_ICPENDR];
+    uint32_t ISACTIVER[NR_ISACTIVER];
+    uint32_t ICACTIVER[NR_ICACTIVER];
+    uint32_t IPRIORITYR[NR_IPRIORITYR];
+    uint32_t ITARGETSR[NR_ITARGETSR];
+    uint32_t ICFGR[NR_ICFGR];
+    uint32_t NSACR[NR_NSACR];
+    uint32_t SGIR;
 };
 
 // Per Core
