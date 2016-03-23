@@ -125,7 +125,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
 
     switch (offset)
     {
-        case GICD_CTLR_OFFSET:
+        case GICD_CTLR:
             gicd->CTLR = readl(info->raw);
             return HVMM_STATUS_SUCCESS;
 
@@ -310,15 +310,15 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
 
     switch (offset)
     {
-        case GICD_CTLR_OFFSET:
+        case GICD_CTLR:
             writel(gicd->CTLR, info->raw);
             return HVMM_STATUS_SUCCESS;
 
-        case GICD_TYPER_OFFSET:
+        case GICD_TYPER:
             writel(gicd->TYPER, info->raw);
             return HVMM_STATUS_SUCCESS;
 
-        case GICD_IIDR_OFFSET:
+        case GICD_IIDR:
             writel(gicd->IIDR, info->raw);
             return HVMM_STATUS_SUCCESS;
 
