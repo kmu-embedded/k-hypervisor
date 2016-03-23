@@ -5,7 +5,9 @@
 #include <stdbool.h>
 #include <io.h>
 #include "../include/types.h"
-//#include <core/interrupt.h>
+
+#define HW_IRQ      1
+#define SW_IRQ      0
 
 #define GIC_NUM_MAX_IRQS                1024
 #define GIC_INT_PRIORITY_DEFAULT        0xa0
@@ -18,14 +20,28 @@ enum virq_state {
     VIRQ_STATE_PENDING_ACTIVE = 0x03,
 };
 
+union LR {
+    uint32_t raw;
+    struct {
+        uint32_t virtualid:10;
+        uint32_t physicalid:10;
+        uint32_t reserved:3;
+        uint32_t priority:5;
+        uint32_t state:2;
+        uint32_t grp1:1;
+        uint32_t hw:1;
+    } entry __attribute__((__packed__));
+};
+
+typedef union LR lr_entry_t;
+
 struct GICv2_HW {
-    uint32_t gicd;
-    uint32_t gicc;
-    uint32_t gich;
+    uint32_t gicd_base;
+    uint32_t gicc_base;
+    uint32_t gich_base;
     uint32_t ITLinesNumber;
     uint32_t CPUNumber;
     uint32_t num_lr;
-    uint32_t valid_lr_mask;
 } GICv2;
 
 #define IRQ_LEVEL_TRIGGERED     0
@@ -56,14 +72,14 @@ void update_lr(uint32_t offset, uint32_t value);
 uint32_t gic_inject_virq(uint32_t hw, enum virq_state state, uint32_t priority, uint32_t physicalid, uint32_t virtualid, uint32_t slot);
 
 #include <io.h>
-#define GICD_READ(offset)           __readl(GICv2.gicd + offset)
-#define GICD_WRITE(offset, value)   __writel(value, GICv2.gicd + offset)
+#define GICD_READ(offset)           __readl(GICv2.gicd_base + offset)
+#define GICD_WRITE(offset, value)   __writel(value, GICv2.gicd_base + offset)
 
-#define GICC_READ(offset)           __readl(GICv2.gicc + offset)
-#define GICC_WRITE(offset, value)   __writel(value, GICv2.gicc + offset)
+#define GICC_READ(offset)           __readl(GICv2.gicc_base + offset)
+#define GICC_WRITE(offset, value)   __writel(value, GICv2.gicc_base + offset)
 
-#define GICH_READ(offset)           __readl(GICv2.gich + offset)
-#define GICH_WRITE(offset, value)   __writel(value, GICv2.gich + offset)
+#define GICH_READ(offset)           __readl(GICv2.gich_base + offset)
+#define GICH_WRITE(offset, value)   __writel(value, GICv2.gich_base + offset)
 
 #endif
 
