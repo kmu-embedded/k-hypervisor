@@ -27,7 +27,6 @@ struct GICv2_HW {
     uint32_t ITLinesNumber;
     uint32_t CPUNumber;
     uint32_t num_lr;
-    uint32_t valid_lr_mask;
 } GICv2;
 
 #define IRQ_LEVEL_TRIGGERED     0

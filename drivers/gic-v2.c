@@ -171,18 +171,6 @@ static hvmm_status_t gic_maintenance_irq_enable()
     return HVMM_STATUS_SUCCESS;
 }
 
-
-static uint64_t gic_valid_lr_mask(uint32_t num_lr)
-{
-    uint64_t mask_valid_lr = 0xFFFFFFFFFFFFFFFFULL;
-    if (num_lr < VGIC_MAX_LISTREGISTERS) {
-        mask_valid_lr >>= num_lr;
-        mask_valid_lr <<= num_lr;
-        mask_valid_lr = ~mask_valid_lr;
-    }
-    return mask_valid_lr;
-}
-
 void gic_init(void)
 {
     int i;
@@ -252,7 +240,6 @@ void gich_init()
 {
     // Initialization GICH
     GICv2.num_lr = (GICH_READ(GICH_VTR) & GICH_VTR_LISTREGS_MASK) + 1;
-    GICv2.valid_lr_mask = gic_valid_lr_mask(GICv2.num_lr);
     gic_maintenance_irq_enable();
 
     gich_enable();
