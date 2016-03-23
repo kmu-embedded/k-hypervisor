@@ -12,9 +12,9 @@
 #define NS_PL1_PTIMER_IRQ   30
 
 enum generic_timer_type {
-    GENERIC_TIMER_HYP,      /* IRQ 26 */
-    GENERIC_TIMER_VIR,      /* IRQ 27 */
-    GENERIC_TIMER_NSP,      /* IRQ 30 */
+    GENERIC_TIMER_HYP,      /* IRQ 26 PL2 Hyp */
+    GENERIC_TIMER_VIR,      /* IRQ 27 Virtual */
+    GENERIC_TIMER_NSP,      /* IRQ 30 Non-secure Physical */
     GENERIC_TIMER_NUM_TYPES
 };
 
@@ -179,6 +179,9 @@ static hvmm_status_t generic_timer_set_tval(enum generic_timer_type timer_type,
     } else if (timer_type == GENERIC_TIMER_VIR) {
         generic_timer_reg_write(GENERIC_TIMER_REG_VIRT_TVAL, tval);
         result = HVMM_STATUS_SUCCESS;
+    } else if (timer_type == GENERIC_TIMER_NSP) {
+        generic_timer_reg_write(GENERIC_TIMER_REG_PHYS_TVAL, tval);
+        result = HVMM_STATUS_SUCCESS;
     }
 
     return result;
@@ -194,6 +197,9 @@ static hvmm_status_t generic_timer_set_cval(enum generic_timer_type timer_type,
         result = HVMM_STATUS_SUCCESS;
     } else if (timer_type == GENERIC_TIMER_VIR) {
         generic_timer_reg_write64(GENERIC_TIMER_REG_VIRT_CVAL, cval);
+        result = HVMM_STATUS_SUCCESS;
+    } else if (timer_type == GENERIC_TIMER_NSP) {
+        generic_timer_reg_write64(GENERIC_TIMER_REG_PHYS_CVAL, cval);
         result = HVMM_STATUS_SUCCESS;
     }
 
@@ -224,9 +230,13 @@ static hvmm_status_t generic_timer_enable(enum generic_timer_type timer_type)
         ctrl &= ~GENERIC_TIMER_CTRL_IMASK;
         generic_timer_reg_write(GENERIC_TIMER_REG_VIRT_CTRL, ctrl);
         result = HVMM_STATUS_SUCCESS;
+    } else if (timer_type == GENERIC_TIMER_NSP) {
+        ctrl = generic_timer_reg_read(GENERIC_TIMER_REG_PHYS_CTRL);
+        ctrl |= GENERIC_TIMER_CTRL_ENABLE;
+        ctrl &= ~GENERIC_TIMER_CTRL_IMASK;
+        generic_timer_reg_write(GENERIC_TIMER_REG_PHYS_CTRL, ctrl);
+        result = HVMM_STATUS_SUCCESS;
     }
-
-    /* TODO:(igkang) add routine for NSP(Non-Secure Physical - PL1) timer */
 
     return result;
 }
@@ -251,9 +261,13 @@ static hvmm_status_t generic_timer_disable(enum generic_timer_type timer_type)
         ctrl |= GENERIC_TIMER_CTRL_IMASK;
         generic_timer_reg_write(GENERIC_TIMER_REG_VIRT_CTRL, ctrl);
         result = HVMM_STATUS_SUCCESS;
+    } else if (timer_type == GENERIC_TIMER_NSP) {
+        ctrl = generic_timer_reg_read(GENERIC_TIMER_REG_PHYS_CTRL);
+        ctrl &= ~GENERIC_TIMER_CTRL_ENABLE;
+        ctrl |= GENERIC_TIMER_CTRL_IMASK;
+        generic_timer_reg_write(GENERIC_TIMER_REG_PHYS_CTRL, ctrl);
+        result = HVMM_STATUS_SUCCESS;
     }
-
-    /* TODO:(igkang) add routine for NSP(Non-Secure Physical - PL1) timer */
 
     return result;
 }
