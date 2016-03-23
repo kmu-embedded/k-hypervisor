@@ -3,19 +3,12 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
+#include "../../drivers/gic-v2.h"
 #include "../../types.h"
 #include <core/vm/vgic.h>
 
 #define MAX_PENDING_VIRQS    128
 #define MAX_NR_IRQ           1024
-
-struct lr_entry {
-    uint32_t pirq;
-    uint32_t virq;
-    uint8_t hw;
-    uint8_t valid;
-};
 
 struct virq_table {
     uint32_t enabled;
@@ -34,7 +27,7 @@ struct virq {
     struct gicd_banked gicd_banked;
     struct vgic_status vgic_status;
     struct virq_table map[MAX_NR_IRQ];
-    struct lr_entry pending_irqs[MAX_PENDING_VIRQS +1];
+    lr_entry_t pending_irqs[MAX_PENDING_VIRQS +1];
 };
 
 #define GUEST_IRQ_ENABLE 1
