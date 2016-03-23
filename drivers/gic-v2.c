@@ -1,11 +1,11 @@
 #include "gic-v2.h"
-#include <arch/gic_regs.h>  // Define OFFSETS
-#include <arch/armv7.h>     // get_periphbase()
+#include <arch/gic_regs.h>
+#include <arch/armv7.h>
 #include <io.h>
 #include <core/vm/vcpu.h>
 #include <core/scheduler.h>
 #include <stdio.h>
-#include "../include/asm/macro.h"        // SECTION(x)
+#include "../include/asm/macro.h"
 
 #include "irq-chip.h"
 
@@ -43,46 +43,6 @@ static uint32_t gic_find_free_slot(void)
     }
 
     return slot;
-}
-
-static uint32_t gic_inject_virq_hw(enum virq_state state, uint32_t priority, uint32_t pirq, uint32_t virq)
-{
-    uint32_t slot = VGIC_SLOT_NOTFOUND;
-
-    slot = gic_find_free_slot();
-    if (slot != VGIC_SLOT_NOTFOUND)
-        slot = gic_inject_virq(HW_IRQ, state, priority, pirq, virq, slot);
-
-    return slot;
-}
-
-static uint32_t gic_inject_virq_sw(enum virq_state state, uint32_t priority, uint32_t cpuid, uint8_t eoi, uint32_t virq)
-{
-    uint32_t slot = VGIC_SLOT_NOTFOUND;
-    uint32_t physicalid = 0;
-
-    slot = gic_find_free_slot();
-    if (slot == VGIC_SLOT_NOTFOUND)
-        return slot;
-
-    physicalid |= (eoi << 9); //eoi
-    physicalid |= cpuid;
-
-    slot = gic_inject_virq(SW_IRQ, state, priority, physicalid, virq, slot);
-
-    return slot;
-}
-
-static struct lr_entry set_virq_entry(uint32_t pirq, uint32_t virq, uint8_t hw)
-{
-    struct lr_entry entry;
-
-    entry.pirq  = pirq;
-    entry.virq  = virq;
-    entry.hw    = hw;
-    entry.valid = 1;
-
-    return entry;
 }
 
 static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
@@ -309,63 +269,57 @@ hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid)
 {
     int i;
     struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct lr_entry *entries = vcpu->virq.pending_irqs;
+    lr_entry_t *entries = vcpu->virq.pending_irqs;
 
     for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
-        if (entries[i].valid) {
-            uint32_t slot;
-            if (entries[i].hw) {
-                slot = gic_inject_virq_hw(VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
-                                            entries[i].pirq, entries[i].virq);
-            } else {
-                slot = gic_inject_virq_sw(VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
-                                        smp_processor_id(), 1, entries[i].virq);
-            }
+        if (entries[i].raw) {
+            uint32_t slot = gic_find_free_slot();
 
             if (slot == VGIC_SLOT_NOTFOUND) {
                 break;
             }
 
-            entries[i].valid = 0;
+            gic_inject_virq(entries[i], slot);
+            entries[i].raw = 0;
         }
     }
 
     return HVMM_STATUS_SUCCESS;
 }
 
-uint32_t gic_inject_virq(uint32_t hw, enum virq_state state, uint32_t priority, uint32_t physicalid, uint32_t virtualid, uint32_t slot)
+void gic_inject_virq(lr_entry_t lr_entry, uint32_t slot)
 {
-    lr_entry_t lr_entry = set_lr_entry(hw, state, priority, physicalid, virtualid);
     GICH_WRITE(GICH_LR(slot), (uint32_t) lr_entry.raw);
-
-    return slot;
 }
 
 bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
-    int i;
-    struct vcpu *vcpu = vcpu_find(vcpuid);
-    struct lr_entry *q = vcpu->virq.pending_irqs;
+    if (!hw) {
+        pirq |= vcpuid;
+        pirq |= (EOI_ENABLE << 9);
+    }
+
+    lr_entry_t lr_entry = set_lr_entry(hw, VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
+                                        pirq, virq);
 
     if (vcpuid == get_current_vcpuid()) {
-        uint32_t slot;
-
-        if (hw)
-            slot = gic_inject_virq_hw(VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT, pirq, virq);
-        else
-            slot = gic_inject_virq_sw(VIRQ_STATE_PENDING, HIGHEST_PRIORITY, vcpuid, EOI_ENABLE, virq);
+        uint32_t slot = gic_find_free_slot();
 
         if (slot == VGIC_SLOT_NOTFOUND) {
             return false;
         } else {
+            gic_inject_virq(lr_entry, slot);
             return true;
         }
 
     } else {
-        // FIXME(casionwoo) : When Queue data structure is implemented, bellow would be more simpler than now
+        int i;
+        struct vcpu *vcpu = vcpu_find(vcpuid);
+        lr_entry_t *q = vcpu->virq.pending_irqs;
+
         for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
-            if (q[i].valid == 0) {
-                q[i] = set_virq_entry(pirq, virq, hw);
+            if (!q[i].raw) {
+                q[i] = lr_entry;
                 return true;
             }
         }
