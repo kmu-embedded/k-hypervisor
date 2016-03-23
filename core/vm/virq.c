@@ -3,7 +3,6 @@
 #include <config.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../../drivers/gic-v2.h"
 
 #define SET_VIRQMAP(map, _pirq, _virq) \
     do {                                 \
@@ -22,7 +21,7 @@ void virq_create(struct virq *virq)
     }
 
     for (i = 0; i < MAX_PENDING_VIRQS; i++) {
-        virq->pending_irqs[i].valid = 0;
+        virq->pending_irqs[i].raw = 0;
     }
 }
 
