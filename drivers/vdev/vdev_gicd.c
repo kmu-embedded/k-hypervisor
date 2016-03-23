@@ -112,7 +112,7 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
 {
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
     struct vcpu *vcpu = get_current_vcpu();
-    struct vmcb *vm = vm_find(vcpu->vmid);
+    struct vmcb *vm = get_current_vm();
     struct gicd *gicd = &vm->vgic.gicd;
     struct gicd_banked *gicd_banked = &vcpu->virq.gicd_banked;
 
@@ -298,7 +298,7 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
 {
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
     struct vcpu *vcpu = get_current_vcpu();
-    struct vmcb *vm = vm_find(vcpu->vmid);
+    struct vmcb *vm = get_current_vm();
     struct gicd *gicd = &vm->vgic.gicd;
     struct gicd_banked *gicd_banked = &vcpu->virq.gicd_banked;
 
