@@ -98,7 +98,7 @@ struct vcpu *vcpu_find(vcpuid_t vcpuid)
             return vcpu;
         }
     }
-    return vcpu;
+    return NULL;
 }
 
 void print_all_vcpu()

@@ -90,7 +90,7 @@ hvmm_status_t sched_perform_switch(struct core_regs *regs)
         next = __next_vcpuid[pcpu];
         __current_vcpuid[pcpu] = __next_vcpuid[pcpu];
         __next_vcpuid[pcpu] = VCPUID_INVALID;
-        __current_vcpu[pcpu] = vcpu_find(__next_vcpuid[pcpu]);
+        __current_vcpu[pcpu] = vcpu_find(__current_vcpuid[pcpu]);
 
         do_context_switch(previous, next, param_regs);
         /* MUST NOT COME BACK HERE IF regs == NULL */
