@@ -9,7 +9,7 @@ void vgic_init(struct vgic *vgic)
 
     memset(vgic, 0, sizeof(struct vgic));
 
-    gicd->TYPER = GICD_READ(GICD_TYPER_OFFSET);
-    gicd->IIDR  = GICD_READ(GICD_IIDR_OFFSET);
+    gicd->TYPER = GICD_READ(GICD_TYPER);
+    gicd->IIDR  = GICD_READ(GICD_IIDR);
 }
 

@@ -206,19 +206,19 @@ void gic_init(void)
      * We usually use the name of variables in lower case, but
      * here, using upper case is special case for readability.
      */
-    uint32_t gicd_typer = GICD_READ(GICD_TYPER_OFFSET);
+    uint32_t gicd_typer = GICD_READ(GICD_TYPER);
     /* maximum number of irq lines: 32(N+1). */
     GICv2.ITLinesNumber = 32 * ((gicd_typer & GICD_NR_IT_LINES_MASK) + 1);
     GICv2.CPUNumber = 1 + (gicd_typer & GICD_NR_CPUS_MASK);
     printf("Number of IRQs: %d\n", GICv2.ITLinesNumber);
     printf("Number of CPU interfaces: %d\n", GICv2.CPUNumber);
 
-    GICC_WRITE(GICC_CTLR_OFFSET, GICC_CTL_ENABLE | GICC_CTL_EOI);
-    GICD_WRITE(GICD_CTLR_OFFSET, 0x1);
+    GICC_WRITE(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
+    GICD_WRITE(GICD_CTLR, 0x1);
 
     /* No Priority Masking: the lowest value as the threshold : 255 */
     // We set 0xff but, real value is 0xf8
-    GICC_WRITE(GICC_PMR_OFFSET, 0xff);
+    GICC_WRITE(GICC_PMR, 0xff);
 
     // Set interrupt configuration do not work.
     for (i = 32; i < GICv2.ITLinesNumber; i += 16) {
@@ -296,7 +296,7 @@ void gic_set_sgi(const uint32_t target, uint32_t sgi)
 
 uint32_t gic_get_irq_number(void)
 {
-    return (GICC_READ(GICC_IAR_OFFSET) & GICC_IAR_MASK);
+    return (GICC_READ(GICC_IAR) & GICC_IAR_MASK);
 }
 
 void gic_enable_irq(uint32_t irq)
@@ -311,12 +311,12 @@ void gic_disable_irq(uint32_t irq)
 
 void gic_completion_irq(uint32_t irq)
 {
-    GICC_WRITE(GICC_EOIR_OFFSET, irq);
+    GICC_WRITE(GICC_EOIR, irq);
 }
 
 void gic_deactivate_irq(uint32_t irq)
 {
-    GICC_WRITE(GICC_DIR_OFFSET, irq);
+    GICC_WRITE(GICC_DIR, irq);
 }
 
 void gich_disable(void)
