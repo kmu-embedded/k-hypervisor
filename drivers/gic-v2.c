@@ -11,9 +11,6 @@
 
 #include <arch/irq.h>
 
-#define HW_IRQ      1
-#define SW_IRQ      0
-
 #define EOI_ENABLE      1
 #define EOI_DISABLE     0
 
@@ -23,21 +20,6 @@
 #define VGIC_MAINTENANCE_INTERRUPT_IRQ  25
 #define VGIC_MAX_LISTREGISTERS          VGIC_NUM_MAX_SLOTS
 #define VGIC_SLOT_NOTFOUND              (0xFFFFFFFF)
-
-union LR {
-    uint32_t raw;
-    struct {
-        uint32_t virtualid:10;
-        uint32_t physicalid:10;
-        uint32_t reserved:3;
-        uint32_t priority:5;
-        uint32_t state:2;
-        uint32_t grp1:1;
-        uint32_t hw:1;
-    } entry __attribute__((__packed__));
-};
-
-typedef union LR lr_entry_t;
 
 static uint32_t gic_find_free_slot(void)
 {
@@ -174,18 +156,6 @@ static hvmm_status_t gic_maintenance_irq_enable()
     return HVMM_STATUS_SUCCESS;
 }
 
-
-static uint64_t gic_valid_lr_mask(uint32_t num_lr)
-{
-    uint64_t mask_valid_lr = 0xFFFFFFFFFFFFFFFFULL;
-    if (num_lr < VGIC_MAX_LISTREGISTERS) {
-        mask_valid_lr >>= num_lr;
-        mask_valid_lr <<= num_lr;
-        mask_valid_lr = ~mask_valid_lr;
-    }
-    return mask_valid_lr;
-}
-
 void gic_init(void)
 {
     int i;
@@ -201,27 +171,27 @@ void gic_init(void)
         // Currently, we set the base address of gic to 0x2C000000, it is for RTSM.
         periphbase = 0x2C000000;
     }
-    GICv2.gicd = periphbase + GICD_OFFSET;
-    GICv2.gicc = periphbase + GICC_OFFSET;
-    GICv2.gich = periphbase + GICH_OFFSET;
+    GICv2.gicd_base = periphbase + GICD_OFFSET;
+    GICv2.gicc_base = periphbase + GICC_OFFSET;
+    GICv2.gich_base = periphbase + GICH_OFFSET;
 
     /*
      * We usually use the name of variables in lower case, but
      * here, using upper case is special case for readability.
      */
-    uint32_t gicd_typer = GICD_READ(GICD_TYPER_OFFSET);
+    uint32_t gicd_typer = GICD_READ(GICD_TYPER);
     /* maximum number of irq lines: 32(N+1). */
     GICv2.ITLinesNumber = 32 * ((gicd_typer & GICD_NR_IT_LINES_MASK) + 1);
     GICv2.CPUNumber = 1 + (gicd_typer & GICD_NR_CPUS_MASK);
     printf("Number of IRQs: %d\n", GICv2.ITLinesNumber);
     printf("Number of CPU interfaces: %d\n", GICv2.CPUNumber);
 
-    GICC_WRITE(GICC_CTLR_OFFSET, GICC_CTL_ENABLE | GICC_CTL_EOI);
-    GICD_WRITE(GICD_CTLR_OFFSET, 0x1);
+    GICC_WRITE(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
+    GICD_WRITE(GICD_CTLR, 0x1);
 
     /* No Priority Masking: the lowest value as the threshold : 255 */
     // We set 0xff but, real value is 0xf8
-    GICC_WRITE(GICC_PMR_OFFSET, 0xff);
+    GICC_WRITE(GICC_PMR, 0xff);
 
     // Set interrupt configuration do not work.
     for (i = 32; i < GICv2.ITLinesNumber; i += 16) {
@@ -255,7 +225,6 @@ void gich_init()
 {
     // Initialization GICH
     GICv2.num_lr = (GICH_READ(GICH_VTR) & GICH_VTR_LISTREGS_MASK) + 1;
-    GICv2.valid_lr_mask = gic_valid_lr_mask(GICv2.num_lr);
     gic_maintenance_irq_enable();
 
     gich_enable();
@@ -299,7 +268,7 @@ void gic_set_sgi(const uint32_t target, uint32_t sgi)
 
 uint32_t gic_get_irq_number(void)
 {
-    return (GICC_READ(GICC_IAR_OFFSET) & GICC_IAR_MASK);
+    return (GICC_READ(GICC_IAR) & GICC_IAR_MASK);
 }
 
 void gic_enable_irq(uint32_t irq)
@@ -314,12 +283,12 @@ void gic_disable_irq(uint32_t irq)
 
 void gic_completion_irq(uint32_t irq)
 {
-    GICC_WRITE(GICC_EOIR_OFFSET, irq);
+    GICC_WRITE(GICC_EOIR, irq);
 }
 
 void gic_deactivate_irq(uint32_t irq)
 {
-    GICC_WRITE(GICC_DIR_OFFSET, irq);
+    GICC_WRITE(GICC_DIR, irq);
 }
 
 void gich_disable(void)
@@ -384,8 +353,7 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
         if (hw)
             slot = gic_inject_virq_hw(VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT, pirq, virq);
         else
-            slot = gic_inject_virq_sw(VIRQ_STATE_PENDING, HIGHEST_PRIORITY,
-                                    vcpuid, EOI_ENABLE, virq);
+            slot = gic_inject_virq_sw(VIRQ_STATE_PENDING, HIGHEST_PRIORITY, vcpuid, EOI_ENABLE, virq);
 
         if (slot == VGIC_SLOT_NOTFOUND) {
             return false;
