@@ -4,11 +4,10 @@
 #include <core/scheduler.h>
 #include <config.h>
 #include <stdio.h>
-#include <core/vm/virq.h>
 #include <core/vm.h>
 #include <core/vm/vcpu.h>
 #include "../../drivers/gic-v2.h"
-#include <core/vm/vgic.h>
+#include <core/vm/virq.h>
 
 #define READ    0
 #define WRITE   1
@@ -31,12 +30,12 @@ static void set_enable(struct vcpu* vcpu, uint32_t current_status, uint8_t n, ui
     while (delta) {
         uint32_t offset = firstbit32(delta);
         uint32_t virq = offset + (32 * n);
-        uint32_t pirq = virq_to_pirq(&vcpu->virq, virq);
+        uint32_t pirq = virq_to_pirq(vcpu, virq);
 
         pirq = (pirq == PIRQ_INVALID ? virq : pirq);
 
-        virq_enable(&vcpu->virq, pirq, virq);
-        pirq_enable(&vcpu->virq, pirq, virq);
+        virq_enable(vcpu, pirq, virq);
+        pirq_enable(vcpu, pirq, virq);
         gic_enable_irq(pirq);
 
         delta &= ~(1 << offset);
@@ -51,10 +50,10 @@ static void set_clear(struct vcpu *vcpu, uint32_t current_status, uint8_t n, uin
 
         uint32_t offset = firstbit32(delta);
         uint32_t virq = offset + (32 * n);
-        uint32_t pirq = virq_to_pirq(&vcpu->virq, virq);
+        uint32_t pirq = virq_to_pirq(vcpu, virq);
 
-        virq_disable(&vcpu->virq, virq);
-        pirq_disable(&vcpu->virq, pirq);
+        virq_disable(vcpu, virq);
+        pirq_disable(vcpu, pirq);
         // TODO(casionwoo) : When VM try to interrupt clear, must be checked every VM clear the interrupt. Then clear the irq
         // gic_disable_irq(pirq);
 
@@ -65,7 +64,7 @@ static void set_clear(struct vcpu *vcpu, uint32_t current_status, uint8_t n, uin
 static hvmm_status_t handler_SGIR(struct vcpu *vcpu, uint32_t offset, uint32_t value)
 {
     hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    struct gicd_banked *gicd_banked;
+    struct banked_virq *gicd_banked;
 
     uint32_t target_cpu_interfaces = 0;
     uint32_t sgi_id = value & GICD_SGIR_SGI_INT_ID_MASK;
@@ -96,7 +95,7 @@ static hvmm_status_t handler_SGIR(struct vcpu *vcpu, uint32_t offset, uint32_t v
             uint32_t n = sgi_id >> 2;
             uint32_t reg_offset = sgi_id % 4;
 
-            gicd_banked = &vcpu->virq.gicd_banked;
+            gicd_banked = &vcpu->banked_virq;
             gicd_banked->SPENDSGIR[n] = 0x1 << ((reg_offset * 8) + target_cpu_interface);
             result = virq_inject(target_vcpuid, sgi_id, sgi_id, SW_IRQ);
         }
@@ -113,8 +112,8 @@ static int32_t vdev_gicd_write_handler(struct arch_vdev_trigger_info *info)
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
     struct vcpu *vcpu = get_current_vcpu();
     struct vmcb *vm = get_current_vm();
-    struct gicd *gicd = &vm->vgic.gicd;
-    struct gicd_banked *gicd_banked = &vcpu->virq.gicd_banked;
+    struct virq *gicd = &vm->virq;
+    struct banked_virq *gicd_banked = &vcpu->banked_virq;
 
     uint32_t old_status;
 
@@ -299,8 +298,8 @@ static int32_t vdev_gicd_read_handler(struct arch_vdev_trigger_info *info)
     uint32_t offset = info->fipa - _vdev_gicd_info.base;
     struct vcpu *vcpu = get_current_vcpu();
     struct vmcb *vm = get_current_vm();
-    struct gicd *gicd = &vm->vgic.gicd;
-    struct gicd_banked *gicd_banked = &vcpu->virq.gicd_banked;
+    struct virq *gicd = &vm->virq;
+    struct banked_virq *gicd_banked = &vcpu->banked_virq;
 
     switch (offset)
     {

@@ -22,6 +22,7 @@ void vcpu_setup()
 struct vcpu *vcpu_create()
 {
     struct vcpu *vcpu = NULL;
+    int i;
 
     vcpu = malloc(sizeof(struct vcpu));
     if (vcpu == VCPU_CREATE_FAILED) {
@@ -34,20 +35,47 @@ struct vcpu *vcpu_create()
 
     // TODO(casionwoo) : Initialize running_time and actual_running_time after time_module created
     // TODO(casionwoo) : Initialize period and deadline after menuconfig module created
-
-    virq_create(&vcpu->virq);
+    // FIXME(casionwoo): vcpu->map[] will be removed.
+    for (i = 0; i < MAX_NR_IRQ; i++) {
+        vcpu->map[i].enabled = GUEST_IRQ_DISABLE;
+        vcpu->map[i].virq = VIRQ_INVALID;
+        vcpu->map[i].pirq = PIRQ_INVALID;
+    }
 
     LIST_ADDTAIL(&vcpu->head, &vcpu_list);
 
     return vcpu;
 }
 
+#define SET_VIRQMAP(map, _pirq, _virq) \
+    do {                                 \
+        map[_pirq].virq = _virq;   \
+        map[_virq].pirq = _pirq;   \
+    } while (0)
+
+
 vcpu_state_t vcpu_init(struct vcpu *vcpu)
 {
-    arch_regs_init(&vcpu->arch_regs);
+    arch_regs_init(&vcpu->regs);
 
     // TODO(casionwoo): make it neat.
-    virq_init(&vcpu->virq, vcpu->vmid);
+    switch (vcpu->vmid) {
+        case 0:
+            SET_VIRQMAP(vcpu->map, 38, 37);
+            break;
+
+        case 1:
+            SET_VIRQMAP(vcpu->map, 39, 37);
+            break;
+
+        case 2:
+            SET_VIRQMAP(vcpu->map, 40, 37);
+            break;
+
+        default:
+            debug_print("virq_create error!\n");
+            break;
+    }
 
     // TODO(casionwoo) : Check the return value after scheduler status value defined
     sched_vcpu_register(vcpu->vcpuid);
@@ -73,21 +101,43 @@ vcpu_state_t vcpu_delete(struct vcpu *vcpu)
     // TODO(casionwoo) : Detach vcpu id from scheduler
 
     LIST_DEL(&vcpu->head);
+
     free(vcpu);
 
     return VCPU_UNDEFINED;
 }
 
+
+#include <irq-chip.h>
+#include <arch/gic_regs.h>
+
 void vcpu_save(struct vcpu *vcpu, struct core_regs *regs)
 {
-    arch_regs_save(&vcpu->arch_regs, regs);
-    virq_save(&vcpu->virq);
+    arch_regs_save(&vcpu->regs, regs);
+
+	int i;
+	for (i = 0; i < GICv2.num_lr; i++) {
+		vcpu->lr[i] = GICH_READ(GICH_LR(i));
+	}
+
+	vcpu->vmcr = GICH_READ(GICH_VMCR);
+
+    virq_hw->disable();
 }
 
 void vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
 {
-    arch_regs_restore(&vcpu->arch_regs, regs);
-    virq_restore(&vcpu->virq, vcpu->vmid);
+    arch_regs_restore(&vcpu->regs, regs);
+
+	int i;
+	for (i = 0; i < GICv2.num_lr; i++) {
+		GICH_WRITE(GICH_LR(i), vcpu->lr[i]);
+	}
+
+	GICH_WRITE(GICH_VMCR, vcpu->vmcr);
+
+    virq_hw->forward_pending_irq(vcpu->vmid);
+    virq_hw->enable();
 }
 
 struct vcpu *vcpu_find(vcpuid_t vcpuid)
