@@ -58,7 +58,7 @@ static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
         uint32_t lr;
 
         vcpu = vcpu_find(vcpuid);
-        map = vcpu->virq.map;
+        map = vcpu->map;
 
         while (eisr) {
             slot = (31 - asm_clz(eisr));
@@ -269,7 +269,7 @@ hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid)
 {
     int i;
     struct vcpu *vcpu = vcpu_find(vcpuid);
-    lr_entry_t *entries = vcpu->virq.pending_irqs;
+    lr_entry_t *entries = vcpu->pending_irqs;
 
     for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
         if (entries[i].raw) {
@@ -315,7 +315,7 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
     } else {
         int i;
         struct vcpu *vcpu = vcpu_find(vcpuid);
-        lr_entry_t *q = vcpu->virq.pending_irqs;
+        lr_entry_t *q = vcpu->pending_irqs;
 
         for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
             if (!q[i].raw) {

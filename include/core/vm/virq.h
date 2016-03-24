@@ -1,56 +1,68 @@
 #ifndef __VIRQ_H__
 #define __VIRQ_H__
 
-#include <stdint.h>
-#include <stdbool.h>
-#include "../../drivers/gic-v2.h"
-#include "../../types.h"
-#include <core/vm/vgic.h>
+#include <stdlib.h>
 
-#define MAX_PENDING_VIRQS    128
-#define MAX_NR_IRQ           1024
+/* Banked Registers Size */
+#define NR_BANKED_IPRIORITYR  8
+#define NR_BANKED_ITARGETSR   8
+#define NR_BANKED_CPENDSGIR   4
+#define NR_BANKED_SPENDSGIR   4
 
-struct virq_table {
-    uint32_t enabled;
-    uint32_t virq;
-    uint32_t pirq;
-};
+/* We assume that ITLinesNumber has maximum number */
+#define MAX_ITLinesNumber             31
 
-struct vgic_status {
-    uint32_t lr[64];        /**< List Registers */
-    uint32_t hcr;           /**< Hypervisor Control Register */
-    uint32_t apr;           /**< Active Priorities Register */
-    uint32_t vmcr;          /**< Virtual Machine Control Register */
-};
+#define NR_IGROUPR          (MAX_ITLinesNumber + 1)
+#define NR_ISENABLER        (MAX_ITLinesNumber + 1)
+#define NR_ICENABLER        (MAX_ITLinesNumber + 1)
+#define NR_ISPENDR          (MAX_ITLinesNumber + 1)
+#define NR_ICPENDR          (MAX_ITLinesNumber + 1)
+#define NR_ISACTIVER        (MAX_ITLinesNumber + 1)
+#define NR_ICACTIVER        (MAX_ITLinesNumber + 1)
+#define NR_IPRIORITYR       (8 * (MAX_ITLinesNumber + 1))
+#define NR_ITARGETSR        (8 * (MAX_ITLinesNumber + 1))
+#define NR_ICFGR            (2 * (MAX_ITLinesNumber + 1))
+#define NR_NSACR            32
 
+// Per VM
 struct virq {
-    struct gicd_banked gicd_banked;
-    struct vgic_status vgic_status;
-    struct virq_table map[MAX_NR_IRQ];
-    lr_entry_t pending_irqs[MAX_PENDING_VIRQS +1];
+    uint32_t CTLR;
+    uint32_t TYPER;
+    uint32_t IIDR;
+
+    uint32_t IGROUPR[NR_IGROUPR];
+    uint32_t ISENABLER[NR_ISENABLER];
+    uint32_t ICENABLER[NR_ICENABLER];
+    uint32_t ISPENDR[NR_ISPENDR];
+    uint32_t ICPENDR[NR_ICPENDR];
+    uint32_t ISACTIVER[NR_ISACTIVER];
+    uint32_t ICACTIVER[NR_ICACTIVER];
+    uint32_t IPRIORITYR[NR_IPRIORITYR];
+    uint32_t ITARGETSR[NR_ITARGETSR];
+    uint32_t ICFGR[NR_ICFGR];
+    uint32_t NSACR[NR_NSACR];
+    uint32_t SGIR;
 };
 
-#define GUEST_IRQ_ENABLE 1
-#define GUEST_IRQ_DISABLE 0
+// Per Core
+struct banked_virq {
+    uint32_t IGROUPR;
+    uint32_t ISENABLER;
+    uint32_t ICENABLER;
+    uint32_t ISPENDR;
+    uint32_t ICPENDR;
+    uint32_t ISACTIVER;
+    uint32_t ICACTIVER;
+    uint32_t IPRIORITYR[NR_BANKED_IPRIORITYR];
+    uint32_t ITARGETSR[NR_BANKED_ITARGETSR];
+    uint32_t ICFGR;
+    uint32_t CPENDSGIR[NR_BANKED_CPENDSGIR];
+    uint32_t SPENDSGIR[NR_BANKED_SPENDSGIR];
 
-#define INJECT_SW 0
-#define INJECT_HW 1
 
-void virq_create(struct virq *virq);
-void virq_init(struct virq *virq, vmid_t vmid);
+};
 
-uint32_t virq_to_pirq(struct virq *v, uint32_t virq);
-uint32_t pirq_to_enabled_virq(struct virq *v, uint32_t pirq);
-uint32_t virq_to_enabled_pirq(struct virq *v, uint32_t virq);
+void vgicd_init(struct virq *gicd);
 
-void virq_enable(struct virq *v, uint32_t pirq, uint32_t virq);
-void virq_disable(struct virq *v, uint32_t virq);
-void pirq_enable(struct virq *v, uint32_t pirq, uint32_t virq);
-void pirq_disable(struct virq *v, uint32_t pirq);
+#endif /* __VGIC_H__ */
 
-void virq_save(struct virq *virq);
-void virq_restore(struct virq *virq, vmid_t vmid);
-
-bool is_guest_irq(uint32_t irq);
-
-#endif /* __VIRQ_H__ */

@@ -54,15 +54,17 @@ vmid_t vm_create(uint8_t num_vcpus)
     return vm->vmid;
 }
 
+#include "../../drivers/gic-v2.h"
+#include <arch/gic_regs.h>
+
 vmcb_state_t vm_init(vmid_t vmid)
 {
-    int i;
     struct vmcb *vm = vm_find(vmid);
-
     if (vm == NO_VM_FOUND) {
         return VM_NOT_EXISTED;
     }
 
+    int i;
     for (i = 0; i < vm->num_vcpus; i++) {
         if (vcpu_init(vm->vcpu[i]) != VCPU_REGISTERED) {
             return vm->state;
@@ -72,20 +74,21 @@ vmcb_state_t vm_init(vmid_t vmid)
     vm->state = HALTED;
 
     vmem_init(&vm->vmem);
-    vgic_init(&vm->vgic);
+
+    vm->virq.TYPER = GICD_READ(GICD_TYPER);
+    vm->virq.IIDR  = GICD_READ(GICD_IIDR);
 
     return vm->state;
 }
 
 vmcb_state_t vm_start(vmid_t vmid)
 {
-    int i;
     struct vmcb *vm = vm_find(vmid);
-
     if (vm == NO_VM_FOUND) {
         return VM_NOT_EXISTED;
     }
 
+    int i;
     for (i = 0; i < vm->num_vcpus; i++) {
         if (vcpu_start(vm->vcpu[i]) != VCPU_ACTIVATED) {
             return vm->state;

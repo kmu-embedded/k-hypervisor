@@ -209,6 +209,7 @@ int sched_vcpu_unregister(vcpuid_t vcpuid)
  * @param vcpuid ID of vCPU
  * @return
  */
+// TODO(igkang): add return type to vcpu's state
 int sched_vcpu_attach(vcpuid_t vcpuid)
 {
     uint32_t pcpu = smp_processor_id();

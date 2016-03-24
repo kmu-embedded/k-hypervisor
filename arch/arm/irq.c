@@ -2,6 +2,7 @@
 #include <arch/irq.h>
 #include <config.h>
 #include <arch/armv7.h>
+#include <core/vm/vcpu.h>
 
 #include <irq-chip.h>
 #include "../../include/types.h"
@@ -11,7 +12,6 @@
 
 static irq_handler_t irq_handlers[MAX_IRQS];
 
-#include <core/vm/virq.h>
 #include <arch_regs.h>
 
 hvmm_status_t do_irq(struct core_regs *regs)
