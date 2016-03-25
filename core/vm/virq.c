@@ -164,7 +164,7 @@ bool is_guest_irq(uint32_t irq)
         if (virq == VIRQ_INVALID) {
             continue;
         }
-        result = virq_hw->forward_irq(vcpu->vcpuid, virq, irq, INJECT_HW);
+        result = virq_hw->forward_irq(vcpu, virq, irq, INJECT_HW);
     }
 
     return result;

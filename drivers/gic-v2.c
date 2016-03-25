@@ -292,7 +292,7 @@ void gic_inject_virq(lr_entry_t lr_entry, uint32_t slot)
     GICH_WRITE(GICH_LR(slot), (uint32_t) lr_entry.raw);
 }
 
-bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
+bool virq_inject(struct vcpu *vcpu, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
     if (!hw) {
         pirq |= vcpuid;
@@ -302,7 +302,7 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
     lr_entry_t lr_entry = set_lr_entry(hw, VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
                                         pirq, virq);
 
-    if (vcpuid == get_current_vcpuid()) {
+    if (vcpu->vcpuid == get_current_vcpud()) {
         uint32_t slot = gic_find_free_slot();
 
         if (slot == VGIC_SLOT_NOTFOUND) {

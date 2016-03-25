@@ -22,7 +22,7 @@ struct virq_chip {
     void (* enable) (void);
     void (* disable) (void);
     hvmm_status_t (* forward_pending_irq) (vcpuid_t vcpuid);
-    bool (* forward_irq) (vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw);
+    bool (* forward_irq) (struct vcpu *vcpu, uint32_t virq, uint32_t pirq, uint8_t hw);
 };
 
 struct irq_chip *irq_hw;
