@@ -111,26 +111,6 @@ struct gicd {
     uint32_t spendsgir0[NR_VCPUS][NR_BANKED_SPENDSGIR];
 };
 
-#if 0
-// Per Core
-struct banked_gicd {
-    uint32_t igroupr0[NR_VCPUS];
-    uint32_t isenabler0[NR_VCPUS];
-    uint32_t icenabler0[NR_VCPUS];
-    uint32_t ispendr0[NR_VCPUS];
-
-
-    uint32_t icpendr0[NR_VCPUS];
-    uint32_t isactiver0[NR_VCPUS];
-    uint32_t icactiver0[NR_VCPUS];
-    uint32_t ipriorityr0[NR_VCPUS][NR_BANKED_IPRIORITYR];
-    uint32_t itargetsr0[NR_VCPUS][NR_BANKED_ITARGETSR];
-    uint32_t icfgr0[NR_VCPUS];
-    uint32_t cpendsgir0[NR_VCPUS][NR_BANKED_CPENDSGIR];
-    uint32_t spendsgir0[NR_VCPUS][NR_BANKED_SPENDSGIR];
-};
-#endif
-
 #define IRQ_LEVEL_TRIGGERED     0
 #define IRQ_EDGE_TRIGGERED      1
 

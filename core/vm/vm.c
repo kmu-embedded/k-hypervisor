@@ -19,6 +19,7 @@ void vm_setup()
     atags_setup();
 }
 
+extern  struct vdev_module vdev_gicd;
 vmid_t vm_create(uint8_t num_vcpus)
 {
     int i;
@@ -50,6 +51,16 @@ vmid_t vm_create(uint8_t num_vcpus)
 
     vmem_create(&vm->vmem, vm->vmid);
 
+    for (i=0; i < 1; i++) {
+
+    	struct vdev_instance *new = malloc(sizeof(struct vdev_instance));
+    	new->module = &vdev_gicd;
+    	new->module->create(&new->pdata);
+    	new->id = vm->vmid;
+    	vm->vdevs = new;
+    }
+
+
     LIST_ADDTAIL(&vm->head, &vm_list);
 
     return vm->vmid;
@@ -76,8 +87,9 @@ vmcb_state_t vm_init(vmid_t vmid)
 
     vmem_init(&vm->vmem);
 
-    vm->vgicd.typer = GICD_READ(GICD_TYPER);
-    vm->vgicd.iidr  = GICD_READ(GICD_IIDR);
+    struct gicd *vgicd = (struct gicd *) vm->vdevs->pdata;
+    vgicd->typer = GICD_READ(GICD_TYPER);
+    vgicd->iidr  = GICD_READ(GICD_IIDR);
 
     return vm->state;
 }
