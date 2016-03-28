@@ -80,7 +80,7 @@ vmid_t vm_create(uint8_t num_vcpus)
     return vm->vmid;
 }
 
-#include "../../drivers/gic-v2.h"
+#include <drivers/gic-v2.h>
 #include <arch/gic_regs.h>
 
 vmcb_state_t vm_init(vmid_t vmid)

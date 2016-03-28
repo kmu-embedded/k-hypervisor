@@ -4,7 +4,7 @@
 #include <lib/list.h>
 #include <types.h>
 #include <arch_regs.h>
-#include "../../../drivers/gic-v2.h"
+#include <drivers/gic-v2.h>
 
 #define VCPU_CREATE_FAILED    NULL
 #define VCPU_NOT_EXISTED      NULL

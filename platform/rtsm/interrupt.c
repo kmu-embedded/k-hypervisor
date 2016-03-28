@@ -1,5 +1,5 @@
 #include <irq-chip.h>
-#include "../../drivers/gic-v2.h"
+#include <drivers/gic-v2.h>
 
 struct irq_chip gic_v2 = {
     .init = gic_init,
