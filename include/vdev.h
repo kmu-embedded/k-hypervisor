@@ -30,8 +30,8 @@ struct vdev_module {
     const char *name;
 
     int32_t (* create) (void **pdata);
-    int32_t (* read) (uint32_t offset);
-    int32_t (* write) (uint32_t offset, uint32_t *addr);
+    int32_t (* read) (void *pdata, uint32_t offset);
+    int32_t (* write) (void *pdata, uint32_t offset, uint32_t *addr);
 };
 
 struct vdev_instance {

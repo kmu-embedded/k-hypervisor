@@ -54,19 +54,26 @@ vmid_t vm_create(uint8_t num_vcpus)
 
     vmem_create(&vm->vmem, vm->vmid);
 
-    // FIXME: it will be called in vdev.c
+    vm->vdevs = malloc(sizeof(struct vdev_instance));
+	memset(vm->vdevs, 0, sizeof(struct vdev_instance));
 
+    LIST_INITHEAD(&vm->vdevs->head);
+
+    // FIXME(casionwoo): it will be called in vdev.c
 	struct vdev_instance *new_gicd = malloc(sizeof(struct vdev_instance));
+	memset(new_gicd, 0, sizeof(struct vdev_instance));
 	new_gicd->module = &vdev_gicd;
 	new_gicd->module->create(&new_gicd->pdata);
 	new_gicd->owner = vm->vmid;
-	vm->vdevs = new_gicd;
+    LIST_ADDTAIL(&new_gicd->head, &vm->vdevs->head);
 
 	struct vdev_instance *new_sample = malloc(sizeof(struct vdev_instance));
+	memset(new_sample, 0, sizeof(struct vdev_instance));
 	new_sample->module = &vdev_sample;
 	new_sample->module->create(&new_sample->pdata);
 	new_sample->owner = vm->vmid;
-	vm->vdevs = new_sample;
+    LIST_ADDTAIL(&new_sample->head, &vm->vdevs->head);
+
 
     LIST_ADDTAIL(&vm->head, &vm_list);
 
@@ -94,9 +101,14 @@ vmcb_state_t vm_init(vmid_t vmid)
 
     vmem_init(&vm->vmem);
 
-    struct vgicd *vgicd = (struct vgicd *) vm->vdevs->pdata;
-    vgicd->typer = GICD_READ(GICD_TYPER);
-    vgicd->iidr  = GICD_READ(GICD_IIDR);
+	struct vdev_instance *instance = NULL;
+    list_for_each_entry(struct vdev_instance, instance, &vm->vdevs->head, head) {
+    	if(instance->module->base == (CFG_GIC_BASE_PA | GICD_OFFSET)) {
+    		struct vgicd *vgicd = (struct vgicd *) instance->pdata;
+    		vgicd->typer = GICD_READ(GICD_TYPER);
+    		vgicd->iidr  = GICD_READ(GICD_IIDR);
+    	}
+    }
 
     return vm->state;
 }

@@ -35,8 +35,6 @@ hvmm_status_t vdev_register(struct vdev_module *module)
 struct vdev_module *vdev_find(uint32_t fipa)
 {
     int32_t i;
-    struct vmcb *vm = get_current_vm();
-
 	for (i = 0; i < nr_vdevs; i++) {
 		struct vdev_module *vdev = vdev_modules[i];
 		if (vdev->base == fipa) {

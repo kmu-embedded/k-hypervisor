@@ -27,6 +27,8 @@ static void _trap_dump_bregs(void)
     printf(" - irq: spsr:%x sp:%x lr:%x\n", spsr, sp, lr);
 }
 
+#include <core/vm.h>
+#include <core/scheduler.h>
 int do_hvc_trap(struct core_regs *regs)
 {
     hsr_t hsr;
@@ -59,24 +61,28 @@ int do_hvc_trap(struct core_regs *regs)
 		uint32_t fipa = read_hpfar() << 8;
 		struct vdev_module *vdev = vdev_find(fipa);
 
-		if (vdev == NULL) {
-			printf("[hvc] cann't search vdev number\n\r");
-			goto trap_error;
+		struct vmcb *vm = get_current_vm();
+		struct vdev_instance *instance = NULL;
+		list_for_each_entry(struct vdev_instance, instance, &vm->vdevs->head, head)
+		{
+			if (vdev->base == instance->module->base) {
+				fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
+				uint32_t offset = fipa - instance->module->base;
+
+				if (hsr.entry.iss & ISS_WNR) {
+					if (instance->module->write(instance->pdata, offset, &(regs->gpr[iss.dabt.srt])) < 0) {
+						goto trap_error;
+					}
+				} else {
+					regs->gpr[iss.dabt.srt] = instance->module->read(instance->pdata, offset);
+					if (regs->gpr[iss.dabt.srt] < 0) {
+						goto trap_error;
+					}
+				}
+
+
+			}
 		}
-
-		uint32_t offset = (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
-		fipa |= offset;
-
-	    if (hsr.entry.iss & ISS_WNR) {
-	        if (vdev->write(fipa, &(regs->gpr[iss.dabt.srt])) < 0) {
-	            goto trap_error;
-	        }
-	    } else {
-	    	regs->gpr[iss.dabt.srt] = vdev->read(fipa);
-	        if (regs->gpr[iss.dabt.srt] < 0) {
-	            goto trap_error;
-	        }
-	    }
 	}
 		break;
 	default:
