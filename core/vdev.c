@@ -5,8 +5,9 @@
 
 #define MAX_VDEV    256
 
-struct vdev_module *vdev_modules[MAX_VDEV];
 static int nr_vdevs;
+
+struct vdev_module *vdev_modules[MAX_VDEV];
 
 hvmm_status_t vdev_register(struct vdev_module *module)
 {
@@ -29,9 +30,12 @@ hvmm_status_t vdev_register(struct vdev_module *module)
     return result;
 }
 
-struct vdev_module *get_vdev(uint32_t fipa)
+#include <core/vm.h>
+
+struct vdev_module *vdev_find(uint32_t fipa)
 {
     int32_t i;
+    struct vmcb *vm = get_current_vm();
 
 	for (i = 0; i < nr_vdevs; i++) {
 		struct vdev_module *vdev = vdev_modules[i];
@@ -55,7 +59,7 @@ hvmm_status_t SECTION(".init.vdev") vdev_init(void)
     uint32_t cpu = smp_processor_id();
 
     if (!cpu) {
-        for (fn = __vdev_module_middle_end; fn < __vdev_module_low_end; fn++) {
+        for (fn = __vdev_module_start; fn < __vdev_module_end; fn++) {
             if (vdev_module_initcall(*fn)) {
                 debug_print("vdev : low initial call error\n");
                 return HVMM_STATUS_UNKNOWN_ERROR;

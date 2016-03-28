@@ -53,10 +53,11 @@ int do_hvc_trap(struct core_regs *regs)
     case TRAP_EC_NON_ZERO_PREFETCH_ABORT_FROM_HYP_MODE:
 	case TRAP_EC_NON_ZERO_DATA_ABORT_FROM_HYP_MODE:
 	case TRAP_EC_NON_ZERO_HVC:
-	case TRAP_EC_NON_ZERO_DATA_ABORT_FROM_OTHER_MODE: {
+	case TRAP_EC_NON_ZERO_DATA_ABORT_FROM_OTHER_MODE:
+	{
 
 		uint32_t fipa = read_hpfar() << 8;
-		struct vdev_module *vdev = get_vdev(fipa);
+		struct vdev_module *vdev = vdev_find(fipa);
 
 		if (vdev == NULL) {
 			printf("[hvc] cann't search vdev number\n\r");

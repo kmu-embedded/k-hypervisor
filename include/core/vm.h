@@ -22,6 +22,7 @@ typedef enum vmcb_state {
 struct vmcb {
     vmid_t vmid;
     char name[SIZE_OF_NAME];
+
     uint8_t num_vcpus;
 
     struct vcpu **vcpu;
