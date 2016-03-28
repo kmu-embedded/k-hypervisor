@@ -7,19 +7,26 @@
 #include <core/vm.h>
 #include <core/vm/vcpu.h>
 #include "../../drivers/gic-v2.h"
-#include <core/vm/virq.h>
 
-#define READ    0
-#define WRITE   1
+int32_t vgicd_read_handler(uint32_t offset);
+int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr);
 
-struct vdev_module vgicd;
+struct vdev_module vdev_gicd = {
+		.name = "vGICD",
+		.base = CFG_GIC_BASE_PA | GICD_OFFSET,
+		.size = 4096,
+		.read = vgicd_read_handler,
+		.write = vgicd_write_handler,
+};
 
 #define firstbit32(word) (31 - asm_clz(word))
 
 static uint32_t ITLinesNumber = 0;
 
-static void set_enable(struct vcpu* vcpu, uint32_t current_status, uint8_t n, uint32_t old_status) {
+static void set_enable(uint32_t current_status, uint8_t n, uint32_t old_status) {
 	uint32_t delta = old_status ^ current_status;
+
+    struct vcpu *vcpu = get_current_vcpu();
 
 	while (delta) {
 		uint32_t offset = firstbit32(delta);
@@ -36,8 +43,9 @@ static void set_enable(struct vcpu* vcpu, uint32_t current_status, uint8_t n, ui
 	}
 }
 
-static void set_clear(struct vcpu *vcpu, uint32_t current_status, uint8_t n, uint32_t old_status) {
+static void set_clear(uint32_t current_status, uint8_t n, uint32_t old_status) {
 	uint32_t delta = old_status ^ current_status;
+    struct vcpu *vcpu = get_current_vcpu();
 
 	while (delta) {
 
@@ -54,33 +62,36 @@ static void set_clear(struct vcpu *vcpu, uint32_t current_status, uint8_t n, uin
 	}
 }
 
-static hvmm_status_t handler_SGIR(struct vcpu *vcpu, uint32_t offset, uint32_t value) {
+static hvmm_status_t handler_SGIR(uint32_t offset, uint32_t value)
+{
 	hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-	struct banked_virq *gicd_banked;
+	struct gicd *gicd;
+	struct vcpu *vcpu = get_current_vcpu();
+	struct vmcb *vm = get_current_vm();
 
 	uint32_t target_cpu_interfaces = 0;
 	uint32_t sgi_id = value & GICD_SGIR_SGI_INT_ID_MASK;
+
 	uint8_t target_vcpuid;
 
 	switch (value & GICD_SGIR_TARGET_LIST_FILTER_MASK) {
 	case GICD_SGIR_TARGET_LIST:
-		target_cpu_interfaces = ((value & GICD_SGIR_CPU_TARGET_LIST_MASK)
-				>> GICD_SGIR_CPU_TARGET_LIST_OFFSET);
+		target_cpu_interfaces = ((value & GICD_SGIR_CPU_TARGET_LIST_MASK) >> GICD_SGIR_CPU_TARGET_LIST_OFFSET);
 		break;
 
 	case GICD_SGIR_TARGET_OTHER:
-		target_cpu_interfaces = ~(0x1 << vcpu->vmid);
+		target_cpu_interfaces = ~(0x1 << vcpu->id);
 		break;
 
 	case GICD_SGIR_TARGET_SELF:
-		target_cpu_interfaces = (0x1 << vcpu->vmid);
+		target_cpu_interfaces = (0x1 << vcpu->id);
 		break;
 
 	default:
 		return result;
 	}
 
-	// FIXME(casionwoo) : This part should have some policy for interprocessor communication
+	// FIXME(casionwoo) : This part should have some policy for inter-processor communication
 	while (target_cpu_interfaces) {
 		uint8_t target_cpu_interface = target_cpu_interfaces & 0x01;
 
@@ -88,9 +99,8 @@ static hvmm_status_t handler_SGIR(struct vcpu *vcpu, uint32_t offset, uint32_t v
 			uint32_t n = sgi_id >> 2;
 			uint32_t reg_offset = sgi_id % 4;
 
-			gicd_banked = &vcpu->banked_virq;
-			gicd_banked->SPENDSGIR[n] = 0x1
-					<< ((reg_offset * 8) + target_cpu_interface);
+			gicd = &vm->vgicd;
+			gicd->spendsgir0[target_vcpuid][n] = 0x1 << ((reg_offset * 8) + target_cpu_interface);
 			result = virq_inject(target_vcpuid, sgi_id, sgi_id, SW_IRQ);
 		}
 
@@ -101,28 +111,29 @@ static hvmm_status_t handler_SGIR(struct vcpu *vcpu, uint32_t offset, uint32_t v
 	return result;
 }
 
-int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr) {
-	offset -= vgicd.base;
-	struct vcpu *vcpu = get_current_vcpu();
+int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr)
+{
+	offset -= vdev_gicd.base;
+
 	struct vmcb *vm = get_current_vm();
-	struct virq *gicd = &vm->virq;
-	struct banked_virq *gicd_banked = &vcpu->banked_virq;
+	struct gicd *gicd = &vm->vgicd;
+
+    uint8_t vcpuid = get_current_vcpuidx();
 
 	uint32_t old_status;
-	//printf("VDEV WRITE: offset %x\n", offset);
 
 	switch (offset) {
 	case GICD_CTLR:
-		gicd->CTLR = readl(addr);
+		gicd->ctlr = readl(addr);
 		break;
 
 	case GICD_IGROUPR(0) ... GICD_IGROUPR_LAST: {
 		uint32_t n = (offset - GICD_IGROUPR(0)) >> 2;
 
 		if (n == 0) {
-			gicd_banked->IGROUPR = readl(addr);
+			gicd->igroupr0[vcpuid] = readl(addr);
 		} else if ((n > 0) && (n < (ITLinesNumber + 1))) {
-			gicd->IGROUPR[n] = readl(addr);
+			gicd->igroupr[n] = readl(addr);
 		}
 	}
 		break;
@@ -131,13 +142,13 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr) {
 		uint32_t n = (offset - GICD_ISENABLER(0)) >> 2;
 
 		if (n == 0) {
-			old_status = gicd_banked->ISENABLER;
-			gicd_banked->ISENABLER |= readl(addr);
-			set_enable(vcpu, gicd_banked->ISENABLER, n, old_status);
+			old_status = gicd->isenabler0[vcpuid];
+			gicd->isenabler0[vcpuid] |= readl(addr);
+			set_enable(gicd->isenabler0[vcpuid], n, old_status);
 		} else {
-			old_status = gicd->ISENABLER[n];
-			gicd->ISENABLER[n] |= readl(addr);
-			set_enable(vcpu, gicd->ISENABLER[n], n, old_status);
+			old_status = gicd->isenabler[n];
+			gicd->isenabler[n] |= readl(addr);
+			set_enable(gicd->isenabler[n], n, old_status);
 		}
 	}
 		break;
@@ -146,13 +157,13 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr) {
 		uint32_t n = (offset - GICD_ICENABLER(0)) >> 2;
 
 		if (n == 0) {
-			old_status = gicd_banked->ICENABLER;
-			gicd_banked->ICENABLER |= readl(addr);
-			set_clear(vcpu, gicd_banked->ICENABLER, n, old_status);
+			old_status = gicd->icenabler0[vcpuid];
+			gicd->icenabler0[vcpuid] |= readl(addr);
+			set_clear(gicd->icenabler0[vcpuid], n, old_status);
 		} else {
-			old_status = gicd->ICENABLER[n];
-			gicd->ICENABLER[n] |= readl(addr);
-			set_clear(vcpu, gicd->ICENABLER[n], n, old_status);
+			old_status = gicd->icenabler[n];
+			gicd->icenabler[n] |= readl(addr);
+			set_clear(gicd->icenabler[n], n, old_status);
 		}
 	}
 		break;
@@ -161,9 +172,9 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr) {
 		uint32_t n = (offset - GICD_ISPENDR(0)) >> 2;
 
 		if (n == 0) {
-			gicd_banked->ISPENDR |= readl(addr);
+			gicd->ispendr0[vcpuid] |= readl(addr);
 		} else {
-			gicd->ISPENDR[n] |= readl(addr);
+			gicd->ispendr[n] |= readl(addr);
 		}
 	}
 		break;
@@ -172,10 +183,10 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr) {
 		uint32_t n = (offset - GICD_ICPENDR(0)) >> 2;
 
 		if (n == 0) {
-			gicd_banked->ICPENDR = ~(readl(addr));
+			gicd->icpendr0[vcpuid] = ~(readl(addr));
 
 		} else {
-			gicd->ICPENDR[n] = ~(readl(addr));
+			gicd->icpendr[n] = ~(readl(addr));
 		}
 	}
 		break;
@@ -200,9 +211,9 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr) {
 		uint32_t n = ((offset - GICD_IPRIORITYR(0)) >> 2);
 
 		if (n < NR_BANKED_IPRIORITYR) {
-			gicd_banked->IPRIORITYR[n] = readl(addr);
+			gicd->ipriorityr0[vcpuid][n] = readl(addr);
 		} else {
-			gicd->IPRIORITYR[n] = readl(addr);
+			gicd->ipriorityr[n] = readl(addr);
 		}
 	}
 		break;
@@ -211,9 +222,9 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr) {
 		uint32_t n = (offset - GICD_ITARGETSR(0)) >> 2;
 
 		if (n < NR_BANKED_ITARGETSR) {
-			gicd_banked->ITARGETSR[n] |= readl(addr);
+			gicd->itargetsr0[vcpuid][n] |= readl(addr);
 		} else {
-			gicd->ITARGETSR[n] |= readl(addr);
+			gicd->itargetsr[n] |= readl(addr);
 		}
 	}
 		break;
@@ -222,9 +233,9 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr) {
 		uint32_t n = (offset - GICD_ICFGR(0));
 
 		if (n == 1) {
-			gicd_banked->ICFGR = readl(addr);
+			gicd->icfgr0[vcpuid] = readl(addr);
 		} else {
-			gicd->ICFGR[n] = readl(addr);
+			gicd->icfgr[n] = readl(addr);
 		}
 	}
 		break;
@@ -234,13 +245,13 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr) {
 		break;
 
 	case GICD_SGIR:
-		handler_SGIR(vcpu, offset, readl(addr));
+		handler_SGIR(offset, readl(addr));
 		break;
 
 	case GICD_CPENDSGIR(0) ... GICD_CPENDSGIR_LAST: {
 
 		uint32_t n = offset - GICD_CPENDSGIR(0);
-		gicd_banked->CPENDSGIR[n] = ~(readl(addr));
+		gicd->cpendsgir0[vcpuid][n] = ~(readl(addr));
 
 	}
 		break;
@@ -248,7 +259,7 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr) {
 	case GICD_SPENDSGIR(0) ... GICD_SPENDSGIR_LAST: {
 
 		uint32_t n = offset - GICD_SPENDSGIR(0);
-		gicd_banked->SPENDSGIR[n] = ~(readl(addr));
+		gicd->spendsgir0[vcpuid][n] = ~(readl(addr));
 	}
 	break;
 
@@ -263,33 +274,36 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr) {
 	return 0;
 }
 
-int32_t vgicd_read_handler(uint32_t offset, uint32_t *addr) {
-	offset -= vgicd.base;
-	struct vcpu *vcpu = get_current_vcpu();
+int32_t vgicd_read_handler(uint32_t offset)
+{
+
+	offset -= vdev_gicd.base;
+
 	struct vmcb *vm = get_current_vm();
-	struct virq *gicd = &vm->virq;
-	struct banked_virq *gicd_banked = &vcpu->banked_virq;
+	struct gicd *gicd = &vm->vgicd;
+
+    uint8_t vcpuid = get_current_vcpuidx();
 
 	switch (offset) {
 	case GICD_CTLR:
-		return gicd->CTLR;
+		return gicd->ctlr;
 		break;
 
 	case GICD_TYPER:
-		return gicd->TYPER;
+		return gicd->typer;
 		break;
 
 	case GICD_IIDR:
-		return gicd->IIDR;
+		return gicd->iidr;
 		break;
 
 	case GICD_IGROUPR(0) ... GICD_IGROUPR_LAST: {
 		uint32_t n = (offset - GICD_IGROUPR(0)) >> 2;
 
 		if (n == 0) {
-			return gicd_banked->IGROUPR;
+			return gicd->igroupr0[vcpuid];
 		} else if ((n > 0) && (n < (ITLinesNumber + 1))) {
-			return gicd->IGROUPR[n];
+			return gicd->igroupr[n];
 		}
 	}
 	break;
@@ -298,9 +312,9 @@ int32_t vgicd_read_handler(uint32_t offset, uint32_t *addr) {
 		uint32_t n = (offset - GICD_ISENABLER(0)) >> 2;
 
 		if (n == 0) {
-			return gicd_banked->ISENABLER;
+			return gicd->isenabler0[vcpuid];
 		} else {
-			return gicd->ISENABLER[n];
+			return gicd->isenabler[n];
 		}
 	}
 	break;
@@ -309,9 +323,9 @@ int32_t vgicd_read_handler(uint32_t offset, uint32_t *addr) {
 		uint32_t n = (offset - GICD_ICENABLER(0)) >> 2;
 
 		if (n == 0) {
-			return gicd_banked->ICENABLER;
+			return gicd->icenabler0[vcpuid];
 		} else {
-			return gicd->ICENABLER[n];
+			return gicd->icenabler[n];
 		}
 	}
 	break;
@@ -320,9 +334,9 @@ int32_t vgicd_read_handler(uint32_t offset, uint32_t *addr) {
 		uint32_t n = (offset - GICD_ISPENDR(0)) >> 2;
 
 		if (n == 0) {
-			return gicd_banked->ISPENDR;
+			return gicd->ispendr0[vcpuid];
 		} else {
-			return gicd->ISPENDR[n];
+			return gicd->ispendr[n];
 		}
 	}
 	break;
@@ -331,9 +345,9 @@ int32_t vgicd_read_handler(uint32_t offset, uint32_t *addr) {
 		uint32_t n = (offset - GICD_ICPENDR(0)) >> 2;
 
 		if (n == 0) {
-			return gicd_banked->ICPENDR;
+			return gicd->icpendr0[vcpuid];
 		} else {
-			return gicd->ICPENDR[n];
+			return gicd->icpendr[n];
 		}
 	}
 	break;
@@ -353,9 +367,9 @@ int32_t vgicd_read_handler(uint32_t offset, uint32_t *addr) {
 	case GICD_IPRIORITYR(0) ... GICD_IPRIORITYR_LAST: {
 		uint32_t n = ((offset - GICD_IPRIORITYR(0)) >> 2);
 		if (n < NR_BANKED_IPRIORITYR) {
-			return gicd_banked->IPRIORITYR[n];
+			return gicd->ipriorityr0[vcpuid][n];
 		} else {
-			return gicd->IPRIORITYR[n];
+			return gicd->ipriorityr[n];
 
 		}
 	}
@@ -364,9 +378,9 @@ int32_t vgicd_read_handler(uint32_t offset, uint32_t *addr) {
 	case GICD_ITARGETSR(0) ... GICD_ITARGETSR_LAST: {
 		uint32_t n = (offset - GICD_ITARGETSR(0)) >> 2;
 		if (n < NR_BANKED_ITARGETSR) {
-			return gicd_banked->ITARGETSR[n];
+			return gicd->itargetsr0[vcpuid][n];
 		} else {
-			return gicd->ITARGETSR[n];
+			return gicd->itargetsr[n];
 		}
 	}
 	break;
@@ -374,9 +388,9 @@ int32_t vgicd_read_handler(uint32_t offset, uint32_t *addr) {
 	case GICD_ICFGR(0) ... GICD_ICFGR_LAST: {
 		uint32_t n = (offset - GICD_ICFGR(0));
 		if (n == 1) {
-			return gicd_banked->ICFGR;
+			return gicd->icfgr0[vcpuid];
 		} else {
-			return gicd->ICFGR[n];
+			return gicd->icfgr[n];
 		}
 	}
 	break;
@@ -384,20 +398,22 @@ int32_t vgicd_read_handler(uint32_t offset, uint32_t *addr) {
 	case GICD_NSACR(0) ... GICD_NSACR_LAST:
 		printf("vgicd: GICD_NSACR read not implemented\n", __func__);
 		return HVMM_STATUS_BAD_ACCESS;
+
 		break;
 
 	case GICD_SGIR:
 		printf("GICD_SGIR is WO\n");
 		return 0;
+
 		break;
 
 	case GICD_CPENDSGIR(0) ... GICD_CPENDSGIR_LAST: {
-		return gicd_banked->CPENDSGIR[offset - GICD_CPENDSGIR(0)];
+		return gicd->cpendsgir0[vcpuid][offset - GICD_CPENDSGIR(0)];
 	}
 	break;
 
 	case GICD_SPENDSGIR(0) ... GICD_SPENDSGIR_LAST: {
-		return gicd_banked->SPENDSGIR[offset - GICD_SPENDSGIR(0)];
+		return gicd->spendsgir0[vcpuid][offset - GICD_SPENDSGIR(0)];
 	}
 	break;
 
@@ -414,25 +430,17 @@ int32_t vgicd_read_handler(uint32_t offset, uint32_t *addr) {
 	return 0;
 }
 
-struct vdev_module vgicd = {
-		.name = "vGICD",
-		.base = CFG_GIC_BASE_PA | GICD_OFFSET,
-		.size = 4096,
-		.read = vgicd_read_handler,
-		.write = vgicd_write_handler,
-};
-
 hvmm_status_t vdev_gicd_init() {
 	hvmm_status_t result = HVMM_STATUS_BUSY;
 
-	result = vdev_register(&vgicd);
+	result = vdev_register(&vdev_gicd);
 	ITLinesNumber = GICv2.ITLinesNumber;
 
 	if (result == HVMM_STATUS_SUCCESS) {
-		printf("vdev registered:'%s'\n", vgicd.name);
+		printf("vdev registered:'%s'\n", vdev_gicd.name);
 	} else {
 		printf("%s: Unable to register vdev:'%s' code=%x\n", __func__,
-				vgicd.name, result);
+				vdev_gicd.name, result);
 	}
 
 	return result;

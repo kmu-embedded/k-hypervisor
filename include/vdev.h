@@ -2,7 +2,7 @@
 #define __VDEV_H_
 
 #include "types.h"
-#include "core/vm/vcpu.h"
+#include <stdint.h>
 
 #define VDEV_ERROR -1
 #define VDEV_NOT_FOUND -1
@@ -32,11 +32,10 @@ struct vdev_module {
 
     const char *name;
 
-    int32_t (*read) (uint32_t offset, uint32_t *addr);
+    int32_t (*read) (uint32_t offset);
 
     int32_t (*write) (uint32_t offset, uint32_t *addr);
 
-    struct vdev_ops *ops;
 
 };
 

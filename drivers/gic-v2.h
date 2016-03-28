@@ -65,43 +65,71 @@ struct GICv2_HW {
 #define NR_ICFGR            (2 * (MAX_ITLinesNumber + 1))
 #define NR_NSACR            32
 
+#define NR_VCPUS			8
+
 // Per VM
 struct gicd {
     uint32_t ctlr;
     uint32_t typer;
     uint32_t iidr;
+
+    uint32_t igroupr0[NR_VCPUS];
     uint32_t igroupr[NR_IGROUPR];
+
+    uint32_t isenabler0[NR_VCPUS];
     uint32_t isenabler[NR_ISENABLER];
+
+    uint32_t icenabler0[NR_VCPUS];
     uint32_t icenabler[NR_ICENABLER];
+
+    uint32_t ispendr0[NR_VCPUS];
     uint32_t ispendr[NR_ISPENDR];
+
+    uint32_t icpendr0[NR_VCPUS];
     uint32_t icpendr[NR_ICPENDR];
+
+    uint32_t isactiver0[NR_VCPUS];
     uint32_t isactiver[NR_ISACTIVER];
+
+    uint32_t icactiver0[NR_VCPUS];
     uint32_t icactiver[NR_ICACTIVER];
+
+    uint32_t ipriorityr0[NR_VCPUS][NR_BANKED_IPRIORITYR];
     uint32_t ipriorityr[NR_IPRIORITYR];
+
+    uint32_t itargetsr0[NR_VCPUS][NR_BANKED_ITARGETSR];
     uint32_t itargetsr[NR_ITARGETSR];
+
+    uint32_t icfgr0[NR_VCPUS];
     uint32_t icfgr[NR_ICFGR];
-    uint32_t nsacr[NR_NSACR];
+
+    uint32_t nsacr[NR_NSACR];			// unused
+
     uint32_t sgir;
+
+    uint32_t cpendsgir0[NR_VCPUS][NR_BANKED_CPENDSGIR];
+    uint32_t spendsgir0[NR_VCPUS][NR_BANKED_SPENDSGIR];
 };
 
+#if 0
 // Per Core
-struct gicv {
-    uint32_t IGROUPR;
-    uint32_t ISENABLER;
-    uint32_t ICENABLER;
-    uint32_t ISPENDR;
-    uint32_t ICPENDR;
-    uint32_t ISACTIVER;
-    uint32_t ICACTIVER;
-    uint32_t IPRIORITYR[NR_BANKED_IPRIORITYR];
-    uint32_t ITARGETSR[NR_BANKED_ITARGETSR];
-    uint32_t ICFGR;
-    uint32_t CPENDSGIR[NR_BANKED_CPENDSGIR];
-    uint32_t SPENDSGIR[NR_BANKED_SPENDSGIR];
+struct banked_gicd {
+    uint32_t igroupr0[NR_VCPUS];
+    uint32_t isenabler0[NR_VCPUS];
+    uint32_t icenabler0[NR_VCPUS];
+    uint32_t ispendr0[NR_VCPUS];
 
-    uint32_t vmcr;
+
+    uint32_t icpendr0[NR_VCPUS];
+    uint32_t isactiver0[NR_VCPUS];
+    uint32_t icactiver0[NR_VCPUS];
+    uint32_t ipriorityr0[NR_VCPUS][NR_BANKED_IPRIORITYR];
+    uint32_t itargetsr0[NR_VCPUS][NR_BANKED_ITARGETSR];
+    uint32_t icfgr0[NR_VCPUS];
+    uint32_t cpendsgir0[NR_VCPUS][NR_BANKED_CPENDSGIR];
+    uint32_t spendsgir0[NR_VCPUS][NR_BANKED_SPENDSGIR];
 };
-
+#endif
 
 #define IRQ_LEVEL_TRIGGERED     0
 #define IRQ_EDGE_TRIGGERED      1

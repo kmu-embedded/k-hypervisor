@@ -5,7 +5,6 @@
 #include <types.h>
 #include <core/vm/vcpu.h>
 #include <core/vm/vmem.h>
-#include <core/vm/virq.h>
 
 #define SIZE_OF_NAME        32
 #define NO_VM_FOUND         NULL
@@ -27,7 +26,8 @@ struct vmcb {
 
     struct vcpu **vcpu;
     struct vmem vmem;
-    struct virq virq;
+
+    struct gicd vgicd;
 
     vmcb_state_t state;
     struct list_head head;
