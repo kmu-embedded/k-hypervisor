@@ -148,6 +148,16 @@ vcpuid_t get_current_vcpuid(void)
     return __current_vcpuid[pcpu];
 }
 
+vcpuid_t get_current_vcpuidx(void)
+{
+    uint32_t pcpu = smp_processor_id();
+
+    /* TODO:(igkang) let this function use API of policy implementation,
+     *   instead of globally defined array */
+
+    return __current_vcpu[pcpu]->id;
+}
+
 struct vcpu *get_current_vcpu(void)
 {
     uint32_t pcpu = smp_processor_id();

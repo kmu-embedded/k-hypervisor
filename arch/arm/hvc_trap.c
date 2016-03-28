@@ -75,7 +75,7 @@ int do_hvc_trap(struct core_regs *regs)
 	            goto trap_error;
 	        }
 	    } else {
-	    	regs->gpr[iss.dabt.srt] = vdev->read(fipa, &(regs->gpr[iss.dabt.srt]));
+	    	regs->gpr[iss.dabt.srt] = vdev->read(fipa);
 	        if (regs->gpr[iss.dabt.srt] < 0) {
 	            goto trap_error;
 	        }

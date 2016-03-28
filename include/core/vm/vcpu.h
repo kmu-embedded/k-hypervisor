@@ -5,7 +5,6 @@
 #include <types.h>
 #include <arch_regs.h>
 #include "../../../drivers/gic-v2.h"
-#include <core/vm/virq.h>
 
 #define VCPU_CREATE_FAILED    NULL
 #define VCPU_NOT_EXISTED      NULL
@@ -34,13 +33,14 @@ struct virq_table {
 
 
 struct vcpu {
-    vcpuid_t vcpuid;
+    vcpuid_t vcpuid;				// count
+
+    // FIXME(casionwoo): get_current_vcpuidx()
+    vcpuid_t id;					// idx
 
     vmid_t vmid;
 
     struct arch_regs regs;
-
-    struct banked_virq banked_virq;
 
     lr_entry_t pending_irqs[MAX_PENDING_VIRQS +1];
 

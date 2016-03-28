@@ -24,6 +24,7 @@ void do_schedule(void *pdata, uint32_t *delay_tick);
 
 void sched_start(void);
 vmid_t get_current_vcpuid(void);
+vcpuid_t get_current_vcpuidx(void);
 struct vcpu *get_current_vcpu(void);
 struct vmcb *get_current_vm(void);
 

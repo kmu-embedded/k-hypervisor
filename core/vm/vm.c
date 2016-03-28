@@ -45,6 +45,7 @@ vmid_t vm_create(uint8_t num_vcpus)
             return VM_CREATE_FAILED;
         }
         vm->vcpu[i]->vmid = vm->vmid;
+        vm->vcpu[i]->id = i;
     }
 
     vmem_create(&vm->vmem, vm->vmid);
@@ -75,8 +76,8 @@ vmcb_state_t vm_init(vmid_t vmid)
 
     vmem_init(&vm->vmem);
 
-    vm->virq.TYPER = GICD_READ(GICD_TYPER);
-    vm->virq.IIDR  = GICD_READ(GICD_IIDR);
+    vm->vgicd.typer = GICD_READ(GICD_TYPER);
+    vm->vgicd.iidr  = GICD_READ(GICD_IIDR);
 
     return vm->state;
 }
