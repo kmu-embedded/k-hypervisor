@@ -29,32 +29,18 @@ static void _trap_dump_bregs(void)
 
 int do_hvc_trap(struct core_regs *regs)
 {
-    int32_t vdev_num = -1;
+    hsr_t hsr;
+	iss_t iss;
 
-    uint32_t hsr = read_hsr();
-    uint32_t ec = (hsr & HSR_EC_BIT) >> EXTRACT_EC;
-    uint32_t iss = hsr & HSR_ISS_BIT;
-    uint32_t far = read_hdfar();
-    uint32_t fipa;
-    uint32_t srt;
+	hsr.raw = read_hsr();
+	iss.raw = hsr.entry.iss;
 
-    struct arch_vdev_trigger_info info;
-    int level = VDEV_LEVEL_LOW;
+    //struct arch_vdev_trigger_info info;
+    //int level = VDEV_LEVEL_LOW;
 
-    fipa = (read_hpfar() & HPFAR_FIPA_MASK) >> HPFAR_FIPA_SHIFT;
-    fipa = fipa << HPFAR_FIPA_PAGE_SHIFT;
-    fipa = fipa | (far & HPFAR_FIPA_PAGE_MASK);
 
-    info.ec = ec;
-    info.iss = iss;
-    info.fipa = fipa;
-    info.sas = (iss & ISS_SAS_MASK) >> ISS_SAS_SHIFT;
 
-    srt = (iss & ISS_SRT_MASK) >> ISS_SRT_SHIFT;
-    info.value = &(regs->gpr[srt]);
-    info.raw = &(regs->gpr[srt]);
-
-    switch (ec) {
+    switch (hsr.entry.ec) {
     case TRAP_EC_ZERO_UNKNOWN:
     case TRAP_EC_ZERO_WFI_WFE:
     case TRAP_EC_ZERO_MCR_MRC_CP15:
@@ -69,46 +55,52 @@ int do_hvc_trap(struct core_regs *regs)
     case TRAP_EC_NON_ZERO_SMC:
     case TRAP_EC_NON_ZERO_PREFETCH_ABORT_FROM_OTHER_MODE:
     case TRAP_EC_NON_ZERO_PREFETCH_ABORT_FROM_HYP_MODE:
-    case TRAP_EC_NON_ZERO_DATA_ABORT_FROM_HYP_MODE:
-        level = VDEV_LEVEL_HIGH;
-        break;
-    case TRAP_EC_NON_ZERO_HVC:
-        level = VDEV_LEVEL_MIDDLE;
-        break;
-    case TRAP_EC_NON_ZERO_DATA_ABORT_FROM_OTHER_MODE:
-        level = VDEV_LEVEL_LOW;
-        break;
-    default:
-        debug_print("[hyp] do_hvc_trap:unknown hsr.iss= %x\n", iss);
-        debug_print("[hyp] hsr.ec= %x\n", ec);
-        debug_print("[hyp] hsr= %x\n", hsr);
+	case TRAP_EC_NON_ZERO_DATA_ABORT_FROM_HYP_MODE:
+	case TRAP_EC_NON_ZERO_HVC:
+	case TRAP_EC_NON_ZERO_DATA_ABORT_FROM_OTHER_MODE: {
+
+		uint32_t fipa = read_hpfar() << 8;
+		struct vdev_module *vdev = get_vdev(fipa);
+
+		if (vdev == NULL) {
+			debug_print("[hvc] cann't search vdev number\n\r");
+			goto trap_error;
+		}
+
+		uint32_t offset = (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
+		fipa |= offset;
+
+	    if (hsr.entry.iss & ISS_WNR) {
+	        if (vdev->write(fipa, &(regs->gpr[iss.dabt.srt])) < 0) {
+	            goto trap_error;
+	        }
+	    } else {
+	    	regs->gpr[iss.dabt.srt] = vdev->read(fipa, &(regs->gpr[iss.dabt.srt]));
+	        if (regs->gpr[iss.dabt.srt] < 0) {
+	            goto trap_error;
+	        }
+	    }
+	} // TRAP_EC_NON_ZERO_DATA_ABORT_FROM_OTHER_MODE
+		break;
+	default:
         goto trap_error;
     }
 
-    vdev_num = vdev_find(level, &info);
-    if (vdev_num < 0) {
-        debug_print("[hvc] cann't search vdev number\n\r");
-        goto trap_error;
-    }
-
-    if (iss & ISS_WNR) {
-        if (vdev_write(level, vdev_num, &info) < 0) {
-            goto trap_error;
-        }
+    if (hsr.entry.il == 0) {
+    	regs->pc += 2;
     } else {
-        if (vdev_read(level, vdev_num, &info) < 0) {
-            goto trap_error;
-        }
+    	regs->pc += 4;
     }
-    vdev_post(level, vdev_num, &info, regs);
 
     return 0;
 
 trap_error:
     _trap_dump_bregs();
-    printf("fipa is %x guest pc is %x\n", fipa, regs->pc);
-    while(1)
-        ;
-    //abort();
+	debug_print("[hyp] do_hvc_trap:unknown hsr.iss= %x\n", hsr.entry.iss);
+	debug_print("[hyp] hsr.ec= %x\n", hsr.entry.ec);
+    debug_print("[hyp] hsr= %x\n", hsr.raw);
+    printf("guest pc is %x\n", regs->pc);
+    while(1) ;
+
     return -1;
 }
