@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include <stdint.h>
+#include <lib/list.h>
 
 #define VDEV_ERROR -1
 #define VDEV_NOT_FOUND -1
@@ -32,11 +33,17 @@ struct vdev_module {
 
     const char *name;
 
+    int32_t (*create) (void **pdata);
+
     int32_t (*read) (uint32_t offset);
-
     int32_t (*write) (uint32_t offset, uint32_t *addr);
+};
 
-
+struct vdev_instance {
+	const struct vdev_module *module;
+	void *pdata;
+	vmid_t id;
+	struct list_head head;
 };
 
 hvmm_status_t vdev_register(struct vdev_module *module);

@@ -10,6 +10,7 @@
 
 int32_t vgicd_read_handler(uint32_t offset);
 int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr);
+int32_t vgicd_create_instance(void **pdata);
 
 struct vdev_module vdev_gicd = {
 		.name = "vGICD",
@@ -17,7 +18,15 @@ struct vdev_module vdev_gicd = {
 		.size = 4096,
 		.read = vgicd_read_handler,
 		.write = vgicd_write_handler,
+		.create = vgicd_create_instance,
 };
+
+#include <stdlib.h>
+int32_t vgicd_create_instance(void **pdata)
+{
+	*pdata = malloc(sizeof(struct gicd));
+	return 0;
+}
 
 #define firstbit32(word) (31 - asm_clz(word))
 
@@ -98,8 +107,8 @@ static hvmm_status_t handler_SGIR(uint32_t offset, uint32_t value)
 		if (target_cpu_interface && (vcpu = vcpu_find(target_vcpuid))) {
 			uint32_t n = sgi_id >> 2;
 			uint32_t reg_offset = sgi_id % 4;
+			gicd = vm->vdevs->pdata;
 
-			gicd = &vm->vgicd;
 			gicd->spendsgir0[target_vcpuid][n] = 0x1 << ((reg_offset * 8) + target_cpu_interface);
 			result = virq_inject(target_vcpuid, sgi_id, sgi_id, SW_IRQ);
 		}
@@ -116,7 +125,7 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr)
 	offset -= vdev_gicd.base;
 
 	struct vmcb *vm = get_current_vm();
-	struct gicd *gicd = &vm->vgicd;
+	struct gicd *gicd = vm->vdevs->pdata;
 
     uint8_t vcpuid = get_current_vcpuidx();
 
@@ -280,7 +289,7 @@ int32_t vgicd_read_handler(uint32_t offset)
 	offset -= vdev_gicd.base;
 
 	struct vmcb *vm = get_current_vm();
-	struct gicd *gicd = &vm->vgicd;
+	struct gicd *gicd = vm->vdevs->pdata;
 
     uint8_t vcpuid = get_current_vcpuidx();
 

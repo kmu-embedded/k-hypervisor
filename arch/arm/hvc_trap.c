@@ -35,10 +35,6 @@ int do_hvc_trap(struct core_regs *regs)
 	hsr.raw = read_hsr();
 	iss.raw = hsr.entry.iss;
 
-    //struct arch_vdev_trigger_info info;
-    //int level = VDEV_LEVEL_LOW;
-
-
 
     switch (hsr.entry.ec) {
     case TRAP_EC_ZERO_UNKNOWN:
@@ -63,7 +59,7 @@ int do_hvc_trap(struct core_regs *regs)
 		struct vdev_module *vdev = get_vdev(fipa);
 
 		if (vdev == NULL) {
-			debug_print("[hvc] cann't search vdev number\n\r");
+			printf("[hvc] cann't search vdev number\n\r");
 			goto trap_error;
 		}
 
@@ -80,7 +76,7 @@ int do_hvc_trap(struct core_regs *regs)
 	            goto trap_error;
 	        }
 	    }
-	} // TRAP_EC_NON_ZERO_DATA_ABORT_FROM_OTHER_MODE
+	}
 		break;
 	default:
         goto trap_error;
