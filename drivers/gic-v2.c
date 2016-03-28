@@ -1,11 +1,11 @@
-#include "gic-v2.h"
+#include <drivers/gic-v2.h>
 #include <arch/gic_regs.h>
 #include <arch/armv7.h>
 #include <io.h>
 #include <core/vm/vcpu.h>
 #include <core/scheduler.h>
 #include <stdio.h>
-#include "../include/asm/macro.h"
+#include <asm/macro.h>
 
 #include "irq-chip.h"
 

@@ -45,7 +45,8 @@ void console_init()
     pl01x_init(115200, 24000000);
 }
 
+#include "../../drivers/sp804.h"
 void dev_init()
 {
-    // init .text.dev section like vdev.
+    //sp804_enable();
 }

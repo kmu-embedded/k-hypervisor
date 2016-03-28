@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <core/vm.h>
 #include <core/vm/vcpu.h>
-#include "../../drivers/gic-v2.h"
+#include <drivers/gic-v2.h>
 #include "vdev_gicd.h"
 
 int32_t vgicd_read_handler(void *pdata, uint32_t offset);
