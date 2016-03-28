@@ -9,8 +9,8 @@
 #include "../../drivers/gic-v2.h"
 #include "vdev_gicd.h"
 
-int32_t vgicd_read_handler(uint32_t offset);
-int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr);
+int32_t vgicd_read_handler(void *pdata, uint32_t offset);
+int32_t vgicd_write_handler(void *pdata, uint32_t offset, uint32_t *addr);
 int32_t vgicd_create_instance(void **pdata);
 
 struct vdev_module vdev_gicd = {
@@ -124,13 +124,9 @@ static hvmm_status_t handler_SGIR(uint32_t offset, uint32_t value)
 	return result;
 }
 
-int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr)
+int32_t vgicd_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
 {
-	offset -= vdev_gicd.base;
-
-	struct vmcb *vm = get_current_vm();
-	struct vgicd *gicd = vm->vdevs->pdata;
-
+	struct vgicd *gicd = pdata;
     uint8_t vcpuid = get_current_vcpuidx();
 
 	uint32_t old_status;
@@ -292,13 +288,10 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr)
 	return 0;
 }
 
-int32_t vgicd_read_handler(uint32_t offset)
+int32_t vgicd_read_handler(void *pdata, uint32_t offset)
 {
 
-	offset -= vdev_gicd.base;
-
-	struct vmcb *vm = get_current_vm();
-	struct vgicd *gicd = vm->vdevs->pdata;
+	struct vgicd *gicd = pdata;
 
     uint8_t vcpuid = get_current_vcpuidx();
 
