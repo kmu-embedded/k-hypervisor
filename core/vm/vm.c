@@ -129,7 +129,7 @@ void vm_save(vmid_t save_vmid)
     }
 
     vmem_save();
-    vdev_save(save_vmid);
+    //vdev_save(save_vmid);
 }
 
 void vm_restore(vmid_t restore_vmid)
@@ -140,7 +140,7 @@ void vm_restore(vmid_t restore_vmid)
     }
 
     vmem_restore(&vm->vmem);
-    vdev_restore(restore_vmid);
+    //vdev_restore(restore_vmid);
 }
 
 struct vmcb *vm_find(vmid_t vmid)

@@ -3,6 +3,36 @@
 
 #include <arch_regs.h>
 
+union hsr {
+    uint32_t raw;
+    struct {
+        uint32_t iss:25;
+        uint32_t il:1;
+        uint32_t ec:6;
+    } entry;
+};
+typedef union hsr hsr_t;
+
+union iss {
+	uint32_t raw:25;
+	struct {
+		uint32_t dfsc:6;
+		uint32_t wnr:1;
+		uint32_t s1ptw:1;
+		uint32_t cm:1;
+		uint32_t ea:1;
+		uint32_t reserved:6;
+		uint32_t srt:4;
+		uint32_t zero:1;
+		uint32_t sse:1;
+		uint32_t sas:2;
+		uint32_t isv:1;
+		uint32_t unused:7;
+	} dabt;
+};
+typedef union iss iss_t;
+
+
 /* HSR Exception Class. */
 #define TRAP_EC_ZERO_UNKNOWN        0x00
 #define TRAP_EC_ZERO_WFI_WFE        0x01
