@@ -7,13 +7,14 @@
 #include <core/vm.h>
 #include <core/vm/vcpu.h>
 #include "../../drivers/gic-v2.h"
+#include "vdev_gicd.h"
 
 int32_t vgicd_read_handler(uint32_t offset);
 int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr);
 int32_t vgicd_create_instance(void **pdata);
 
 struct vdev_module vdev_gicd = {
-		.name = "vGICD",
+		.name = "vgicd_v2",
 		.base = CFG_GIC_BASE_PA | GICD_OFFSET,
 		.size = 4096,
 		.read = vgicd_read_handler,
@@ -22,9 +23,10 @@ struct vdev_module vdev_gicd = {
 };
 
 #include <stdlib.h>
+
 int32_t vgicd_create_instance(void **pdata)
 {
-	*pdata = malloc(sizeof(struct gicd));
+	*pdata = malloc(sizeof(struct vgicd));
 	return 0;
 }
 
@@ -32,7 +34,8 @@ int32_t vgicd_create_instance(void **pdata)
 
 static uint32_t ITLinesNumber = 0;
 
-static void set_enable(uint32_t current_status, uint8_t n, uint32_t old_status) {
+static void set_enable(uint32_t current_status, uint8_t n, uint32_t old_status)
+{
 	uint32_t delta = old_status ^ current_status;
 
     struct vcpu *vcpu = get_current_vcpu();
@@ -52,7 +55,8 @@ static void set_enable(uint32_t current_status, uint8_t n, uint32_t old_status) 
 	}
 }
 
-static void set_clear(uint32_t current_status, uint8_t n, uint32_t old_status) {
+static void set_clear(uint32_t current_status, uint8_t n, uint32_t old_status)
+{
 	uint32_t delta = old_status ^ current_status;
     struct vcpu *vcpu = get_current_vcpu();
 
@@ -74,7 +78,7 @@ static void set_clear(uint32_t current_status, uint8_t n, uint32_t old_status) {
 static hvmm_status_t handler_SGIR(uint32_t offset, uint32_t value)
 {
 	hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-	struct gicd *gicd;
+	struct vgicd *gicd;
 	struct vcpu *vcpu = get_current_vcpu();
 	struct vmcb *vm = get_current_vm();
 
@@ -125,7 +129,7 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr)
 	offset -= vdev_gicd.base;
 
 	struct vmcb *vm = get_current_vm();
-	struct gicd *gicd = vm->vdevs->pdata;
+	struct vgicd *gicd = vm->vdevs->pdata;
 
     uint8_t vcpuid = get_current_vcpuidx();
 
@@ -136,18 +140,21 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr)
 		gicd->ctlr = readl(addr);
 		break;
 
-	case GICD_IGROUPR(0) ... GICD_IGROUPR_LAST: {
+	case GICD_IGROUPR(0) ... GICD_IGROUPR_LAST:
+	{
 		uint32_t n = (offset - GICD_IGROUPR(0)) >> 2;
 
 		if (n == 0) {
 			gicd->igroupr0[vcpuid] = readl(addr);
-		} else if ((n > 0) && (n < (ITLinesNumber + 1))) {
+		} else if ((n > 0) && (n < (ITLinesNumber + 1)))
+		{
 			gicd->igroupr[n] = readl(addr);
 		}
 	}
 		break;
 
-	case GICD_ISENABLER(0) ... GICD_ISENABLER_LAST: {
+	case GICD_ISENABLER(0) ... GICD_ISENABLER_LAST:
+	{
 		uint32_t n = (offset - GICD_ISENABLER(0)) >> 2;
 
 		if (n == 0) {
@@ -162,7 +169,8 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr)
 	}
 		break;
 
-	case GICD_ICENABLER(0) ... GICD_ICENABLER_LAST: {
+	case GICD_ICENABLER(0) ... GICD_ICENABLER_LAST:
+	{
 		uint32_t n = (offset - GICD_ICENABLER(0)) >> 2;
 
 		if (n == 0) {
@@ -208,6 +216,7 @@ int32_t vgicd_write_handler(uint32_t offset, uint32_t *addr)
 
 	}
 		break;
+
 	case GICD_ICACTIVER(0) ... GICD_ICACTIVER_LAST: {
 		uint32_t n = (offset - GICD_ICACTIVER(0)) >> 2;
 
@@ -289,7 +298,7 @@ int32_t vgicd_read_handler(uint32_t offset)
 	offset -= vdev_gicd.base;
 
 	struct vmcb *vm = get_current_vm();
-	struct gicd *gicd = vm->vdevs->pdata;
+	struct vgicd *gicd = vm->vdevs->pdata;
 
     uint8_t vcpuid = get_current_vcpuidx();
 
@@ -455,5 +464,5 @@ hvmm_status_t vdev_gicd_init() {
 	return result;
 }
 
-vdev_module_low_init(vdev_gicd_init);
+vdev_module_init(vdev_gicd_init);
 

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <atags.h>
 #include <vdev.h>
+#include "../../drivers/vdev/vdev_gicd.h"
 
 void print_vm(struct vmcb *vm);
 
@@ -19,7 +20,9 @@ void vm_setup()
     atags_setup();
 }
 
-extern  struct vdev_module vdev_gicd;
+extern struct vdev_module vdev_gicd;
+extern struct vdev_module vdev_sample;
+
 vmid_t vm_create(uint8_t num_vcpus)
 {
     int i;
@@ -51,15 +54,19 @@ vmid_t vm_create(uint8_t num_vcpus)
 
     vmem_create(&vm->vmem, vm->vmid);
 
-    for (i=0; i < 1; i++) {
+    // FIXME: it will be called in vdev.c
 
-    	struct vdev_instance *new = malloc(sizeof(struct vdev_instance));
-    	new->module = &vdev_gicd;
-    	new->module->create(&new->pdata);
-    	new->id = vm->vmid;
-    	vm->vdevs = new;
-    }
+	struct vdev_instance *new_gicd = malloc(sizeof(struct vdev_instance));
+	new_gicd->module = &vdev_gicd;
+	new_gicd->module->create(&new_gicd->pdata);
+	new_gicd->owner = vm->vmid;
+	vm->vdevs = new_gicd;
 
+	struct vdev_instance *new_sample = malloc(sizeof(struct vdev_instance));
+	new_sample->module = &vdev_sample;
+	new_sample->module->create(&new_sample->pdata);
+	new_sample->owner = vm->vmid;
+	vm->vdevs = new_sample;
 
     LIST_ADDTAIL(&vm->head, &vm_list);
 
@@ -87,7 +94,7 @@ vmcb_state_t vm_init(vmid_t vmid)
 
     vmem_init(&vm->vmem);
 
-    struct gicd *vgicd = (struct gicd *) vm->vdevs->pdata;
+    struct vgicd *vgicd = (struct vgicd *) vm->vdevs->pdata;
     vgicd->typer = GICD_READ(GICD_TYPER);
     vgicd->iidr  = GICD_READ(GICD_IIDR);
 
