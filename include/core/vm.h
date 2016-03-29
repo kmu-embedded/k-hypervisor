@@ -29,7 +29,7 @@ struct vmcb {
     struct vcpu **vcpu;
     struct vmem vmem;
 
-    struct list_head vdevs_head;
+    struct vdev_instance *vdevs;
 
     vmcb_state_t state;
     struct list_head head;
