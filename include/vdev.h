@@ -1,15 +1,11 @@
 #ifndef __VDEV_H_
 #define __VDEV_H_
 
-#include "types.h"
 #include <stdint.h>
+#include <types.h>
 #include <lib/list.h>
 
-#define VDEV_ERROR -1
-#define VDEV_NOT_FOUND -1
-
 typedef int (*initcall_t)(void);
-
 
 extern initcall_t __vdev_module_start[];
 extern initcall_t __vdev_module_end[];
@@ -36,13 +32,14 @@ struct vdev_module {
 struct vdev_instance {
 	const struct vdev_module *module;
 	void *pdata;
+
 	vmid_t owner;
 
 	struct list_head head;
 };
 
-hvmm_status_t vdev_register(struct vdev_module *module);
-hvmm_status_t vdev_init(void);
+void vdev_register(struct vdev_module *module);
+void vdev_init(void);
 
 void vdev_create(struct vdev_instance *, vmid_t);
 
