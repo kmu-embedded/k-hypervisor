@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <atags.h>
-#include <vdev.h>
-#include "../../drivers/vdev/vdev_gicd.h"
 
 void print_vm(struct vmcb *vm);
 
@@ -59,7 +57,8 @@ vmid_t vm_create(uint8_t num_vcpus)
 
     LIST_INITHEAD(&vm->vdevs->head);
 
-    // FIXME(casionwoo): it will be called in vdev.c
+    // FIXME(casionwoo) : This copy of list_head would be replaced init with .config file.
+    //                    This means not copy all of the vdevs but only vdevs that VM needs
 	struct vdev_instance *new_gicd = malloc(sizeof(struct vdev_instance));
 	memset(new_gicd, 0, sizeof(struct vdev_instance));
 	new_gicd->module = &vdev_gicd;

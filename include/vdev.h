@@ -20,6 +20,7 @@ extern initcall_t __vdev_module_end[];
 
 #define vdev_module_init(fn)        __define_vdev_module(fn)
 
+struct list_head vdev_list;
 
 struct vdev_module {
     uint32_t id;
@@ -45,6 +46,6 @@ struct vdev_instance {
 hvmm_status_t vdev_register(struct vdev_module *module);
 hvmm_status_t vdev_init(void);
 
-struct vdev_module * vdev_find(uint32_t fipa);
+const struct vdev_module * vdev_find(uint32_t fipa);
 
 #endif /* __VDEV_H_ */
