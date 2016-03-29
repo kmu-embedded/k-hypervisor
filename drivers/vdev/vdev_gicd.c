@@ -82,7 +82,6 @@ static void set_clear(uint32_t current_status, uint8_t n, uint32_t old_status)
 static hvmm_status_t handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
 {
 	hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-	struct vgicd *gicd;
 	struct vcpu *vcpu = get_current_vcpu();
 
 	uint32_t target_cpu_interfaces = 0;
@@ -114,7 +113,7 @@ static hvmm_status_t handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
 		if (target_cpu_interface && (vcpu = vcpu_find(target_vcpuid))) {
 			uint32_t n = sgi_id >> 2;
 			uint32_t reg_offset = sgi_id % 4;
-			gicd = (struct vgicd *)pdata;
+			struct vgicd *gicd = (struct vgicd *)pdata;
 
 			gicd->spendsgir0[target_vcpuid][n] = 0x1 << ((reg_offset * 8) + target_cpu_interface);
 			result = virq_inject(target_vcpuid, sgi_id, sgi_id, SW_IRQ);

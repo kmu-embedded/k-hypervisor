@@ -44,7 +44,7 @@ int do_hvc_trap(struct core_regs *regs)
 				fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
 				uint32_t offset = fipa - instance->module->base;
 
-				if (hsr.entry.iss & ISS_WNR) {
+				if (iss.dabt.wnr == 1) {
 					if (instance->module->write(instance->pdata, offset, &(regs->gpr[iss.dabt.srt])) < 0) {
 						goto trap_error;
 					}
