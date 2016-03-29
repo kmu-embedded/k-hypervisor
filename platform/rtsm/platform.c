@@ -1,6 +1,7 @@
 #include "platform.h"
 #include <stdint.h>
 #include <drivers/pl01x.h>
+#include <drivers/sp804.h>
 
 // TODO(wonseok): moved header files from arch/arm to proper dir.
 #include "../../arch/arm/paging.h"
@@ -45,8 +46,7 @@ void console_init()
     pl01x_init(115200, 24000000);
 }
 
-#include "../../drivers/sp804.h"
 void dev_init()
 {
-    //sp804_enable();
+    sp804_enable();
 }

@@ -1,10 +1,3 @@
-/*
- * vdev_gicd.h
- *
- *  Created on: Mar 29, 2016
- *      Author: wonseok
- */
-
 #ifndef __VDEV_GICD_H__
 #define __VDEV_GICD_H__
 

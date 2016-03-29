@@ -7,7 +7,7 @@
 #include <core/vm.h>
 #include <core/vm/vcpu.h>
 #include <drivers/gic-v2.h>
-#include "vdev_gicd.h"
+#include <drivers/vdev/vdev_gicd.h>
 
 int32_t vgicd_read_handler(void *pdata, uint32_t offset);
 int32_t vgicd_write_handler(void *pdata, uint32_t offset, uint32_t *addr);
