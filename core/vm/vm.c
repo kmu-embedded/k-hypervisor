@@ -51,11 +51,7 @@ vmid_t vm_create(uint8_t num_vcpus)
     }
 
     vmem_create(&vm->vmem, vm->vmid);
-
-    vm->vdevs = malloc(sizeof(struct vdev_instance));
-    memset(vm->vdevs, 0, sizeof(struct vdev_instance));
-
-    vdev_create(vm->vdevs, vm->vmid);
+    vdev_create(&vm->vdevs, vm->vmid);
 
     LIST_ADDTAIL(&vm->head, &vm_list);
 
