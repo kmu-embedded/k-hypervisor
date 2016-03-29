@@ -1,34 +1,12 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <asm/asm.h>
 #include <arch/armv7.h>
-
-#include <debug.h>
-
 #include <vdev.h>
-
-#include "hvc_trap.h"
-
-static void _trap_dump_bregs(void)
-{
-    uint32_t spsr, lr, sp;
-
-    printf(" - banked regs\n");
-    asm volatile(" mrs     %0, sp_usr\n\t" : "=r"(sp) : : "memory", "cc");
-    asm volatile(" mrs     %0, lr_usr\n\t" : "=r"(lr) : : "memory", "cc");
-    printf(" - usr: sp:%x lr:%x\n", sp, lr);
-    asm volatile(" mrs     %0, spsr_svc\n\t" : "=r"(spsr) : : "memory", "cc");
-    asm volatile(" mrs     %0, sp_svc\n\t" : "=r"(sp) : : "memory", "cc");
-    asm volatile(" mrs     %0, lr_svc\n\t" : "=r"(lr) : : "memory", "cc");
-    printf(" - svc: spsr:%x sp:%x lr:%x\n", spsr, sp, lr);
-    asm volatile(" mrs     %0, spsr_irq\n\t" : "=r"(spsr) : : "memory", "cc");
-    asm volatile(" mrs     %0, sp_irq\n\t" : "=r"(sp) : : "memory", "cc");
-    asm volatile(" mrs     %0, lr_irq\n\t" : "=r"(lr) : : "memory", "cc");
-    printf(" - irq: spsr:%x sp:%x lr:%x\n", spsr, sp, lr);
-}
 
 #include <core/vm.h>
 #include <core/scheduler.h>
+
+#include "hvc_trap.h"
+
 int do_hvc_trap(struct core_regs *regs)
 {
     hsr_t hsr;
@@ -36,7 +14,6 @@ int do_hvc_trap(struct core_regs *regs)
 
 	hsr.raw = read_hsr();
 	iss.raw = hsr.entry.iss;
-
 
     switch (hsr.entry.ec) {
     case TRAP_EC_ZERO_UNKNOWN:
@@ -96,10 +73,9 @@ int do_hvc_trap(struct core_regs *regs)
     return 0;
 
 trap_error:
-    _trap_dump_bregs();
-	debug_print("[hyp] do_hvc_trap:unknown hsr.iss= %x\n", hsr.entry.iss);
-	debug_print("[hyp] hsr.ec= %x\n", hsr.entry.ec);
-    debug_print("[hyp] hsr= %x\n", hsr.raw);
+	printf("[hyp] do_hvc_trap:unknown hsr.iss= %x\n", hsr.entry.iss);
+	printf("[hyp] hsr.ec= %x\n", hsr.entry.ec);
+    printf("[hyp] hsr= %x\n", hsr.raw);
     printf("guest pc is %x\n", regs->pc);
     while(1) ;
 

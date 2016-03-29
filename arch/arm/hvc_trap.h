@@ -1,7 +1,5 @@
-#ifndef __TRAP_H__
-#define __TRAP_H__
-
-#include <arch_regs.h>
+#ifndef __HVC_TRAP_H__
+#define __HVC_TRAP_H__
 
 union hsr {
     uint32_t raw;
@@ -121,11 +119,5 @@ typedef union iss iss_t;
 #define HPFAR_FIPA_SHIFT                    4
 #define HPFAR_FIPA_PAGE_MASK                0x00000FFF
 #define HPFAR_FIPA_PAGE_SHIFT               12
-
-/**@brief Handles every exceptions taken from a mode other than Hyp mode.
- * @param regs ARM registers for current virtual machine.
- * @return Returns the result of exceptions.
- */
-int do_hvc_trap(struct core_regs *regs);
 
 #endif
