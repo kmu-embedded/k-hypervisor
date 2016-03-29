@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <atags.h>
-#include <vdev.h>
-#include "../../drivers/vdev/vdev_gicd.h"
 
 void print_vm(struct vmcb *vm);
 
@@ -53,27 +51,7 @@ vmid_t vm_create(uint8_t num_vcpus)
     }
 
     vmem_create(&vm->vmem, vm->vmid);
-
-    vm->vdevs = malloc(sizeof(struct vdev_instance));
-	memset(vm->vdevs, 0, sizeof(struct vdev_instance));
-
-    LIST_INITHEAD(&vm->vdevs->head);
-
-    // FIXME(casionwoo): it will be called in vdev.c
-	struct vdev_instance *new_gicd = malloc(sizeof(struct vdev_instance));
-	memset(new_gicd, 0, sizeof(struct vdev_instance));
-	new_gicd->module = &vdev_gicd;
-	new_gicd->module->create(&new_gicd->pdata);
-	new_gicd->owner = vm->vmid;
-    LIST_ADDTAIL(&new_gicd->head, &vm->vdevs->head);
-
-	struct vdev_instance *new_sample = malloc(sizeof(struct vdev_instance));
-	memset(new_sample, 0, sizeof(struct vdev_instance));
-	new_sample->module = &vdev_sample;
-	new_sample->module->create(&new_sample->pdata);
-	new_sample->owner = vm->vmid;
-    LIST_ADDTAIL(&new_sample->head, &vm->vdevs->head);
-
+    vdev_create(&vm->vdevs, vm->vmid);
 
     LIST_ADDTAIL(&vm->head, &vm_list);
 
@@ -100,15 +78,6 @@ vmcb_state_t vm_init(vmid_t vmid)
     vm->state = HALTED;
 
     vmem_init(&vm->vmem);
-
-	struct vdev_instance *instance = NULL;
-    list_for_each_entry(struct vdev_instance, instance, &vm->vdevs->head, head) {
-    	if(instance->module->base == (CFG_GIC_BASE_PA | GICD_OFFSET)) {
-    		struct vgicd *vgicd = (struct vgicd *) instance->pdata;
-    		vgicd->typer = GICD_READ(GICD_TYPER);
-    		vgicd->iidr  = GICD_READ(GICD_IIDR);
-    	}
-    }
 
     return vm->state;
 }

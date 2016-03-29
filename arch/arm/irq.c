@@ -29,7 +29,7 @@ hvmm_status_t do_irq(struct core_regs *regs)
     is_guest_irq(irq);
 
     if (irq_handlers[irq]) {
-        irq_handlers[irq](irq, (struct arch_regs *)regs, 0);
+        irq_handlers[irq](irq, regs, 0);
         irq_hw->dir(irq);
     }
     return HVMM_STATUS_SUCCESS;
