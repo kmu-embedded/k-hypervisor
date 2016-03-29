@@ -74,7 +74,6 @@ vmid_t vm_create(uint8_t num_vcpus)
 	new_sample->owner = vm->vmid;
     LIST_ADDTAIL(&new_sample->head, &vm->vdevs->head);
 
-
     LIST_ADDTAIL(&vm->head, &vm_list);
 
     return vm->vmid;
@@ -100,15 +99,6 @@ vmcb_state_t vm_init(vmid_t vmid)
     vm->state = HALTED;
 
     vmem_init(&vm->vmem);
-
-	struct vdev_instance *instance = NULL;
-    list_for_each_entry(struct vdev_instance, instance, &vm->vdevs->head, head) {
-    	if(instance->module->base == (CFG_GIC_BASE_PA | GICD_OFFSET)) {
-    		struct vgicd *vgicd = (struct vgicd *) instance->pdata;
-    		vgicd->typer = GICD_READ(GICD_TYPER);
-    		vgicd->iidr  = GICD_READ(GICD_IIDR);
-    	}
-    }
 
     return vm->state;
 }

@@ -23,10 +23,14 @@ struct vdev_module vdev_gicd = {
 };
 
 #include <stdlib.h>
-
 int32_t vgicd_create_instance(void **pdata)
 {
-	*pdata = malloc(sizeof(struct vgicd));
+    struct vgicd *vgicd = malloc(sizeof(struct vgicd));
+
+    vgicd->typer = GICD_READ(GICD_TYPER);
+    vgicd->iidr  = GICD_READ(GICD_IIDR);
+	*pdata = vgicd;
+
 	return 0;
 }
 
