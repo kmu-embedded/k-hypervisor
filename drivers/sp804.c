@@ -12,7 +12,6 @@
 void sp804_handler(int irq, void *pregs, void *pdata)
 {
     writel(0x1, TIMER_INTCLR);
-    //printf("sp804!!\n");
 }
 
 void sp804_init()
