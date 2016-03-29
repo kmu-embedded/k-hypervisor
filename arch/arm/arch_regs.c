@@ -1,118 +1,38 @@
-#include <arch_regs.h>
 #include <stdio.h>
+#include <string.h>
 #include <arch/armv7.h>
+#include <arch_regs.h>
 #include <config.h>
+#include <arch/cpsr.h>
 
-#define CPSR_MODE_USER  0x10
-#define CPSR_MODE_FIQ   0x11
-#define CPSR_MODE_IRQ   0x12
-#define CPSR_MODE_SVC   0x13
-#define CPSR_MODE_MON   0x16
-#define CPSR_MODE_ABT   0x17
-#define CPSR_MODE_HYP   0x1A
-#define CPSR_MODE_UND   0x1B
-#define CPSR_MODE_SYS   0x1F
-
-#define VALUE_ZERO      0
-#define CPSR_MODE_MASK           0X1F
-#define CPSR_ASYNC_ABT_DIABLE    0x100
-#define CPSR_IRQ_DISABLE         0x80
-#define CPSR_FIQ_DISABLE         0x40
-
-#define CPSR_ASYNC_ABT_BIT  CPSR_ASYNC_ABT_DIABLE
-#define CPSR_IRQ_BIT        CPSR_IRQ_DISABLE
-#define CPSR_FIQ_BIT        CPSR_FIQ_DISABLE
-
-static void core_regs_init(struct core_regs *regs)
+static void init_core_regs(struct core_regs *regs)
 {
-    int i = 0;
-    //uint32_t *atag_ptr;
-
-    /* TODO(casionwoo) : Why PC should be this value */
-    regs->pc = CFG_GUEST_START_ADDRESS;
-	regs->cpsr = (CPSR_ASYNC_ABT_BIT | CPSR_IRQ_BIT | CPSR_FIQ_BIT
-			     | CPSR_MODE_SVC | VALUE_ZERO);
-
-    for (i = 0; i < NR_ARCH_GPR_REGS ; i++) {
-        regs->gpr[i] = 0;
-    }
-
+    memset(regs, 0, sizeof(struct core_regs));
     /*
      * R1 : Machine Number
      * R2 : Atags Address
      */
     regs->gpr[1] = MAHINE_TYPE;
     regs->gpr[2] = CFG_GUEST_ATAGS_START_ADDRESS;
+
+    regs->pc = CFG_GUEST_START_ADDRESS;
+	regs->cpsr = (CPSR_ASYNC_ABT_BIT | CPSR_IRQ_BIT | CPSR_FIQ_BIT | CPSR_MODE_SVC);
 }
 
-static void cop_regs_init(struct cp15 *cp15)
+static void init_cp15(struct cp15 *cp15)
 {
-    uint32_t vmpidr = read_vmpidr();
+    memset(cp15, 0, sizeof(struct cp15));
 
-    cp15->vbar  = 0;
-    cp15->ttbr0 = 0;
-    cp15->ttbr1 = 0;
-    cp15->ttbcr = 0;
-    cp15->sctlr = 0;
+    cp15->vmpidr = read_vmpidr();
 
     // TODO(casionwoo) : Modify the way of initialize vmpidr later?
-    vmpidr &= 0xFFFFFFFC;
+    cp15->vmpidr &= 0xFFFFFFFC;
     /* have to fix it
      * vmpidr is to be the virtual cpus's core id.
      * so this value have to determined by situation.
      * ex) linux guest's secondary vcpu, bm guest vcpu .. etc.
      */
-    vmpidr |= 0;
-    cp15->vmpidr = vmpidr;
-}
-
-static void banked_regs_init(struct banked_regs *banked_regs)
-{
-    banked_regs->sp_usr   = 0;
-    banked_regs->spsr_svc = 0;
-    banked_regs->sp_svc   = 0;
-    banked_regs->lr_svc   = 0;
-    banked_regs->spsr_abt = 0;
-    banked_regs->sp_abt   = 0;
-    banked_regs->lr_abt   = 0;
-    banked_regs->spsr_und = 0;
-    banked_regs->sp_und   = 0;
-    banked_regs->lr_und   = 0;
-    banked_regs->spsr_irq = 0;
-    banked_regs->sp_irq   = 0;
-    banked_regs->lr_irq   = 0;
-    banked_regs->spsr_fiq = 0;
-    banked_regs->lr_fiq   = 0;
-    banked_regs->r8_fiq   = 0;
-    banked_regs->r9_fiq   = 0;
-    banked_regs->r10_fiq  = 0;
-    banked_regs->r11_fiq  = 0;
-    banked_regs->r12_fiq  = 0;
-    /* Cortex-A15 processor does not support sp_fiq */
-}
-
-static void save_core_regs(struct core_regs *dst, struct core_regs *src)
-{
-    int i;
-
-    dst->cpsr = src->cpsr;
-    dst->pc = src->pc;
-    dst->lr = src->lr;
-    for (i = 0; i < NR_ARCH_GPR_REGS; i++) {
-        dst->gpr[i] = src->gpr[i];
-    }
-}
-
-static void restore_core_regs(struct core_regs *dst, struct core_regs *src)
-{
-    int i;
-
-    src->cpsr = dst->cpsr;
-    src->pc = dst->pc;
-    src->lr = dst->lr;
-    for (i = 0; i < NR_ARCH_GPR_REGS; i++) {
-        src->gpr[i] = dst->gpr[i];
-    }
+    cp15->vmpidr |= 0;
 }
 
 static void save_banked_regs(struct banked_regs *banked_regs)
@@ -256,9 +176,9 @@ void print_core_regs(struct core_regs *regs)
 hvmm_status_t arch_regs_init(struct arch_regs *regs)
 {
     // TODO(casionwoo) : Initialize loader status for reboot
-    core_regs_init(&regs->core_regs);
-    cop_regs_init(&regs->cp15);
-    banked_regs_init(&regs->banked_regs);
+    init_core_regs(&regs->core_regs);
+    init_cp15(&regs->cp15);
+    memset(&regs->banked_regs, 0, sizeof(struct banked_regs));
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -269,7 +189,7 @@ hvmm_status_t arch_regs_save(struct arch_regs *regs, struct core_regs *current_r
         return HVMM_STATUS_SUCCESS;
     }
 
-    save_core_regs(&regs->core_regs, current_regs);
+    memcpy(&regs->core_regs, current_regs, sizeof(struct core_regs));
     save_cp15(&regs->cp15);
     save_banked_regs(&regs->banked_regs);
 
@@ -286,7 +206,7 @@ hvmm_status_t arch_regs_restore(struct arch_regs *regs, struct core_regs *curren
         return HVMM_STATUS_SUCCESS;
     }
 
-    restore_core_regs(&regs->core_regs, current_regs);
+    memcpy(current_regs, &regs->core_regs, sizeof(struct core_regs));
     restore_cp15(&regs->cp15);
     restore_banked_regs(&regs->banked_regs);
 
