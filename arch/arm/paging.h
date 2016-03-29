@@ -2,8 +2,6 @@
 #define __PAGING_H__
 
 #include <stdint.h>
-#include <arch/armv7.h>
-#include "../../include/asm/macro.h"
 #include "lpae.h"
 
 void paging_init();

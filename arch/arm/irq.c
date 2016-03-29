@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <arch/irq.h>
 #include <config.h>
-#include <arch/armv7.h>
-#include <core/vm/vcpu.h>
+#include <core/vm/vcpu.h> // is_guest_irq
 
 #include <irq-chip.h>
-#include "../../include/types.h"
+#include <types.h>
 
 #define VIRQ_MIN_VALID_PIRQ     16
 #define VIRQ_NUM_MAX_PIRQS      MAX_IRQS
@@ -17,12 +16,6 @@ static irq_handler_t irq_handlers[MAX_IRQS];
 hvmm_status_t do_irq(struct core_regs *regs)
 {
     uint32_t irq = irq_hw->ack();
-
-#if 0
-    if (irq == 34) {
-        printf("SP804_TIMER IRQ!!\n");
-    }
-#endif
 
     irq_hw->eoi(irq);
 
