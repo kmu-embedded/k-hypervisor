@@ -5,6 +5,7 @@
 #include <types.h>
 #include <core/vm/vcpu.h>
 #include <core/vm/vmem.h>
+#include <vdev.h>
 
 #define SIZE_OF_NAME        32
 #define NO_VM_FOUND         NULL
