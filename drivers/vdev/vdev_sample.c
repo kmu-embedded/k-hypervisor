@@ -22,7 +22,7 @@ int32_t vdev_sample_create_instance(void **pdata);
 struct vdev_module vdev_sample = {
 		.name = "vdev_sample",
 		.base = SAMPLE_BASE_ADDR,
-		.size = 4096,
+		.size = 0x1000,
 		.read = vdev_sample_read,
 		.write = vdev_sample_write,
 		.create = vdev_sample_create_instance,
