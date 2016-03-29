@@ -6,6 +6,7 @@
 
 #define MAX_VDEV    256
 
+static struct list_head vdev_list;
 
 struct vdev_module *vdev_modules[MAX_VDEV];
 
@@ -49,3 +50,22 @@ hvmm_status_t SECTION(".init.vdev") vdev_init(void)
 
     return 0;
 }
+
+void vdev_create(struct vdev_instance *vdevs, vmid_t vmid)
+{
+    LIST_INITHEAD(&vdevs->head);
+
+    // FIXME(casionwoo) : This copy of all the vdevs would be replaced to .config file.
+    //                    In other words copy only vdevs that VMCB needs
+    struct vdev_instance *vdev_instance;
+    list_for_each_entry(struct vdev_instance, vdev_instance, &vdev_list, head) {
+        struct vdev_instance *vdev = malloc(sizeof(struct vdev_instance));
+
+        vdev->owner = vmid;
+        vdev->module = vdev_instance->module;
+        vdev->module->create(&vdev->pdata);
+
+        LIST_ADDTAIL(&vdev->head, &vdevs->head);
+    }
+}
+
