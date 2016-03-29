@@ -79,12 +79,11 @@ static void set_clear(uint32_t current_status, uint8_t n, uint32_t old_status)
 	}
 }
 
-static hvmm_status_t handler_SGIR(uint32_t offset, uint32_t value)
+static hvmm_status_t handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
 {
 	hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
 	struct vgicd *gicd;
 	struct vcpu *vcpu = get_current_vcpu();
-	struct vmcb *vm = get_current_vm();
 
 	uint32_t target_cpu_interfaces = 0;
 	uint32_t sgi_id = value & GICD_SGIR_SGI_INT_ID_MASK;
@@ -115,7 +114,7 @@ static hvmm_status_t handler_SGIR(uint32_t offset, uint32_t value)
 		if (target_cpu_interface && (vcpu = vcpu_find(target_vcpuid))) {
 			uint32_t n = sgi_id >> 2;
 			uint32_t reg_offset = sgi_id % 4;
-			gicd = vm->vdevs->pdata;
+			gicd = (struct vgicd *)pdata;
 
 			gicd->spendsgir0[target_vcpuid][n] = 0x1 << ((reg_offset * 8) + target_cpu_interface);
 			result = virq_inject(target_vcpuid, sgi_id, sgi_id, SW_IRQ);
@@ -263,7 +262,7 @@ int32_t vgicd_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
 		break;
 
 	case GICD_SGIR:
-		handler_SGIR(offset, readl(addr));
+		handler_SGIR(pdata, offset, readl(addr));
 		break;
 
 	case GICD_CPENDSGIR(0) ... GICD_CPENDSGIR_LAST: {
