@@ -1,8 +1,6 @@
 #include "paging.h"
-#include "lpae.h"
-
-#include <assert.h>
 #include <io.h>
+#include <arch/armv7.h>
 
 void paging_create(addr_t base)
 {
