@@ -1,10 +1,3 @@
-/*
- * timer.c
- * --------------------------------------
- * Implementation of ARMv7 Generic Timer
- * Responsible: Inkyu Han
- */
-
 #include <config.h>
 #include <arch/armv7.h>
 #include <arch/irq.h>

@@ -1,5 +1,4 @@
 #include <core/vm/vmem.h>
-#include <debug.h>
 #include <config.h>
 #include <arch/armv7.h>
 #include <size.h>
@@ -7,7 +6,6 @@
 #include <vm_map.h>
 
 extern uint32_t __VM_PGTABLE;
-extern uint32_t __END_VM_PGTABLE;
 
 #define PGTABLE_SIZE    0x805000
 

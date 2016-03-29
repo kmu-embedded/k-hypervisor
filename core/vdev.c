@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vdev.h>
-#include <asm/macro.h>
 
 #define MAX_VDEV    256
 
@@ -25,7 +24,7 @@ uint32_t vdev_module_initcall(initcall_t fn)
     return	fn();
 }
 
-
+#include <asm/macro.h>
 void SECTION(".init.vdev") vdev_init(void)
 {
     initcall_t *fn;

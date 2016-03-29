@@ -1,13 +1,11 @@
+#include <stdio.h>
 #include <stdlib.h>
-#include <debug.h>
 #include <core/vm.h>
 #include <core/scheduler.h>
 
 #include <config.h>
 
 #include "../arch/arm/init.h"
-
-uint8_t secondary_smp_pen;
 
 void start_hypervisor()
 {
@@ -17,19 +15,20 @@ void start_hypervisor()
     sched_init();
 
     vm_setup();
+
     for (i = 0; i < NUM_GUESTS_STATIC; i++) {
         vmid_t vmid;
 
         if ((vmid = vm_create(nr_vcpus)) == VM_CREATE_FAILED) {
-            debug_print("vm_create(vm[%d]) is failed\n", i);
+            printf("vm_create(vm[%d]) is failed\n", i);
             goto error;
         }
         if (vm_init(vmid) != HALTED) {
-            debug_print("vm_init(vm[%d]) is failed\n", i);
+            printf("vm_init(vm[%d]) is failed\n", i);
             goto error;
         }
         if (vm_start(vmid) != RUNNING) {
-            debug_print("vm_start(vm[%d]) is failed\n", i);
+            printf("vm_start(vm[%d]) is failed\n", i);
             goto error;
         }
     }
@@ -43,6 +42,6 @@ void start_hypervisor()
 
     /* The code flow must not reach here */
 error:
-    debug_print("-------- [%s] ERROR: K-Hypervisor must not reach here\n", __func__);
+    printf("-------- [%s] ERROR: K-Hypervisor must not reach here\n", __func__);
     abort();
 }
