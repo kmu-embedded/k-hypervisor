@@ -1,5 +1,6 @@
 #include <asm/macro.h>
 #include <config.h>
+
     .syntax	unified
     .arch_extension sec
     .arch_extension virt
@@ -110,13 +111,6 @@ BEGIN_PROC(__start)
 	@ Never reached, here.
     b       __error
 
-__error_ns:
-__error_ve:
-__error_ge:
-__error:
-    b __error
-END_PROC(__start)
-
 #ifdef __CONFIG_SMP__
     .globl enter_smp_pen
 enter_smp_pen:
@@ -131,5 +125,12 @@ enter_smp_pen:
     isb     /* Make sure the invalidate ops are complete */
     dsb
 
-    bl      main
+    bl      init_system
 #endif
+
+__error_ns:
+__error_ve:
+__error_ge:
+__error:
+    b __error
+END_PROC(__start)
