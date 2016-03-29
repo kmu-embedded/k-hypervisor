@@ -1,8 +1,10 @@
 #include <asm/macro.h>
 #include <config.h>
+
     .syntax unified
     .arch_extension sec
     .arch_extension virt
+
 BEGIN_PROC(__monitor_vector)
     .word   0                       /* reset */
     nop                             /* und */

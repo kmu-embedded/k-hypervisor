@@ -10,5 +10,4 @@ BEGIN_PROC(__set_vcpu_context_first_time)
                             @ so, restoring r0-r12 is enough.
     clrex
     eret
-    @ TODO(wonseok): make macro for asm fuction.
-//.type __set_vcpu_context_first_time, %function
+END_PROC(__set_vcpu_context_first_time)
