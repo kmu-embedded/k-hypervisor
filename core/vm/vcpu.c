@@ -13,6 +13,7 @@ static int nr_vcpus = 0;
 void vcpu_setup()
 {
     LIST_INITHEAD(&vcpu_list);
+
     if (nr_vcpus != 0) {
         /* Never this happend */
         nr_vcpus = 0;

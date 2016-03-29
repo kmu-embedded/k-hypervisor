@@ -11,6 +11,7 @@
 #include <arch/armv7.h>
 
 extern uint32_t __HYP_PGTABLE;
+uint8_t secondary_smp_pen;
 
 void init_system()
 {
