@@ -59,13 +59,11 @@ int do_hvc_trap(struct core_regs *regs)
 	{
 
 		uint32_t fipa = read_hpfar() << 8;
-		struct vdev_module *vdev = vdev_find(fipa);
-
 		struct vmcb *vm = get_current_vm();
 		struct vdev_instance *instance = NULL;
 		list_for_each_entry(struct vdev_instance, instance, &vm->vdevs->head, head)
 		{
-			if (vdev->base == instance->module->base) {
+			if (fipa == instance->module->base) {
 				fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
 				uint32_t offset = fipa - instance->module->base;
 
