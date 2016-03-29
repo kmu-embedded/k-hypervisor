@@ -1,15 +1,16 @@
-#include <drivers/gic-v2.h>
-#include <arch/gic_regs.h>
-#include <arch/armv7.h>
-#include <io.h>
-#include <core/vm/vcpu.h>
-#include <core/scheduler.h>
 #include <stdio.h>
 #include <asm/macro.h>
 
-#include "irq-chip.h"
-
+#include <arch/gic_regs.h>
+#include <arch/armv7.h>
 #include <arch/irq.h>
+
+#include <core/vm/vcpu.h>
+#include <core/scheduler.h>
+
+#include <drivers/gic-v2.h>
+
+#include "irq-chip.h"
 
 #define EOI_ENABLE      1
 #define EOI_DISABLE     0
