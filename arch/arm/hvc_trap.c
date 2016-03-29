@@ -61,7 +61,7 @@ int do_hvc_trap(struct core_regs *regs)
 		uint32_t fipa = read_hpfar() << 8;
 		struct vmcb *vm = get_current_vm();
 		struct vdev_instance *instance = NULL;
-		list_for_each_entry(struct vdev_instance, instance, &vm->vdevs->head, head)
+		list_for_each_entry(struct vdev_instance, instance, &vm->vdevs_head, head)
 		{
 			if (fipa == instance->module->base) {
 				fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
