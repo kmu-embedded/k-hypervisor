@@ -58,13 +58,13 @@ vmid_t vm_create(uint8_t num_vcpus)
     //                    This means not copy all of the vdevs but only vdevs that VM needs
     struct vdev_instance *vdev_instance;
     list_for_each_entry(struct vdev_instance, vdev_instance, &vdev_list, head) {
-        struct vdev_instance *vdev_ins = malloc(sizeof(struct vdev_instance));
+        struct vdev_instance *vdev = malloc(sizeof(struct vdev_instance));
 
-        vdev_ins->owner = vm->vmid;
-        vdev_ins->module = vdev_instance->module;
-        vdev_ins->module->create(&vdev_ins->pdata);
+        vdev->owner = vm->vmid;
+        vdev->module = vdev_instance->module;
+        vdev->module->create(&vdev->pdata);
 
-        LIST_ADDTAIL(&vdev_ins->head, &vm->vdevs_head);
+        LIST_ADDTAIL(&vdev->head, &vm->vdevs_head);
     }
 
     LIST_ADDTAIL(&vm->head, &vm_list);
