@@ -48,6 +48,4 @@ struct vdev_instance {
 hvmm_status_t vdev_register(struct vdev_module *module);
 hvmm_status_t vdev_init(void);
 
-const struct vdev_module * vdev_find(uint32_t fipa);
-
 #endif /* __VDEV_H_ */

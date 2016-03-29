@@ -24,20 +24,6 @@ hvmm_status_t vdev_register(struct vdev_module *module)
     return HVMM_STATUS_SUCCESS;
 }
 
-#include <core/vm.h>
-
-const struct vdev_module *vdev_find(uint32_t fipa)
-{
-    struct vdev_instance *vdev_instance;
-    list_for_each_entry(struct vdev_instance, vdev_instance, &vdev_list, head) {
-        if (vdev_instance->module->base == fipa) {
-            return vdev_instance->module;
-        }
-    }
-
-    return NULL;
-}
-
 hvmm_status_t vdev_module_initcall(initcall_t fn)
 {
     return	fn();
