@@ -18,9 +18,6 @@ void vm_setup()
     atags_setup();
 }
 
-extern struct vdev_module vdev_gicd;
-extern struct vdev_module vdev_sample;
-
 vmid_t vm_create(uint8_t num_vcpus)
 {
     int i;

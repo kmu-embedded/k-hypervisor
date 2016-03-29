@@ -447,15 +447,10 @@ int32_t vgicd_read_handler(void *pdata, uint32_t offset)
 hvmm_status_t vdev_gicd_init() {
 	hvmm_status_t result = HVMM_STATUS_BUSY;
 
-	result = vdev_register(&vdev_gicd);
+	vdev_register(&vdev_gicd);
 	ITLinesNumber = GICv2.ITLinesNumber;
 
-	if (result == HVMM_STATUS_SUCCESS) {
-		printf("vdev registered:'%s'\n", vdev_gicd.name);
-	} else {
-		printf("%s: Unable to register vdev:'%s' code=%x\n", __func__,
-				vdev_gicd.name, result);
-	}
+    printf("vdev registered:'%s'\n", vdev_gicd.name);
 
 	return result;
 }

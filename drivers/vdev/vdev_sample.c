@@ -78,13 +78,8 @@ hvmm_status_t vdev_sample_init()
 {
     hvmm_status_t result = HVMM_STATUS_BUSY;
 
-    result = vdev_register(&vdev_sample);
-    if (result == HVMM_STATUS_SUCCESS) {
-        printf("vdev registered:'%s'\n", vdev_sample.name);
-    } else {
-        printf("%s: Unable to register vdev:'%s' code=%x\n",
-               __func__, vdev_sample.name, result);
-    }
+    vdev_register(&vdev_sample);
+    printf("vdev registered:'%s'\n", vdev_sample.name);
 
     return result;
 }
