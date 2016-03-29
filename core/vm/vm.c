@@ -56,19 +56,16 @@ vmid_t vm_create(uint8_t num_vcpus)
 
     // FIXME(casionwoo) : This copy of list_head would be replaced init with .config file.
     //                    This means not copy all of the vdevs but only vdevs that VM needs
-	struct vdev_instance *new_gicd = malloc(sizeof(struct vdev_instance));
-	memset(new_gicd, 0, sizeof(struct vdev_instance));
-	new_gicd->module = &vdev_gicd;
-	new_gicd->module->create(&new_gicd->pdata);
-	new_gicd->owner = vm->vmid;
-    LIST_ADDTAIL(&new_gicd->head, &vm->vdevs_head);
+    struct vdev_instance *vdev_instance;
+    list_for_each_entry(struct vdev_instance, vdev_instance, &vdev_list, head) {
+        struct vdev_instance *vdev_ins = malloc(sizeof(struct vdev_instance));
 
-	struct vdev_instance *new_sample = malloc(sizeof(struct vdev_instance));
-	memset(new_sample, 0, sizeof(struct vdev_instance));
-	new_sample->module = &vdev_sample;
-	new_sample->module->create(&new_sample->pdata);
-	new_sample->owner = vm->vmid;
-    LIST_ADDTAIL(&new_sample->head, &vm->vdevs_head);
+        vdev_ins->owner = vm->vmid;
+        vdev_ins->module = vdev_instance->module;
+        vdev_ins->module->create(&vdev_ins->pdata);
+
+        LIST_ADDTAIL(&vdev_ins->head, &vm->vdevs_head);
+    }
 
     LIST_ADDTAIL(&vm->head, &vm_list);
 

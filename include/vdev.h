@@ -20,6 +20,8 @@ extern initcall_t __vdev_module_end[];
 
 #define vdev_module_init(fn)        __define_vdev_module(fn)
 
+// FIXME(casionwoo) : This list_head would be moved to vdev.c and modified to static variable.
+//                    When .config file is implemented
 struct list_head vdev_list;
 
 struct vdev_module {
