@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <arch/armv7.h>
-#include <core/timer.h>
-#include <arch/armv7/arm_inline.h>
 #include <arch/irq.h>
+
+#include <core/timer.h>
+
 #include <config.h>
 
 #define NS_PL2_PTIMER_IRQ   26
