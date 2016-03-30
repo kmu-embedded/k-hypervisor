@@ -13,7 +13,7 @@ pgentry set_table(addr_t pa)
     return entry;
 }
 
-static pgentry set_entry(addr_t pa, uint8_t mem_attr, uint8_t ap)
+static pgentry set_entry(addr_t pa, uint8_t mem_attr, uint8_t ap, uint8_t af)
 {
     pgentry entry;
 
@@ -24,7 +24,7 @@ static pgentry set_entry(addr_t pa, uint8_t mem_attr, uint8_t ap)
     entry.page.mem_attr = mem_attr;
     entry.page.ap = ap;
     entry.page.sh = 3;
-    entry.page.af = 1;
+    entry.page.af = af;
     entry.page.ng = 1;
     entry.page.cb = 0;
     entry.page.pxn = 0;
@@ -33,7 +33,7 @@ static pgentry set_entry(addr_t pa, uint8_t mem_attr, uint8_t ap)
     return entry;
 }
 
-void write_pgentry(addr_t base, addr_t va, addr_t pa, uint8_t mem_attr, uint8_t ap)
+void write_pgentry(addr_t base, addr_t va, addr_t pa, uint8_t mem_attr, uint8_t ap, uint8_t af)
 {
     uint32_t l1_index, l2_index, l3_index;
     addr_t l1_entry_addr, l2_entry_addr, l3_entry_addr;
@@ -49,5 +49,5 @@ void write_pgentry(addr_t base, addr_t va, addr_t pa, uint8_t mem_attr, uint8_t 
 
     write64(read64(l1_entry_addr) | set_valid, l1_entry_addr);
     write64(read64(l2_entry_addr) | set_valid, l2_entry_addr);
-    write64(set_entry(pa, mem_attr, ap).raw, l3_entry_addr);
+    write64(set_entry(pa, mem_attr, ap, af).raw, l3_entry_addr);
 }

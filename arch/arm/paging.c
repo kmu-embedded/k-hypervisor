@@ -24,15 +24,15 @@ void paging_add_mapping(addr_t va, addr_t pa, uint8_t mem_attr, uint32_t size)
     uint64_t httbr = read_httbr();
 
     for (i = 0; i < (size >> PAGE_SHIFT); i++, va += 0x1000, pa += 0x1000) {
-        write_pgentry((addr_t) httbr, va >> PAGE_SHIFT, pa, mem_attr, 0);
+        write_pgentry((addr_t) httbr, va >> PAGE_SHIFT, pa, mem_attr, 0, 1);
     }
 }
 
-void paging_add_ipa_mapping(addr_t base, addr_t ipa, addr_t pa, uint8_t mem_attr, uint32_t size)
+void paging_add_ipa_mapping(addr_t base, addr_t ipa, addr_t pa, uint8_t mem_attr, uint8_t af, uint32_t size)
 {
     int i;
 
     for (i = 0; i < (size >> PAGE_SHIFT); i++, ipa += 0x1000, pa += 0x1000) {
-        write_pgentry(base, ipa >> PAGE_SHIFT, pa, mem_attr, 3);
+        write_pgentry(base, ipa >> PAGE_SHIFT, pa, mem_attr, 3, af);
     }
 }

@@ -31,7 +31,7 @@ hvmm_status_t vmem_init(struct vmem *vmem)
     int j=0;
 
 	do {
-		paging_add_ipa_mapping(vmem->base, vmem->mmap[j].ipa, vmem->mmap[j].pa, vmem->mmap[j].attr,
+		paging_add_ipa_mapping(vmem->base, vmem->mmap[j].ipa, vmem->mmap[j].pa, vmem->mmap[j].attr, vmem->mmap[j].af,
 				vmem->mmap[j].size);
 		j++;
 	} while (vmem->mmap[j].label != 0);
