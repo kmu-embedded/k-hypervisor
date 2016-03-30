@@ -79,8 +79,7 @@ void print_all_vcpu();
 void print_vcpu(struct vcpu *vcpu);
 
 uint32_t virq_to_pirq(struct vcpu *v, uint32_t virq);
-uint32_t pirq_to_enabled_virq(struct vcpu *v, uint32_t pirq);
-uint32_t virq_to_enabled_pirq(struct vcpu *v, uint32_t virq);
+uint32_t pirq_to_virq(struct vcpu *v, uint32_t pirq);
 
 void virq_enable(struct vcpu *v, uint32_t pirq, uint32_t virq);
 void virq_disable(struct vcpu *v, uint32_t virq);
