@@ -38,11 +38,15 @@ int do_hvc_trap(struct core_regs *regs)
 		uint32_t fipa = read_hpfar() << 8;
 		struct vmcb *vm = get_current_vm();
 		struct vdev_instance *instance = NULL;
+        fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
+
 		list_for_each_entry(struct vdev_instance, instance, &vm->vdevs.head, head)
 		{
-			if (fipa == instance->module->base) {
-				fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
-				uint32_t offset = fipa - instance->module->base;
+            uint32_t vdev_base = instance->module->base;
+            uint32_t vdev_size = instance->module->size;
+
+			if (vdev_base <= fipa && fipa <= vdev_base + vdev_size) {
+				uint32_t offset = fipa - vdev_base;
 
 				if (hsr.entry.iss & ISS_WNR) {
 					if (instance->module->write(instance->pdata, offset, &(regs->gpr[iss.dabt.srt])) < 0) {
@@ -54,12 +58,10 @@ int do_hvc_trap(struct core_regs *regs)
 						goto trap_error;
 					}
 				}
-
-
 			}
 		}
-	}
 		break;
+	}
 	default:
         goto trap_error;
     }
