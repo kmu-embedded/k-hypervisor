@@ -7,11 +7,13 @@
 #include <stdint.h>
 #include <irq-chip.h>
 
-static timer_callback_t __host_callback[NR_CPUS];
-static timer_callback_t __guest_callback[NR_CPUS];
-static uint32_t __host_tickcount[NR_CPUS];
-static uint32_t __guest_tickcount[NR_CPUS];
+#include <arch/armv7/generic_timer.h>
+
+static struct list_head active_timers[NR_CPUS];
+static struct list_head inactive_timers[NR_CPUS];
 static struct timer_ops *__ops;
+
+static hvmm_status_t timer_maintenance(void);
 
 /* TODO:(igkang) Let definitions of time unit conversion functions be available
  *  conditionally by config macro variables (if < 0 then don't define)
@@ -60,17 +62,12 @@ static inline uint64_t count_to_sec(uint64_t count)
     return count / (COUNT_PER_USEC * 1000 * 1000);
 }
 
-static inline uint64_t get_systemcounter_value(void)
-{
-    return read_cntpct(); /* FIXME:(igkang) Need to be rewritten using indirect call through API */
-}
-
 uint64_t timer_time_to_count(uint64_t time, time_unit_t unit)
 {
     switch (unit) {
     case TIMEUNIT_USEC:
         return us_to_count(time);
-    case TIMEUNIT_NSEC:
+    case TIMEUNIT_10NSEC:
         return ten_ns_to_count(time);
     case TIMEUNIT_MSEC:
         return ms_to_count(time);
@@ -86,7 +83,7 @@ uint64_t timer_count_to_time(uint64_t count, time_unit_t unit)
     switch (unit) {
     case TIMEUNIT_USEC:
         return count_to_us(count);
-    case TIMEUNIT_NSEC:
+    case TIMEUNIT_10NSEC:
         return count_to_ten_ns(count);
     case TIMEUNIT_MSEC:
         return count_to_ms(count);
@@ -95,6 +92,11 @@ uint64_t timer_count_to_time(uint64_t count, time_unit_t unit)
     default:
         return 0; /* error */
     }
+}
+
+static inline uint64_t get_systemcounter_value(void)
+{
+    return read_cntpct(); /* FIXME:(igkang) Need to be rewritten using indirect call through API */
 }
 
 uint64_t timer_get_systemcounter_value(void)
@@ -128,32 +130,6 @@ hvmm_status_t timer_stop(void)
     return HVMM_STATUS_UNSUPPORTED_FEATURE;
 }
 
-/* FIXME:(igkang) commented out to avoid -Wall -Werror */
-#if 0
-/*
- * Sets the timer interval(microsecond).
- */
-static hvmm_status_t timer_set_interval(uint32_t interval_us)
-{
-    /* timer_set_tval() */
-    if (__ops->set_interval) {
-        return __ops->set_interval((uint32_t)us_to_count(interval_us));
-    }
-
-    return HVMM_STATUS_UNSUPPORTED_FEATURE;
-}
-#endif
-
-static hvmm_status_t timer_set_absolute(uint64_t absolute_us)
-{
-    /* timer_set_tval() */
-    if (__ops->set_absolute) {
-        return __ops->set_absolute(us_to_count(absolute_us));
-    }
-
-    return HVMM_STATUS_UNSUPPORTED_FEATURE;
-}
-
 #ifdef __TEST_TIMER__
 static uint64_t saved_syscnt[NR_CPUS] = {0,};
 #endif
@@ -162,7 +138,7 @@ static uint64_t saved_syscnt[NR_CPUS] = {0,};
  * This method handles all timer IRQ.
  */
 // TODO(igkang): rename pregs and pdata for our usage.
-static void timer_handler(int irq, void *pregs, void *pdata)
+static void timer_irq_handler(int irq, void *pregs, void *pdata)
 {
     uint32_t pcpu = smp_processor_id();
 
@@ -174,91 +150,35 @@ static void timer_handler(int irq, void *pregs, void *pdata)
 
     timer_stop();
 
-    // TODO(igkang): remove __host_tickcount.
-#ifdef __CONFIG_TICKLESS_TIMER__
-    if (__host_callback[pcpu]) {
-        __host_callback[pcpu](pregs, &__host_tickcount[pcpu]);
+    /* TODO:(igkang) serparate timer.c into two pieces and move one into arch/arm ? */
+    uint64_t now = count_to_ten_ns(get_systemcounter_value()); // * 10;
+
+    struct timer *t;
+    struct timer *tmp;
+    LIST_FOR_EACH_ENTRY_SAFE(t, tmp, &active_timers[pcpu], head_active) {
+        if (t->expiration < now) {
+            t->callback(pregs, &t->expiration);
+            /* FIXME:(igkang) would be better to use set_timer instead? */
+        }
     }
-    if (__guest_callback[pcpu]) {
-        __guest_callback[pcpu](pregs, &__guest_tickcount[pcpu]);
-    }
-    timer_set_absolute(__host_tickcount[pcpu]);
-#else /* USE TICK */
-    if (__host_callback[pcpu] && --__host_tickcount[pcpu] == 0) {
-        __host_callback[pcpu](pregs, &__host_tickcount[pcpu]);
-        __host_tickcount[pcpu] /= TICK_PERIOD_US;
-    }
-    if (__guest_callback[pcpu] && --__guest_tickcount[pcpu] == 0) {
-        __guest_callback[pcpu](pregs, &__guest_tickcount[pcpu]);
-        __guest_tickcount[pcpu] /= TICK_PERIOD_US;
-    }
-    timer_set_absolute(TICK_PERIOD_US);
-#endif
+
+    timer_maintenance();
 
     timer_start();
 }
 
 static void timer_requset_irq(uint32_t irq)
 {
-    register_irq_handler(irq, &timer_handler);
+    register_irq_handler(irq, &timer_irq_handler);
     irq_hw->set_irq_type(irq, 0);  // 0 is level sensitive.
     irq_hw->enable(irq);
 }
 
-static hvmm_status_t timer_host_set_callback(timer_callback_t func, uint32_t interval_us)
-{
-    uint32_t pcpu = smp_processor_id();
-
-    __host_callback[pcpu] = func;
-#ifdef __CONFIG_TICKLESS_TIMER__
-    __host_tickcount[pcpu] = interval_us;
-#else /* USE TICK */
-    __host_tickcount[pcpu] = interval_us / TICK_PERIOD_US;
-#endif
-    /* FIXME:(igkang) hardcoded */
-
-    return HVMM_STATUS_SUCCESS;
-}
-
-static hvmm_status_t timer_guest_set_callback(timer_callback_t func, uint32_t interval_us)
-{
-    uint32_t pcpu = smp_processor_id();
-
-    __guest_callback[pcpu] = func;
-#ifdef __CONFIG_TICKLESS_TIMER__
-    __guest_tickcount[pcpu] = interval_us;
-#else /* USE TICK */
-    __guest_tickcount[pcpu] = interval_us / TICK_PERIOD_US;
-#endif
-    /* FIXME:(igkang) hardcoded */
-
-    return HVMM_STATUS_SUCCESS;
-}
-
-hvmm_status_t timer_set(struct timer *timer, uint32_t host)
-{
-    if (host) {
-        timer_stop();
-        timer_host_set_callback(timer->callback, timer->interval);
-#ifdef __CONFIG_TICKLESS_TIMER__
-        timer_set_absolute(timer->interval);
-#else /* USE TICK */
-        timer_set_absolute(TICK_PERIOD_US);
-#endif
-        timer_start();
-    } else {
-        timer_guest_set_callback(timer->callback, timer->interval);
-    }
-
-    /* TODO:(igkang) add code to handle guest_callback count (for vdev)  */
-
-    return HVMM_STATUS_SUCCESS;
-}
-
-hvmm_status_t timer_init(uint32_t irq)
+hvmm_status_t timer_hw_init(uint32_t irq) /* const struct timer_config const* timer_config)*/
 {
     __ops = _timer_module.ops;
 
+    /* FIXME:(igkang) may need per core initialization */
     if (__ops->init) {
         __ops->init();
     }
@@ -268,3 +188,101 @@ hvmm_status_t timer_init(uint32_t irq)
 
     return HVMM_STATUS_SUCCESS;
 }
+
+hvmm_status_t timemanager_init() /* const struct timer_config const* timer_config)*/
+{
+    uint32_t pcpu = smp_processor_id();
+
+    LIST_INITHEAD(&active_timers[pcpu]);
+    LIST_INITHEAD(&inactive_timers[pcpu]);
+
+    return HVMM_STATUS_SUCCESS;
+}
+
+hvmm_status_t tm_register_timer(struct timer *t, timer_callback_t callback)
+{
+    uint32_t pcpu = smp_processor_id();
+    /* ASSERT(t != NULL); */
+
+    LIST_INITHEAD(&t->head_active);
+    LIST_INITHEAD(&t->head_inactive);
+
+    /* ASSERT(callback != NULL); */
+    t->callback = callback;
+    t->expiration = 0;
+    t->state = 0; /* inactive */
+
+    LIST_ADDTAIL(&t->head_inactive, &inactive_timers[pcpu]);
+
+    return HVMM_STATUS_SUCCESS;
+}
+
+hvmm_status_t tm_set_timer(struct timer *t, uint64_t expiration)
+{
+    /* uint32_t pcpu = smp_processor_id(); */
+
+    timer_stop();
+
+    /* ASSERT(t != NULL); */
+    tm_deactivate_timer(t);
+
+    /* ASSERT(expiration == 0); ? */
+    t->expiration = expiration;
+    tm_activate_timer(t);
+
+    /* then do maintenance routine */
+    timer_maintenance();
+
+    timer_start();
+    /* FIXME:(igkang) does it really need timer_stop/start ? */
+
+    return HVMM_STATUS_SUCCESS;
+}
+
+hvmm_status_t tm_activate_timer(struct timer *t)
+{
+    uint32_t pcpu = smp_processor_id();
+
+    /* ASSERT(t != NULL); */
+    LIST_DELINIT(&t->head_inactive);
+    LIST_ADDTAIL(&t->head_active, &active_timers[pcpu]);
+
+    return HVMM_STATUS_SUCCESS;
+}
+
+hvmm_status_t tm_deactivate_timer(struct timer *t)
+{
+    uint32_t pcpu = smp_processor_id();
+
+    /* ASSERT(t != NULL); */
+    LIST_DELINIT(&t->head_active);
+    LIST_ADDTAIL(&t->head_inactive, &inactive_timers[pcpu]);
+
+    return HVMM_STATUS_SUCCESS;
+}
+
+/* must be called between the calls of timer_stop() and timer_start() */
+static hvmm_status_t timer_maintenance(void)
+{
+    uint32_t pcpu = smp_processor_id();
+
+    /* then find nearest expiration time */
+    uint64_t nearest = ~0x0llu;
+    struct timer *t;
+    LIST_FOR_EACH_ENTRY(t, &active_timers[pcpu], head_active) {
+        if (t->expiration < nearest) {
+            nearest = t->expiration;
+            break;
+        }
+    }
+
+    /* then calculate cval from ns */
+    nearest = ten_ns_to_count(nearest);
+
+    /* then set cval */
+    /* ASSERT(__ops != NULL); */
+    __ops->set_cval(nearest);
+
+    return HVMM_STATUS_SUCCESS;
+}
+

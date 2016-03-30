@@ -302,6 +302,11 @@ static hvmm_status_t timer_set_cval_by_delta(uint64_t val)
     return generic_timer_set_cval(GENERIC_TIMER_HYP, val);
 }
 
+static hvmm_status_t timer_set_cval(uint64_t val)
+{
+    return generic_timer_set_cval(GENERIC_TIMER_HYP, val);
+}
+
 /** @brief dump at time.
  *  @todo have to write dump with meaningful printing.
  */
@@ -310,11 +315,13 @@ static hvmm_status_t timer_dump(void)
     return HVMM_STATUS_SUCCESS;
 }
 
+/* TODO:(igkang) rename or remove functions as needed */
 struct timer_ops _timer_ops = {
     .enable = timer_enable,
     .disable = timer_disable,
     .set_interval = timer_set_tval,
     .set_absolute = timer_set_cval_by_delta,
+    .set_cval = timer_set_cval,
     .dump = timer_dump,
 };
 

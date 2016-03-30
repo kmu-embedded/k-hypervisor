@@ -14,7 +14,7 @@ struct scheduler {
     int (*unregister_vcpu)(vcpuid_t);
     int (*attach_vcpu)(vcpuid_t);
     int (*detach_vcpu)(vcpuid_t);
-    int (*do_schedule)(uint32_t *);
+    int (*do_schedule)(uint64_t *);
 };
 
 extern const struct scheduler sched_rr;

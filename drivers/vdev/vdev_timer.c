@@ -109,10 +109,11 @@ void callback_timer(void *pdata, uint32_t *delay_tick)
     *delay_tick = 1 * TICKTIME_1MS / 50;
 }
 
+/* TODO:(igkang) modify vdev_timer to use new timer manager API */
 static hvmm_status_t vdev_vtimer_reset(void)
 {
     int i;
-    struct timer timer;
+    // struct timer timer;
     uint32_t cpu = smp_processor_id();
 
     if (!cpu) {
@@ -121,10 +122,10 @@ static hvmm_status_t vdev_vtimer_reset(void)
         }
     }
 
-    timer.interval = TICKTIME_1MS;
-    timer.callback = &callback_timer;
+    // timer.interval = TICKTIME_1MS;
+    // timer.callback = &callback_timer;
 
-    timer_set(&timer, GUEST_TIMER);
+    // timer_set(&timer, GUEST_TIMER);
 
     return HVMM_STATUS_SUCCESS;
 }
