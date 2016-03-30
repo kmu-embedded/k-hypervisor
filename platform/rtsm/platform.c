@@ -48,5 +48,5 @@ void console_init()
 
 void dev_init()
 {
-    sp804_enable();
+    //sp804_enable();
 }

@@ -49,7 +49,7 @@ int do_hvc_trap(struct core_regs *regs)
 			if (vdev_base <= fipa && fipa <= vdev_base + vdev_size) {
 				uint32_t offset = fipa - vdev_base;
 
-				printf("base: %x offset %x\n",fipa , offset);
+				//printf("base: %x offset %x\n",fipa , offset);
 
 				if (iss.dabt.wnr == 1) {
 					if (instance->module->write(instance->pdata, offset, &(regs->gpr[iss.dabt.srt])) < 0) {

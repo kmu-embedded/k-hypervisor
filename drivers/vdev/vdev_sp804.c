@@ -40,8 +40,8 @@ struct sp804 {
 
 struct vdev_module sp804_vtimer1 = {
 		.name = "vdev_sp804",
-		.base = TIMER0_BASE,
-		.size = 1,
+		.base = TIMER1_BASE,
+		.size = 4096,
 		.read = vtimer_read,
 		.write = vtimer_write,
 		.create = vtimer_create,
@@ -52,8 +52,6 @@ int32_t vtimer_create(void **pdata) {
 	struct sp804 *vtimer = malloc(sizeof(struct sp804));
 
 	*pdata = vtimer;
-	// initialize sp804 device here.
-
 	return 0;
 }
 
@@ -65,19 +63,20 @@ int32_t vtimer_write(void *pdata, uint32_t offset, uint32_t *addr)
 	case TIMER1_LOAD(0):
 		printf("[write] offset: %x, %x\n", offset, readl(addr));
 		sp804->timer1_load = readl(addr);
+		writel(sp804->timer1_load, TIMER1_LOAD(TIMER1_BASE));
 		break;
 
 	case TIMER1_CONTROL(0):
 		printf("[write] offset: %x, %x\n", offset, readl(addr));
 		sp804->timer1_control = readl(addr);
-		// 22 is irq, enable with 32bit counter.
-		// e2 is irq, enable, 32bit, module enable, periodic
-		// enable timer!
+
+		writel(sp804->timer1_control, TIMER1_CONTROL(TIMER1_BASE));
 		break;
 
 	case TIMER1_INTCLR(0):
-		//printf("[write] offset: %x, %x\n", offset, readl(addr));
+		printf("[write] offset: %x, %x\n", offset, readl(addr));
 		sp804->timer1_intclr = readl(addr);
+		writel(sp804->timer1_intclr, TIMER1_INTCLR(TIMER1_BASE));
 		break;
 
 	case TIMER1_BGLOAD(0):
