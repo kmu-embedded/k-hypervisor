@@ -4,8 +4,8 @@
 #define TIMER1_IRQ					34
 #define TIMER2_IRQ					35
 
-#define TIMER0_BASE          		0x1C110000
-#define TIMER1_BASE          		0x1C120000
+#define TIMER1_BASE          		0x1C110000
+#define TIMER2_BASE          		0x1C120000
 
 #define TIMER1_LOAD(x)          	(x + 0x00)		// RW
 #define TIMER1_VALUE(x)				(x + 0x04)		// RO
