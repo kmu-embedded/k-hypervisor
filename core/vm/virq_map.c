@@ -9,24 +9,9 @@ uint32_t virq_to_pirq(struct vcpu *v, uint32_t virq)
     return v->map[virq].pirq;
 }
 
-uint32_t pirq_to_enabled_virq(struct vcpu *v, uint32_t pirq)
+uint32_t pirq_to_virq(struct vcpu *v, uint32_t pirq)
 {
-    uint32_t virq = VIRQ_INVALID;
-
-    if (v->map[pirq].enabled)
-        virq = v->map[pirq].virq;
-
-    return virq;
-}
-
-uint32_t virq_to_enabled_pirq(struct vcpu *v, uint32_t virq)
-{
-    uint32_t pirq = PIRQ_INVALID;
-
-    if (v->map[virq].enabled)
-        pirq = v->map[virq].pirq;
-
-    return pirq;
+    return v->map[pirq].virq;
 }
 
 void virq_enable(struct vcpu *v, uint32_t pirq, uint32_t virq)
@@ -66,11 +51,9 @@ bool is_guest_irq(uint32_t irq)
     uint32_t pcpu = smp_processor_id();
     struct running_vcpus_entry_t *sched_vcpu_entry;
 
-    //if(irq == 34) printf(" SP804 INJECT?\n");
-
     list_for_each_entry(struct running_vcpus_entry_t, sched_vcpu_entry, &__running_vcpus[pcpu], head) {
         vcpu = vcpu_find(sched_vcpu_entry->vcpuid);
-        virq = pirq_to_enabled_virq(vcpu, irq);
+        virq = pirq_to_virq(vcpu, irq);
         if (virq == VIRQ_INVALID) {
             continue;
         }
