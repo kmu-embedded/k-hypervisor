@@ -14,6 +14,7 @@
 #include <lib/list.h>
 
 const struct scheduler *__policy[NR_CPUS];
+struct timer __sched_timer[NR_CPUS]; /* TODO:(igkang) may be moved into scheduler instance struct */
 
 vcpuid_t __current_vcpuid[NR_CPUS];
 vcpuid_t __next_vcpuid[NR_CPUS];
@@ -123,16 +124,17 @@ hvmm_status_t switch_to(vcpuid_t vcpuid)
 /* Switch to the first guest */
 void sched_start(void)
 {
-    struct vcpu *vcpu = 0;
     uint32_t pcpu = smp_processor_id();
-    struct timer timer;
+    struct vcpu *vcpu = NULL;
 
     debug_print("[hyp] switch_to_initial_guest:\n");
 
     /* Select the first guest context to switch to. */
-    vcpu = vcpu_find(__policy[pcpu]->do_schedule(&timer.interval));
-    timer.callback = &do_schedule;
-    timer_set(&timer, HOST_TIMER);
+    uint64_t expiration = 0;
+    vcpu = vcpu_find(__policy[pcpu]->do_schedule(&expiration));
+    tm_register_timer(&__sched_timer[pcpu], do_schedule);
+    tm_set_timer(&__sched_timer[pcpu], expiration);
+    /* timer just started */
 
     switch_to(vcpu->vcpuid);
     sched_perform_switch(NULL);
@@ -259,7 +261,7 @@ int sched_vcpu_detach(vcpuid_t vcpuid)
  * @param
  * @return
  */
-void do_schedule(void *pdata, uint32_t *delay_tick)
+void do_schedule(void *pdata, uint64_t *expiration)
 {
     uint32_t pcpu = smp_processor_id();
     /* TODO:(igkang) function type(return/param) should be renewed */
@@ -269,7 +271,7 @@ void do_schedule(void *pdata, uint32_t *delay_tick)
 
     /* determine next vcpu to be run
      * by calling scheduler.do_schedule() */
-    next_vcpuid = __policy[pcpu]->do_schedule(delay_tick);
+    next_vcpuid = __policy[pcpu]->do_schedule(expiration);
 
     /* FIXME:(igkang) hardcoded */
     /* set timer for next scheduler work */
