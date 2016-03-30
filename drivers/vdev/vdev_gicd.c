@@ -52,7 +52,6 @@ static void set_enable(uint32_t current_status, uint8_t n, uint32_t old_status)
 		pirq = (pirq == PIRQ_INVALID ? virq : pirq);
 		virq_enable(vcpu, pirq, virq);
 		pirq_enable(vcpu, pirq, virq);
-		printf("%s: pirq %d virq %d\n", __func__, pirq, virq);
 		gic_enable_irq(pirq);
 
 		delta &= ~(1 << offset);
@@ -73,9 +72,8 @@ static void set_clear(uint32_t current_status, uint8_t n, uint32_t old_status)
 		pirq = (pirq == PIRQ_INVALID ? virq : pirq);
 		virq_disable(vcpu, virq);
 		pirq_disable(vcpu, pirq);
-		printf("%s: pirq %d virq %d\n", __func__, pirq, virq);
 		// TODO(casionwoo) : When VM try to interrupt clear, must be checked every VM clear the interrupt. Then clear the irq
-		gic_disable_irq(pirq);
+//		gic_disable_irq(pirq);
 
 		delta &= ~(1 << offset);
 	}
