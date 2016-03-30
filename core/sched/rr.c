@@ -7,6 +7,7 @@
 #include <stdbool.h>
 
 #include <lib/list.h>
+#include <core/timer.h>
 
 typedef enum {
     DETACHED,
@@ -182,7 +183,7 @@ int sched_rr_vcpu_detach(vcpuid_t vcpuid)
  * @param
  * @return next_vcpuid
  */
-int sched_rr_do_schedule(uint32_t *delay_tick)
+int sched_rr_do_schedule(uint64_t *expiration)
 {
     uint32_t cpu = smp_processor_id();
     /* TODO:(igkang) change type to bool */
@@ -223,7 +224,8 @@ int sched_rr_do_schedule(uint32_t *delay_tick)
         next_entry = LIST_ENTRY(struct rq_entry_rr, current[cpu], head);
 
         /* FIXME:(igkang) hardcoded expression */
-        *delay_tick = next_entry->tick_reset_val * TICKTIME_1MS;
+        *expiration =
+            timer_get_systemcounter_value() + 100000llu * (uint64_t) next_entry->tick_reset_val;
     }
 
     /* vcpu of current entry will be the next vcpu */
