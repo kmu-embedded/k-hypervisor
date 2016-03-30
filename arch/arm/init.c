@@ -39,7 +39,7 @@ void init_system()
 
         vdev_init(); /* Already we have */
 
-        timer_init(26);
+        timer_hw_init(26);
 
         setup_vm_mmap();
 

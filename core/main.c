@@ -7,10 +7,14 @@
 
 #include "../arch/arm/init.h"
 
+#include <core/timer.h>
+
 void start_hypervisor()
 {
     int i;
     uint8_t nr_vcpus = 1; // TODO: It will be read from configuration file.
+
+    timemanager_init();
 
     sched_init();
 
