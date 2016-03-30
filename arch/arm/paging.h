@@ -9,6 +9,6 @@ void paging_create(addr_t base);
 void paging_add_mapping(addr_t va, addr_t pa, uint8_t mem_attr, uint32_t size);
 void paging_enable_mmu(void);
 
-void paging_add_ipa_mapping(addr_t base, addr_t ipa, addr_t pa, uint8_t mem_attr, uint32_t size);
+void paging_add_ipa_mapping(addr_t base, addr_t ipa, addr_t pa, uint8_t mem_attr, uint8_t af, uint32_t size);
 
 #endif /* __MM_H__*/

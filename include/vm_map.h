@@ -17,6 +17,7 @@ struct memdesc_t {
     uint32_t pa;
     uint32_t size;
     uint8_t attr;
+    uint8_t af;
 };
 
 // TODO(casionwoo) : These memory mapping variables should be removed after DTB implementation
