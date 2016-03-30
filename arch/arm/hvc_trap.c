@@ -32,6 +32,7 @@ int do_hvc_trap(struct core_regs *regs)
     case TRAP_EC_NON_ZERO_PREFETCH_ABORT_FROM_HYP_MODE:
 	case TRAP_EC_NON_ZERO_DATA_ABORT_FROM_HYP_MODE:
 	case TRAP_EC_NON_ZERO_HVC:
+        goto trap_error;
 	case TRAP_EC_NON_ZERO_DATA_ABORT_FROM_OTHER_MODE:
 	{
 
@@ -43,6 +44,8 @@ int do_hvc_trap(struct core_regs *regs)
 			if (fipa == instance->module->base) {
 				fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
 				uint32_t offset = fipa - instance->module->base;
+
+				printf("base: %x offset %x\n",fipa , offset);
 
 				if (iss.dabt.wnr == 1) {
 					if (instance->module->write(instance->pdata, offset, &(regs->gpr[iss.dabt.srt])) < 0) {
@@ -64,16 +67,12 @@ int do_hvc_trap(struct core_regs *regs)
         goto trap_error;
     }
 
-    if (hsr.entry.il == 0) {
-    	regs->pc += 2;
-    } else {
-    	regs->pc += 4;
-    }
+	regs->pc += 4;
 
     return 0;
 
 trap_error:
-	printf("[hyp] do_hvc_trap:unknown hsr.iss= %x\n", hsr.entry.iss);
+	printf("[hyp] do_hvc_trap: unknown hsr.iss= %x\n", hsr.entry.iss);
 	printf("[hyp] hsr.ec= %x\n", hsr.entry.ec);
     printf("[hyp] hsr= %x\n", hsr.raw);
     printf("guest pc is %x\n", regs->pc);

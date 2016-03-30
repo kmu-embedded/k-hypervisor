@@ -45,9 +45,7 @@ BEGIN_PROC(__start)
     @ Get the number of GICD_IGROUPRn == GICD_TYPER.ITLinesNumber + 1.
     ldr	    r0, = CFG_GICD_BASE_PA	@ GICD base
     ldr	    r1, [r0, #0x04]			@ Type Register
-    cmp	    r4, #0
-    andeq	r1, r1, #0x1f
-    movne	r1, #0
+    and	    r1, r1, #0x1f
     add	    r2, r0, #0x080			@ Security Register 0
     mvn	    r3, #0                  @ set r3 == 0xffffffff
 1:

@@ -147,9 +147,8 @@ void gic_init(void)
     printf("Number of IRQs: %d\n", GICv2.ITLinesNumber);
     printf("Number of CPU interfaces: %d\n", GICv2.CPUNumber);
 
-    GICC_WRITE(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
-    GICD_WRITE(GICD_CTLR, 0x1);
-
+    GICC_WRITE(GICC_CTLR, 0x0);
+    GICD_WRITE(GICD_CTLR, 0x0);
     /* No Priority Masking: the lowest value as the threshold : 255 */
     // We set 0xff but, real value is 0xf8
     GICC_WRITE(GICC_PMR, 0xff);
@@ -166,6 +165,12 @@ void gic_init(void)
         GICD_WRITE(GICD_ICENABLER(i >> 5), valid);
     }
 
+#if 0
+	for (i = 0; i < GICv2.ITLinesNumber; i += 32) {
+		GICD_WRITE(GICD_IGROUPR(i >> 5), 0xFFFFFFFF);
+	}
+#endif
+
     // We set priority 0xa0 for each but real value is a 0xd0, Why?
     /* Set priority as default for all interrupts */
     for (i = 0; i < GICv2.ITLinesNumber; i += 4) {
@@ -179,6 +184,9 @@ void gic_init(void)
     }
 #endif
 
+
+    GICC_WRITE(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
+    GICD_WRITE(GICD_CTLR, 0x1);
 
 }
 
