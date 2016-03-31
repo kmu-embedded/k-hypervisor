@@ -61,19 +61,16 @@ int32_t vtimer_write(void *pdata, uint32_t offset, uint32_t *addr)
 
 	switch (offset) {
 	case TIMER1_LOAD(0):
-		printf("[write] offset: %x, %x\n", offset, readl(addr));
 		sp804->timer1_load = readl(addr);
 		writel(sp804->timer1_load, TIMER1_LOAD(TIMER1_BASE));
 		break;
 
 	case TIMER1_CONTROL(0):
-		printf("[write] offset: %x, %x\n", offset, readl(addr));
 		sp804->timer1_control = readl(addr);
 		writel(sp804->timer1_control, TIMER1_CONTROL(TIMER1_BASE));
 		break;
 
 	case TIMER1_INTCLR(0):
-		printf("[write] offset: %x, %x\n", offset, readl(addr));
 		sp804->timer1_intclr = readl(addr);
 		writel(sp804->timer1_intclr, TIMER1_INTCLR(TIMER1_BASE));
 		break;
@@ -127,16 +124,15 @@ int32_t vtimer_read(void *pdata, uint32_t offset)
 
 	switch (offset) {
 	case TIMER1_LOAD(0):
-		//printf("[read] offset: %x, %x\n", offset);
 		return sp804->timer1_load;
 		break;
 
 	case TIMER1_VALUE(0):
-		//printf("[read] offset: %x, %x\n", offset);
+		sp804->timer1_value = readl(TIMER1_VALUE(TIMER1_BASE));
 		return sp804->timer1_value;
 		break;
+
 	case TIMER1_CONTROL(0):
-		//printf("[read] offset: %x, %x\n", offset);
 		return sp804->timer1_control;
 		break;
 

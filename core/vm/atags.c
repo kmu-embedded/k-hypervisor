@@ -89,9 +89,8 @@ void linuxloader_setup_atags(uint32_t src)
 {
     char *commandline =
         /* mmc-rtsm */
-
-        "root=/dev/mmcblk0 rw ip=dhcp "
-        "rw ip=dhcp earlyprintk console=ttyAMA0 mem=256M";
+    //    "root=/dev/mmcblk0 rw ip=dhcp "
+    //    "rw ip=dhcp earlyprintk console=ttyAMA0 mem=256M";
 
     /* android-rtsm */
     /*
@@ -103,6 +102,7 @@ void linuxloader_setup_atags(uint32_t src)
      * "root=/dev/nfs nfsroot=192.168.0.4:/srv/nfs_simpleroot/ "
      * "rw ip=dhcp earlyprintk console=ttyAMA0 mem=256M";
      */
+    "earlyprintk console=ttyAMA0 mem=128M root=/dev/nfs nfsroot=192.168.0.8:/srv/nfsroot/ rw ip=dhcp";
     /* ramdisk-rtsm */
     /*
      "root=/dev/ram rw earlyprintk console=ttyAMA0 "
