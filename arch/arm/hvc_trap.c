@@ -11,6 +11,7 @@ int do_hvc_trap(struct core_regs *regs)
 {
     hsr_t hsr;
 	iss_t iss;
+    uint32_t fipa;
 
 	hsr.raw = read_hsr();
 	iss.raw = hsr.entry.iss;
@@ -37,12 +38,14 @@ int do_hvc_trap(struct core_regs *regs)
 	{
 		switch (iss.dabt.dfsc) {
 		case FSR_TRANS_FAULT(1) ... FSR_TRANS_FAULT(3):
-			printf("FSR_TRANS_FAULT  %x\n", iss.dabt.dfsc);
+			fipa = read_hpfar() << 8;
+			fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
+            printf("FSR_TRANS_FAULT: fipa 0x%08x\n", fipa);
 			break;
 
 		case FSR_ACCESS_FAULT(1) ... FSR_ACCESS_FAULT(3):
 		{
-			uint32_t fipa = read_hpfar() << 8;
+			fipa = read_hpfar() << 8;
 			struct vmcb *vm = get_current_vm();
 			struct vdev_instance *instance = NULL;
 			fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
