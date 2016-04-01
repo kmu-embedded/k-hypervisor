@@ -78,38 +78,45 @@ int32_t vtimer_write(void *pdata, uint32_t offset, uint32_t *addr)
         break;
 
     case TIMER1_BGLOAD(0):
-        //printf("[write] offset: %x, %x\n", offset, readl(addr));
+        //printf("TIMER1_BGLOAD: %x\n", readl(addr));
         sp804->timer1_bgload = readl(addr);
+        writel(sp804->timer1_bgload, TIMER1_BGLOAD(TIMER1_BASE));
         break;
 
     case TIMER2_LOAD(0):
-        //printf("[write] offset: %x, %x\n", offset, readl(addr));
+        printf("TIMER2_LOAD %x\n", readl(addr));
         sp804->timer2_load = readl(addr);
+        writel(sp804->timer2_load, TIMER2_LOAD(TIMER1_BASE));
         break;
 
     case TIMER2_CONTROL(0):
-        //printf("[write] offset: %x, %x\n", offset, readl(addr));
+        printf("TIMER2_CONTROL %x\n", readl(addr));
         sp804->timer2_control = readl(addr);
+        writel(sp804->timer2_control, TIMER2_CONTROL(TIMER1_BASE));
         break;
 
     case TIMER2_INTCLR(0):
-        //printf("[write] offset: %x, %x\n", offset, readl(addr));
+        printf("TIMER2_INTCLR %x\n", readl(addr));
         sp804->timer2_intclr = readl(addr);
+        writel(sp804->timer2_intclr, TIMER2_INTCLR(TIMER1_BASE));
         break;
 
     case TIMER2_BGLOAD(0):
         //printf("[write] offset: %x, %x\n", offset, readl(addr));
         sp804->timer2_bgload = readl(addr);
+        writel(sp804->timer2_bgload, TIMER2_BGLOAD(TIMER1_BASE));
         break;
 
     case TIMER_ITCR(0):
         //printf("[write] offset: %x, %x\n", offset, readl(addr));
         sp804->timer_itcr = readl(addr);
+        writel(sp804->timer_itcr, TIMER_ITCR(TIMER1_BASE));
         break;
 
     case TIMER_ITOP(0):
         //printf("[write] offset: %x, %x\n", offset, readl(addr));
         sp804->timer_itop = readl(addr);
+        writel(sp804->timer_itop, TIMER_ITOP(TIMER1_BASE));
         break;
 
     default:
