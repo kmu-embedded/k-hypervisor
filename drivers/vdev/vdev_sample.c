@@ -20,57 +20,57 @@ static int32_t vdev_sample_write(void *pdata, uint32_t offset, uint32_t *addr);
 int32_t vdev_sample_create_instance(void **pdata);
 
 struct vdev_module vdev_sample = {
-		.name = "vdev_sample",
-		.base = SAMPLE_BASE_ADDR,
-		.size = 0x1000,
-		.read = vdev_sample_read,
-		.write = vdev_sample_write,
-		.create = vdev_sample_create_instance,
+    .name = "vdev_sample",
+    .base = SAMPLE_BASE_ADDR,
+    .size = 0x1000,
+    .read = vdev_sample_read,
+    .write = vdev_sample_write,
+    .create = vdev_sample_create_instance,
 };
 
 int32_t vdev_sample_create_instance(void **pdata)
 {
-	*pdata = malloc(sizeof(struct vdev_sample_regs));
-	return 0;
+    *pdata = malloc(sizeof(struct vdev_sample_regs));
+    return 0;
 }
 
 static int32_t vdev_sample_read(void *pdata, uint32_t offset)
 {
-	struct vdev_sample_regs *sample_regs = pdata;
+    struct vdev_sample_regs *sample_regs = pdata;
 
-	/* READ */
-	switch (offset) {
-	case 0x0:
-		return sample_regs->axis_x;
-		break;
-	case 0x4:
-		return sample_regs->axis_y;
-		break;
-	case 0x8:
-		return sample_regs->axis_x + sample_regs->axis_y;
-		break;
-	}
-	return 0;
+    /* READ */
+    switch (offset) {
+    case 0x0:
+        return sample_regs->axis_x;
+        break;
+    case 0x4:
+        return sample_regs->axis_y;
+        break;
+    case 0x8:
+        return sample_regs->axis_x + sample_regs->axis_y;
+        break;
+    }
+    return 0;
 }
 
 static int32_t vdev_sample_write(void *pdata, uint32_t offset, uint32_t *addr)
 {
 
-	struct vdev_sample_regs *sample_regs = pdata;
+    struct vdev_sample_regs *sample_regs = pdata;
 
-	/* WRITE */
-	switch (offset) {
-	case 0x0:
-		sample_regs->axis_x = readl(addr);
-		break;
-	case 0x4:
-		sample_regs->axis_y = readl(addr);
-		break;
-	case 0x8:
-		/* read-only register, ignored, but no error */
-		break;
-	}
-	return 0;
+    /* WRITE */
+    switch (offset) {
+    case 0x0:
+        sample_regs->axis_x = readl(addr);
+        break;
+    case 0x4:
+        sample_regs->axis_y = readl(addr);
+        break;
+    case 0x8:
+        /* read-only register, ignored, but no error */
+        break;
+    }
+    return 0;
 }
 
 

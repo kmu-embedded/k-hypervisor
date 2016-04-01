@@ -42,7 +42,7 @@ struct vcpu {
 
     struct arch_regs regs;
 
-    lr_entry_t pending_irqs[MAX_PENDING_VIRQS +1];
+    lr_entry_t pending_irqs[MAX_PENDING_VIRQS + 1];
 
     uint32_t lr[64];
 

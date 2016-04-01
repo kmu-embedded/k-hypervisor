@@ -9,11 +9,11 @@ static uint64_t tickcount = 0;
 void sp804_handler(int irq, void *pregs, void *pdata)
 {
 #if 0
-	printf("SP804 IRQ[%d]: T1 %x, T2: %x\n", irq, readl(TIMER1_VALUE(TIMER0_BASE)),
-			readl(TIMER2_VALUE(TIMER0_BASE)));
+    printf("SP804 IRQ[%d]: T1 %x, T2: %x\n", irq, readl(TIMER1_VALUE(TIMER0_BASE)),
+           readl(TIMER2_VALUE(TIMER0_BASE)));
 #endif
-	tickcount++;
-	//printf("tickcount: %d\n", tickcount);
+    tickcount++;
+    //printf("tickcount: %d\n", tickcount);
 
     writel(0x1, TIMER1_INTCLR(TIMER0_BASE));
 }

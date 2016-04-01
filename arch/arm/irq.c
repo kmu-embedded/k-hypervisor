@@ -36,7 +36,8 @@ void irq_init()
 
 void register_irq_handler(uint32_t irq, irq_handler_t handler)
 {
-    if (irq < MAX_IRQS)
+    if (irq < MAX_IRQS) {
         irq_handlers[irq] = handler;
+    }
 }
 

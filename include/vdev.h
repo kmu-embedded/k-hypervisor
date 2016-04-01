@@ -31,12 +31,12 @@ struct vdev_module {
 };
 
 struct vdev_instance {
-	const struct vdev_module *module;
-	void *pdata;
+    const struct vdev_module *module;
+    void *pdata;
 
-	vmid_t owner;
+    vmid_t owner;
 
-	struct list_head head;
+    struct list_head head;
 };
 
 void vdev_register(struct vdev_module *module);

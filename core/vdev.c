@@ -31,9 +31,9 @@ void SECTION(".init.vdev") vdev_init(void)
 
     LIST_INITHEAD(&vdev_list);
 
-	for (fn = __vdev_module_start; fn < __vdev_module_end; fn++) {
-		vdev_module_initcall(*fn);
-	}
+    for (fn = __vdev_module_start; fn < __vdev_module_end; fn++) {
+        vdev_module_initcall(*fn);
+    }
 }
 
 void vdev_create(struct vdev_instance *vdevs, vmid_t vmid)
