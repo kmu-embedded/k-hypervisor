@@ -42,9 +42,9 @@ struct memdesc_t vm1_device_md[] = {
     { "mmci",   0x1C050000, 0x1C050000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
     { "kmi",    0x1C060000, 0x1C060000,  SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
     { "kmi2",   0x1C070000, 0x1C070000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
-    { "v2m_serial0", 0x1C090000, 0x1C0A0000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
+    { "v2m_serial0", 0x1C090000, 0x1C0B0000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
     { "v2m_serial1", 0x1C0A0000, 0x1C090000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
-    { "v2m_serial2", 0x1C0B0000, 0x1C0B0000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
+    { "v2m_serial2", 0x1C0B0000, 0x1C0A0000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
     { "v2m_serial3", 0x1C0C0000, 0x1C0C0000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
     { "wdt", 0x1C0F0000, 0x1C0F0000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
 
@@ -73,10 +73,10 @@ struct memdesc_t vm2_device_md[] = {
     { "mmci",   0x1C050000, 0x1C050000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
     { "kmi",    0x1C060000, 0x1C060000,  SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
     { "kmi2",   0x1C070000, 0x1C070000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
-    { "v2m_serial0", 0x1C090000, 0x1C0A0000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
+    { "v2m_serial0", 0x1C090000, 0x1C0C0000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
     { "v2m_serial1", 0x1C0A0000, 0x1C090000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
     { "v2m_serial2", 0x1C0B0000, 0x1C0B0000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
-    { "v2m_serial3", 0x1C0C0000, 0x1C0C0000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
+    { "v2m_serial3", 0x1C0C0000, 0x1C0A0000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
     { "wdt", 0x1C0F0000, 0x1C0F0000, SZ_4K, MEMATTR_DEVICE_MEMORY, 1 },
 
     { "v2m_timer01(sp804)", 0x1C110000, 0x1C110000, SZ_4K, MEMATTR_DEVICE_MEMORY, 0 },
@@ -101,6 +101,6 @@ void setup_vm_mmap(void)
 {
     // TODO(wonseok): it will be replaced by DTB.
     vm_mmap[0] = vm0_device_md;
-    //vm_mmap[1] = vm1_device_md;
-    //vm_mmap[2] = vm2_device_md;
+    vm_mmap[1] = vm1_device_md;
+    vm_mmap[2] = vm2_device_md;
 }

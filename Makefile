@@ -128,6 +128,9 @@ ${BIN}: ${ELF}
 style:
 	astyle --max-instatement-indent=120 --style=otbs --pad-header --recursive --indent=spaces=4 --pad-oper "*.c"
 	astyle --max-instatement-indent=120 --style=otbs --pad-header --recursive --indent=spaces=4 --pad-oper "*.h"
+	${Q}find . -name '*.[chsCHS]' -exec chmod 664 {} \;
+	${Q}find . -name '*.orig' -exec rm {} \;
+
 
 clean:
 	${Q}echo "[CLEAN] ${PROJECT}"
