@@ -16,7 +16,7 @@ int32_t vgicd_create_instance(void **pdata);
 struct vdev_module vdev_gicd = {
     .name = "vgicd_v2",
     .base = CFG_GIC_BASE_PA | GICD_OFFSET,
-    .size = 4096,
+    .size = 0x1000,
     .read = vgicd_read_handler,
     .write = vgicd_write_handler,
     .create = vgicd_create_instance,

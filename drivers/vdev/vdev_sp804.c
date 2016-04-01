@@ -36,12 +36,13 @@ struct sp804 {
     uint32_t timer_pcellid1;
     uint32_t timer_pcellid2;
     uint32_t timer_pcellid3;
+
 };
 
 struct vdev_module sp804_vtimer1 = {
     .name = "vdev_sp804",
     .base = TIMER1_BASE,
-    .size = 0x10000,
+    .size = 0x1000,
     .read = vtimer_read,
     .write = vtimer_write,
     .create = vtimer_create,
