@@ -45,7 +45,7 @@ void write_pgentry(addr_t base, addr_t va, addr_t pa, uint8_t mem_attr, uint8_t 
     l1_entry_addr = base + GET_OFFSET(l1_index);
     l2_entry_addr = (base + 0x1000) + GET_L2_INDEX(l1_index) + GET_OFFSET(l2_index);
     l3_entry_addr = (base + 0x5000) + GET_L3_INDEX(l1_index) + GET_L2_INDEX(l2_index)
-                                    + GET_OFFSET(l3_index);
+                    + GET_OFFSET(l3_index);
 
     write64(read64(l1_entry_addr) | set_valid, l1_entry_addr);
     write64(read64(l2_entry_addr) | set_valid, l2_entry_addr);

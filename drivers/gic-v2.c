@@ -166,9 +166,9 @@ void gic_init(void)
     }
 
 #if 0
-	for (i = 0; i < GICv2.ITLinesNumber; i += 32) {
-		GICD_WRITE(GICD_IGROUPR(i >> 5), 0xFFFFFFFF);
-	}
+    for (i = 0; i < GICv2.ITLinesNumber; i += 32) {
+        GICD_WRITE(GICD_IGROUPR(i >> 5), 0xFFFFFFFF);
+    }
 #endif
 
     // We set priority 0xa0 for each but real value is a 0xd0, Why?
@@ -309,7 +309,7 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
     }
 
     lr_entry_t lr_entry = set_lr_entry(hw, VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
-                                        pirq, virq);
+                                       pirq, virq);
 
     if (vcpuid == get_current_vcpuid()) {
         uint32_t slot = gic_find_free_slot();

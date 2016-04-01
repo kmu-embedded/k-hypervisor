@@ -16,7 +16,7 @@ static void init_core_regs(struct core_regs *regs)
     regs->gpr[2] = CFG_GUEST_ATAGS_START_ADDRESS;
 
     regs->pc = CFG_GUEST_START_ADDRESS;
-	regs->cpsr = (CPSR_ASYNC_ABT_BIT | CPSR_IRQ_BIT | CPSR_FIQ_BIT | CPSR_MODE_SVC);
+    regs->cpsr = (CPSR_ASYNC_ABT_BIT | CPSR_IRQ_BIT | CPSR_FIQ_BIT | CPSR_MODE_SVC);
 }
 
 static void init_cp15(struct cp15 *cp15)

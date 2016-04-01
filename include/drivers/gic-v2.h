@@ -23,13 +23,13 @@ enum virq_state {
 union LR {
     uint32_t raw;
     struct {
-        uint32_t virtualid:10;
-        uint32_t physicalid:10;
-        uint32_t reserved:3;
-        uint32_t priority:5;
-        uint32_t state:2;
-        uint32_t grp1:1;
-        uint32_t hw:1;
+        uint32_t virtualid: 10;
+        uint32_t physicalid: 10;
+        uint32_t reserved: 3;
+        uint32_t priority: 5;
+        uint32_t state: 2;
+        uint32_t grp1: 1;
+        uint32_t hw: 1;
     } entry __attribute__((__packed__));
 };
 

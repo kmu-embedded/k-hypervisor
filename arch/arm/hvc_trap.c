@@ -10,11 +10,11 @@
 int do_hvc_trap(struct core_regs *regs)
 {
     hsr_t hsr;
-	iss_t iss;
+    iss_t iss;
     uint32_t fipa;
 
-	hsr.raw = read_hsr();
-	iss.raw = hsr.entry.iss;
+    hsr.raw = read_hsr();
+    iss.raw = hsr.entry.iss;
 
     switch (hsr.entry.ec) {
     case HSR_EC_UNKNOWN:
@@ -31,111 +31,108 @@ int do_hvc_trap(struct core_regs *regs)
     case HSR_EC_SMC:
     case HSR_EC_PABT_FROM_GUEST:
     case HSR_EC_PABT_FROM_HYP_MODE:
-	case HSR_EC_DABT_FROM_HYP_MODE:
-	case HSR_EC_HVC:
+    case HSR_EC_DABT_FROM_HYP_MODE:
+    case HSR_EC_HVC:
         goto trap_error;
-	case HSR_EC_DABT_FROM_GUEST:
-	{
-		switch (iss.dabt.dfsc) {
-		case FSR_TRANS_FAULT(1) ... FSR_TRANS_FAULT(3):
-			fipa = read_hpfar() << 8;
-			fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
+    case HSR_EC_DABT_FROM_GUEST: {
+        switch (iss.dabt.dfsc) {
+        case FSR_TRANS_FAULT(1) ... FSR_TRANS_FAULT(3):
+            fipa = read_hpfar() << 8;
+            fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
             printf("FSR_TRANS_FAULT: fipa 0x%08x\n", fipa);
-			break;
+            break;
 
-		case FSR_ACCESS_FAULT(1) ... FSR_ACCESS_FAULT(3):
-		{
-			fipa = read_hpfar() << 8;
-			struct vmcb *vm = get_current_vm();
-			struct vdev_instance *instance = NULL;
-			fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
+        case FSR_ACCESS_FAULT(1) ... FSR_ACCESS_FAULT(3): {
+            fipa = read_hpfar() << 8;
+            struct vmcb *vm = get_current_vm();
+            struct vdev_instance *instance = NULL;
+            fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
 
-			list_for_each_entry(struct vdev_instance, instance, &vm->vdevs.head, head)
-			{
-				uint32_t vdev_base = instance->module->base;
-				uint32_t vdev_size = instance->module->size;
+            list_for_each_entry(struct vdev_instance, instance, &vm->vdevs.head, head) {
+                uint32_t vdev_base = instance->module->base;
+                uint32_t vdev_size = instance->module->size;
 
-				if (vdev_base <= fipa && fipa <= vdev_base + vdev_size) {
-					uint32_t offset = fipa - vdev_base;
-					if (iss.dabt.wnr == 1) {
-						if (instance->module->write(instance->pdata, offset,
-								&(regs->gpr[iss.dabt.srt])) < 0) {
-							goto trap_error;
-						}
-					} else {
-						regs->gpr[iss.dabt.srt] = instance->module->read(
-								instance->pdata, offset);
-						if (regs->gpr[iss.dabt.srt] < 0) {
-							goto trap_error;
-						}
-					}
-				}
-			}
-		}
-			break;
+                if (vdev_base <= fipa && fipa <= vdev_base + vdev_size) {
+                    uint32_t offset = fipa - vdev_base;
+                    if (iss.dabt.wnr == 1) {
+                        if (instance->module->write(instance->pdata, offset,
+                                                    &(regs->gpr[iss.dabt.srt])) < 0) {
+                            goto trap_error;
+                        }
+                    } else {
+                        regs->gpr[iss.dabt.srt] = instance->module->read(
+                                                      instance->pdata, offset);
+                        if (regs->gpr[iss.dabt.srt] < 0) {
+                            goto trap_error;
+                        }
+                    }
+                }
+            }
+        }
+        break;
 
-		case FSR_PERM_FAULT(1) ... FSR_PERM_FAULT(3):
-			printf("FSR_PERM_FAULT  %x\n", iss.dabt.dfsc);
-			break;
+        case FSR_PERM_FAULT(1) ... FSR_PERM_FAULT(3):
+            printf("FSR_PERM_FAULT  %x\n", iss.dabt.dfsc);
+            break;
 
-		case FSR_SYNC_ABORT:
-			printf("FSR_SYNC_ABORT  %x\n", iss.dabt.dfsc);
-			break;
+        case FSR_SYNC_ABORT:
+            printf("FSR_SYNC_ABORT  %x\n", iss.dabt.dfsc);
+            break;
 
-		case FSR_ASYNC_ABORT:
-			printf("FSR_ASYNC_ABORT  %x\n", iss.dabt.dfsc);
-			break;
+        case FSR_ASYNC_ABORT:
+            printf("FSR_ASYNC_ABORT  %x\n", iss.dabt.dfsc);
+            break;
 
-		case FSR_ABORT_ON_TABLE_WALK(1) ... FSR_ABORT_ON_TABLE_WALK(3):
-			printf("FSR_ABORT_ON_TABLE_WALK  %x\n", iss.dabt.dfsc);
-			break;
+        case FSR_ABORT_ON_TABLE_WALK(1) ... FSR_ABORT_ON_TABLE_WALK(3):
+            printf("FSR_ABORT_ON_TABLE_WALK  %x\n", iss.dabt.dfsc);
+            break;
 
-		case FSR_SYNC_PERORR:
-			printf("FSR_SYNC_PERORR  %x\n", iss.dabt.dfsc);
-			break;
+        case FSR_SYNC_PERORR:
+            printf("FSR_SYNC_PERORR  %x\n", iss.dabt.dfsc);
+            break;
 
-		case FSR_ASYNC_PERORR:
-			printf("FSR_ASYNC_PERORR  %x\n", iss.dabt.dfsc);
-			break;
+        case FSR_ASYNC_PERORR:
+            printf("FSR_ASYNC_PERORR  %x\n", iss.dabt.dfsc);
+            break;
 
-		case FSR_PERORR_ON_TABLE_WALK(1) ... FSR_PERORR_ON_TABLE_WALK(3):
-			printf("FSR_PERORR_ON_TABLE_WALK  %x\n", iss.dabt.dfsc);
-			break;
+        case FSR_PERORR_ON_TABLE_WALK(1) ... FSR_PERORR_ON_TABLE_WALK(3):
+            printf("FSR_PERORR_ON_TABLE_WALK  %x\n", iss.dabt.dfsc);
+            break;
 
-		case FSR_ALINGMENT_FAULT:
-			printf("FSR_ALINGMENT_FAULT  %x\n", iss.dabt.dfsc);
-			break;
+        case FSR_ALINGMENT_FAULT:
+            printf("FSR_ALINGMENT_FAULT  %x\n", iss.dabt.dfsc);
+            break;
 
-		case FSR_DEBUG_EVENT:
-			printf("FSR_DEBUG_EVENT  %x\n", iss.dabt.dfsc);
-			break;
+        case FSR_DEBUG_EVENT:
+            printf("FSR_DEBUG_EVENT  %x\n", iss.dabt.dfsc);
+            break;
 
-		case FSR_TLB_CONFLICT:
-			printf("FSR_TLB_CONFLICT  %x\n", iss.dabt.dfsc);
-			break;
+        case FSR_TLB_CONFLICT:
+            printf("FSR_TLB_CONFLICT  %x\n", iss.dabt.dfsc);
+            break;
 
-		case FSR_DOMAIN_FAULT(1) ... FSR_DOMAIN_FAULT(3):
-			printf("FSR_DOMAIN_FAULT  %x\n", iss.dabt.dfsc);
-			break;
+        case FSR_DOMAIN_FAULT(1) ... FSR_DOMAIN_FAULT(3):
+            printf("FSR_DOMAIN_FAULT  %x\n", iss.dabt.dfsc);
+            break;
 
-		}
+        }
 
-		break;
-	}
-	default:
+        break;
+    }
+    default:
         goto trap_error;
     }
 
-	regs->pc += 4;
+    regs->pc += 4;
 
     return 0;
 
 trap_error:
-	printf("[hyp] do_hvc_trap: unknown hsr.iss= %x\n", hsr.entry.iss);
-	printf("[hyp] hsr.ec= %x\n", hsr.entry.ec);
+    printf("[hyp] do_hvc_trap: unknown hsr.iss= %x\n", hsr.entry.iss);
+    printf("[hyp] hsr.ec= %x\n", hsr.entry.ec);
     printf("[hyp] hsr= %x\n", hsr.raw);
     printf("guest pc is %x\n", regs->pc);
-    while(1) ;
+    while (1) ;
 
     return -1;
 }

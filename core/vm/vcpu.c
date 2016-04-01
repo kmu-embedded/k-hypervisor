@@ -61,21 +61,21 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
 
     // TODO(casionwoo): make it neat.
     switch (vcpu->vmid) {
-        case 0:
-            SET_VIRQMAP(vcpu->map, 38, 37);
-            break;
+    case 0:
+        SET_VIRQMAP(vcpu->map, 38, 37);
+        break;
 
-        case 1:
-            SET_VIRQMAP(vcpu->map, 39, 37);
-            break;
+    case 1:
+        SET_VIRQMAP(vcpu->map, 39, 37);
+        break;
 
-        case 2:
-            SET_VIRQMAP(vcpu->map, 40, 37);
-            break;
+    case 2:
+        SET_VIRQMAP(vcpu->map, 40, 37);
+        break;
 
-        default:
-            debug_print("virq_create error!\n");
-            break;
+    default:
+        debug_print("virq_create error!\n");
+        break;
     }
 
     // TODO(casionwoo) : Check the return value after scheduler status value defined
@@ -116,12 +116,12 @@ void vcpu_save(struct vcpu *vcpu, struct core_regs *regs)
 {
     arch_regs_save(&vcpu->regs, regs);
 
-	int i;
-	for (i = 0; i < GICv2.num_lr; i++) {
-		vcpu->lr[i] = GICH_READ(GICH_LR(i));
-	}
+    int i;
+    for (i = 0; i < GICv2.num_lr; i++) {
+        vcpu->lr[i] = GICH_READ(GICH_LR(i));
+    }
 
-	vcpu->vmcr = GICH_READ(GICH_VMCR);
+    vcpu->vmcr = GICH_READ(GICH_VMCR);
 
     virq_hw->disable();
 }
@@ -130,12 +130,12 @@ void vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
 {
     arch_regs_restore(&vcpu->regs, regs);
 
-	int i;
-	for (i = 0; i < GICv2.num_lr; i++) {
-		GICH_WRITE(GICH_LR(i), vcpu->lr[i]);
-	}
+    int i;
+    for (i = 0; i < GICv2.num_lr; i++) {
+        GICH_WRITE(GICH_LR(i), vcpu->lr[i]);
+    }
 
-	GICH_WRITE(GICH_VMCR, vcpu->vmcr);
+    GICH_WRITE(GICH_VMCR, vcpu->vmcr);
 
     virq_hw->forward_pending_irq(vcpu->vmid);
     virq_hw->enable();

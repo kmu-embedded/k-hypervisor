@@ -23,18 +23,18 @@ void vmem_create(struct vmem *vmem, vmid_t vmid)
     vmem->vttbr &= ~(VTTBR_BADDR_MASK);
     vmem->vttbr |= (uint32_t) vmem->base & VTTBR_BADDR_MASK;
 
-	vmem->mmap = vm_mmap[vmid];
+    vmem->mmap = vm_mmap[vmid];
 }
 
 hvmm_status_t vmem_init(struct vmem *vmem)
 {
-    int j=0;
+    int j = 0;
 
-	do {
-		paging_add_ipa_mapping(vmem->base, vmem->mmap[j].ipa, vmem->mmap[j].pa, vmem->mmap[j].attr, vmem->mmap[j].af,
-				vmem->mmap[j].size);
-		j++;
-	} while (vmem->mmap[j].label != 0);
+    do {
+        paging_add_ipa_mapping(vmem->base, vmem->mmap[j].ipa, vmem->mmap[j].pa, vmem->mmap[j].attr, vmem->mmap[j].af,
+                               vmem->mmap[j].size);
+        j++;
+    } while (vmem->mmap[j].label != 0);
 
     vmem->vtcr = (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
     vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_ORGN0_BIT);
