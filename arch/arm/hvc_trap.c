@@ -3,7 +3,7 @@
 #include <vdev.h>
 
 #include <core/vm.h>
-#include <core/scheduler.h>
+#include <core/vm/vcpu.h>
 
 #include "hvc_trap.h"
 
@@ -18,13 +18,17 @@ int do_hvc_trap(struct core_regs *regs)
 
     switch (hsr.entry.ec) {
     case HSR_EC_UNKNOWN:
+        break;
     case HSR_EC_WFI_WFE:
     case HSR_EC_MCR_MRC_CP15:
+        break;
     case HSR_EC_MCRR_MRRC_CP15:
     case HSR_EC_MCR_MRC_CP14:
+        break;
     case HSR_EC_LDC_STC_CP14:
     case HSR_EC_HCRTR_CP0_CP13:
     case HSR_EC_MRC_VMRS_CP10:
+        break;
     case HSR_EC_BXJ:
     case HSR_EC_MRRC_CP14:
     case HSR_EC_SVC:
@@ -38,38 +42,19 @@ int do_hvc_trap(struct core_regs *regs)
         switch (iss.dabt.dfsc) {
         case FSR_TRANS_FAULT(1) ... FSR_TRANS_FAULT(3):
             fipa = read_hpfar() << 8;
-            fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
+            fipa |= (read_hdfar() & PAGE_MASK);
             printf("FSR_TRANS_FAULT: fipa 0x%08x\n", fipa);
+
+            uint32_t ID = 0;
+			ID = READ_CP15(15,0,0,0,0,5);
+			printf("%s\n", MRC_CP32(15,0,0,0,0,5));
+			printf("%d\n", ID & MPIDR_MASK & MPIDR_CPUID_MASK);
+
             break;
 
-        case FSR_ACCESS_FAULT(1) ... FSR_ACCESS_FAULT(3): {
-            fipa = read_hpfar() << 8;
-            struct vmcb *vm = get_current_vm();
-            struct vdev_instance *instance = NULL;
-            fipa |= (read_hdfar() & HPFAR_FIPA_PAGE_MASK);
-
-            list_for_each_entry(struct vdev_instance, instance, &vm->vdevs.head, head) {
-                uint32_t vdev_base = instance->module->base;
-                uint32_t vdev_size = instance->module->size;
-
-                if (vdev_base <= fipa && fipa <= vdev_base + vdev_size) {
-                    uint32_t offset = fipa - vdev_base;
-                    if (iss.dabt.wnr == 1) {
-                        if (instance->module->write(instance->pdata, offset,
-                                                    &(regs->gpr[iss.dabt.srt])) < 0) {
-                            goto trap_error;
-                        }
-                    } else {
-                        regs->gpr[iss.dabt.srt] = instance->module->read(
-                                                      instance->pdata, offset);
-                        if (regs->gpr[iss.dabt.srt] < 0) {
-                            goto trap_error;
-                        }
-                    }
-                }
-            }
-        }
-        break;
+        case FSR_ACCESS_FAULT(1) ... FSR_ACCESS_FAULT(3):
+            vdev_handler(regs, iss);
+            break;
 
         case FSR_PERM_FAULT(1) ... FSR_PERM_FAULT(3):
             printf("FSR_PERM_FAULT  %x\n", iss.dabt.dfsc);
