@@ -22,6 +22,19 @@ struct vdev_module vdev_gicd = {
     .create = vgicd_create_instance,
 };
 
+union sgir {
+    uint32_t raw: 32;
+    struct {
+        uint32_t id: 4;
+        uint32_t sbz: 11;
+        uint32_t nsatt: 1;
+        uint32_t CPUTargetList: 8;
+        uint32_t TargetListFilter: 2;
+        uint32_t reserved: 6;
+    } entry;
+};
+typedef union sgir sgir_t;
+
 #include <stdlib.h>
 int32_t vgicd_create_instance(void **pdata)
 {
@@ -73,57 +86,31 @@ static void set_clear(uint32_t current_status, uint8_t n, uint32_t old_status)
         virq_disable(vcpu, virq);
         pirq_disable(vcpu, pirq);
         // TODO(casionwoo) : When VM try to interrupt clear, must be checked every VM clear the interrupt. Then clear the irq
-//		gic_disable_irq(pirq);
+		// gic_disable_irq(pirq);
 
         delta &= ~(1 << offset);
     }
 }
 
-static hvmm_status_t handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
+static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
 {
-    hvmm_status_t result = HVMM_STATUS_BAD_ACCESS;
-    struct vcpu *vcpu = get_current_vcpu();
+    sgir_t sgi;
+    sgi.raw = value;
 
-    uint32_t target_cpu_interfaces = 0;
-    uint32_t sgi_id = value & GICD_SGIR_SGI_INT_ID_MASK;
+    switch(sgi.entry.TargetListFilter) {
+    case 0: {
 
-    uint8_t target_vcpuid;
+        uint8_t target_vcpuid = firstbit32(sgi.entry.CPUTargetList);
+        uint32_t n = sgi.entry.id;
 
-    switch (value & GICD_SGIR_TARGET_LIST_FILTER_MASK) {
-    case GICD_SGIR_TARGET_LIST:
-        target_cpu_interfaces = ((value & GICD_SGIR_CPU_TARGET_LIST_MASK) >> GICD_SGIR_CPU_TARGET_LIST_OFFSET);
-        break;
-
-    case GICD_SGIR_TARGET_OTHER:
-        target_cpu_interfaces = ~(0x1 << vcpu->id);
-        break;
-
-    case GICD_SGIR_TARGET_SELF:
-        target_cpu_interfaces = (0x1 << vcpu->id);
-        break;
-
-    default:
-        return result;
-    }
-
-    // FIXME(casionwoo) : This part should have some policy for inter-processor communication
-    while (target_cpu_interfaces) {
-        uint8_t target_cpu_interface = target_cpu_interfaces & 0x01;
-
-        if (target_cpu_interface && (vcpu = vcpu_find(target_vcpuid))) {
-            uint32_t n = sgi_id >> 2;
-            uint32_t reg_offset = sgi_id % 4;
-            struct vgicd *gicd = (struct vgicd *)pdata;
-
-            gicd->spendsgir0[target_vcpuid][n] = 0x1 << ((reg_offset * 8) + target_cpu_interface);
-            result = virq_inject(target_vcpuid, sgi_id, sgi_id, SW_IRQ);
+        if (sgi.entry.CPUTargetList == 0) {
+            break;
         }
 
-        target_vcpuid++;
-        target_cpu_interfaces = target_cpu_interfaces >> 1;
+        virq_inject(target_vcpuid, n, n, SW_IRQ);
+        }
+    break;
     }
-
-    return result;
 }
 
 int32_t vgicd_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
