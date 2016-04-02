@@ -27,8 +27,60 @@ union iss {
         uint32_t isv: 1;
         uint32_t unused: 7;
     } dabt;
+
+    struct {
+        uint32_t dir: 1;
+        uint32_t CRm: 4;
+        uint32_t Rt: 4;
+        uint32_t reserved: 1;
+        uint32_t CRn: 4;
+        uint32_t Opc1: 3;
+        uint32_t Opc2: 3;
+        uint32_t cond: 4;
+        uint32_t cv: 1;
+    } cp32;
+
+    struct {
+        uint32_t dir: 1;
+        uint32_t CRm: 4;
+        uint32_t Rt: 4;
+        uint32_t reserved: 1;
+        uint32_t Rt2: 4;
+        uint32_t reserved2: 2;
+        uint32_t Opc1: 4;
+        uint32_t cond: 4;
+        uint32_t cv: 1;
+    } cp64;
 };
 typedef union iss iss_t;
+
+#define COPROC(n)		p##n
+#define Rt(t) 			%t
+#define CR(x)			c##x
+#define CP32(cp, opc1, t, n, m, opc2)		COPROC(cp), opc1, Rt(t), CR(n), CR(m), opc2
+#define CP64(cp, opc1, t, t2, m)			COPROC(cp), opc1, Rt(t), Rt(t2), CR(m)
+
+#include <lib/stringify.h>
+
+#define MCR_CP32(args...)					"mcr " __stringify(CP32(args)) ";"
+#define MRC_CP32(args...)					"mrc " __stringify(CP32(args)) ";"
+#define VMRS_CP32(args...)					"vmrs " __stringify(CP32(args)) ";"
+
+#define MCRR_CP64(args...)					"mcrr " __stringify(CP64(args)) ";"
+#define MRRC_CP64(args...)					"mrrc " __stringify(CP64(args)) ";"
+
+
+
+
+#define READ_CP15(args...) ({ uint32_t rval; 						\
+							asm volatile(MRC_CP32(args) 			\
+							: "=r" (rval)							\
+							: : "memory", "cc"); rval; })
+
+#define WRITE_CP15(val, args...)  asm volatile(MCR_CP32(args) 		\
+								  : : "r" ((val)) : "memory", "cc")
+
+
 
 /* HSR Exception Class. */
 #define HSR_EC_UNKNOWN        		0x00
@@ -50,10 +102,6 @@ typedef union iss iss_t;
 #define HSR_EC_DABT_FROM_HYP_MODE   0x25
 
 /* HPFAR */
-#define HPFAR_INITVAL                       0x00000000
-#define HPFAR_FIPA_MASK                     0xFFFFFFF0
-#define HPFAR_FIPA_SHIFT                    4
-#define HPFAR_FIPA_PAGE_MASK                0x00000FFF
-#define HPFAR_FIPA_PAGE_SHIFT               12
+#define PAGE_MASK                	0x00000FFF
 
 #endif

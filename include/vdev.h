@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <types.h>
 #include <lib/list.h>
+#include <arch/armv7.h>
+#include "../arch/arm/hvc_trap.h"
 
 typedef int (*initcall_t)(void);
 
@@ -45,5 +47,6 @@ void vdev_register(struct vdev_module *module);
 void vdev_init(void);
 
 void vdev_create(struct vdev_instance *, vmid_t);
+void vdev_handler(struct core_regs *regs, iss_t iss);
 
 #endif /* __VDEV_H_ */
