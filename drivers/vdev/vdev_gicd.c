@@ -94,22 +94,26 @@ static void set_clear(uint32_t current_status, uint8_t n, uint32_t old_status)
 
 static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
 {
+    struct vcpu *vcpu = get_current_vcpu();
+
     sgir_t sgi;
     sgi.raw = value;
 
     switch(sgi.entry.TargetListFilter) {
-    case 0: {
 
-        uint8_t target_vcpuid = firstbit32(sgi.entry.CPUTargetList);
-        uint32_t n = sgi.entry.id;
-
-        if (sgi.entry.CPUTargetList == 0) {
-            break;
-        }
-
-        virq_inject(target_vcpuid, n, n, SW_IRQ);
+    case 0:
+        while (sgi.entry.CPUTargetList) {
+            uint8_t target_vcpuid = firstbit32(sgi.entry.CPUTargetList);
+            sgi.entry.CPUTargetList &= ~(1 << target_vcpuid);
+            virq_inject(target_vcpuid, sgi.entry.id, sgi.entry.id, SW_IRQ);
         }
     break;
+
+    case 2:
+        virq_inject(vcpu->id, sgi.entry.id, sgi.entry.id, SW_IRQ);
+    break;
+    default:
+        printf("Need to implement case of %d\n", sgi.entry.TargetListFilter);
     }
 }
 
