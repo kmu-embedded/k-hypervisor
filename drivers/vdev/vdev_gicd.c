@@ -86,7 +86,7 @@ static void set_clear(uint32_t current_status, uint8_t n, uint32_t old_status)
         virq_disable(vcpu, virq);
         pirq_disable(vcpu, pirq);
         // TODO(casionwoo) : When VM try to interrupt clear, must be checked every VM clear the interrupt. Then clear the irq
-		// gic_disable_irq(pirq);
+        // gic_disable_irq(pirq);
 
         delta &= ~(1 << offset);
     }
@@ -99,7 +99,7 @@ static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
     sgir_t sgi;
     sgi.raw = value;
 
-    switch(sgi.entry.TargetListFilter) {
+    switch (sgi.entry.TargetListFilter) {
 
     case 0:
         while (sgi.entry.CPUTargetList) {
@@ -107,11 +107,11 @@ static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
             sgi.entry.CPUTargetList &= ~(1 << target_vcpuid);
             virq_inject(target_vcpuid, sgi.entry.id, sgi.entry.id, SW_IRQ);
         }
-    break;
+        break;
 
     case 2:
         virq_inject(vcpu->id, sgi.entry.id, sgi.entry.id, SW_IRQ);
-    break;
+        break;
     default:
         printf("Need to implement case of %d\n", sgi.entry.TargetListFilter);
     }
