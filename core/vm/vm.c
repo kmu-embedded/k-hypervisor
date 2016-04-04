@@ -15,7 +15,9 @@ void vm_setup()
     LIST_INITHEAD(&vm_list);
 
     vcpu_setup();
+#ifdef __CONFIG_ATAGS
     atags_setup();
+#endif
 }
 
 vmid_t vm_create(uint8_t num_vcpus)
