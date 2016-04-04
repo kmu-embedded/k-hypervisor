@@ -79,8 +79,7 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
     }
 
     // TODO(casionwoo) : Check the return value after scheduler status value defined
-    sched_vcpu_register(vcpu->vcpuid);
-
+    vcpu->pcpuid = sched_vcpu_register(vcpu->vcpuid);
     vcpu->state = VCPU_REGISTERED;
 
     return vcpu->state;
