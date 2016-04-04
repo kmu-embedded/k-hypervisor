@@ -18,5 +18,6 @@ typedef enum hvmm_status {
 
 typedef int vmid_t;
 typedef int vcpuid_t;
+typedef int pcpuid_t;
 
 #endif

@@ -191,7 +191,8 @@ int sched_vcpu_register(vcpuid_t vcpuid)
     /* call scheduler.register_vcpu() */
     __policy[pcpu]->register_vcpu(vcpuid);
 
-    return 0;
+    // NOTE(casionwoo) : Return the ID of physical CPU id that vcpu is assigned
+    return pcpu;
 }
 
 /**
