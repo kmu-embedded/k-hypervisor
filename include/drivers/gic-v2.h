@@ -6,6 +6,12 @@
 #include <io.h>
 #include "../include/types.h"
 
+#ifdef SERIAL_PL01X
+#include <../../platform/rtsm/config.h>
+#elif SERIAL_SH
+#include <../../platform/lager/config.h>
+#endif
+
 #define HW_IRQ      1
 #define SW_IRQ      0
 

@@ -9,7 +9,6 @@
 #include <core/timer.h>
 #include <vm_map.h>
 #include <arch/armv7.h>
-
 extern uint32_t __HYP_PGTABLE;
 uint8_t secondary_smp_pen;
 

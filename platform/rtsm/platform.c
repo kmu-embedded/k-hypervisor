@@ -1,6 +1,6 @@
 #include "platform.h"
 #include <stdint.h>
-#include <drivers/pl01x.h>
+#include <drivers/serial_pl01x.h>
 #include <drivers/sp804.h>
 
 // TODO(wonseok): moved header files from arch/arm to proper dir.
@@ -11,13 +11,13 @@
 
 #include <arch/armv7.h>
 
+#include <config.h>
+
 #define CFG_HYP_START_ADDRESS      0xF0000000
 void platform_init()
 {
     uint32_t gic_base = (uint32_t)(get_periphbase() & 0x000000FFFFFFFFFFULL);
-    if (gic_base == 0x0) {
-        gic_base = 0x2C000000;
-    }
+    gic_base = CFG_GIC_BASE_PA;
 
     paging_add_mapping(gic_base + GICD_OFFSET, gic_base + GICD_OFFSET, MT_DEVICE, SZ_4K);
     paging_add_mapping(gic_base + GICC_OFFSET, gic_base + GICC_OFFSET, MT_DEVICE, SZ_8K);
@@ -45,7 +45,7 @@ void platform_init()
 void console_init()
 {
     // TODO(wonseok): add general initialization for console devices.
-    pl01x_init(115200, 24000000);
+    serial_init(115200, 24000000);
 }
 
 void dev_init()
