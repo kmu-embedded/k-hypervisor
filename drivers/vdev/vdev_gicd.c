@@ -95,6 +95,9 @@ static void set_clear(uint32_t current_status, uint8_t n, uint32_t old_status)
 static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
 {
     struct vcpu *vcpu = get_current_vcpu();
+    struct vmcb *vm = get_current_vm();
+    struct vcpu *target_vcpu;
+    uint32_t pcpu = smp_processor_id();
 
     sgir_t sgi;
     sgi.raw = value;
@@ -104,16 +107,35 @@ static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
     case 0:
         while (sgi.entry.CPUTargetList) {
             uint8_t target_vcpuid = firstbit32(sgi.entry.CPUTargetList);
-            sgi.entry.CPUTargetList &= ~(1 << target_vcpuid);
-            virq_inject(target_vcpuid, sgi.entry.id, sgi.entry.id, SW_IRQ);
+
+            if (target_vcpuid < vm->num_vcpus) {
+                target_vcpu = vm->vcpu[target_vcpuid];
+                sgi.entry.CPUTargetList &= ~(1 << target_vcpuid);
+                virq_inject(target_vcpu->vcpuid, sgi.entry.id, sgi.entry.id, SW_IRQ);
+            }
         }
-        break;
+    break;
+
+    case 1: {
+        int cpuid;
+
+        for (cpuid = 0; cpuid < vm->num_vcpus; cpuid++) {
+            if (cpuid == pcpu) {
+                continue;
+            }
+
+            target_vcpu = vm->vcpu[cpuid];
+            virq_inject(target_vcpu->vcpuid, sgi.entry.id, sgi.entry.id, SW_IRQ);
+        }
+    }
+    break;
 
     case 2:
         virq_inject(vcpu->id, sgi.entry.id, sgi.entry.id, SW_IRQ);
-        break;
+    break;
+
     default:
-        printf("Need to implement case of %d\n", sgi.entry.TargetListFilter);
+        printf("Reserved case of SGIR TargetListFilter :%d\n", sgi.entry.TargetListFilter);
     }
 }
 
