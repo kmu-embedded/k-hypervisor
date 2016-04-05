@@ -16,6 +16,9 @@ int do_hvc_trap(struct core_regs *regs)
     hsr.raw = read_hsr();
     iss.raw = hsr.entry.iss;
 
+    fipa = read_hpfar() << 8;
+    fipa |= (read_hdfar() & PAGE_MASK);
+
     switch (hsr.entry.ec) {
     case HSR_EC_UNKNOWN:
         break;
@@ -117,6 +120,7 @@ trap_error:
     printf("[hyp] hsr.ec= %x\n", hsr.entry.ec);
     printf("[hyp] hsr= %x\n", hsr.raw);
     printf("guest pc is %x\n", regs->pc);
+    printf("fipa : %x\n", fipa);
     while (1) ;
 
     return -1;
