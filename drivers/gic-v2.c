@@ -305,7 +305,6 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
     int i;
     struct vcpu *vcpu = vcpu_find(vcpuid);
-//    struct vmcb *vm = get_current_vm();
 
     if (!hw) {
         pirq |= vcpuid;
