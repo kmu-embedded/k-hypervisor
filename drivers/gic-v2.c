@@ -66,6 +66,7 @@ static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
             eisr &= ~(1 << slot);
             lr = GICH_READ(GICH_LR(slot));
             virq = lr & 0x3ff;
+//            printf("%s, virq : %d\n", __func__, virq);
             GICH_WRITE(GICH_LR(slot), 0);
 
             /* deactivate associated pirq at the slot */
@@ -81,6 +82,7 @@ static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
             eisr &= ~(1 << slot);
             lr = GICH_READ(GICH_LR(slot));
             virq = lr & 0x3ff;
+//            printf("%s, virq : %d\n", __func__, virq);
             GICH_WRITE(GICH_LR(slot + 32), 0);
 
             /* deactivate associated pirq at the slot */
