@@ -23,7 +23,7 @@ void vdev_handler(struct core_regs *regs, iss_t iss)
         if (vdev_base <= fipa && fipa <= vdev_base + vdev_size) {
             uint32_t offset = fipa - vdev_base;
             if (iss.dabt.wnr == 1) {
-                instance->module->write(instance->pdata, offset, &(regs->gpr[iss.dabt.srt])); 
+                instance->module->write(instance->pdata, offset, &(regs->gpr[iss.dabt.srt]));
             } else {
                 regs->gpr[iss.dabt.srt] = instance->module->read( instance->pdata, offset);
             }

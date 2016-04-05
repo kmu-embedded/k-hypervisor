@@ -1,7 +1,10 @@
 # Makefile
 # TODO(wonseok): Add configuration file for board.
 
-TARGET			= rtsm
+TARGET         = rtsm
+DEFINES+=-DSERIAL_PL01X
+#TARGET          = lager
+#DEFINES+=-DSERIAL_SH
 ######################################################
 # MAKEFILE VERBOSE OPTION
 ######################################################
@@ -83,11 +86,13 @@ INCLUDES= -I${SOURCE_PATH}/include
 INCLUDES+= -I${SOURCE_PATH}/lib/c/include
 INCLUDES+= -I${SOURCE_PATH}/platform/${TARGET}
 
+DEFINES+=-D__CONFIG_ATAGS
+
 ######################################################
 # OUTPUT FILENAMES
 ######################################################
 PROJECT			= khypervisor
-LD_SCRIPT		= ${PROJECT}.lds.S
+LD_SCRIPT		= platform/${TARGET}/${TARGET}.lds.S
 OUTPUT			= khypervisor-${TARGET}
 ELF				= ${OUTPUT}.axf
 MAP				= ${OUTPUT}.map

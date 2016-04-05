@@ -46,9 +46,9 @@ int do_hvc_trap(struct core_regs *regs)
             printf("FSR_TRANS_FAULT: fipa 0x%08x\n", fipa);
 
             uint32_t ID = 0;
-			ID = READ_CP15(15,0,0,0,0,5);
-			printf("%s\n", MRC_CP32(15,0,0,0,0,5));
-			printf("%d\n", ID & MPIDR_MASK & MPIDR_CPUID_MASK);
+            ID = READ_CP15(15, 0, 0, 0, 0, 5);
+            printf("%s\n", MRC_CP32(15, 0, 0, 0, 0, 5));
+            printf("%d\n", ID & MPIDR_MASK & MPIDR_CPUID_MASK);
 
             break;
 

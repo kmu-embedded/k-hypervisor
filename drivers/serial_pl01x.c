@@ -1,8 +1,8 @@
-#include <drivers/pl01x.h>
+#include <drivers/serial_pl01x.h>
 
 #include "../include/io.h"
 
-int pl01x_putc(const char c)
+int serial_putc(const char c)
 {
     /* Wait until there is space in the FIFO */
     while (*((uint32_t *)(PL01X_BASE + 0x18)) & 0x20)
@@ -13,7 +13,7 @@ int pl01x_putc(const char c)
     return c;
 }
 
-int pl01x_tst_fifo()
+int serial_tst_fifo()
 {
     /* There is not a data in the FIFO */
     if (readl((void *)(PL01X_BASE + PL01X_UARTFR)) & PL01X_UARTFR_RXFE) {
@@ -25,7 +25,7 @@ int pl01x_tst_fifo()
     }
 }
 
-int pl01x_getc()
+int serial_getc()
 {
     char data;
     /* Wait until there is data in the FIFO */
@@ -41,7 +41,7 @@ int pl01x_getc()
     return data;
 }
 
-void pl01x_subinit(uint32_t base, uint32_t baudrate, uint32_t input_clock)
+void serial_subinit(uint32_t base, uint32_t baudrate, uint32_t input_clock)
 {
     uint32_t divider;
     uint32_t temp;
@@ -78,7 +78,7 @@ void pl01x_subinit(uint32_t base, uint32_t baudrate, uint32_t input_clock)
            (void *)(base + PL01X_UARTCR));
 }
 
-void pl01x_init(uint32_t baudrate, uint32_t input_clock)
+void serial_init(uint32_t baudrate, uint32_t input_clock)
 {
     uint32_t divider;
     uint32_t temp;
@@ -114,7 +114,7 @@ void pl01x_init(uint32_t baudrate, uint32_t input_clock)
     writel((PL01X_UARTCR_UARTEN | PL01X_UARTCR_TXE | PL01X_UARTCR_RXE),
            (void *)(PL01X_BASE + PL01X_UARTCR));
 
-    pl01x_subinit(0x1C0A0000, baudrate, input_clock);
-    pl01x_subinit(0x1C0B0000, baudrate, input_clock);
-    pl01x_subinit(0x1C0C0000, baudrate, input_clock);
+    serial_subinit(0x1C0A0000, baudrate, input_clock);
+    serial_subinit(0x1C0B0000, baudrate, input_clock);
+    serial_subinit(0x1C0C0000, baudrate, input_clock);
 }
