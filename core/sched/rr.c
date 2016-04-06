@@ -225,7 +225,7 @@ int sched_rr_do_schedule(uint64_t *expiration)
 
         /* FIXME:(igkang) hardcoded expression */
         *expiration =
-            timer_get_systemcounter_value() + 100000llu * (uint64_t) next_entry->tick_reset_val;
+            timer_get_syscounter() + 100000llu * (uint64_t) next_entry->tick_reset_val;
     }
 
     /* vcpu of current entry will be the next vcpu */

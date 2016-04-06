@@ -31,9 +31,9 @@ struct timer_ops {
     hvmm_status_t (*init)(void);
     hvmm_status_t (*enable)(void);
     hvmm_status_t (*disable)(void);
-    hvmm_status_t (*set_interval)(uint32_t);
     hvmm_status_t (*set_absolute)(uint64_t);
-    hvmm_status_t (*set_cval)(uint64_t);
+    hvmm_status_t (*set_interval_relative)(uint32_t);
+    hvmm_status_t (*set_interval_absolute)(uint64_t);
     hvmm_status_t (*dump)(void);
 };
 
@@ -63,5 +63,5 @@ hvmm_status_t timer_start(void);
 
 uint64_t timer_time_to_count(uint64_t time, time_unit_t unit);
 uint64_t timer_count_to_time(uint64_t count, time_unit_t unit);
-uint64_t timer_get_systemcounter_value(void);
+uint64_t timer_get_syscounter(void);
 #endif

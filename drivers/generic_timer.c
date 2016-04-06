@@ -282,9 +282,9 @@ static hvmm_status_t timer_enable()
     return generic_timer_enable(GENERIC_TIMER_HYP);
 }
 
-static hvmm_status_t timer_set_tval(uint32_t tval)
+static hvmm_status_t timer_set_cval(uint64_t val)
 {
-    return generic_timer_set_tval(GENERIC_TIMER_HYP, tval);
+    return generic_timer_set_cval(GENERIC_TIMER_HYP, val);
 }
 
 uint32_t have_set_cval_by_delta_ever_called[NR_CPUS] = {0};
@@ -302,9 +302,9 @@ static hvmm_status_t timer_set_cval_by_delta(uint64_t val)
     return generic_timer_set_cval(GENERIC_TIMER_HYP, val);
 }
 
-static hvmm_status_t timer_set_cval(uint64_t val)
+static hvmm_status_t timer_set_tval(uint32_t tval)
 {
-    return generic_timer_set_cval(GENERIC_TIMER_HYP, val);
+    return generic_timer_set_tval(GENERIC_TIMER_HYP, tval);
 }
 
 /** @brief dump at time.
@@ -319,9 +319,9 @@ static hvmm_status_t timer_dump(void)
 struct timer_ops _timer_ops = {
     .enable = timer_enable,
     .disable = timer_disable,
-    .set_interval = timer_set_tval,
-    .set_absolute = timer_set_cval_by_delta,
-    .set_cval = timer_set_cval,
+    .set_absolute = timer_set_cval,
+    .set_interval_relative = timer_set_tval,
+    .set_interval_absolute = timer_set_cval_by_delta,
     .dump = timer_dump,
 };
 
