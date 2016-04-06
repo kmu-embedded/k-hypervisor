@@ -94,14 +94,14 @@ uint64_t timer_count_to_time(uint64_t count, time_unit_t unit)
     }
 }
 
-static inline uint64_t get_systemcounter_value(void)
+static inline uint64_t get_syscounter(void)
 {
     return read_cntpct(); /* FIXME:(igkang) Need to be rewritten using indirect call through API */
 }
 
-uint64_t timer_get_systemcounter_value(void)
+uint64_t timer_get_syscounter(void)
 {
-    return get_systemcounter_value();
+    return get_syscounter();
 }
 
 /*
@@ -143,7 +143,7 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
     uint32_t pcpu = smp_processor_id();
 
 #ifdef __TEST_TIMER__
-    uint64_t new_syscnt = get_systemcounter_value();
+    uint64_t new_syscnt = get_syscounter();
     printf("time diff: %luns\n", (uint32_t)count_to_ten_ns(new_syscnt - saved_syscnt[pcpu]) * 10u);
     saved_syscnt[pcpu] = new_syscnt;
 #endif
@@ -151,7 +151,7 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
     timer_stop();
 
     /* TODO:(igkang) serparate timer.c into two pieces and move one into arch/arm ? */
-    uint64_t now = count_to_ten_ns(get_systemcounter_value()); // * 10;
+    uint64_t now = count_to_ten_ns(get_syscounter()); // * 10;
 
     struct timer *t;
     struct timer *tmp;
@@ -281,7 +281,7 @@ static hvmm_status_t timer_maintenance(void)
 
     /* then set cval */
     /* ASSERT(__ops != NULL); */
-    __ops->set_cval(nearest);
+    __ops->set_absolute(nearest);
 
     return HVMM_STATUS_SUCCESS;
 }
