@@ -7,8 +7,7 @@
 //In rtsm this 37 is for serial 0
 #define PL01x_IRQ_NUM   37
 
-// FIXME(casionwoo) : This owner should be changed to variable not 'define' And this OWNER means VM
-#define PL01X_OWNER     0
+static int owner_id = 0;
 
 #define UART_BASE 0x1C090000
 
@@ -67,10 +66,15 @@ struct vdev_module pl01x_vuart = {
 
 static void vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
 {
-    // TODO(casionwoo) : Check if input is special key
+    if (irq != PL01x_IRQ_NUM) {
+        printf("Uncorrect irq nuber\n");
+        return;
+    }
 
-    struct vcpu *vcpu = vcpu_find(PL01X_OWNER);
-    virq_hw->forward_irq(vcpu->vcpuid, irq, irq, INJECT_SW);
+    // TODO(casionwoo) : How to find the correct vcpuid from vmid ?
+    //  which vcpu is waiting for irq
+    struct vcpu *vcpu = vcpu_find(owner_id);
+    virq_hw->forward_irq(vcpu->vcpuid, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
 }
 
 #include <stdlib.h>
@@ -89,80 +93,58 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
 
 	switch (offset) {
 	case UARTDR:
-//		printf("%s UARTDR\n", __func__);
 		vuart->uartdr = readl(addr);
-        if (vcpu->vcpuid == PL01X_OWNER)
+        if (vcpu->vcpuid == owner_id)
     		writel(vuart->uartdr, UART_ADDR(UARTDR));
 		break;
 
 	case UARTRSR_UARTECR:
-//		printf("%s UARTRSR_UARTECR\n", __func__);
 		vuart->uartrsr_uartecr = readl(addr);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    writel(vuart->uartrsr_uartecr, UART_ADDR(UARTRSR_UARTECR));
+        writel(vuart->uartrsr_uartecr, UART_ADDR(UARTRSR_UARTECR));
 		break;
 
 	case UARTILPR:
-//		printf("%s UARTILPR\n", __func__);
 		vuart->uartilpr = readl(addr);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    writel(vuart->uartilpr, UART_ADDR(UARTILPR));
+        writel(vuart->uartilpr, UART_ADDR(UARTILPR));
 		break;
 
 	case UARTIBRD:
-//		printf("%s UARTBRD, data : %x\n", __func__, readl(addr));
 		vuart->uartibrd = readl(addr);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    writel(vuart->uartibrd, UART_ADDR(UARTIBRD));
+        writel(vuart->uartibrd, UART_ADDR(UARTIBRD));
 		break;
 
 	case UARTFBRD:
-//		printf("%s UARTFBRD\n", __func__);
-		vuart->uartfbrd = readl(addr);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    writel(vuart->uartfbrd, UART_ADDR(UARTFBRD));
+		writel(readl(addr), UART_ADDR(UARTFBRD));
 		break;
 
 	case UARTLCR_H:
-//		printf("%s UARTLCR_H\n", __func__);
-		vuart->uartlcr_h = readl(addr);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    writel(vuart->uartlcr_h, UART_ADDR(UARTLCR_H));
+		writel(readl(addr), UART_ADDR(UARTLCR_H));
 		break;
 
 	case UARTCR:
-//		printf("%s UARTCR, data : %x\n", __func__, readl(addr));
 		vuart->uartcr = readl(addr);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    writel(vuart->uartcr, UART_ADDR(UARTCR));
+        writel(vuart->uartcr, UART_ADDR(UARTCR));
 		break;
 
 	case UARTIFLS:
-//		printf("%s UARTIFLS\n", __func__);
-		vuart->uartifls = readl(addr);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    writel(vuart->uartifls, UART_ADDR(UARTIFLS));
+		writel(readl(addr), UART_ADDR(UARTIFLS));
 		break;
 
 	case UARTMSC:
-//		printf("%s UARTMSC\n", __func__);
 		vuart->uartmsc = readl(addr);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    writel(vuart->uartmsc, UART_ADDR(UARTMSC));
+        if (vuart->uartmsc == 0x70 && vcpu->vcpuid != owner_id) {
+            virq_hw->forward_irq(vcpu->vcpuid, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
+        }
+
+        writel(vuart->uartmsc, UART_ADDR(UARTMSC));
 		break;
 
 	case UARTICR:
-//		printf("%s UARTICR\n", __func__);
-		vuart->uarticr = readl(addr);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    writel(vuart->uarticr, UART_ADDR(UARTICR));
+		writel(readl(addr), UART_ADDR(UARTICR));
 		break;
 
 	case UARTDMACR:
-//		printf("%s UARTDMACR\n", __func__);
-		vuart->uartdmacr = readl(addr);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    writel(vuart->uartdmacr, UART_ADDR(UARTDMACR));
+		writel(readl(addr), UART_ADDR(UARTDMACR));
 		break;
 
 	default:
@@ -176,107 +158,72 @@ int32_t vuart_read(void *pdata, uint32_t offset)
 {
 	struct pl01x *vuart = pdata;
     struct vcpu *vcpu = get_current_vcpu();
+    uint32_t data;
 
 	switch (offset)
     {
 	case UARTDR:
-        if (vcpu->vcpuid == PL01X_OWNER) {
-            uint32_t data = readl(UART_ADDR(UARTDR));
+        data = readl(UART_ADDR(UARTDR));
+        if (vcpu->vmid == owner_id) {
             if (data == 25) {
-                printf("Special Key!!!\n");
+                printf("Changing owner from %d to \t", owner_id);
+                if (owner_id == 0) {
+                    owner_id = 1;
+                } else if (owner_id == 1) {
+                    owner_id = 2;
+                } else {
+                    owner_id = 0;
+                }
+                printf("%d \n", owner_id);
             }
             return data;
         }
         return vuart->uartdr;
 
 	case UARTRSR_UARTECR:
-//		printf("%s UARTRSR_UARTECR\n", __func__);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTRSR_UARTECR));
-        return vuart->uartrsr_uartecr;
+        return readl(UART_ADDR(UARTRSR_UARTECR));
 
 	case UARTFR:
-//		printf("%s UARTFR\n", __func__);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTFR));
-        return vuart->uartfr;
+        return readl(UART_ADDR(UARTFR));
 
 	case UARTILPR:
-//		printf("%s UARTILPR\n", __func__);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTILPR));
-        return vuart->uartilpr;
+        return readl(UART_ADDR(UARTILPR));
 
 	case UARTIBRD:
-//		printf("%s UARTIBRD\n", __func__);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTIBRD));
-        return vuart->uartibrd;
+        return readl(UART_ADDR(UARTIBRD));
 
 	case UARTFBRD:
-//		printf("%s UARTFBRD\n", __func__);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTFBRD));
-        return vuart->uartfbrd;
+        return readl(UART_ADDR(UARTFBRD));
 
 	case UARTLCR_H:
-//		printf("%s UARTLCR_H\n", __func__);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTLCR_H));
-        return vuart->uartlcr_h;
+        return readl(UART_ADDR(UARTLCR_H));
 
 	case UARTCR:
-//		printf("%s UARTCR\n", __func__);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTCR));
-        return vuart->uartcr;
+        return readl(UART_ADDR(UARTCR));
 
 	case UARTIFLS:
-//		printf("%s UARTIFLS\n", __func__);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTIFLS));
-        return vuart->uartifls;
+        return readl(UART_ADDR(UARTIFLS));
 
 	case UARTMSC:
-//		printf("%s UARTMSC\n", __func__);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTMSC));
-        return vuart->uartmsc;
+        return readl(UART_ADDR(UARTMSC));
 
 	case UARTRIS:
-//		printf("%s UARTRIS\n", __func__);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTRIS));
-        return vuart->uartris;
+        return readl(UART_ADDR(UARTRIS));
 
 	case UARTMIS:
-//		printf("%s UARTMIS\n", __func__);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTMIS));
-        return vuart->uartmis;
+        return readl(UART_ADDR(UARTMIS));
 
 	case UARTDMACR:
-//		printf("%s UARTDMACR\n", __func__);
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTDMACR));
-        return vuart->uartdmacr;
+        return readl(UART_ADDR(UARTDMACR));
 
 	case UARTPERIPHID(0) ... UARTPERIPHID(3): {
         int index = (offset - UARTPERIPHID(0)) >> 2;
-//		printf("%s UARTPERIPHID[%d]\n", __func__, index);
-
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTPERIPHID(index)));
-        return vuart->uartperiphid[index];
+        return readl(UART_ADDR(UARTPERIPHID(index)));
     }
 
 	case UARTCELLID(0) ... UARTCELLID(3): {
         int index = (offset - UARTCELLID(0)) >> 2;
-//		printf("%s UARTCELLID[%d]\n", __func__, index);
-
-        if (vcpu->vcpuid == PL01X_OWNER)
-		    return readl(UART_ADDR(UARTCELLID(index)));
-        return vuart->uartcellid[index];
+        return readl(UART_ADDR(UARTCELLID(index)));
     }
 
 	default:

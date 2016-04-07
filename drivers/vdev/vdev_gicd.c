@@ -418,13 +418,11 @@ int32_t vgicd_read_handler(void *pdata, uint32_t offset)
     break;
 
     case GICD_NSACR(0) ... GICD_NSACR_LAST:
-        printf("vgicd: GICD_NSACR read not implemented\n", __func__);
         return HVMM_STATUS_BAD_ACCESS;
 
         break;
 
     case GICD_SGIR:
-        printf("GICD_SGIR is WO\n");
         return 0;
 
         break;
