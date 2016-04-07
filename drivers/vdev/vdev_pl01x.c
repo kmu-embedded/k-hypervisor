@@ -8,7 +8,7 @@
 #define PL01x_IRQ_NUM   37
 
 // FIXME(casionwoo) : This owner should be changed to variable not 'define' And this OWNER means VM
-#define PL01X_OWNER     1
+#define PL01X_OWNER     0
 
 #define UART_BASE 0x1C090000
 
@@ -67,6 +67,8 @@ struct vdev_module pl01x_vuart = {
 
 static void vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
 {
+    // TODO(casionwoo) : Check if input is special key
+
     struct vcpu *vcpu = vcpu_find(PL01X_OWNER);
     virq_hw->forward_irq(vcpu->vcpuid, irq, irq, INJECT_SW);
 }
@@ -178,9 +180,13 @@ int32_t vuart_read(void *pdata, uint32_t offset)
 	switch (offset)
     {
 	case UARTDR:
-//		printf("%s UARTDR\n", __func__);
-        if (vcpu->vcpuid == PL01X_OWNER)
-            return readl(UART_ADDR(UARTDR));
+        if (vcpu->vcpuid == PL01X_OWNER) {
+            uint32_t data = readl(UART_ADDR(UARTDR));
+            if (data == 25) {
+                printf("Special Key!!!\n");
+            }
+            return data;
+        }
         return vuart->uartdr;
 
 	case UARTRSR_UARTECR:
