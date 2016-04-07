@@ -305,6 +305,7 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
     int i;
     struct vcpu *vcpu = vcpu_find(vcpuid);
+    struct vmcb *vm = vm_find(vcpu->vmid);
 
     if (!hw) {
         pirq |= vcpuid;
@@ -328,15 +329,16 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
             }
             return false;
         } else {
-//            printf("vmid %d inject now %x\n", vm->vmid, lr_entry.raw);
+            if (virq == 37)
+                printf("vmid %d inject now %x\n", vm->vmid, lr_entry.raw);
             gic_inject_virq(lr_entry, slot);
             return true;
         }
 
     } else {
         lr_entry_t *q = vcpu->pending_irqs;
-
-//        printf("vmid %d inject later %x\n", vm->vmid, lr_entry.raw);
+        if (virq == 37)
+            printf("vmid %d inject later %x\n", vm->vmid, lr_entry.raw);
         for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
             if (!q[i].raw) {
                 q[i] = lr_entry;
