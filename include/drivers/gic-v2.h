@@ -10,6 +10,8 @@
 #include <../../platform/rtsm/config.h>
 #elif SERIAL_SH
 #include <../../platform/lager/config.h>
+#elif SERIAL_S5P
+#include <../../platform/odroidxu/config.h>
 #endif
 
 #define HW_IRQ      1

@@ -10,6 +10,10 @@ endif
 ifeq (${TARGET},lager)
 DRIVER_SRCS+= serial_sh.c
 endif
+ifeq (${TARGET},odroidxu)
+DRIVER_SRCS+= serial_s5p.c
+DRIVER_SRCS+= mct.c
+endif
 DRIVER_SRCS+= gic-v2.c
 
 SUBDIRECTORIES += drivers/vdev
