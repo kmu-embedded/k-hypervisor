@@ -133,7 +133,7 @@ void sched_start(void)
     uint64_t expiration = 0;
     vcpu = vcpu_find(__policy[pcpu]->do_schedule(&expiration));
     tm_register_timer(&__sched_timer[pcpu], do_schedule);
-    tm_set_timer(&__sched_timer[pcpu], expiration);
+    tm_set_timer(&__sched_timer[pcpu], expiration, true);
     /* timer just started */
 
     switch_to(vcpu->vcpuid);
@@ -271,17 +271,13 @@ void do_schedule(void *pdata, uint64_t *expiration)
 
     /* determine next vcpu to be run
      * by calling scheduler.do_schedule() */
+    /* Also sets timer for next scheduler work */
     next_vcpuid = __policy[pcpu]->do_schedule(expiration);
-
-    /* FIXME:(igkang) hardcoded */
-    /* set timer for next scheduler work */
-    // *delay_tick = 1 * TICKTIME_1MS / 50;
 
     /* update vCPU's running time */
 
     /* manipulate variables to
      * cause context switch */
-
     switch_to(next_vcpuid);
     sched_perform_switch(pdata);
 }
