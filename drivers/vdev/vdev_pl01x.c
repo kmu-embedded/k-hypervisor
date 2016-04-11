@@ -39,31 +39,31 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr);
 int32_t vuart_create(void **pdata);
 
 struct pl01x {
-	uint32_t uartdr;
-	uint32_t uartrsr_uartecr;
-	uint32_t uartfr;
-	uint32_t uartilpr;
-	uint32_t uartibrd;
-	uint32_t uartfbrd;
-	uint32_t uartlcr_h;
-	uint32_t uartcr;
-	uint32_t uartifls;
-	uint32_t uartmsc;
-	uint32_t uartris;
-	uint32_t uartmis;
-	uint32_t uarticr;
-	uint32_t uartdmacr;
-	uint32_t uartperiphid[4];
-	uint32_t uartcellid[4];
+    uint32_t uartdr;
+    uint32_t uartrsr_uartecr;
+    uint32_t uartfr;
+    uint32_t uartilpr;
+    uint32_t uartibrd;
+    uint32_t uartfbrd;
+    uint32_t uartlcr_h;
+    uint32_t uartcr;
+    uint32_t uartifls;
+    uint32_t uartmsc;
+    uint32_t uartris;
+    uint32_t uartmis;
+    uint32_t uarticr;
+    uint32_t uartdmacr;
+    uint32_t uartperiphid[4];
+    uint32_t uartcellid[4];
 };
 
 struct vdev_module pl01x_vuart = {
-		.name   = "vdev_pl01x",
-		.base   = UART_BASE,
-		.size   = 4096,
-        .read   = vuart_read,
-		.write  = vuart_write,
-		.create = vuart_create,
+    .name   = "vdev_pl01x",
+    .base   = UART_BASE,
+    .size   = 4096,
+    .read   = vuart_read,
+    .write  = vuart_write,
+    .create = vuart_create,
 };
 
 static void vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
@@ -82,95 +82,95 @@ static void vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
 #include <stdlib.h>
 int32_t vuart_create(void **pdata)
 {
-	struct pl01x *vuart = malloc(sizeof(struct pl01x));
+    struct pl01x *vuart = malloc(sizeof(struct pl01x));
 
-	*pdata = vuart;
-	return 0;
+    *pdata = vuart;
+    return 0;
 }
 
 int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
 {
-	struct pl01x *vuart = pdata;
+    struct pl01x *vuart = pdata;
     struct vcpu *vcpu = get_current_vcpu();
 
-	switch (offset) {
-	case UARTDR: {
-		vuart->uartdr = readl(addr);
+    switch (offset) {
+    case UARTDR: {
+        vuart->uartdr = readl(addr);
         if (vcpu->vcpuid == owner_id) {
             writel(vuart->uartdr, UART_ADDR(UARTDR));
             if (vuart->uartdr == 13) {
                 int i;
-                for (i = 0; i < sizeof(prompt)/sizeof(char); i++)
+                for (i = 0; i < sizeof(prompt) / sizeof(char); i++) {
                     writel(prompt[i], UART_ADDR(UARTDR));
+                }
             }
         }
-		break;
+        break;
     }
 
-	case UARTRSR_UARTECR:
-		vuart->uartrsr_uartecr = readl(addr);
+    case UARTRSR_UARTECR:
+        vuart->uartrsr_uartecr = readl(addr);
         writel(vuart->uartrsr_uartecr, UART_ADDR(UARTRSR_UARTECR));
-		break;
+        break;
 
-	case UARTILPR:
-		vuart->uartilpr = readl(addr);
+    case UARTILPR:
+        vuart->uartilpr = readl(addr);
         writel(vuart->uartilpr, UART_ADDR(UARTILPR));
-		break;
+        break;
 
-	case UARTIBRD:
-		vuart->uartibrd = readl(addr);
+    case UARTIBRD:
+        vuart->uartibrd = readl(addr);
         writel(vuart->uartibrd, UART_ADDR(UARTIBRD));
-		break;
+        break;
 
-	case UARTFBRD:
-		writel(readl(addr), UART_ADDR(UARTFBRD));
-		break;
+    case UARTFBRD:
+        writel(readl(addr), UART_ADDR(UARTFBRD));
+        break;
 
-	case UARTLCR_H:
-		writel(readl(addr), UART_ADDR(UARTLCR_H));
-		break;
+    case UARTLCR_H:
+        writel(readl(addr), UART_ADDR(UARTLCR_H));
+        break;
 
-	case UARTCR:
-		vuart->uartcr = readl(addr);
+    case UARTCR:
+        vuart->uartcr = readl(addr);
         writel(vuart->uartcr, UART_ADDR(UARTCR));
-		break;
+        break;
 
-	case UARTIFLS:
-		writel(readl(addr), UART_ADDR(UARTIFLS));
-		break;
+    case UARTIFLS:
+        writel(readl(addr), UART_ADDR(UARTIFLS));
+        break;
 
-	case UARTMSC:
-		vuart->uartmsc = readl(addr);
+    case UARTMSC:
+        vuart->uartmsc = readl(addr);
         if (vuart->uartmsc == 0x70 && vcpu->vcpuid != owner_id) {
             virq_hw->forward_irq(vcpu->vcpuid, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
         }
 
         writel(readl(addr), UART_ADDR(UARTMSC));
-		break;
+        break;
 
-	case UARTICR:
-		writel(readl(addr), UART_ADDR(UARTICR));
-		break;
+    case UARTICR:
+        writel(readl(addr), UART_ADDR(UARTICR));
+        break;
 
-	case UARTDMACR:
-		writel(readl(addr), UART_ADDR(UARTDMACR));
-		break;
+    case UARTDMACR:
+        writel(readl(addr), UART_ADDR(UARTDMACR));
+        break;
 
-	default:
-		printf("%s ERROR!! offset: %x\n", __func__, offset, readl(addr));
-		writel(readl(addr), UART_BASE + offset);
+    default:
+        printf("%s ERROR!! offset: %x\n", __func__, offset, readl(addr));
+        writel(readl(addr), UART_BASE + offset);
     }
-	return 0;
+    return 0;
 }
 
 int32_t vuart_read(void *pdata, uint32_t offset)
 {
-	struct pl01x *vuart = pdata;
+    struct pl01x *vuart = pdata;
     struct vcpu *vcpu = get_current_vcpu();
 
-	switch (offset)
-    {
-	case UARTDR:{
+    switch (offset) {
+    case UARTDR: {
         uint32_t data = readl(UART_ADDR(UARTDR));
 
         if (vcpu->vmid == owner_id) {
@@ -187,73 +187,74 @@ int32_t vuart_read(void *pdata, uint32_t offset)
         }
         return vuart->uartdr;
     }
-	case UARTRSR_UARTECR:
+    case UARTRSR_UARTECR:
         return readl(UART_ADDR(UARTRSR_UARTECR));
 
-	case UARTFR:
+    case UARTFR:
         return readl(UART_ADDR(UARTFR));
 
-	case UARTILPR:
+    case UARTILPR:
         return readl(UART_ADDR(UARTILPR));
 
-	case UARTIBRD:
+    case UARTIBRD:
         return readl(UART_ADDR(UARTIBRD));
 
-	case UARTFBRD:
+    case UARTFBRD:
         return readl(UART_ADDR(UARTFBRD));
 
-	case UARTLCR_H:
+    case UARTLCR_H:
         return readl(UART_ADDR(UARTLCR_H));
 
-	case UARTCR:
+    case UARTCR:
         return readl(UART_ADDR(UARTCR));
 
-	case UARTIFLS:
+    case UARTIFLS:
         return readl(UART_ADDR(UARTIFLS));
 
-	case UARTMSC:
+    case UARTMSC:
         return readl(UART_ADDR(UARTMSC));
 
-	case UARTRIS:
+    case UARTRIS:
         return readl(UART_ADDR(UARTRIS));
 
-	case UARTMIS:
+    case UARTMIS:
         return readl(UART_ADDR(UARTMIS));
 
-	case UARTDMACR:
+    case UARTDMACR:
         return readl(UART_ADDR(UARTDMACR));
 
-	case UARTPERIPHID(0) ... UARTPERIPHID(3): {
+    case UARTPERIPHID(0) ... UARTPERIPHID(3): {
         int index = (offset - UARTPERIPHID(0)) >> 2;
         return readl(UART_ADDR(UARTPERIPHID(index)));
     }
 
-	case UARTCELLID(0) ... UARTCELLID(3): {
+    case UARTCELLID(0) ... UARTCELLID(3): {
         int index = (offset - UARTCELLID(0)) >> 2;
         return readl(UART_ADDR(UARTCELLID(index)));
     }
 
-	default:
-		printf("%s ERROR!! offset: %x\n", __func__, offset);
-		return readl(UART_BASE + offset);
+    default:
+        printf("%s ERROR!! offset: %x\n", __func__, offset);
+        return readl(UART_BASE + offset);
     }
-	return 0;
+    return 0;
 }
 
-hvmm_status_t vdev_pl01x_init() {
-	hvmm_status_t result = HVMM_STATUS_BUSY;
+hvmm_status_t vdev_pl01x_init()
+{
+    hvmm_status_t result = HVMM_STATUS_BUSY;
 
     memset(prompt, 0, 32);
     sprintf(prompt, "VM %d> ", owner_id);
 
     // For trap
-	vdev_register(&pl01x_vuart);
+    vdev_register(&pl01x_vuart);
 
     // For irq
     vdev_irq_handler_register(PL01x_IRQ_NUM, vdev_pl01x_irq_handler);
-	printf("vdev registered:'%s'\n", pl01x_vuart.name);
+    printf("vdev registered:'%s'\n", pl01x_vuart.name);
 
-	return result;
+    return result;
 }
 
 vdev_module_init(vdev_pl01x_init);
