@@ -3,10 +3,12 @@
 #include <io.h>
 #include <core/scheduler.h>
 #include <irq-chip.h>
+#include <string.h>
 
 //In rtsm this 37 is for serial 0
 #define PL01x_IRQ_NUM   37
 
+static char prompt[32];
 static int owner_id = 0;
 
 #define UART_BASE 0x1C090000
@@ -92,11 +94,18 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
     struct vcpu *vcpu = get_current_vcpu();
 
 	switch (offset) {
-	case UARTDR:
+	case UARTDR: {
 		vuart->uartdr = readl(addr);
-        if (vcpu->vcpuid == owner_id)
-    		writel(vuart->uartdr, UART_ADDR(UARTDR));
+        if (vcpu->vcpuid == owner_id) {
+            writel(vuart->uartdr, UART_ADDR(UARTDR));
+            if (vuart->uartdr == 13) {
+                int i;
+                for (i = 0; i < sizeof(prompt)/sizeof(char); i++)
+                    writel(prompt[i], UART_ADDR(UARTDR));
+            }
+        }
 		break;
+    }
 
 	case UARTRSR_UARTECR:
 		vuart->uartrsr_uartecr = readl(addr);
@@ -170,6 +179,9 @@ int32_t vuart_read(void *pdata, uint32_t offset)
                 printf("Changing owner from %d to \t", owner_id);
                 owner_id = (owner_id + 1) % NUM_GUESTS_STATIC;
                 printf("%d \n", owner_id);
+
+                memset(prompt, 0, 32);
+                sprintf(prompt, "VM %d> ", owner_id);
             }
             return data;
         }
@@ -230,6 +242,9 @@ int32_t vuart_read(void *pdata, uint32_t offset)
 
 hvmm_status_t vdev_pl01x_init() {
 	hvmm_status_t result = HVMM_STATUS_BUSY;
+
+    memset(prompt, 0, 32);
+    sprintf(prompt, "VM %d> ", owner_id);
 
     // For trap
 	vdev_register(&pl01x_vuart);
