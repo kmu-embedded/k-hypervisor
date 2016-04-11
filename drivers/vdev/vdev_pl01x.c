@@ -158,12 +158,12 @@ int32_t vuart_read(void *pdata, uint32_t offset)
 {
 	struct pl01x *vuart = pdata;
     struct vcpu *vcpu = get_current_vcpu();
-    uint32_t data;
 
 	switch (offset)
     {
-	case UARTDR:
-        data = readl(UART_ADDR(UARTDR));
+	case UARTDR:{
+        uint32_t data = readl(UART_ADDR(UARTDR));
+
         if (vcpu->vmid == owner_id) {
             // TODO(casionwoo) : When special key is read, move to the 'CLI'
             if (data == 25) {
@@ -180,7 +180,7 @@ int32_t vuart_read(void *pdata, uint32_t offset)
             return data;
         }
         return vuart->uartdr;
-
+    }
 	case UARTRSR_UARTECR:
         return readl(UART_ADDR(UARTRSR_UARTECR));
 
