@@ -168,13 +168,7 @@ int32_t vuart_read(void *pdata, uint32_t offset)
             // TODO(casionwoo) : When special key is read, move to the 'CLI'
             if (data == 25) {
                 printf("Changing owner from %d to \t", owner_id);
-                if (owner_id == 0) {
-                    owner_id = 1;
-                } else if (owner_id == 1) {
-                    owner_id = 2;
-                } else {
-                    owner_id = 0;
-                }
+                owner_id = (owner_id + 1) % NUM_GUESTS_STATIC;
                 printf("%d \n", owner_id);
             }
             return data;
