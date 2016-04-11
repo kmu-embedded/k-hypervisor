@@ -94,14 +94,29 @@ uint64_t timer_count_to_time(uint64_t count, time_unit_t unit)
     }
 }
 
-static inline uint64_t get_systemcounter_value(void)
+uint64_t timer_count_to_time_ns(uint64_t count) {
+    return count * 10llu;
+}
+
+uint64_t timer_time_to_count_ns(uint64_t time) {
+    /* CNTFRQ > 10^9 ?? */
+    return time / 10llu;
+}
+
+static inline uint64_t get_syscounter(void)
 {
     return read_cntpct(); /* FIXME:(igkang) Need to be rewritten using indirect call through API */
 }
 
-uint64_t timer_get_systemcounter_value(void)
+uint64_t timer_get_syscounter(void)
 {
-    return get_systemcounter_value();
+    return get_syscounter();
+}
+
+uint64_t timer_get_timenow(void)
+{
+    /* TODO:(igkang) need to be rewitten with 'ns' base time calculation */
+    return timer_count_to_time_ns(get_syscounter());
 }
 
 /*
@@ -143,7 +158,7 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
     uint32_t pcpu = smp_processor_id();
 
 #ifdef __TEST_TIMER__
-    uint64_t new_syscnt = get_systemcounter_value();
+    uint64_t new_syscnt = get_syscounter();
     printf("time diff: %luns\n", (uint32_t)count_to_ten_ns(new_syscnt - saved_syscnt[pcpu]) * 10u);
     saved_syscnt[pcpu] = new_syscnt;
 #endif
@@ -151,7 +166,7 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
     timer_stop();
 
     /* TODO:(igkang) serparate timer.c into two pieces and move one into arch/arm ? */
-    uint64_t now = count_to_ten_ns(get_systemcounter_value()); // * 10;
+    uint64_t now = timer_count_to_time_ns(get_syscounter()); // * 10;
 
     struct timer *t;
     struct timer *tmp;
@@ -217,11 +232,15 @@ hvmm_status_t tm_register_timer(struct timer *t, timer_callback_t callback)
     return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t tm_set_timer(struct timer *t, uint64_t expiration)
+hvmm_status_t tm_set_timer(struct timer *t, uint64_t expiration, bool timer_stopstart)
 {
     /* uint32_t pcpu = smp_processor_id(); */
 
-    timer_stop();
+    /* FIXME:(igkang) does it really need timer_stop/start ? */
+    /* is the timer already disabled when we're calling this function? */
+    if (timer_stopstart) {
+        timer_stop();
+    }
 
     /* ASSERT(t != NULL); */
     tm_deactivate_timer(t);
@@ -233,8 +252,9 @@ hvmm_status_t tm_set_timer(struct timer *t, uint64_t expiration)
     /* then do maintenance routine */
     timer_maintenance();
 
-    timer_start();
-    /* FIXME:(igkang) does it really need timer_stop/start ? */
+    if (timer_stopstart) {
+        timer_start();
+    }
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -242,6 +262,8 @@ hvmm_status_t tm_set_timer(struct timer *t, uint64_t expiration)
 hvmm_status_t tm_activate_timer(struct timer *t)
 {
     uint32_t pcpu = smp_processor_id();
+
+    t->state = 1; /* active */
 
     /* ASSERT(t != NULL); */
     LIST_DELINIT(&t->head_inactive);
@@ -253,6 +275,8 @@ hvmm_status_t tm_activate_timer(struct timer *t)
 hvmm_status_t tm_deactivate_timer(struct timer *t)
 {
     uint32_t pcpu = smp_processor_id();
+
+    t->state = 0; /* inactive */
 
     /* ASSERT(t != NULL); */
     LIST_DELINIT(&t->head_active);
@@ -277,11 +301,11 @@ static hvmm_status_t timer_maintenance(void)
     }
 
     /* then calculate cval from ns */
-    nearest = ten_ns_to_count(nearest);
+    nearest = timer_time_to_count_ns(nearest);
 
     /* then set cval */
     /* ASSERT(__ops != NULL); */
-    __ops->set_cval(nearest);
+    __ops->set_absolute(nearest);
 
     return HVMM_STATUS_SUCCESS;
 }
