@@ -14,6 +14,7 @@
 
 //#include "int_lib.h"
 
+#define _YUGA_LITTLE_ENDIAN 1
 
 /* Effects: if rem != 0, *rem = a % b
  * Returns: a / b
