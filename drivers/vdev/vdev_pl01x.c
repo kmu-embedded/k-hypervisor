@@ -136,7 +136,7 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
             virq_hw->forward_irq(vcpu->vcpuid, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
         }
 
-        writel(vuart->uartmsc, UART_ADDR(UARTMSC));
+        writel(readl(addr), UART_ADDR(UARTMSC));
 		break;
 
 	case UARTICR:
