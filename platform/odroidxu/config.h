@@ -1,7 +1,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#define MAHINE_TYPE             4538
+#define MAHINE_TYPE             4289
 #define CFG_CNTFRQ              100000000
 
 #define HYP_STACK_SIZE          4096
@@ -11,20 +11,20 @@
 /*
  *  SOC param
  */
-#define CFG_GIC_BASE_PA     0xF1000000
-#define CFG_GICD_BASE_PA    0xF1001000
-#define CFG_GICC_BASE_PA    0xF1002000
+#define CFG_GIC_BASE_PA     0x10480000
+#define CFG_GICD_BASE_PA    0x10481000
+#define CFG_GICC_BASE_PA    0x10482000
 
 #define USEC_DIV 1000000
 #define NSEC_DIV 1000000000
 #define COUNT_PER_USEC (CFG_CNTFRQ/USEC_DIV)
 #define NSEC_PER_COUNT (NSEC_DIV/CFG_CNTFRQ)
-#define TICKTIME_1MS 1000
 
 #define NUM_GUESTS_CPU0_STATIC       2
+#define TICKTIME_1MS 1000
 #define MAX_IRQS 1024
 
-#define CFG_MEMMAP_GUEST_SIZE				0x00100000
+#define CFG_MEMMAP_GUEST_SIZE               0x00100000
 
 #define CFG_MEMMAP_GUEST0_ATAGS_OFFSET      0x40000000
 #define CFG_MEMMAP_GUEST0_OFFSET            0x40500000
@@ -38,8 +38,7 @@
 #define CFG_GUEST_ATAGS_START_ADDRESS       0x40500000
 
 #define CFG_GUEST_START_ADDRESS             0x40000000
+#define CFG_HYP_START_ADDRESS               0x70000000
 
-#define CFG_HYP_START_ADDRESS				0x70000000
 
-
-#endif  /* LAGER_CONFIG_H */
+#endif  /* ODROIDXU_CONFIG_H */
