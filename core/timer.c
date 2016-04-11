@@ -95,11 +95,13 @@ uint64_t timer_count_to_time(uint64_t count, time_unit_t unit)
     }
 }
 
-uint64_t timer_count_to_time_ns(uint64_t count) {
+uint64_t timer_count_to_time_ns(uint64_t count)
+{
     return count * 10llu;
 }
 
-uint64_t timer_time_to_count_ns(uint64_t time) {
+uint64_t timer_time_to_count_ns(uint64_t time)
+{
     /* CNTFRQ > 10^9 ?? */
     return time / 10llu;
 }

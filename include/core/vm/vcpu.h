@@ -33,10 +33,12 @@ struct virq_table {
 
 
 struct vcpu {
-    vcpuid_t vcpuid;				// count
+    vcpuid_t vcpuid; // Unique ID that vcpu has
 
-    // FIXME(casionwoo): get_current_vcpuidx()
-    vcpuid_t id;					// idx
+    // TODO(casionwoo): Might be needed like 'get_current_vcpuidx()' API
+    vcpuid_t id;	 // ID that order of vcpu of VM
+
+    pcpuid_t pcpuid; // Physical CPU ID that vcpu is assigned
 
     vmid_t vmid;
 

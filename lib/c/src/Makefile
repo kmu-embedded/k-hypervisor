@@ -9,6 +9,7 @@ LIBC_SRCS+= $(patsubst %, sys-baremetal/%, ${LIBC_BM_SRCS})
 #LIBRARY FOR CURRENT USE, IF YOU WANT TO USE OTHER LIBS, YOU HAVE TO INCLUDE THE FILS AS BELOW
 LIBC_SRCS+= init_libc.c malloc.c strlen.c strcpy.c printf.c memset.c realloc.c
 LIBC_SRCS+= fputc.c memcpy.c vfprintf.c fprintf.c format.c assert.c
+LIBC_SRCS+= sprintf.c
 
 #FOR ALL STANDARD C LIBRARY
 #LIBC_SRCS+= memcpy.c strncat.c fgetc.c strpbrk.c fflush.c strcat.c rand.c memcmp.c  \

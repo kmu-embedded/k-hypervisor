@@ -66,6 +66,7 @@ static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
             eisr &= ~(1 << slot);
             lr = GICH_READ(GICH_LR(slot));
             virq = lr & 0x3ff;
+//            printf("%s, virq : %d\n", __func__, virq);
             GICH_WRITE(GICH_LR(slot), 0);
 
             /* deactivate associated pirq at the slot */
@@ -81,6 +82,7 @@ static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
             eisr &= ~(1 << slot);
             lr = GICH_READ(GICH_LR(slot));
             virq = lr & 0x3ff;
+//            printf("%s, virq : %d\n", __func__, virq);
             GICH_WRITE(GICH_LR(slot + 32), 0);
 
             /* deactivate associated pirq at the slot */
@@ -296,8 +298,14 @@ void gic_inject_virq(lr_entry_t lr_entry, uint32_t slot)
     GICH_WRITE(GICH_LR(slot), (uint32_t) lr_entry.raw);
 }
 
+#include <arch/armv7.h>
+#include <core/vm.h>
+#include <core/scheduler.h>
 bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
+    int i;
+    struct vcpu *vcpu = vcpu_find(vcpuid);
+
     if (!hw) {
         pirq |= vcpuid;
         pirq |= (EOI_ENABLE << 9);
@@ -310,6 +318,14 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
         uint32_t slot = gic_find_free_slot();
 
         if (slot == VGIC_SLOT_NOTFOUND) {
+            lr_entry_t *q = vcpu->pending_irqs;
+
+            for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
+                if (!q[i].raw) {
+                    q[i] = lr_entry;
+                    return true;
+                }
+            }
             return false;
         } else {
             gic_inject_virq(lr_entry, slot);
@@ -317,10 +333,7 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
         }
 
     } else {
-        int i;
-        struct vcpu *vcpu = vcpu_find(vcpuid);
         lr_entry_t *q = vcpu->pending_irqs;
-
         for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
             if (!q[i].raw) {
                 q[i] = lr_entry;
