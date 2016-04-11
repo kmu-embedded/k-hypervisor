@@ -165,6 +165,7 @@ int32_t vuart_read(void *pdata, uint32_t offset)
 	case UARTDR:
         data = readl(UART_ADDR(UARTDR));
         if (vcpu->vmid == owner_id) {
+            // TODO(casionwoo) : When special key is read, move to the 'CLI'
             if (data == 25) {
                 printf("Changing owner from %d to \t", owner_id);
                 if (owner_id == 0) {
