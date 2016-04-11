@@ -114,7 +114,7 @@ static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
                 virq_inject(target_vcpu->vcpuid, sgi.entry.id, sgi.entry.id, SW_IRQ);
             }
         }
-    break;
+        break;
 
     case 1: {
         int cpuid;
@@ -132,7 +132,7 @@ static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
 
     case 2:
         virq_inject(vcpu->id, sgi.entry.id, sgi.entry.id, SW_IRQ);
-    break;
+        break;
 
     default:
         printf("Reserved case of SGIR TargetListFilter :%d\n", sgi.entry.TargetListFilter);
