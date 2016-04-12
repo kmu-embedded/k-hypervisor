@@ -2,7 +2,7 @@
 #include <config.h>
 #include <core/timer.h>
 #include <arch/irq.h>
-#include <core/vm.h>
+#include <core/vm/vm.h>
 #include <core/vm/vcpu.h>
 #include <core/context_switch.h>
 #include <core/scheduler.h>

@@ -296,7 +296,7 @@ void gic_inject_virq(lr_entry_t lr_entry, uint32_t slot)
 }
 
 #include <arch/armv7.h>
-#include <core/vm.h>
+#include <core/vm/vm.h>
 #include <core/scheduler.h>
 bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
