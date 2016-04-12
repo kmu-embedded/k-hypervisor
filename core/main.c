@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <core/vm.h>
+#include <core/vm/vm.h>
 #include <core/scheduler.h>
 
 #include <config.h>

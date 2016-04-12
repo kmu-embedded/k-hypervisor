@@ -1,5 +1,5 @@
 #include <core/context_switch.h>
-#include <core/vm.h>
+#include <core/vm/vm.h>
 #include <core/vm/vcpu.h>
 #include <types.h>
 

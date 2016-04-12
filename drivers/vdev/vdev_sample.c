@@ -4,7 +4,7 @@
 #include <core/scheduler.h>
 #include <config.h>
 #include <stdlib.h>
-#include <core/vm.h>
+#include <core/vm/vm.h>
 
 #define SAMPLE_BASE_ADDR 0x3FFFF000
 

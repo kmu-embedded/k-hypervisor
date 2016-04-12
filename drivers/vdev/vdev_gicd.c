@@ -4,7 +4,7 @@
 #include <core/scheduler.h>
 #include <config.h>
 #include <stdio.h>
-#include <core/vm.h>
+#include <core/vm/vm.h>
 #include <core/vm/vcpu.h>
 #include <drivers/gic-v2.h>
 #include <drivers/vdev/vdev_gicd.h>
