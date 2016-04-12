@@ -16,10 +16,15 @@
 #define GUEST_VERBOSE_LEVEL_7   0x80
 
 void sched_init();
-int sched_vcpu_register(vcpuid_t vcpuid);
-int sched_vcpu_unregister();
-int sched_vcpu_attach(vcpuid_t vcpuid);
-int sched_vcpu_detach();
+
+int sched_vcpu_register(vcpuid_t vcpuid, uint32_t pcpu);
+int sched_vcpu_register_to_current_pcpu(vcpuid_t vcpuid);
+int sched_vcpu_unregister(vcpuid_t vcpuid, uint32_t pcpu);
+
+int sched_vcpu_attach(vcpuid_t vcpuid, uint32_t pcpu);
+int sched_vcpu_attach_to_current_pcpu(vcpuid_t vcpuid);
+int sched_vcpu_detach(vcpuid_t vcpuid, uint32_t pcpu);
+
 void do_schedule(void *pdata, uint64_t *expiration);
 
 void sched_start(void);
