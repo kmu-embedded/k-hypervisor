@@ -185,13 +185,19 @@ struct vmcb *get_current_vm(void)
  * @param pcpuid ID of physical CPU
  * @return
  */
-int sched_vcpu_register(vcpuid_t vcpuid)
+int sched_vcpu_register(vcpuid_t vcpuid, uint32_t pcpu)
 {
-    uint32_t pcpu = smp_processor_id();
-    /* call scheduler.register_vcpu() */
     __policy[pcpu]->register_vcpu(vcpuid);
 
-    // NOTE(casionwoo) : Return the ID of physical CPU id that vcpu is assigned
+    /* NOTE(casionwoo) : Return the ID of physical CPU that vCPU is assigned */
+    return pcpu;
+}
+
+
+int sched_vcpu_register_to_current_pcpu(vcpuid_t vcpuid)
+{
+    int pcpu = sched_vcpu_register(vcpuid, smp_processor_id());
+    /* NOTE(casionwoo) : Return the ID of physical CPU that vCPU is assigned */
     return pcpu;
 }
 
@@ -204,10 +210,8 @@ int sched_vcpu_register(vcpuid_t vcpuid)
  * @param vcpuid ID of vCPU
  * @return
  */
-int sched_vcpu_unregister(vcpuid_t vcpuid)
+int sched_vcpu_unregister(vcpuid_t vcpuid, uint32_t pcpu)
 {
-    uint32_t pcpu = smp_processor_id();
-    /* call scheduler.unregister_vcpu() */
     __policy[pcpu]->unregister_vcpu(vcpuid);
 
     return 0;
@@ -223,12 +227,10 @@ int sched_vcpu_unregister(vcpuid_t vcpuid)
  * @return
  */
 // TODO(igkang): add return type to vcpu's state
-int sched_vcpu_attach(vcpuid_t vcpuid)
+int sched_vcpu_attach(vcpuid_t vcpuid, uint32_t pcpu)
 {
-    uint32_t pcpu = smp_processor_id();
     struct running_vcpus_entry_t *new_entry;
 
-    /* call scheduler.attach_vcpu() */
     __policy[pcpu]->attach_vcpu(vcpuid);
 
     new_entry = (struct running_vcpus_entry_t *) malloc(sizeof(struct running_vcpus_entry_t));
@@ -237,7 +239,15 @@ int sched_vcpu_attach(vcpuid_t vcpuid)
     LIST_INITHEAD(&new_entry->head);
     LIST_ADDTAIL(&new_entry->head, &__running_vcpus[pcpu]);
 
-    return 0;
+    /* NOTE(casionwoo) : Return the ID of physical CPU that vCPU is assigned */
+    return pcpu;
+}
+
+int sched_vcpu_attach_to_current_pcpu(vcpuid_t vcpuid)
+{
+    int pcpu = sched_vcpu_attach(vcpuid, smp_processor_id());
+    /* NOTE(casionwoo) : Return the ID of physical CPU that vCPU is assigned */
+    return pcpu;
 }
 
 /**
@@ -247,10 +257,8 @@ int sched_vcpu_attach(vcpuid_t vcpuid)
  * @param vcpuid ID of vCPU
  * @return
  */
-int sched_vcpu_detach(vcpuid_t vcpuid)
+int sched_vcpu_detach(vcpuid_t vcpuid, uint32_t pcpu)
 {
-    uint32_t pcpu = smp_processor_id();
-    /* call scheduler.detach_vcpu() */
     __policy[pcpu]->detach_vcpu(vcpuid);
 
     return 0;
