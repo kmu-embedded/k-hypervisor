@@ -211,12 +211,15 @@ hvmm_status_t timer_hw_init(uint32_t irq) /* const struct timer_config const* ti
     return HVMM_STATUS_SUCCESS;
 }
 
-hvmm_status_t timemanager_init() /* const struct timer_config const* timer_config)*/
+/* non-percpu function. should be called only once, globally. */
+hvmm_status_t timemanager_init() /* TODO: const struct timer_config const* timer_config)*/
 {
-    uint32_t pcpu = smp_processor_id();
+    uint32_t pcpu;
 
-    LIST_INITHEAD(&active_timers[pcpu]);
-    LIST_INITHEAD(&inactive_timers[pcpu]);
+    for (pcpu = 0; pcpu < NR_CPUS; pcpu++) {
+        LIST_INITHEAD(&active_timers[pcpu]);
+        LIST_INITHEAD(&inactive_timers[pcpu]);
+    }
 
     return HVMM_STATUS_SUCCESS;
 }
