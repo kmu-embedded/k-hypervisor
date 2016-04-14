@@ -48,8 +48,8 @@ BEGIN_PROC(__hvc_vector)
     .word   0                   /* reset */
     nop                         /* undef */
     nop                         /* svc */
-    nop                         /* pabt */
-    nop                         /* dabt */
+    b       __do_pabt           /* pabt */
+    b       __do_dabt           /* dabt */
     b       __do_hvc            /* hvc */
     b       __do_irq            /* irq */
     nop                         /* fiq */
@@ -101,6 +101,42 @@ __do_irq:
     @ service other argument values -> trap_irq(sp)
     mov     r0, sp
     bl      do_irq    @ r0: HSR
+
+    @ Pop registers
+    pop     {r0-r1, lr}
+    msr     spsr_hyp, r0
+    msr     elr_hyp, r1
+    pop     {r0-r12}
+    eret
+
+__do_pabt:
+    @ Push registers
+    push    {r0-r12}
+    mrs     r0, spsr_hyp
+    mrs     r1, elr_hyp
+    push    {r0, r1, lr}
+
+    @ service other argument values -> trap_irq(sp)
+    mov     r0, sp
+    bl      do_prefetch_abort    @ r0: HSR
+
+    @ Pop registers
+    pop     {r0-r1, lr}
+    msr     spsr_hyp, r0
+    msr     elr_hyp, r1
+    pop     {r0-r12}
+    eret
+
+__do_dabt:
+    @ Push registers
+    push    {r0-r12}
+    mrs     r0, spsr_hyp
+    mrs     r1, elr_hyp
+    push    {r0, r1, lr}
+
+    @ service other argument values -> trap_irq(sp)
+    mov     r0, sp
+    bl      do_prefetch_abort    @ r0: HSR
 
     @ Pop registers
     pop     {r0-r1, lr}
