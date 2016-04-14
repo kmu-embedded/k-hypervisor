@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <lib/list.h>
 
-const struct scheduler *__policy[NR_CPUS];
+const struct scheduler *__policy[NR_CPUS]; /* TODO:(igkang) need to be rewritten into 'scheduler instance' structure */
 struct timer __sched_timer[NR_CPUS]; /* TODO:(igkang) may be moved into scheduler instance struct */
 
 vcpuid_t __current_vcpuid[NR_CPUS];
@@ -29,27 +29,28 @@ struct list_head __running_vcpus[NR_CPUS];
  *   - [ ] modify functions parameters to use pCPU ID
  */
 
-void sched_init()
+void sched_init() /* TODO: const struct sched_config const* sched_config)*/
 {
-    uint32_t pcpu = smp_processor_id();
-
     /* Check scheduler config */
 
     /* Allocate memory for system-wide data */
 
     /* Initialize data */
-    __current_vcpuid[pcpu] = VCPUID_INVALID;
-    __next_vcpuid[pcpu] = VCPUID_INVALID;
-    __current_vcpu[pcpu] = NULL;
-    __current_vm[pcpu] = NULL;
+    uint32_t pcpu;
+    for (pcpu = 0; pcpu < NR_CPUS; pcpu++) {
+        __current_vcpuid[pcpu] = VCPUID_INVALID;
+        __next_vcpuid[pcpu] = VCPUID_INVALID;
+        __current_vcpu[pcpu] = NULL;
+        __current_vm[pcpu] = NULL;
 
-    LIST_INITHEAD(&__running_vcpus[pcpu]);
+        LIST_INITHEAD(&__running_vcpus[pcpu]);
 
-    /* TODO:(igkang) choose policy based on config */
-    __policy[pcpu] = &sched_rr;
+        /* TODO:(igkang) choose policy based on config */
+        __policy[pcpu] = &sched_rr;
 
-    // call sched__policy.init() for each policy implementation
-    __policy[pcpu]->init();
+        /* TODO:(igkang) should use some variable like policy->private or something */
+        __policy[pcpu]->init(pcpu);
+    }
 }
 
 /* TODO:(igkang) context switching related fucntions should be redesigned
@@ -187,7 +188,7 @@ struct vmcb *get_current_vm(void)
  */
 int sched_vcpu_register(vcpuid_t vcpuid, uint32_t pcpu)
 {
-    __policy[pcpu]->register_vcpu(vcpuid);
+    __policy[pcpu]->register_vcpu(vcpuid, pcpu);
 
     /* NOTE(casionwoo) : Return the ID of physical CPU that vCPU is assigned */
     return pcpu;
@@ -212,7 +213,7 @@ int sched_vcpu_register_to_current_pcpu(vcpuid_t vcpuid)
  */
 int sched_vcpu_unregister(vcpuid_t vcpuid, uint32_t pcpu)
 {
-    __policy[pcpu]->unregister_vcpu(vcpuid);
+    __policy[pcpu]->unregister_vcpu(vcpuid, pcpu);
 
     return 0;
 }
@@ -231,7 +232,7 @@ int sched_vcpu_attach(vcpuid_t vcpuid, uint32_t pcpu)
 {
     struct running_vcpus_entry_t *new_entry;
 
-    __policy[pcpu]->attach_vcpu(vcpuid);
+    __policy[pcpu]->attach_vcpu(vcpuid, pcpu);
 
     new_entry = (struct running_vcpus_entry_t *) malloc(sizeof(struct running_vcpus_entry_t));
     new_entry->vcpuid = vcpuid;
@@ -259,7 +260,7 @@ int sched_vcpu_attach_to_current_pcpu(vcpuid_t vcpuid)
  */
 int sched_vcpu_detach(vcpuid_t vcpuid, uint32_t pcpu)
 {
-    __policy[pcpu]->detach_vcpu(vcpuid);
+    __policy[pcpu]->detach_vcpu(vcpuid, pcpu);
 
     return 0;
 }

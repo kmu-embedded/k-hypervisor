@@ -14,27 +14,36 @@ void start_hypervisor()
     int i;
     uint8_t nr_vcpus = 1; // TODO: It will be read from configuration file.
 
-    timemanager_init();
+    uint32_t pcpu = smp_processor_id();
 
-    sched_init();
+    uint32_t smp_pen = 0; 
 
-    vm_setup();
+    if (pcpu == 0) {
+        timemanager_init();
+        sched_init();
 
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
-        vmid_t vmid;
+        vm_setup();
 
-        if ((vmid = vm_create(nr_vcpus)) == VM_CREATE_FAILED) {
-            printf("vm_create(vm[%d]) is failed\n", i);
-            goto error;
+        for (i = 0; i < NUM_GUESTS_STATIC; i++) {
+            vmid_t vmid;
+
+            if ((vmid = vm_create(nr_vcpus)) == VM_CREATE_FAILED) {
+                printf("vm_create(vm[%d]) is failed\n", i);
+                goto error;
+            }
+            if (vm_init(vmid) != HALTED) {
+                printf("vm_init(vm[%d]) is failed\n", i);
+                goto error;
+            }
+            if (vm_start(vmid) != RUNNING) {
+                printf("vm_start(vm[%d]) is failed\n", i);
+                goto error;
+            }
         }
-        if (vm_init(vmid) != HALTED) {
-            printf("vm_init(vm[%d]) is failed\n", i);
-            goto error;
-        }
-        if (vm_start(vmid) != RUNNING) {
-            printf("vm_start(vm[%d]) is failed\n", i);
-            goto error;
-        }
+
+        smp_pen = 1;
+    } else {
+        while (!smp_pen);
     }
 
     /*
