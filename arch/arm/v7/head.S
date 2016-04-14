@@ -9,13 +9,6 @@ BEGIN_PROC(__start)
     @ Disable interrupts
     cpsid   aif
 
-    @ Check HYP mode
-    mrs		r0, cpsr_all
-    and		r0, r0, #0x1F
-    mov		r8, #0x1A
-    cmp		r0, r8
-    beq		2f
-
     @ Check whether or not current cpu mode is in secure state.
     mrc     p15, 0, r0, c1, c1, 0   @ Read Secure Configuration Register
     teq     r0, #0x1
@@ -43,6 +36,7 @@ BEGIN_PROC(__start)
     cmp     r5, #0x0
     bne     3f
 #endif
+
     /*
      * We assume that the CPU mode is SVC in secure world at this point.
      * Initialze procedure as below execute only CPU ID == 0.
@@ -74,21 +68,28 @@ BEGIN_PROC(__start)
     orr	    r0, r0, r1
     mcr	    p15, 0, r0, c1, c1, 2
 
+    @ Check HYP mode
+    mrs		r0, cpsr_all
+    and		r0, r0, #0x1F
+    mov		r8, #0x1A
+    cmp		r0, r8
+    beq		1f
+
     /* Initialize vector for monitor mode to enter NSHyp mode */
     ldr     r1, = __monitor_vector
     mcr     p15, 0, r1, c12, c0, 1      @ Set the vector for monitor mode
 
     smc     #0  @ -> trap_smc
     hvc     #0  @ -> trap_hyp_entry
-2:
+1:
     @ Initialize BSS Section.
     ldr     r2, =__begin_bss
     ldr     r3, =__end_bss
 
     mov     r0, #0
-3:  str     r0, [r2], #4
+2:  str     r0, [r2], #4
     cmp     r2, r3
-    blo     3b
+    blo     2b
 
     /* We are going to initialize for each core, here */
     @ DCIMVAC: invalidate data cache.

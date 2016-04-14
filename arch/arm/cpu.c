@@ -44,3 +44,15 @@ void enable_mmu(void)
 #endif
     write_hsctlr(hsctlr);
 }
+
+
+#include <stdio.h>
+void do_prefetch_abort(struct core_regs *regs)
+{
+    printf("%s is occurred\n");
+}
+
+void do_data_abort(struct core_regs *regs)
+{
+    printf("%s is occurred\n");
+}
