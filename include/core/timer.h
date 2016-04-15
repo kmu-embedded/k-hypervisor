@@ -37,6 +37,7 @@ struct timer_ops {
     hvmm_status_t (*init)(void);
     hvmm_status_t (*enable)(void);
     hvmm_status_t (*disable)(void);
+    uint64_t (*get_counter)(void);
     hvmm_status_t (*set_absolute)(uint64_t);
     hvmm_status_t (*set_interval_relative)(uint32_t);
     hvmm_status_t (*set_interval_absolute)(uint64_t);

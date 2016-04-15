@@ -37,8 +37,6 @@ enum {
 #define GENERIC_TIMER_CTRL_ENABLE       (1 << 0)
 #define GENERIC_TIMER_CTRL_IMASK        (1 << 1)
 #define GENERIC_TIMER_CTRL_ISTATUS      (1 << 2)
-#define generic_timer_pcounter_read()   read_cntpct()
-#define generic_timer_vcounter_read()   read_cntvct()
 
 static inline void generic_timer_reg_write(int reg, uint32_t val)
 {
@@ -296,7 +294,7 @@ static hvmm_status_t timer_set_cval_by_delta(uint64_t val)
         previous_cval = generic_timer_reg_read64(GENERIC_TIMER_REG_HYP_CVAL);
         val = previous_cval + val;
     } else { /* when if this is the very first call of timer_set_cval_by_delta */
-        previous_cval = generic_timer_pcounter_read();
+        previous_cval = read_cntpct();
         val = previous_cval + val;
     }
     return generic_timer_set_cval(GENERIC_TIMER_HYP, val);
@@ -315,10 +313,21 @@ static hvmm_status_t timer_dump(void)
     return HVMM_STATUS_SUCCESS;
 }
 
-/* TODO:(igkang) rename or remove functions as needed */
+static uint64_t timer_read_phys_counter(void) {
+    return read_cntpct();
+}
+
+#if 0
+static uint64_t timer_read_virt_counter(void) {
+    return read_cntvct();
+}
+#endif
+
+/* TODO:(igkang) add/rename functions - by phys/virt, Hyp/Normal */
 struct timer_ops _timer_ops = {
     .enable = timer_enable,
     .disable = timer_disable,
+    .get_counter = timer_read_phys_counter,
     .set_absolute = timer_set_cval,
     .set_interval_relative = timer_set_tval,
     .set_interval_absolute = timer_set_cval_by_delta,
