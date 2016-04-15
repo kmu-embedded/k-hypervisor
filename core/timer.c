@@ -16,94 +16,15 @@ static struct timer_ops *__ops;
 
 static hvmm_status_t timer_maintenance(void);
 
-/* TODO:(igkang) Let definitions of time unit conversion functions be available
- *  conditionally by config macro variables (if < 0 then don't define)
- */
-
-/*
- * Converts time unit from/to microseconds to/from system counter count.
- */
-static inline uint64_t us_to_count(uint64_t time_in_us)
-{
-    return time_in_us * COUNT_PER_USEC;
-}
-
-static inline uint64_t ten_ns_to_count(uint64_t time_in_ten_ns)
-{
-    return time_in_ten_ns * (COUNT_PER_USEC / 100);
-}
-
-static inline uint64_t ms_to_count(uint64_t time_in_ms)
-{
-    return time_in_ms * (COUNT_PER_USEC * 1000);
-}
-
-static inline uint64_t sec_to_count(uint64_t time_in_sec)
-{
-    return time_in_sec * (COUNT_PER_USEC * 1000 * 1000);
-}
-
-static inline uint64_t count_to_us(uint64_t count)
-{
-    return count / COUNT_PER_USEC;
-}
-
-static inline uint64_t count_to_ten_ns(uint64_t count)
-{
-    return count / (COUNT_PER_USEC / 100);
-}
-
-static inline uint64_t count_to_ms(uint64_t count)
-{
-    return count / (COUNT_PER_USEC * 1000);
-}
-
-static inline uint64_t count_to_sec(uint64_t count)
-{
-    return count / (COUNT_PER_USEC * 1000 * 1000);
-}
-
-uint64_t timer_time_to_count(uint64_t time, time_unit_t unit)
-{
-    switch (unit) {
-    case TIMEUNIT_USEC:
-        return us_to_count(time);
-    case TIMEUNIT_10NSEC:
-        return ten_ns_to_count(time);
-    case TIMEUNIT_MSEC:
-        return ms_to_count(time);
-    case TIMEUNIT_SEC:
-        return sec_to_count(time);
-    default:
-        return 0; /* error */
-    }
-}
-
-uint64_t timer_count_to_time(uint64_t count, time_unit_t unit)
-{
-    switch (unit) {
-    case TIMEUNIT_USEC:
-        return count_to_us(count);
-    case TIMEUNIT_10NSEC:
-        return count_to_ten_ns(count);
-    case TIMEUNIT_MSEC:
-        return count_to_ms(count);
-    case TIMEUNIT_SEC:
-        return count_to_sec(count);
-    default:
-        return 0; /* error */
-    }
-}
-
 uint64_t timer_count_to_time_ns(uint64_t count)
 {
-    return count * 10llu;
+    return count * TIMER_RESOLUTION_NS;
 }
 
 uint64_t timer_time_to_count_ns(uint64_t time)
 {
     /* CNTFRQ > 10^9 ?? */
-    return time / 10llu;
+    return time / TIMER_RESOLUTION_NS;
 }
 
 static inline uint64_t get_syscounter(void)
@@ -162,7 +83,7 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
 
 #ifdef __TEST_TIMER__
     uint64_t new_syscnt = get_syscounter();
-    printf("time diff: %luns\n", (uint32_t)count_to_ten_ns(new_syscnt - saved_syscnt[pcpu]) * 10u);
+    printf("time diff: %luns\n", (uint32_t)timer_count_to_time_ns(new_syscnt - saved_syscnt[pcpu]));
     saved_syscnt[pcpu] = new_syscnt;
 #endif
 
