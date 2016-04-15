@@ -61,6 +61,24 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
 
     arch_regs_init(&vcpu->regs);
 
+// TODO(casionwoo): make it neat.
+    switch (vcpu->vmid) {
+    case 0:
+        SET_VIRQMAP(vcpu->map, 38, 37);
+        break;
+
+    case 1:
+        SET_VIRQMAP(vcpu->map, 39, 37);
+        break;
+
+    case 2:
+        SET_VIRQMAP(vcpu->map, 40, 37);
+        break;
+
+    default:
+        debug_print("virq_create error!\n");
+        break;
+    }
     // TODO(casionwoo) : Check the return value after scheduler status value defined
     vcpu->pcpuid = sched_vcpu_register(vcpu->vcpuid, pcpu); /* FIXME: just to make it compile/run. should be replaced with pcpu value from config */
     vcpu->state = VCPU_REGISTERED;

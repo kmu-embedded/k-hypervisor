@@ -2,7 +2,7 @@
 #define __PL01X_H__
 #include <stdint.h>
 
-#define PL01X_BASE       0x1C0A0000
+#define PL01X_BASE       0x1C090000
 
 /*
  * ARM PrimeCell UART's (PL01X)
