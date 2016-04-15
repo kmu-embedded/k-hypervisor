@@ -2,7 +2,7 @@
 #include <arch/irq.h>
 #include <config.h>
 #include <core/vm/vcpu.h> // is_guest_irq
-
+#include <arch/armv7/smp.h>
 #include <irq-chip.h>
 #include <types.h>
 #include <core/scheduler.h>
@@ -18,7 +18,9 @@ static irq_handler_t vdev_irq_handlers[MAX_IRQS];
 hvmm_status_t do_irq(struct core_regs *regs)
 {
     uint32_t irq = irq_hw->ack();
+    uint32_t pcpu = smp_processor_id();
 
+    printf("pcpuid : %d, %s irq : %d\n", pcpu, __func__, irq);
     irq_hw->eoi(irq);
 
     // FIXME(casionwoo) : is_guest_irq(irq) would be removed.

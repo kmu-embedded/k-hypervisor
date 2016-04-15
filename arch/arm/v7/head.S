@@ -34,8 +34,17 @@ BEGIN_PROC(__start)
     mrc	    p15, 0, r5, c0, c0, 5		@ MPIDR (ARMv7 only)
     ands    r5, r5, #0xFF
     cmp     r5, #0x0
-    bne     3f
+    bne     2f
 #endif
+
+	@ Initialize BSS Section.
+    ldr     r2, =__begin_bss
+    ldr     r3, =__end_bss
+
+    mov     r0, #0
+1:  str     r0, [r2], #4
+    cmp     r2, r3
+    blo     1b
 
     /*
      * We assume that the CPU mode is SVC in secure world at this point.
@@ -63,17 +72,10 @@ BEGIN_PROC(__start)
     str	    r1, [r0, #0x4]			@ GIC ICCPMR
 
     @ Give the access permission for some coprocessor to non-secure(NSACR).
-    mrc	    p15, 0, r0, c1, c1, 2
+2:  mrc	    p15, 0, r0, c1, c1, 2
     ldr	    r1, =0x43fff
     orr	    r0, r0, r1
     mcr	    p15, 0, r0, c1, c1, 2
-
-    @ Check HYP mode
-    mrs		r0, cpsr_all
-    and		r0, r0, #0x1F
-    mov		r8, #0x1A
-    cmp		r0, r8
-    beq		1f
 
     /* Initialize vector for monitor mode to enter NSHyp mode */
     ldr     r1, = __monitor_vector
@@ -81,15 +83,6 @@ BEGIN_PROC(__start)
 
     smc     #0  @ -> trap_smc
     hvc     #0  @ -> trap_hyp_entry
-1:
-    @ Initialize BSS Section.
-    ldr     r2, =__begin_bss
-    ldr     r3, =__end_bss
-
-    mov     r0, #0
-2:  str     r0, [r2], #4
-    cmp     r2, r3
-    blo     2b
 
     /* We are going to initialize for each core, here */
     @ DCIMVAC: invalidate data cache.

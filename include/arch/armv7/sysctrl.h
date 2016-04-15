@@ -4,6 +4,12 @@
 #include <stdint.h>
 #include <asm/asm.h>
 
+#define read_actlr()             ({ uint32_t rval; asm volatile(\
+                                " mrc     p15, 0, %0, c1, c0, 1\n\t" \
+                                : "=r" (rval) : : "memory", "cc"); rval; })
+#define write_actlr(val)         asm volatile(\
+                                " mcr     p15, 0, %0, c1, c0, 1\n\t" \
+                                : : "r" ((val)) : "memory", "cc")
 
 #define read_vbar()             ({ uint32_t rval; asm volatile(\
                                 " mrc     p15, 0, %0, c12, c0, 0\n\t" \
