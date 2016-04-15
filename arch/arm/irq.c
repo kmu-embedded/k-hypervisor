@@ -23,12 +23,11 @@ hvmm_status_t do_irq(struct core_regs *regs)
 
     // FIXME(casionwoo) : is_guest_irq(irq) would be removed.
     //                    When all of  irqs are handled with vdev_irq_handler
-    if (irq >= 32) {
-        if (vdev_irq_handlers[irq]) {
-            vdev_irq_handlers[irq](irq, regs, 0);
-        } else {
-            is_guest_irq(irq);
-        }
+    if (vdev_irq_handlers[irq]) {
+        vdev_irq_handlers[irq](irq, regs, 0);
+    } else {
+        // TODO(casionwoo) : Need handle routine for PPI
+        is_guest_irq(irq);
     }
 
     if (irq < 32) {
