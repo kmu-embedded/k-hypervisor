@@ -57,10 +57,12 @@ struct vcpu *vcpu_create()
 
 vcpu_state_t vcpu_init(struct vcpu *vcpu)
 {
+    uint32_t pcpu = smp_processor_id(); /* FIXME: just to make it compile/run. should be removed in next several commits */
+
     arch_regs_init(&vcpu->regs);
 
     // TODO(casionwoo) : Check the return value after scheduler status value defined
-    vcpu->pcpuid = sched_vcpu_register_to_current_pcpu(vcpu->vcpuid);
+    vcpu->pcpuid = sched_vcpu_register(vcpu->vcpuid, pcpu); /* FIXME: just to make it compile/run. should be replaced with pcpu value from config */
     vcpu->state = VCPU_REGISTERED;
 
     return vcpu->state;
@@ -68,8 +70,10 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
 
 vcpu_state_t vcpu_start(struct vcpu *vcpu)
 {
+    uint32_t pcpu = smp_processor_id(); /* FIXME: just to make it compile/run. should be removed in next several commits */
+
     // TODO(casionwoo) : Check the return value after scheduler status value defined
-    sched_vcpu_attach_to_current_pcpu(vcpu->vcpuid);
+    sched_vcpu_attach(vcpu->vcpuid, pcpu); /* FIXME: just to make it compile/run. should be replaced with pcpu value from config */
 
     vcpu->state = VCPU_ACTIVATED;
 
