@@ -29,7 +29,7 @@ uint64_t timer_time_to_count_ns(uint64_t time)
 
 static inline uint64_t get_syscounter(void)
 {
-    return read_cntpct(); /* FIXME:(igkang) Need to be rewritten using indirect call through API */
+    return __ops->get_counter();
 }
 
 uint64_t timer_get_syscounter(void)
@@ -39,7 +39,6 @@ uint64_t timer_get_syscounter(void)
 
 uint64_t timer_get_timenow(void)
 {
-    /* TODO:(igkang) need to be rewitten with 'ns' base time calculation */
     return timer_count_to_time_ns(get_syscounter());
 }
 
