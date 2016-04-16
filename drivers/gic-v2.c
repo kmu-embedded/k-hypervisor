@@ -48,7 +48,6 @@ static uint32_t gic_find_free_slot(void)
 
 static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
 {
-    printf("%s\n",  __func__);
     if (GICH_READ(GICH_MISR) & GICH_MISR_EOI) {
         /* clean up invalid entries from List Registers */
         uint32_t eisr = GICH_READ(GICH_EISR(0));
@@ -183,12 +182,11 @@ void gic_init(void)
         GICD_WRITE(GICD_IPRIORITYR(i >> 2), 0xa0a0a0a0);
     }
 
-#ifndef __CONFIG_SMP__
-    // NOTE: GIC_ITRAGETSR is read-only on multiprocessor environment.
+    // NOTE: GIC_ITRAGETSR0-7 is read-only on multiprocessor environment.
     for (i = 32; i < GICv2.ITLinesNumber; i += 4) {
         GICD_WRITE(GICD_ITARGETSR(i >> 2), 1 << 0 | 1 << 8 | 1 << 16 | 1 << 24);
+//        GICD_WRITE(GICD_ITARGETSR(i >> 2), 0xffffffff);
     }
-#endif
 
 
     GICC_WRITE(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
@@ -199,9 +197,13 @@ void gic_init(void)
 
 void gich_init()
 {
+    uint8_t cpuid = smp_processor_id();
+
     // Initialization GICH
-    GICv2.num_lr = (GICH_READ(GICH_VTR) & GICH_VTR_LISTREGS_MASK) + 1;
-    gic_maintenance_irq_enable();
+    if (cpuid == 0) {
+        GICv2.num_lr = (GICH_READ(GICH_VTR) & GICH_VTR_LISTREGS_MASK) + 1;
+        gic_maintenance_irq_enable();
+    }
 
     gich_enable();
 }
@@ -317,7 +319,8 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
     struct vcpu *vcpu = vcpu_find(vcpuid);
 
     if (!hw) {
-        pirq |= vcpuid;
+        pirq = 0;
+        pirq |= vcpu->pcpuid;
         pirq |= (EOI_ENABLE << 9);
     }
 

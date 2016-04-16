@@ -61,8 +61,6 @@ bool is_guest_irq(uint32_t irq)
             continue;
         }
 
-//        printf("%s pcpuid : %d, vcpuid : %d\n", __func__, pcpu, vcpu->vcpuid);
-
         result = virq_hw->forward_irq(vcpu->vcpuid, virq, irq, INJECT_SW);
     }
 

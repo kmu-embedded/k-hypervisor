@@ -22,12 +22,9 @@ struct virq_chip vgic_v2 = {
 
 void set_irqchip_type(void)
 {
-    uint8_t cpuid = smp_processor_id();
     irq_hw = &gic_v2;
     virq_hw = &vgic_v2;
 
     irq_hw->init();
-    if (cpuid == 0) {
-        virq_hw->init();
-    }
+    virq_hw->init();
 }
