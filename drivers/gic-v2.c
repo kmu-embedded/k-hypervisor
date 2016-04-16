@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <asm/macro.h>
 
+#include <arch/armv7/smp.h>
 #include <arch/gic_regs.h>
 #include <arch/armv7.h>
 #include <arch/irq.h>
@@ -47,6 +48,7 @@ static uint32_t gic_find_free_slot(void)
 
 static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
 {
+    printf("%s\n",  __func__);
     if (GICH_READ(GICH_MISR) & GICH_MISR_EOI) {
         /* clean up invalid entries from List Registers */
         uint32_t eisr = GICH_READ(GICH_EISR(0));
@@ -120,6 +122,7 @@ void gic_init(void)
 {
     int i;
     uint32_t periphbase;
+    uint8_t cpuid = smp_processor_id();
 
     // This code will be moved other parts, not here. */
     /* Get GICv2 base address */
@@ -134,31 +137,40 @@ void gic_init(void)
      * We usually use the name of variables in lower case, but
      * here, using upper case is special case for readability.
      */
-    uint32_t gicd_typer = GICD_READ(GICD_TYPER);
-    /* maximum number of irq lines: 32(N+1). */
-    GICv2.ITLinesNumber = 32 * ((gicd_typer & GICD_NR_IT_LINES_MASK) + 1);
-    GICv2.CPUNumber = 1 + (gicd_typer & GICD_NR_CPUS_MASK);
-    printf("Number of IRQs: %d\n", GICv2.ITLinesNumber);
-    printf("Number of CPU interfaces: %d\n", GICv2.CPUNumber);
+    if (cpuid == 0) {
+        uint32_t gicd_typer = GICD_READ(GICD_TYPER);
+        /* maximum number of irq lines: 32(N+1). */
+        GICv2.ITLinesNumber = 32 * ((gicd_typer & GICD_NR_IT_LINES_MASK) + 1);
+        GICv2.CPUNumber = 1 + (gicd_typer & GICD_NR_CPUS_MASK);
+        printf("Number of IRQs: %d\n", GICv2.ITLinesNumber);
+        printf("Number of CPU interfaces: %d\n", GICv2.CPUNumber);
+
+        GICD_WRITE(GICD_CTLR, 0x0);
+    }
 
     GICC_WRITE(GICC_CTLR, 0x0);
-    GICD_WRITE(GICD_CTLR, 0x0);
     /* No Priority Masking: the lowest value as the threshold : 255 */
     // We set 0xff but, real value is 0xf8
     GICC_WRITE(GICC_PMR, 0xff);
 
     // Set interrupt configuration do not work.
-    for (i = 32; i < GICv2.ITLinesNumber; i += 16) {
-        GICD_WRITE(GICD_ICFGR(i >> 4), 0x0);
-    }
 
-    /* Disable all global interrupts. */
-    for (i = 0; i < GICv2.ITLinesNumber; i += 32) {
-        GICD_WRITE(GICD_ISENABLER(i >> 5), 0xffffffff);
-        uint32_t valid = GICD_READ(GICD_ISENABLER(i >> 5));
-        GICD_WRITE(GICD_ICENABLER(i >> 5), valid);
-    }
+    GICD_WRITE(GICD_ICFGR(1), 0x0);
+    GICD_WRITE(GICD_ISENABLER(0), 0xffffffff);
 
+    if (cpuid == 0) {
+        for (i = 32; i < GICv2.ITLinesNumber; i += 16) {
+            GICD_WRITE(GICD_ICFGR(i >> 4), 0x0);
+        }
+
+        /* Disable all global interrupts. */
+        for (i = 0; i < GICv2.ITLinesNumber; i += 32) {
+            GICD_WRITE(GICD_ISENABLER(i >> 5), 0xffffffff);
+            uint32_t valid = GICD_READ(GICD_ISENABLER(i >> 5));
+            GICD_WRITE(GICD_ICENABLER(i >> 5), valid);
+        }
+
+    }
 #if 0
     for (i = 0; i < GICv2.ITLinesNumber; i += 32) {
         GICD_WRITE(GICD_IGROUPR(i >> 5), 0xFFFFFFFF);
@@ -180,8 +192,9 @@ void gic_init(void)
 
 
     GICC_WRITE(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
-    GICD_WRITE(GICD_CTLR, 0x1);
-
+    if (cpuid == 0) {
+        GICD_WRITE(GICD_CTLR, 0x1);
+    }
 }
 
 void gich_init()

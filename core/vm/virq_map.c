@@ -54,9 +54,14 @@ bool is_guest_irq(uint32_t irq)
     list_for_each_entry(struct running_vcpus_entry_t, sched_vcpu_entry, &__running_vcpus[pcpu], head) {
         vcpu = vcpu_find(sched_vcpu_entry->vcpuid);
         virq = pirq_to_virq(vcpu, irq);
+
+        virq = (virq == VIRQ_INVALID ? irq : virq);
+
         if (virq == VIRQ_INVALID) {
             continue;
         }
+
+//        printf("%s pcpuid : %d, vcpuid : %d\n", __func__, pcpu, vcpu->vcpuid);
 
         result = virq_hw->forward_irq(vcpu->vcpuid, virq, irq, INJECT_SW);
     }
