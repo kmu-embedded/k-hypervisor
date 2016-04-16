@@ -303,9 +303,7 @@ int32_t vgicd_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
 
 int32_t vgicd_read_handler(void *pdata, uint32_t offset)
 {
-
     struct vgicd *gicd = pdata;
-
     uint8_t vcpuid = get_current_vcpuidx();
 
     switch (offset) {

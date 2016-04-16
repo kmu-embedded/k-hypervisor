@@ -128,7 +128,6 @@ int32_t vtimer_write(void *pdata, uint32_t offset, uint32_t *addr)
 
 int32_t vtimer_read(void *pdata, uint32_t offset)
 {
-
     struct sp804 *sp804 = pdata;
 
     switch (offset) {

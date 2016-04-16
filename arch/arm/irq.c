@@ -18,19 +18,22 @@ static irq_handler_t vdev_irq_handlers[MAX_IRQS];
 hvmm_status_t do_irq(struct core_regs *regs)
 {
     uint32_t irq = irq_hw->ack();
-//    uint32_t pcpu = smp_processor_id();
 
-//    printf("pcpuid : %d, %s irq : %d\n", pcpu, __func__, irq);
     irq_hw->eoi(irq);
 
     // FIXME(casionwoo) : is_guest_irq(irq) would be removed.
     //                    When all of  irqs are handled with vdev_irq_handler
-    if (vdev_irq_handlers[irq]) {
-//        printf("vdev_irq_handlers[%d]\n", irq);
-        vdev_irq_handlers[irq](irq, regs, 0);
-    } else {
-        // TODO(casionwoo) : Need handle routine for PPI
-        is_guest_irq(irq);
+
+//    if (irq !=26 && irq !=34 && irq != 25)
+//        printf("irq : %d\n", irq);
+
+    if (irq >= 32) {
+        if (vdev_irq_handlers[irq]) {
+            vdev_irq_handlers[irq](irq, regs, 0);
+        } else {
+            // TODO(casionwoo) : Need handle routine for PPI
+            is_guest_irq(irq);
+        }
     }
 
     if (irq < 32) {
@@ -38,7 +41,6 @@ hvmm_status_t do_irq(struct core_regs *regs)
     }
 
     if (irq_handlers[irq]) {
-//        printf("irq_handler\n");
         irq_handlers[irq](irq, regs, 0);
         irq_hw->dir(irq);
     }
