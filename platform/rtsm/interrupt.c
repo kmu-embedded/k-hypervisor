@@ -1,5 +1,6 @@
 #include <irq-chip.h>
 #include <drivers/gic-v2.h>
+#include <arch/armv7/smp.h>
 
 struct irq_chip gic_v2 = {
     .init = gic_init,
@@ -21,9 +22,12 @@ struct virq_chip vgic_v2 = {
 
 void set_irqchip_type(void)
 {
+    uint8_t cpuid = smp_processor_id();
     irq_hw = &gic_v2;
     virq_hw = &vgic_v2;
 
     irq_hw->init();
-    virq_hw->init();
+    if (cpuid == 0) {
+        virq_hw->init();
+    }
 }

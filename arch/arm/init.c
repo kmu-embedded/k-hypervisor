@@ -29,9 +29,11 @@ void init_system()
         console_init();
 
         libc_init();
+    }
 
-        irq_init();
+    irq_init();
 
+    if (cpuid == 0) {
         paging_create((addr_t) &__HYP_PGTABLE);
 
         platform_init();

@@ -52,27 +52,35 @@ BEGIN_PROC(__start)
      */
     @ Set all interrupts to be non-secure: Set GICD_IGROUPRn to 0xffffffff
     @ Get the number of GICD_IGROUPRn == GICD_TYPER.ITLinesNumber + 1.
-    ldr	    r0, = CFG_GICD_BASE_PA	@ GICD base
+2:  ldr	    r0, = CFG_GICD_BASE_PA	@ GICD base
     ldr	    r1, [r0, #0x04]			@ Type Register
-    and	    r1, r1, #0x1f
+    and	    r1, r1, #0x1f			@ set r1 == GICD_TYPER.ITLinesNumber + 1
     add	    r2, r0, #0x080			@ Security Register 0
     mvn	    r3, #0                  @ set r3 == 0xffffffff
+
+	@ =========== Init IGROUPR0 should be seperated to init secondary cores
 1:
     str	    r3, [r2]
+#ifdef __CONFIG_SMP__
+    cmp     r5, #0x0
+    bne     2f
+#endif
     sub	    r1, r1, #1
     add	    r2, r2, #4			    @ Next security register
     cmp	    r1, #-1
     bne	    1b
 
+	@ =========== This GIC Init secondary cores also conducted
+
     @ Set GIC priority for sharing IRQ between NS and Secure worlds
     @ Before the Normal world can access the register, the Secure
     @ world MUST write a value greater than 0x80 to it.
-    ldr	    r0, = CFG_GICC_BASE_PA	@ GICC base
+2:  ldr	    r0, = CFG_GICC_BASE_PA	@ GICC base
     mov	    r1, #0x80
     str	    r1, [r0, #0x4]			@ GIC ICCPMR
 
     @ Give the access permission for some coprocessor to non-secure(NSACR).
-2:  mrc	    p15, 0, r0, c1, c1, 2
+    mrc	    p15, 0, r0, c1, c1, 2
     ldr	    r1, =0x43fff
     orr	    r0, r0, r1
     mcr	    p15, 0, r0, c1, c1, 2
