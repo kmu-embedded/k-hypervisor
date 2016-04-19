@@ -48,11 +48,11 @@ bool is_guest_irq(uint32_t irq)
     bool result = false;
     uint32_t virq;
     struct vcpu *vcpu;
-    uint32_t pcpu = smp_processor_id();
-    struct running_vcpus_entry_t *sched_vcpu_entry;
+    struct list_head *vcpus_list = get_all_vcpus();
 
-    list_for_each_entry(struct running_vcpus_entry_t, sched_vcpu_entry, &__running_vcpus[pcpu], head) {
-        vcpu = vcpu_find(sched_vcpu_entry->vcpuid);
+
+    // NOTE(casionwoo) : Foward to every vcpus.
+    list_for_each_entry(struct vcpu, vcpu, vcpus_list, head) {
         virq = pirq_to_virq(vcpu, irq);
 
         virq = (virq == VIRQ_INVALID ? irq : virq);

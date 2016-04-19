@@ -167,3 +167,7 @@ void print_vcpu(struct vcpu *vcpu)
     printf("STATE  : %d\n", vcpu->state);
 }
 
+struct list_head *get_all_vcpus()
+{
+    return &vcpu_list;
+}
