@@ -21,13 +21,17 @@ hvmm_status_t do_irq(struct core_regs *regs)
 
     irq_hw->eoi(irq);
 
-    // FIXME(casionwoo) : is_guest_irq(irq) would be removed.
-    //                    When all of  irqs are handled with vdev_irq_handler
-
-//    if (irq !=26 && irq !=34 && irq != 25)
-//        printf("irq : %d\n", irq);
-
-    if (irq >= 32) {
+    if (irq < 16) {
+        // SGI Handler
+        printf("SGI Occurred\n");
+    } else if (irq < 32) {
+        // PPI Handler
+        if (irq_handlers[irq]) {
+            irq_handlers[irq](irq, regs, 0);
+            irq_hw->dir(irq);
+        }
+    } else {
+        // SPI Handler
         if (vdev_irq_handlers[irq]) {
             vdev_irq_handlers[irq](irq, regs, 0);
         } else {
@@ -36,14 +40,6 @@ hvmm_status_t do_irq(struct core_regs *regs)
         }
     }
 
-    if (irq < 32) {
-        is_guest_irq(irq);
-    }
-
-    if (irq_handlers[irq]) {
-        irq_handlers[irq](irq, regs, 0);
-        irq_hw->dir(irq);
-    }
     return HVMM_STATUS_SUCCESS;
 }
 

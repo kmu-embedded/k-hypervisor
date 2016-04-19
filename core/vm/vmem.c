@@ -54,11 +54,10 @@ hvmm_status_t vmem_save(void)
 hvmm_status_t vmem_restore(struct vmem *vmem)
 {
 #ifdef __CONFIG_SMP__
-    write_vtcr(vmem->vtcr);
-
     /* Set SMP bit in ACTLR */
     write_actlr(1 << 6);
 #endif
+
     write_vttbr(vmem->vttbr);
     write_hcr(read_hcr() | (0x1));
 
