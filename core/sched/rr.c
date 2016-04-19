@@ -224,12 +224,15 @@ int sched_rr_do_schedule(uint64_t *expiration)
 
     /* vcpu of current entry will be the next vcpu */
     if (current[pcpu] != NULL) {
+//        printf("current[pcpu] != NULL : %d\n", LIST_ENTRY(struct rq_entry_rr, current[pcpu], head)->vcpuid);
         next_entry = LIST_ENTRY(struct rq_entry_rr, current[pcpu], head);
         next_entry->state = RUNNING;
 
         /* set return next_vcpuid value */
         next_vcpuid = next_entry->vcpuid;
+//        printf("next_vcpuid : %d\n", next_vcpuid);
     }
+//        printf("next_vcpuid : %d\n", next_vcpuid);
 
     return next_vcpuid;
 }

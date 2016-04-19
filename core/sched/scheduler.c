@@ -85,9 +85,9 @@ hvmm_status_t sched_perform_switch(struct core_regs *regs)
         debug_print("[sched] curr:%x next:%x\n", __current_vcpuid[pcpu], __next_vcpuid[pcpu]);
 
         /* __current_vcpuid[pcpu] -> __next_vcpuid[pcpu] */
-        if (__current_vcpuid[pcpu] == __next_vcpuid[pcpu]) {
-            return HVMM_STATUS_IGNORED;
-        }
+//        if (__current_vcpuid[pcpu] == __next_vcpuid[pcpu]) {
+//            return HVMM_STATUS_IGNORED;
+//        }
 
         /* We do the things in this way before do_context_switch()
          *      as we will not come back here on the first context switching */
@@ -288,6 +288,7 @@ void do_schedule(void *pdata, uint64_t *expiration)
 
     /* manipulate variables to
      * cause context switch */
+//     printf("%s, next_vcpuid :%d\n", __func__, next_vcpuid);
     switch_to(next_vcpuid);
     sched_perform_switch(pdata);
 }
