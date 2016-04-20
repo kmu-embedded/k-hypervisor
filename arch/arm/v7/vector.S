@@ -48,8 +48,10 @@ BEGIN_PROC(__hvc_vector)
     .word   0                   /* reset */
     nop                         /* undef */
     nop                         /* svc */
-    b       __do_pabt           /* pabt */
-    b       __do_dabt           /* dabt */
+    nop                         /* undef */
+    nop                         /* svc */
+    @b       __do_pabt           /* pabt */
+    @b       __do_dabt           /* dabt */
     b       __do_hvc            /* hvc */
     b       __do_irq            /* irq */
     nop                         /* fiq */
