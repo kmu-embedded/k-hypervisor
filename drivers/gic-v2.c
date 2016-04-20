@@ -312,10 +312,9 @@ void gic_inject_virq(lr_entry_t lr_entry, uint32_t slot)
 #include <arch/armv7.h>
 #include <core/vm/vm.h>
 #include <core/scheduler.h>
-bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
+bool virq_inject(struct vcpu *vcpu, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
     int i;
-    struct vcpu *vcpu = vcpu_find(vcpuid);
 
     if (!hw) {
         pirq = 0;
@@ -326,7 +325,7 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
     lr_entry_t lr_entry = set_lr_entry(hw, VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
                                        pirq, virq);
 
-    if (vcpuid == get_current_vcpuid()) {
+    if (vcpu->vcpuid == get_current_vcpuid()) {
         uint32_t slot = gic_find_free_slot();
 
         if (slot == VGIC_SLOT_NOTFOUND) {

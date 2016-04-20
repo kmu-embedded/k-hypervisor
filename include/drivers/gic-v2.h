@@ -14,6 +14,8 @@
 #include <../../platform/odroidxu/config.h>
 #endif
 
+#include <core/vm/vcpu.h>
+
 #define HW_IRQ      1
 #define SW_IRQ      0
 
@@ -75,7 +77,8 @@ void gich_init(void);
 void gich_enable(void);
 void gich_disable(void);
 hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid);
-bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw);
+struct vcpu;
+bool virq_inject(struct vcpu *vcpu, uint32_t virq, uint32_t pirq, uint8_t hw);
 
 void update_lr(uint32_t offset, uint32_t value);
 void gic_inject_virq(lr_entry_t lr_entry, uint32_t slot);

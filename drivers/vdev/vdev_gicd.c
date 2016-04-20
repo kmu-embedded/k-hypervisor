@@ -114,7 +114,7 @@ static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
             if (target_vcpuid < vm->num_vcpus) {
                 target_vcpu = vm->vcpu[target_vcpuid];
                 sgi.entry.CPUTargetList &= ~(1 << target_vcpuid);
-                virq_inject(target_vcpu->vcpuid, sgi.entry.id, sgi.entry.id, SW_IRQ);
+                virq_inject(target_vcpu, sgi.entry.id, sgi.entry.id, SW_IRQ);
             }
         }
         break;
@@ -128,13 +128,13 @@ static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
             }
 
             target_vcpu = vm->vcpu[cpuid];
-            virq_inject(target_vcpu->vcpuid, sgi.entry.id, sgi.entry.id, SW_IRQ);
+            virq_inject(target_vcpu, sgi.entry.id, sgi.entry.id, SW_IRQ);
         }
     }
     break;
 
     case 2:
-        virq_inject(vcpu->id, sgi.entry.id, sgi.entry.id, SW_IRQ);
+        virq_inject(vcpu, sgi.entry.id, sgi.entry.id, SW_IRQ);
         break;
 
     default:

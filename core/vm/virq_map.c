@@ -59,7 +59,7 @@ bool is_guest_irq(uint32_t irq)
             continue;
         }
 
-        result = virq_hw->forward_irq(vcpu->vcpuid, virq, irq, INJECT_SW);
+        result = virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
     }
 
     return result;
