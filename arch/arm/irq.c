@@ -31,7 +31,14 @@ hvmm_status_t do_irq(struct core_regs *regs)
         }
     }
 
-    if (irq_handlers[irq]) {
+    //printf("%s %d\n", __func__, irq);
+    // BMGUEST
+    if (irq == 26) {
+        printf("%s %d\n", __func__, irq);
+        is_guest_irq(irq);
+        irq_handlers[irq](irq, regs, 0);
+        irq_hw->dir(irq);
+    } else if (irq_handlers[irq]) {
         irq_handlers[irq](irq, regs, 0);
         irq_hw->dir(irq);
     }
