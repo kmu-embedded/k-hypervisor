@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <arch/irq.h>
 #include <config.h>
-#include <core/vm/vcpu.h> // is_guest_irq
+#include <core/vm/vcpu.h>
 #include <arch/armv7/smp.h>
 #include <irq-chip.h>
 #include <types.h>
@@ -24,20 +24,16 @@ hvmm_status_t do_irq(struct core_regs *regs)
     if (irq < 16) {
         // SGI Handler
         printf("SGI Occurred\n");
-    } else if (irq < 32) {
-        // PPI Handler
-        if (irq_handlers[irq]) {
-            irq_handlers[irq](irq, regs, 0);
-            irq_hw->dir(irq);
-        }
+    } else if (irq_handlers[irq]) {
+        // Handler for Hypervisor
+        irq_handlers[irq](irq, regs, 0);
+        irq_hw->dir(irq);
+    } else if (vdev_irq_handlers[irq]) {
+        // Handler for VMs
+        vdev_irq_handlers[irq](irq, regs, 0);
     } else {
-        // SPI Handler
-        if (vdev_irq_handlers[irq]) {
-            vdev_irq_handlers[irq](irq, regs, 0);
-        } else {
-            // TODO(casionwoo) : Need handle routine for PPI
-            is_guest_irq(irq);
-        }
+        // Not found handler that just forward irq to VMs
+        is_guest_irq(irq);
     }
 
     return HVMM_STATUS_SUCCESS;

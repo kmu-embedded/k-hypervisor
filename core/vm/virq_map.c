@@ -55,8 +55,6 @@ bool is_guest_irq(uint32_t irq)
     list_for_each_entry(struct vcpu, vcpu, vcpus_list, head) {
         virq = pirq_to_virq(vcpu, irq);
 
-        virq = (virq == VIRQ_INVALID ? irq : virq);
-
         if (virq == VIRQ_INVALID) {
             continue;
         }
