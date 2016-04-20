@@ -53,7 +53,7 @@ int do_hvc_trap(struct core_regs *regs)
             printf("%s\n", MRC_CP32(15, 0, 0, 0, 0, 5));
             printf("%d\n", ID & MPIDR_MASK & MPIDR_CPUID_MASK);
 
-            break;
+            goto trap_error;
 
         case FSR_ACCESS_FAULT(1) ... FSR_ACCESS_FAULT(3):
             vdev_handler(regs, iss);
