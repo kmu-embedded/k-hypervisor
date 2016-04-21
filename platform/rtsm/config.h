@@ -5,8 +5,8 @@
 #define CFG_CNTFRQ              100000000
 
 #define HYP_STACK_SIZE          4096
-#define NR_CPUS                 3
-#define NUM_GUESTS_STATIC       3
+#define NR_CPUS                 1
+#define NUM_GUESTS_STATIC       1
 
 /*
  *  SOC param
