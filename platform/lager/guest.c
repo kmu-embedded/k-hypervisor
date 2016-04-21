@@ -33,6 +33,7 @@ struct memdesc_t vm0_device_md[] = {
     { "interrupt-controller", 0xe61c0000, 0xe61c0000, 0x1000, MEMATTR_DEVICE_MEMORY, 1 },
 
     { "dma-controller", 0xe6700000, 0xe6700000, 0x20000, MEMATTR_DEVICE_MEMORY, 1 },
+    { "dma-controller", 0xe6720000, 0xe6720000, 0x20000, MEMATTR_DEVICE_MEMORY, 1 },
     { "dma-controller", 0xec720000, 0xec720000, 0x20000, MEMATTR_DEVICE_MEMORY, 1 },
     { "dma-controller", 0xec700000, 0xec700000, 0x10000, MEMATTR_DEVICE_MEMORY, 1 },
     { "dma-controller", 0xec740000, 0xec720000, 0x1000, MEMATTR_DEVICE_MEMORY, 1 },
@@ -142,6 +143,8 @@ struct memdesc_t vm0_device_md[] = {
     {"inter-connect-ram1", 0xe63c0000, 0xe63c0000, 0x50000, MEMATTR_DEVICE_MEMORY, 1 },
 
     {"sysc", 0xe6180000, 0xe6180000, 0x40000, MEMATTR_DEVICE_MEMORY, 1 },
+
+    {"PRR", 0xff000000, 0xff000000, 0x1000, MEMATTR_DEVICE_MEMORY, 1 },
 
     { 0, 0, 0, 0, 0, 0 }
 #endif
