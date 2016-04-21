@@ -36,10 +36,12 @@ union sgir {
 typedef union sgir sgir_t;
 
 #include <stdlib.h>
+#include <string.h>
 int32_t vgicd_create_instance(void **pdata)
 {
     struct vgicd *vgicd = malloc(sizeof(struct vgicd));
 
+    memset(vgicd, 0, sizeof(struct vgicd));
     vgicd->typer = GICD_READ(GICD_TYPER);
     vgicd->iidr  = GICD_READ(GICD_IIDR);
     *pdata = vgicd;
