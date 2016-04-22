@@ -14,8 +14,8 @@ struct memdesc_t vm0_device_md[] = {
     { "gicc", CFG_GIC_BASE_PA | 0x2000, CFG_GIC_BASE_PA | 0x6000, SZ_8K, MEMATTR_DEVICE_MEMORY, 1 },
     //{ "interrupt-controller", 0xf1001000, 0xf1001000, 0x1000, MEMATTR_DEVICE_MEMORY, 0 },
     //{ "interrupt-controller", 0xf1002000, 0xf1006000, 0x2000, MEMATTR_DEVICE_MEMORY, 1 },
-   // { "interrupt-controller", 0xf1004000, 0xf1004000, 0x2000, MEMATTR_DEVICE_MEMORY, 0 },
-   // { "interrupt-controller", 0xf1006000, 0xf1006000, 0x2000, MEMATTR_DEVICE_MEMORY, 0 },
+    // { "interrupt-controller", 0xf1004000, 0xf1004000, 0x2000, MEMATTR_DEVICE_MEMORY, 0 },
+    // { "interrupt-controller", 0xf1006000, 0xf1006000, 0x2000, MEMATTR_DEVICE_MEMORY, 0 },
 
     { "gpio", 0xe6050000, 0xe6050000, 0x1000, MEMATTR_DEVICE_MEMORY, 1 },
     { "gpio", 0xe6051000, 0xe6051000, 0x1000, MEMATTR_DEVICE_MEMORY, 1 },

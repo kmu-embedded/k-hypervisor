@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <arch/irq.h>
 #include <config.h>
-#include <core/vm/vcpu.h> // is_guest_irq
-
+#include <core/vm/vcpu.h>
+#include <arch/armv7/smp.h>
 #include <irq-chip.h>
 #include <types.h>
 #include <core/scheduler.h>
@@ -21,24 +21,21 @@ hvmm_status_t do_irq(struct core_regs *regs)
 
     irq_hw->eoi(irq);
 
-    // FIXME(casionwoo) : is_guest_irq(irq) would be removed.
-    //                    When all of  irqs are handled with vdev_irq_handler
-    if (irq >= 32) {
-        if (vdev_irq_handlers[irq]) {
-            vdev_irq_handlers[irq](irq, regs, 0);
-        } else {
-            is_guest_irq(irq);
-        }
-    }
-
-    if (irq < 32) {
+    if (irq < 16) {
+        // SGI Handler
+        printf("SGI Occurred\n");
+    } else if (irq_handlers[irq]) {
+        // Handler for Hypervisor
+        irq_handlers[irq](irq, regs, 0);
+        irq_hw->dir(irq);
+    } else if (vdev_irq_handlers[irq]) {
+        // Handler for VMs
+        vdev_irq_handlers[irq](irq, regs, 0);
+    } else {
+        // Not found handler that just forward irq to VMs
         is_guest_irq(irq);
     }
 
-    if (irq_handlers[irq]) {
-        irq_handlers[irq](irq, regs, 0);
-        irq_hw->dir(irq);
-    }
     return HVMM_STATUS_SUCCESS;
 }
 

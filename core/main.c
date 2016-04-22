@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <core/vm.h>
+#include <core/vm/vm.h>
 #include <core/scheduler.h>
 
 #include <config.h>
@@ -9,14 +9,14 @@
 
 #include <core/timer.h>
 
+static uint32_t smp_pen = 0;
+
 void start_hypervisor()
 {
     int i;
     uint8_t nr_vcpus = 1; // TODO: It will be read from configuration file.
 
     uint32_t pcpu = smp_processor_id();
-
-    uint32_t smp_pen = 0; 
 
     if (pcpu == 0) {
         timemanager_init();

@@ -313,12 +313,14 @@ static hvmm_status_t timer_dump(void)
     return HVMM_STATUS_SUCCESS;
 }
 
-static uint64_t timer_read_phys_counter(void) {
+static uint64_t timer_read_phys_counter(void)
+{
     return read_cntpct();
 }
 
 #if 0
-static uint64_t timer_read_virt_counter(void) {
+static uint64_t timer_read_virt_counter(void)
+{
     return read_cntvct();
 }
 #endif

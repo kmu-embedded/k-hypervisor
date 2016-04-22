@@ -4,6 +4,7 @@
 #include <size.h>
 #include "../../arch/arm/paging.h"
 #include <vm_map.h>
+#include <stdio.h>
 
 extern uint32_t __VM_PGTABLE;
 
@@ -53,8 +54,13 @@ hvmm_status_t vmem_save(void)
 
 hvmm_status_t vmem_restore(struct vmem *vmem)
 {
-    write_vttbr(vmem->vttbr);
+#ifdef __CONFIG_SMP__
+    /* Set SMP bit in ACTLR */
+    write_vtcr(vmem->vtcr);
+    write_actlr(1 << 6);
+#endif
 
+    write_vttbr(vmem->vttbr);
     write_hcr(read_hcr() | (0x1));
 
     return HVMM_STATUS_SUCCESS;
