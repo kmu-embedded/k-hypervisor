@@ -170,11 +170,6 @@ void gic_init(void)
         }
 
     }
-#if 0
-    for (i = 0; i < GICv2.ITLinesNumber; i += 32) {
-        GICD_WRITE(GICD_IGROUPR(i >> 5), 0xFFFFFFFF);
-    }
-#endif
 
     // We set priority 0xa0 for each but real value is a 0xd0, Why?
     /* Set priority as default for all interrupts */
