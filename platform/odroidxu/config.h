@@ -5,8 +5,8 @@
 #define CFG_CNTFRQ              100000000
 
 #define HYP_STACK_SIZE          4096
-#define NR_CPUS                 2
-#define NUM_GUESTS_STATIC       3
+#define NR_CPUS                 1
+#define NUM_GUESTS_STATIC       1
 
 /*
  *  SOC param
@@ -24,8 +24,8 @@
 
 #define CFG_MEMMAP_GUEST_SIZE               0x00100000
 
-#define CFG_MEMMAP_GUEST0_ATAGS_OFFSET      0x40000000
-#define CFG_MEMMAP_GUEST0_OFFSET            0x40500000
+#define CFG_MEMMAP_GUEST0_ATAGS_OFFSET      0x44000000
+#define CFG_MEMMAP_GUEST0_OFFSET            0x40000000
 
 #define CFG_MEMMAP_GUEST1_ATAGS_OFFSET      0x50000000
 #define CFG_MEMMAP_GUEST1_OFFSET            0x50500000
@@ -33,9 +33,12 @@
 #define CFG_MEMMAP_GUEST2_ATAGS_OFFSET      0x60000000
 #define CFG_MEMMAP_GUEST2_OFFSET            0x60500000
 
-#define CFG_GUEST_ATAGS_START_ADDRESS       0x40500000
+#define CFG_GUEST_INITRD_START_ADDRESS      0x42000000
 
-#define CFG_GUEST_START_ADDRESS             0x40000000
+#define CFG_GUEST_ATAGS_START_ADDRESS       0x44000000
+
+#define CFG_GUEST_START_ADDRESS             0x40008000
+
 #define CFG_HYP_START_ADDRESS               0x70000000
 
 

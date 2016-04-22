@@ -43,7 +43,9 @@ void start_hypervisor()
 
         smp_pen = 1;
     } else {
-        while (!smp_pen);
+        //while (!smp_pen) ;
+        printf("cpu[%d] is enabled\n", pcpu);
+        while (1) ;
     }
 
     /*
@@ -51,6 +53,7 @@ void start_hypervisor()
      * TODO: Rename guest_sched_start to do_schedule or something others.
      *       do_schedule(vmid) or do_schedule(vcpu_id)
      */
+    printf("sched_start!!!\n");
     sched_start();
 
     /* The code flow must not reach here */

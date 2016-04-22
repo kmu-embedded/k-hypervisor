@@ -40,11 +40,24 @@ typedef union sgir sgir_t;
 int32_t vgicd_create_instance(void **pdata)
 {
     struct vgicd *vgicd = malloc(sizeof(struct vgicd));
+    int i, j;
 
     memset(vgicd, 0, sizeof(struct vgicd));
 
     vgicd->typer = GICD_READ(GICD_TYPER);
     vgicd->iidr  = GICD_READ(GICD_IIDR);
+
+    // Initialize GICD_ITARGETSR
+    for (i = 0; i < NR_VCPUS; i++) {
+        for (j = 0; j < NR_BANKED_ITARGETSR; j++) {
+            vgicd->itargetsr0[i][j] = GICD_READ(GICD_ITARGETSR(j));
+        }
+    }
+
+    for (i = 0; i < NR_ITARGETSR; i++) {
+        vgicd->itargetsr[i] = 1 << 0 | 1 << 8 | 1 << 16 | 1 << 24;
+    }
+
     *pdata = vgicd;
 
     return 0;
@@ -68,6 +81,7 @@ static void set_enable(uint32_t current_status, uint8_t n, uint32_t old_status)
         pirq = (pirq == PIRQ_INVALID ? virq : pirq);
         virq_enable(vcpu, pirq, virq);
         pirq_enable(vcpu, pirq, virq);
+        printf("enable irq[%d]\n", pirq);
         gic_enable_irq(pirq);
 
         delta &= ~(1 << offset);

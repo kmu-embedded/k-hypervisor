@@ -11,29 +11,20 @@ int serial_init(void)
     return 0;
 }
 
-static int serial_err_check(void)
+static int read_err_check(void)
 {
-    unsigned int error_flag;
+    return readl(S5P_BASE + S5P_UERSTAT) & 0xf;
+}
 
-    error_flag = readl(S5P_BASE + S5P_UERSTAT);
-
-    if (error_flag & ULCON_OVERRUN) {
-        return 0;
-    } else if (error_flag & ULCON_PARITY) {
-        return 0;
-    } else if (error_flag & ULCON_FRAME) {
-        return 0;
-    } else if (error_flag & ULCON_BREAK) {
-        return 0;
-    } else {
-        return 1;
-    }
+static int write_err_check(void)
+{
+    return readl(S5P_BASE + S5P_UERSTAT) & 0x8;
 }
 
 int serial_getc(void)
 {
     while (!(readl(S5P_BASE + S5P_UTRSTAT) & 0x1)) {
-        if (serial_err_check()) {
+        if (read_err_check()) {
             return 0;
         }
     }
@@ -44,7 +35,7 @@ int serial_getc(void)
 int serial_putc(const char c)
 {
     while (!(readl(S5P_BASE + S5P_UTRSTAT) & 0x2)) {
-        if (serial_err_check()) {
+        if (write_err_check()) {
             return -1;
         }
     }

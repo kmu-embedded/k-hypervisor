@@ -140,8 +140,8 @@ void gic_init(void)
         uint32_t gicd_typer = GICD_READ(GICD_TYPER);
         /* maximum number of irq lines: 32(N+1). */
         GICv2.ITLinesNumber = 32 * ((gicd_typer & GICD_NR_IT_LINES_MASK) + 1);
-        GICv2.CPUNumber = 1 + (gicd_typer & GICD_NR_CPUS_MASK);
-        printf("Number of IRQs: %d\n", GICv2.ITLinesNumber);
+        GICv2.CPUNumber = 1 + ((gicd_typer & GICD_NR_CPUS_MASK) >> 5);
+        printf("Number of IRQs: %d: CPUID[%d]\n", GICv2.ITLinesNumber, cpuid);
         printf("Number of CPU interfaces: %d\n", GICv2.CPUNumber);
 
         GICD_WRITE(GICD_CTLR, 0x0);
@@ -151,11 +151,13 @@ void gic_init(void)
     /* No Priority Masking: the lowest value as the threshold : 255 */
     // We set 0xff but, real value is 0xf8
     GICC_WRITE(GICC_PMR, 0xff);
+    GICC_WRITE(GICC_BPR, 0x0);
 
     // Set interrupt configuration do not work.
 
-    GICD_WRITE(GICD_ICFGR(1), 0x0);
-    GICD_WRITE(GICD_ISENABLER(0), 0xffffffff);
+    //GICD_WRITE(GICD_ICFGR(1), 0x0);
+    GICD_WRITE(GICD_ICENABLER(0), 0xffff0000);
+    GICD_WRITE(GICD_ISENABLER(0), 0x0000ffff);
 
     if (cpuid == 0) {
         for (i = 32; i < GICv2.ITLinesNumber; i += 16) {
@@ -179,7 +181,8 @@ void gic_init(void)
 
     // NOTE: GIC_ITRAGETSR0-7 is read-only on multiprocessor environment.
     for (i = 32; i < GICv2.ITLinesNumber; i += 4) {
-        GICD_WRITE(GICD_ITARGETSR(i >> 2), 1 << 0 | 1 << 8 | 1 << 16 | 1 << 24);
+        GICD_WRITE(GICD_ITARGETSR(i >> 2), 0xff << 0 | 0xff << 8 | 0xff << 16 | 0xff << 24);
+        //GICD_WRITE(GICD_ITARGETSR(i >> 2), 1 << 0 | 1 << 8 | 1 << 16 | 1 << 24);
     }
 
 

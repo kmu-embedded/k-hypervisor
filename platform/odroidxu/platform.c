@@ -26,6 +26,8 @@ void platform_init()
 
     // add mapping for serial devices
     paging_add_mapping(0x12c20000, 0x12c20000, MT_DEVICE, SZ_64K);
+    // add mapping for timer devices
+    paging_add_mapping(0x101c0000, 0x101c0000, MT_DEVICE, SZ_4K);
 
     paging_add_mapping(CFG_HYP_START_ADDRESS, CFG_HYP_START_ADDRESS, MT_WRITEBACK_RW_ALLOC, SZ_128M);
 }
