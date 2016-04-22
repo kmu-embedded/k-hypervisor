@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <vdev.h>
 #include <core/scheduler.h>
-#include <core/vm.h>
+#include <core/vm/vm.h>
 
 #define MAX_VDEV    256
 

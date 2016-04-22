@@ -2,7 +2,7 @@
 #include <arch/armv7.h>
 #include <vdev.h>
 
-#include <core/vm.h>
+#include <core/vm/vm.h>
 #include <core/vm/vcpu.h>
 
 #include "hvc_trap.h"

@@ -4,7 +4,7 @@
 #include <core/scheduler.h>
 #include <config.h>
 #include <stdio.h>
-#include <core/vm.h>
+#include <core/vm/vm.h>
 #include <core/vm/vcpu.h>
 #include <drivers/gic-v2.h>
 #include <drivers/vdev/vdev_gicd.h>
@@ -42,6 +42,7 @@ int32_t vgicd_create_instance(void **pdata)
     struct vgicd *vgicd = malloc(sizeof(struct vgicd));
 
     memset(vgicd, 0, sizeof(struct vgicd));
+
     vgicd->typer = GICD_READ(GICD_TYPER);
     vgicd->iidr  = GICD_READ(GICD_IIDR);
     *pdata = vgicd;
@@ -113,7 +114,7 @@ static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
             if (target_vcpuid < vm->num_vcpus) {
                 target_vcpu = vm->vcpu[target_vcpuid];
                 sgi.entry.CPUTargetList &= ~(1 << target_vcpuid);
-                virq_inject(target_vcpu->vcpuid, sgi.entry.id, sgi.entry.id, SW_IRQ);
+                virq_inject(target_vcpu, sgi.entry.id, sgi.entry.id, SW_IRQ);
             }
         }
         break;
@@ -127,13 +128,13 @@ static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
             }
 
             target_vcpu = vm->vcpu[cpuid];
-            virq_inject(target_vcpu->vcpuid, sgi.entry.id, sgi.entry.id, SW_IRQ);
+            virq_inject(target_vcpu, sgi.entry.id, sgi.entry.id, SW_IRQ);
         }
     }
     break;
 
     case 2:
-        virq_inject(vcpu->id, sgi.entry.id, sgi.entry.id, SW_IRQ);
+        virq_inject(vcpu, sgi.entry.id, sgi.entry.id, SW_IRQ);
         break;
 
     default:
@@ -303,9 +304,7 @@ int32_t vgicd_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
 
 int32_t vgicd_read_handler(void *pdata, uint32_t offset)
 {
-
     struct vgicd *gicd = pdata;
-
     uint8_t vcpuid = get_current_vcpuidx();
 
     switch (offset) {

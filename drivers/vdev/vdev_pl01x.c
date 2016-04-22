@@ -76,7 +76,7 @@ static void vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
     // TODO(casionwoo) : How to find the correct vcpuid from vmid ?
     //  which vcpu is waiting for irq
     struct vcpu *vcpu = vcpu_find(owner_id);
-    virq_hw->forward_irq(vcpu->vcpuid, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
+    virq_hw->forward_irq(vcpu, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
 }
 
 #include <stdlib.h>
@@ -143,7 +143,7 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
     case UARTMSC:
         vuart->uartmsc = readl(addr);
         if (vuart->uartmsc == 0x70 && vcpu->vcpuid != owner_id) {
-            virq_hw->forward_irq(vcpu->vcpuid, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
+            virq_hw->forward_irq(vcpu, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
         }
 
         writel(readl(addr), UART_ADDR(UARTMSC));

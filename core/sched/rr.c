@@ -1,7 +1,6 @@
 #include <core/sched/scheduler_skeleton.h>
 #include <config.h>
 #include <arch/armv7.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <debug.h>
 #include <stdbool.h>

@@ -114,7 +114,7 @@ void serial_init(uint32_t baudrate, uint32_t input_clock)
     writel((PL01X_UARTCR_UARTEN | PL01X_UARTCR_TXE | PL01X_UARTCR_RXE),
            (void *)(PL01X_BASE + PL01X_UARTCR));
 
-    serial_subinit(0x1C090000, baudrate, input_clock);
+    serial_subinit(0x1C0A0000, baudrate, input_clock);
     serial_subinit(0x1C0B0000, baudrate, input_clock);
     serial_subinit(0x1C0C0000, baudrate, input_clock);
 }

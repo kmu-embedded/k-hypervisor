@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <asm/macro.h>
 
+#include <arch/armv7/smp.h>
 #include <arch/gic_regs.h>
 #include <arch/armv7.h>
 #include <arch/irq.h>
@@ -120,6 +121,7 @@ void gic_init(void)
 {
     int i;
     uint32_t periphbase;
+    uint8_t cpuid = smp_processor_id();
 
     // This code will be moved other parts, not here. */
     /* Get GICv2 base address */
@@ -134,36 +136,40 @@ void gic_init(void)
      * We usually use the name of variables in lower case, but
      * here, using upper case is special case for readability.
      */
-    uint32_t gicd_typer = GICD_READ(GICD_TYPER);
-    /* maximum number of irq lines: 32(N+1). */
-    GICv2.ITLinesNumber = 32 * ((gicd_typer & GICD_NR_IT_LINES_MASK) + 1);
-    GICv2.CPUNumber = 1 + (gicd_typer & GICD_NR_CPUS_MASK);
-    printf("Number of IRQs: %d\n", GICv2.ITLinesNumber);
-    printf("Number of CPU interfaces: %d\n", GICv2.CPUNumber);
+    if (cpuid == 0) {
+        uint32_t gicd_typer = GICD_READ(GICD_TYPER);
+        /* maximum number of irq lines: 32(N+1). */
+        GICv2.ITLinesNumber = 32 * ((gicd_typer & GICD_NR_IT_LINES_MASK) + 1);
+        GICv2.CPUNumber = 1 + (gicd_typer & GICD_NR_CPUS_MASK);
+        printf("Number of IRQs: %d\n", GICv2.ITLinesNumber);
+        printf("Number of CPU interfaces: %d\n", GICv2.CPUNumber);
+
+        GICD_WRITE(GICD_CTLR, 0x0);
+    }
 
     GICC_WRITE(GICC_CTLR, 0x0);
-    GICD_WRITE(GICD_CTLR, 0x0);
     /* No Priority Masking: the lowest value as the threshold : 255 */
     // We set 0xff but, real value is 0xf8
     GICC_WRITE(GICC_PMR, 0xff);
 
     // Set interrupt configuration do not work.
-    for (i = 32; i < GICv2.ITLinesNumber; i += 16) {
-        GICD_WRITE(GICD_ICFGR(i >> 4), 0x0);
-    }
 
-    /* Disable all global interrupts. */
-    for (i = 0; i < GICv2.ITLinesNumber; i += 32) {
-        GICD_WRITE(GICD_ISENABLER(i >> 5), 0xffffffff);
-        uint32_t valid = GICD_READ(GICD_ISENABLER(i >> 5));
-        GICD_WRITE(GICD_ICENABLER(i >> 5), valid);
-    }
+    GICD_WRITE(GICD_ICFGR(1), 0x0);
+    GICD_WRITE(GICD_ISENABLER(0), 0xffffffff);
 
-#if 0
-    for (i = 0; i < GICv2.ITLinesNumber; i += 32) {
-        GICD_WRITE(GICD_IGROUPR(i >> 5), 0xFFFFFFFF);
+    if (cpuid == 0) {
+        for (i = 32; i < GICv2.ITLinesNumber; i += 16) {
+            GICD_WRITE(GICD_ICFGR(i >> 4), 0x0);
+        }
+
+        /* Disable all global interrupts. */
+        for (i = 0; i < GICv2.ITLinesNumber; i += 32) {
+            GICD_WRITE(GICD_ISENABLER(i >> 5), 0xffffffff);
+            uint32_t valid = GICD_READ(GICD_ISENABLER(i >> 5));
+            GICD_WRITE(GICD_ICENABLER(i >> 5), valid);
+        }
+
     }
-#endif
 
     // We set priority 0xa0 for each but real value is a 0xd0, Why?
     /* Set priority as default for all interrupts */
@@ -171,24 +177,27 @@ void gic_init(void)
         GICD_WRITE(GICD_IPRIORITYR(i >> 2), 0xa0a0a0a0);
     }
 
-#ifndef __CONFIG_SMP__
-    // NOTE: GIC_ITRAGETSR is read-only on multiprocessor environment.
+    // NOTE: GIC_ITRAGETSR0-7 is read-only on multiprocessor environment.
     for (i = 32; i < GICv2.ITLinesNumber; i += 4) {
         GICD_WRITE(GICD_ITARGETSR(i >> 2), 1 << 0 | 1 << 8 | 1 << 16 | 1 << 24);
     }
-#endif
 
 
     GICC_WRITE(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
-    GICD_WRITE(GICD_CTLR, 0x1);
-
+    if (cpuid == 0) {
+        GICD_WRITE(GICD_CTLR, 0x1);
+    }
 }
 
 void gich_init()
 {
+    uint8_t cpuid = smp_processor_id();
+
     // Initialization GICH
-    GICv2.num_lr = (GICH_READ(GICH_VTR) & GICH_VTR_LISTREGS_MASK) + 1;
-    gic_maintenance_irq_enable();
+    if (cpuid == 0) {
+        GICv2.num_lr = (GICH_READ(GICH_VTR) & GICH_VTR_LISTREGS_MASK) + 1;
+        gic_maintenance_irq_enable();
+    }
 
     gich_enable();
 }
@@ -296,22 +305,22 @@ void gic_inject_virq(lr_entry_t lr_entry, uint32_t slot)
 }
 
 #include <arch/armv7.h>
-#include <core/vm.h>
+#include <core/vm/vm.h>
 #include <core/scheduler.h>
-bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
+bool virq_inject(struct vcpu *vcpu, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
     int i;
-    struct vcpu *vcpu = vcpu_find(vcpuid);
 
     if (!hw) {
-        pirq |= vcpuid;
+        pirq = 0;
+        pirq |= vcpu->pcpuid;
         pirq |= (EOI_ENABLE << 9);
     }
 
     lr_entry_t lr_entry = set_lr_entry(hw, VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
                                        pirq, virq);
 
-    if (vcpuid == get_current_vcpuid()) {
+    if (vcpu->vcpuid == get_current_vcpuid()) {
         uint32_t slot = gic_find_free_slot();
 
         if (slot == VGIC_SLOT_NOTFOUND) {
