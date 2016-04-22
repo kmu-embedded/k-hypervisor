@@ -32,6 +32,7 @@ hvmm_status_t do_irq(struct core_regs *regs)
         // Handler for VMs
         vdev_irq_handlers[irq](irq, regs, 0);
     } else {
+        printf("%s %d\n", __func__, irq);
         // Not found handler that just forward irq to VMs
         is_guest_irq(irq);
     }

@@ -1,12 +1,12 @@
 # Makefile
 # TODO(wonseok): Add configuration file for board.
 
-TARGET         = rtsm
-DEFINES+=-DSERIAL_PL01X
+#TARGET         = rtsm
+#DEFINES+=-DSERIAL_PL01X
 #TARGET          = lager
 #DEFINES+=-DSERIAL_SH
-#TARGET        = odroidxu
-#DEFINES+=-DSERIAL_S5P -DCONFIG_MCT
+TARGET        = odroidxu
+DEFINES+=-DSERIAL_S5P -DCONFIG_MCT
 ######################################################
 # MAKEFILE VERBOSE OPTION
 ######################################################
@@ -74,7 +74,7 @@ CFLAGS+= -mcpu=${CPU} -marm
 CFLAGS += --std=c99
 
 #DEFINES= -D__CONFIG_MUTEX__ #-D__CONFIG_SMP__
-#DEFINES+=-D__CONFIG_SMP__
+DEFINES+=-D__CONFIG_SMP__
 DEFINES+=-D__CONFIG_TICKLESS_TIMER__ #-D__TEST_TIMER__
 DEFINES+=-DCONFIG_C99
 ASFLAGS+=${DEFINES}

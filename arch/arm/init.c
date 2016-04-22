@@ -51,6 +51,7 @@ void init_system()
         secondary_smp_pen = 1;
 #endif
     }
+    printf("%s[%d]: CPU[%d]\n",__func__,__LINE__, cpuid);
 
     enable_mmu();
 
