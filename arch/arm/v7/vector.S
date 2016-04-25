@@ -1,5 +1,6 @@
 #include <asm/macro.h>
 #include <config.h>
+#include <arch/armv7/cp15.h>
 
     .syntax unified
     .arch_extension sec
@@ -18,24 +19,24 @@ END_PROC(__monitor_vector)
 
 smc_handler:
     // Configure SCR
-    mrc     p15, 0, r1, c1, c1, 0  @ SCR -> r10
     @ SCR.NS=1, IRQ,FIQ,EA=0, FW,AW=1, nET=0, SCD=1, HCE=1
+    READ_CP32(r1, SCR)
     bic     r1, r1, #0x07f
     ldr     r2, = 0x1b1
     orr     r1, r1, r2
-    mcr     p15, 0, r2, c1, c1, 0
+    WRITE_CP32(r2, SCR)
     isb
 
-    @ reuse __monitor_vector to enter NSHyp mode temporarily
+    @ Reuse __monitor_vector to enter NSHyp mode temporarily.
     ldr     r1, = __monitor_vector
-    mcr     p15, 4, r1, c12, c0, 0
+    WRITE_CP32(r1, HVBAR)
     movs    pc, lr  @ return in NS state
 
 hvc_handler:
     ldr     sp, = __end_stack
     @ TODO(wonseok): make it smart.
     @ Adujst stack pointer for each core.
-    mrc	    p15, 0, r5, c0, c0, 5		@ MPIDR (ARMv7 only)
+    READ_CP32(r5, MPIDR)
     ands    r5, r5, #0xFF
     mov     r6, #HYP_STACK_SIZE
     mul     r6, r6, r5
@@ -48,10 +49,8 @@ BEGIN_PROC(__hvc_vector)
     .word   0                   /* reset */
     nop                         /* undef */
     nop                         /* svc */
-    nop                         /* undef */
-    nop                         /* svc */
-    @b       __do_pabt           /* pabt */
-    @b       __do_dabt           /* dabt */
+    nop                         /* pabt */
+    nop                         /* dabt */
     b       __do_hvc            /* hvc */
     b       __do_irq            /* irq */
     nop                         /* fiq */
