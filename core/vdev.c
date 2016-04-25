@@ -3,6 +3,7 @@
 #include <vdev.h>
 #include <core/scheduler.h>
 #include <core/vm/vm.h>
+#include <arch/armv7.h>
 
 #define MAX_VDEV    256
 
@@ -12,8 +13,13 @@ static struct list_head vdev_list;
 void vdev_handler(struct core_regs *regs, iss_t iss)
 {
     struct vmcb *vm = get_current_vm();
-    uint32_t fipa = read_hpfar() << 8;
-    fipa |= (read_hdfar() & PAGE_MASK);
+    uint32_t fipa = 0;
+    uint32_t hdfar = 0;
+
+    READ_CP32(fipa, HPFAR);
+    READ_CP32(hdfar, HDFAR);
+    fipa = fipa << 8;
+    fipa |= (hdfar & PAGE_MASK);
 
     struct vdev_instance *instance;
     list_for_each_entry(struct vdev_instance, instance, &vm->vdevs.head, head) {

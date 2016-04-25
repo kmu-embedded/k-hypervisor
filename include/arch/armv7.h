@@ -12,6 +12,7 @@
 #include "armv7/arm_inline.h"
 #include "armv7/smp.h"
 #include "armv7/mutex.h"
+#include "armv7/cp15.h"
 
 // FIXME: Move get_periphbase() to proper location.
 static inline uint64_t get_periphbase(void)
