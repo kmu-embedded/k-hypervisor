@@ -54,34 +54,6 @@ union iss {
 };
 typedef union iss iss_t;
 
-#define COPROC(n)		p##n
-#define Rt(t) 			%t
-#define CR(x)			c##x
-#define CP32(cp, opc1, t, n, m, opc2)		COPROC(cp), opc1, Rt(t), CR(n), CR(m), opc2
-#define CP64(cp, opc1, t, t2, m)			COPROC(cp), opc1, Rt(t), Rt(t2), CR(m)
-
-#include <lib/stringify.h>
-
-#define MCR_CP32(args...)					"mcr " __stringify(CP32(args)) ";"
-#define MRC_CP32(args...)					"mrc " __stringify(CP32(args)) ";"
-#define VMRS_CP32(args...)					"vmrs " __stringify(CP32(args)) ";"
-
-#define MCRR_CP64(args...)					"mcrr " __stringify(CP64(args)) ";"
-#define MRRC_CP64(args...)					"mrrc " __stringify(CP64(args)) ";"
-
-
-
-
-#define READ_CP15(args...) ({ uint32_t rval; 						\
-							asm volatile(MRC_CP32(args) 			\
-							: "=r" (rval)							\
-							: : "memory", "cc"); rval; })
-
-#define WRITE_CP15(val, args...)  asm volatile(MCR_CP32(args) 		\
-								  : : "r" ((val)) : "memory", "cc")
-
-
-
 /* HSR Exception Class. */
 #define HSR_EC_UNKNOWN        		0x00
 #define HSR_EC_WFI_WFE        		0x01
