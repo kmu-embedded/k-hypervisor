@@ -22,7 +22,7 @@ void paging_add_mapping(addr_t va, addr_t pa, uint8_t mem_attr, uint32_t size)
 {
     int i;
     uint64_t httbr = 0;
-    httbr = READ_CP64(HTTBR);
+    httbr = read_cp64(HTTBR);
 
     for (i = 0; i < (size >> PAGE_SHIFT); i++, va += 0x1000, pa += 0x1000) {
         write_pgentry((addr_t) httbr, va >> PAGE_SHIFT, pa, mem_attr, 0, 1);

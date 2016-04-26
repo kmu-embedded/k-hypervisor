@@ -155,7 +155,7 @@ struct memdesc_t vm0_device_md[] = {
     {"sss", 0x10830000, 0x10830000, 0x8000, MEMATTR_DEVICE_MEMORY, 1},
     {"slimsss", 0x10900000, 0x10900000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
 
-    {"pd",0x10044000, 0x10044000, 0x2000, MEMATTR_DEVICE_MEMORY, 1},
+    {"pd", 0x10044000, 0x10044000, 0x2000, MEMATTR_DEVICE_MEMORY, 1},
     { 0, 0, 0, 0, 0, 0 }
 };
 

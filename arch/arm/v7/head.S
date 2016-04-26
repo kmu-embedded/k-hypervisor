@@ -18,25 +18,25 @@ BEGIN_PROC(__start)
 	beq		3f
 
     @ Check whether or not current cpu mode is in secure state.
-    READ_CP(r0, SCR)
+    read_cp32(r0, SCR)
     teq     r0, #0x1
     @ TODO(wonseok): if current cpu is in non-secure,
     @ we have to check current cpu mode is HYP or not.
     beq     __error_ns
 
     @ Check the virtualization Extensions(VE).
-    READ_CP(r0, ID_PFR1)
+    read_cp32(r0, ID_PFR1)
     tst     r0, #0x00001000         @ Compare the value in ID_PFR[12] to 1 or 0.
     beq     __error_ve              @ If ID_PFR[12] is equal to 0, stop here.
 
     @ Check the Generic Timer Extenion.
-    READ_CP(r0, ID_PFR1)
+    read_cp32(r0, ID_PFR1)
     tst     r0, #0x00010000         @ Compare the value in ID_PFR[12] to 1 or 0.
     beq     __error_ge
 
     @ Configure the Generic Timer Frequency
     ldr        r0, = CFG_CNTFRQ
-    WRITE_CP(r0, CNTFRQ)
+    write_cp32(r0, CNTFRQ)
 
     /*
      * We assume that the CPU mode is SVC in secure world at this point.
@@ -74,14 +74,14 @@ BEGIN_PROC(__start)
     str	    r1, [r0, #0x4]			@ GIC ICCPMR
 
     @ Give the access permission for some coprocessor to non-secure(NSACR).
-    READ_CP(r0, NSACR)
+    read_cp32(r0, NSACR)
     ldr	    r1, =0x43fff
     orr	    r0, r0, r1
-    WRITE_CP(r0, NSACR)
+    write_cp32(r0, NSACR)
 
     /* Initialize vector for monitor mode to enter NSHyp mode */
     ldr     r1, = __monitor_vector
-    WRITE_CP(r1, MVBAR)
+    write_cp32(r1, MVBAR)
 
     smc     #0  @ -> trap_smc
     hvc     #0  @ -> trap_hyp_entry
@@ -91,24 +91,24 @@ BEGIN_PROC(__start)
     /* We are going to initialize for each core, here */
     @ DCIMVAC: invalidate data cache.
     mov     r0, #0
-    WRITE_CP(r0, DCIMVAC)
+    write_cp32(r0, DCIMVAC)
 
     @ TLBIALLH: flust instruction and data TLBs. r0 will be ignored.
-    WRITE_CP(r0, TLBIALLH)
+    write_cp32(r0, TLBIALLH)
 
     /* Replace the NSHyp vector table for khypervisor */
     ldr     r0, = __hvc_vector
-    WRITE_CP(r0, HVBAR)
+    write_cp32(r0, HVBAR)
 
     ldr     sp, = __end_stack
-    READ_CP(r5, MPIDR)
+    read_cp32(r5, MPIDR)
     ands    r5, r5, #0xFF
     mov     r6, #HYP_STACK_SIZE
     mul     r6, r6, r5
     sub     sp, sp, r6
 
 #ifdef __CONFIG_SMP__
-    READ_CP(r5, MPIDR)
+    read_cp32(r5, MPIDR)
     ands    r5, r5, #0xFF
     cmp     r5, #0x0
     beq     1f
@@ -138,9 +138,9 @@ enter_smp_pen:
     cmp     r1, #0  @ pending
     beq     enter_smp_pen
 
-    WRITE_CP(r2, DCCMVAU)
+    write_cp32(r2, DCCMVAU)
     mov     r10, #0
-    WRITE_CP(r10, ICIALLU)
+    write_cp32(r10, ICIALLU)
     isb     /* Make sure the invalidate ops are complete */
     dsb
 

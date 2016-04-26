@@ -15,8 +15,8 @@ void vdev_handler(struct core_regs *regs, iss_t iss)
     struct vmcb *vm = get_current_vm();
     uint32_t fipa = 0;
 
-    fipa = READ_CP(HPFAR) << 8;
-    fipa |= (READ_CP(HDFAR) & PAGE_MASK);
+    fipa = read_cp32(HPFAR) << 8;
+    fipa |= (read_cp32(HDFAR) & PAGE_MASK);
 
     struct vdev_instance *instance;
     list_for_each_entry(struct vdev_instance, instance, &vm->vdevs.head, head) {
