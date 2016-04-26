@@ -13,9 +13,9 @@ int do_hvc_trap(struct core_regs *regs)
     iss_t iss;
     uint32_t fipa;
 
-    hsr.raw = READ_CP(HSR);
+    hsr.raw = read_cp32(HSR);
     iss.raw = hsr.entry.iss;
-    fipa = READ_CP(HPFAR) << 8;
+    fipa = read_cp32(HPFAR) << 8;
 
     switch (hsr.entry.ec) {
     case HSR_EC_UNKNOWN:
@@ -36,7 +36,7 @@ int do_hvc_trap(struct core_regs *regs)
     case HSR_EC_SMC:
     case HSR_EC_PABT_FROM_GUEST:
     case HSR_EC_PABT_FROM_HYP_MODE: {
-        uint32_t hifar = READ_CP(HIFAR);
+        uint32_t hifar = read_cp32(HIFAR);
         fipa |= (hifar & PAGE_MASK);
     }
     goto trap_error;
@@ -44,7 +44,7 @@ int do_hvc_trap(struct core_regs *regs)
         goto trap_error;
     case HSR_EC_DABT_FROM_HYP_MODE:
     case HSR_EC_DABT_FROM_GUEST: {
-        fipa |= (READ_CP(HDFAR) & PAGE_MASK);
+        fipa |= (read_cp32(HDFAR) & PAGE_MASK);
         switch (iss.dabt.dfsc) {
         case FSR_TRANS_FAULT(1) ... FSR_TRANS_FAULT(3):
             printf("FSR_TRANS_FAULT: fipa 0x%08x\n", fipa);
@@ -99,7 +99,7 @@ int do_hvc_trap(struct core_regs *regs)
             goto trap_error;
         }
 
-    break;
+        break;
     }
 
     default:

@@ -43,7 +43,7 @@ hvmm_status_t do_irq(struct core_regs *regs)
 void irq_init()
 {
     set_irqchip_type();
-    WRITE_CP((0x10 | 0x8), HCR);
+    write_cp32((0x10 | 0x8), HCR);
 }
 
 void register_irq_handler(uint32_t irq, irq_handler_t handler)

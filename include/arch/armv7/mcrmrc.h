@@ -85,12 +85,11 @@ REV/DATE: Fri Mar 18 16:34:44 EST 2005
 
 #ifdef __ASSEMBLY__
 
-//e.g. MRC(r0, 15, SCR)
-#define READ_CP(rt, args...)        	mrc     CP32(rt, args)
-#define WRITE_CP(rt, args...)       	mcr     CP32(rt, args)
+#define read_cp32(rt, args...)        	mrc     CP32(rt, args)
+#define write_cp32(rt, args...)       	mcr     CP32(rt, args)
 
-#define READ_CP64(rt, rt2, args...)     mrrc    CP64(rt, rt2, args)
-#define WRITE_CP64(rt, rt2, args...)    mcrr    CP64(rt, rt2, args)
+#define read_cp64(rt, rt2, args...)     mrrc    CP64(rt, rt2, args)
+#define write_cp64(rt, rt2, args...)    mcrr    CP64(rt, rt2, args)
 
 /* * C version of the macros.
 */
@@ -100,27 +99,23 @@ REV/DATE: Fri Mar 18 16:34:44 EST 2005
 #define xstr(s...) str(s)
 #define str(s...) #s
 
-// Usage
-// e.g. MRC(HVBAR);,  MCR(vector_base, HVBAR);
-// WRITE_CP64((uint64_t) pgtable, HTTBR);, READ_CP64(val, HTTBR);
-
-#define READ_CP(args) ({                              \
+#define read_cp32(args) ({                              \
     unsigned int val;                                   \
     asm volatile(                                       \
     "mrc\t" xstr(CP32(%0, args)) : "=r" (val));         \
     val; })
 
-#define WRITE_CP(rt, args) 					        \
+#define write_cp32(rt, args) 					        \
     asm volatile ( 								        \
     "mcr\t"  xstr(CP32(%0, args)) : : "r" (rt))
 
-#define READ_CP64(args) ({                              \
+#define read_cp64(args) ({                              \
     unsigned long long val;                             \
     asm volatile(                                       \
     "mrrc\t" xstr(CP64(%0, %H0, args)) : "=r" (val));   \
     val; })
 
-#define WRITE_CP64(rt, args) 				            \
+#define write_cp64(rt, args) 				            \
     asm volatile ( 									    \
     "mcrr\t"  xstr(CP64(%0, %H0, args)) : : "r" (rt))
 
