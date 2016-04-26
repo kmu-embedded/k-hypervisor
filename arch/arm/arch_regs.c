@@ -26,7 +26,7 @@ static void init_cp15(struct cp15 *cp15)
     memset(cp15, 0, sizeof(struct cp15));
 
     printf("vmpidr: %x\n", cp15->vmpidr);
-    READ_CP32(cp15->vmpidr, VMPIDR);
+    cp15->vmpidr = READ_CP(VMPIDR);
     printf("vmpidr: %x\n", cp15->vmpidr);
 
     // TODO(casionwoo) : Modify the way of initialize vmpidr later?
@@ -141,24 +141,24 @@ static void restore_banked_regs(struct banked_regs *banked_regs)
 
 static void save_cp15(struct cp15 *cp15)
 {
-    READ_CP32(cp15->vbar, VBAR);
+    cp15->vbar = READ_CP(VBAR);
     // TODO: We have to handle TTBR by guest's setting.
-    READ_CP32(cp15->ttbr0, TTBR0_32);
-    READ_CP32(cp15->ttbr1, TTBR1_32);
-    READ_CP32(cp15->ttbcr, TTBCR);
-    READ_CP32(cp15->sctlr, SCTLR);
-    READ_CP32(cp15->vmpidr, VMPIDR);
+    cp15->ttbr0 = READ_CP(TTBR0_32);
+    cp15->ttbr1 = READ_CP(TTBR1_32);
+    cp15->ttbcr = READ_CP(TTBCR);
+    cp15->sctlr = READ_CP(SCTLR);
+    cp15->vmpidr = READ_CP(VMPIDR);
 }
 
 static void restore_cp15(struct cp15 *cp15)
 {
-    WRITE_CP32(cp15->vbar, VBAR);
+    WRITE_CP(cp15->vbar, VBAR);
     // TODO: We have to handle TTBR by guest's setting.
-    WRITE_CP32(cp15->ttbr0, TTBR0_32);
-    WRITE_CP32(cp15->ttbr1, TTBR1_32);
-    WRITE_CP32(cp15->ttbcr, TTBCR);
-    WRITE_CP32(cp15->sctlr, SCTLR);
-    WRITE_CP32(cp15->vmpidr, VMPIDR);
+    WRITE_CP(cp15->ttbr0, TTBR0_32);
+    WRITE_CP(cp15->ttbr1, TTBR1_32);
+    WRITE_CP(cp15->ttbcr, TTBCR);
+    WRITE_CP(cp15->sctlr, SCTLR);
+    WRITE_CP(cp15->vmpidr, VMPIDR);
 }
 
 void print_core_regs(struct core_regs *regs)

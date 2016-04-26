@@ -20,23 +20,23 @@ END_PROC(__monitor_vector)
 smc_handler:
     // Configure SCR
     @ SCR.NS=1, IRQ,FIQ,EA=0, FW,AW=1, nET=0, SCD=1, HCE=1
-    READ_CP32(r1, SCR)
+    READ_CP(r1, SCR)
     bic     r1, r1, #0x07f
     ldr     r2, = 0x1b1
     orr     r1, r1, r2
-    WRITE_CP32(r2, SCR)
+    WRITE_CP(r2, SCR)
     isb
 
     @ Reuse __monitor_vector to enter NSHyp mode temporarily.
     ldr     r1, = __monitor_vector
-    WRITE_CP32(r1, HVBAR)
+    WRITE_CP(r1, HVBAR)
     movs    pc, lr  @ return in NS state
 
 hvc_handler:
     ldr     sp, = __end_stack
     @ TODO(wonseok): make it smart.
     @ Adujst stack pointer for each core.
-    READ_CP32(r5, MPIDR)
+    READ_CP(r5, MPIDR)
     ands    r5, r5, #0xFF
     mov     r6, #HYP_STACK_SIZE
     mul     r6, r6, r5

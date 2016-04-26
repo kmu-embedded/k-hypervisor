@@ -43,9 +43,8 @@ void start_hypervisor()
 
         smp_pen = 1;
     } else {
-        //while (!smp_pen) ;
+        while (!smp_pen) ;
         printf("cpu[%d] is enabled\n", pcpu);
-        while (1) ;
     }
 
     /*
