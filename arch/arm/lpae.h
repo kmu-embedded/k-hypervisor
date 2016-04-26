@@ -157,7 +157,6 @@ typedef enum {
 typedef uint32_t addr_t;
 
 pgentry set_table(addr_t pa);
-//void write_pgentry(addr_t base, addr_t va, addr_t pa, uint8_t mem_attr, uint8_t ap);
 void write_pgentry(addr_t base, addr_t va, addr_t pa, uint8_t mem_attr, uint8_t ap, uint8_t af);
 
 #define set_valid      (1 << 0)

@@ -13,11 +13,9 @@ int do_hvc_trap(struct core_regs *regs)
     iss_t iss;
     uint32_t fipa;
 
-    READ_CP32(hsr.raw, HSR);
+    hsr.raw = READ_CP(HSR);
     iss.raw = hsr.entry.iss;
-
-    READ_CP32(fipa, HPFAR);
-    fipa = fipa << 8;
+    fipa = READ_CP(HPFAR) << 8;
 
     switch (hsr.entry.ec) {
     case HSR_EC_UNKNOWN:
@@ -38,8 +36,7 @@ int do_hvc_trap(struct core_regs *regs)
     case HSR_EC_SMC:
     case HSR_EC_PABT_FROM_GUEST:
     case HSR_EC_PABT_FROM_HYP_MODE: {
-        uint32_t hifar = 0;
-        READ_CP32(hifar, HIFAR);
+        uint32_t hifar = READ_CP(HIFAR);
         fipa |= (hifar & PAGE_MASK);
     }
     goto trap_error;
@@ -47,11 +44,9 @@ int do_hvc_trap(struct core_regs *regs)
         goto trap_error;
     case HSR_EC_DABT_FROM_HYP_MODE:
     case HSR_EC_DABT_FROM_GUEST: {
-        uint32_t hdfar = 0;
+        fipa |= (READ_CP(HDFAR) & PAGE_MASK);
         switch (iss.dabt.dfsc) {
         case FSR_TRANS_FAULT(1) ... FSR_TRANS_FAULT(3):
-            READ_CP32(hdfar, HDFAR);
-            fipa |= (hdfar & PAGE_MASK);
             printf("FSR_TRANS_FAULT: fipa 0x%08x\n", fipa);
             goto trap_error;
 
@@ -60,14 +55,10 @@ int do_hvc_trap(struct core_regs *regs)
             break;
 
         case FSR_PERM_FAULT(1) ... FSR_PERM_FAULT(3):
-            fipa = read_hpfar() << 8;
-            fipa |= (read_hdfar() & PAGE_MASK);
             printf("FSR_PERM_FAULT: fipa 0x%08x\n", fipa);
             goto trap_error;
 
         case FSR_SYNC_ABORT:
-            fipa = read_hpfar() << 8;
-            fipa |= (read_hdfar() & PAGE_MASK);
             printf("FSR_SYNC_FAULT: fipa 0x%08x\n", fipa);
             goto trap_error;
 
@@ -92,8 +83,6 @@ int do_hvc_trap(struct core_regs *regs)
             goto trap_error;
 
         case FSR_ALINGMENT_FAULT:
-            fipa = read_hpfar() << 8;
-            fipa |= (read_hdfar() & PAGE_MASK);
             printf("FSR_ALIGNMENT_FAULT: fipa 0x%08x\n", fipa);
             goto trap_error;
 

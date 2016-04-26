@@ -88,8 +88,8 @@ Author: Ben Leslie <benjl@cse.unsw.edu.au>
  * format which handles the locking. */
 
 #ifdef __CONFIG_SMP__
-//#include <arch/armv7/smp.h>
-//static DEFINE_SPINLOCK(PRINTF_LOCK);
+#include <arch/armv7/smp.h>
+static DEFINE_SPINLOCK(PRINTF_LOCK);
 #endif
 
 #ifdef __CONFIG_MUTEX__
@@ -104,8 +104,8 @@ printf(const char *format, ...)
     va_list ap;
 
 #ifdef __CONFIG_SMP__
-    //unsigned long flags;
-    //smp_spin_lock(&PRINTF_LOCK, flags);
+    unsigned long flags;
+    smp_spin_lock(&PRINTF_LOCK, flags);
 #endif
 
 #ifdef __CONFIG_MUTEX__
@@ -121,7 +121,7 @@ printf(const char *format, ...)
 #endif
 
 #ifdef __CONFIG_SMP__
-    //smp_spin_unlock(&PRINTF_LOCK, flags);
+    smp_spin_unlock(&PRINTF_LOCK, flags);
 #endif
 
     return ret;

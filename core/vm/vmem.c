@@ -40,28 +40,33 @@ hvmm_status_t vmem_init(struct vmem *vmem)
     vmem->vtcr = (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
     vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_ORGN0_BIT);
     vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_IRGN0_BIT);
-    write_vtcr(vmem->vtcr);
+    WRITE_CP(vmem->vtcr, VTCR);
 
     return HVMM_STATUS_SUCCESS;
 }
 
 hvmm_status_t vmem_save(void)
 {
-    write_hcr(read_hcr() & ~(0x1));
+    uint32_t hcr = 0;
+    hcr = READ_CP(HCR);
+    WRITE_CP((hcr & ~(0x1)), HCR);
 
     return HVMM_STATUS_SUCCESS;
 }
 
 hvmm_status_t vmem_restore(struct vmem *vmem)
 {
+    uint32_t hcr = 0;
 #ifdef __CONFIG_SMP__
     /* Set SMP bit in ACTLR */
-    write_vtcr(vmem->vtcr);
-    write_actlr(1 << 6);
+    WRITE_CP(vmem->vtcr, VTCR);
+    WRITE_CP(1 << 6, ACTLR);
 #endif
 
-    write_vttbr(vmem->vttbr);
-    write_hcr(read_hcr() | (0x1));
+    WRITE_CP64(vmem->vttbr, VTTBR);
+
+    hcr = READ_CP(HCR);
+    WRITE_CP((hcr | (0x1)), HCR);
 
     return HVMM_STATUS_SUCCESS;
 }
