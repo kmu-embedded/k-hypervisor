@@ -90,7 +90,7 @@ INCLUDES= -I${SOURCE_PATH}/include
 INCLUDES+= -I${SOURCE_PATH}/lib/c/include
 INCLUDES+= -I${SOURCE_PATH}/platform/${TARGET}
 
-#DEFINES+=-D__CONFIG_ATAGS
+DEFINES+=-D__CONFIG_ATAGS
 
 ######################################################
 # OUTPUT FILENAMES
