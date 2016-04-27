@@ -4,7 +4,7 @@
 #include "mcrmrc.h"
 
 
-//  CP_NAME                CRn, OPC1, CRm, OPC2
+//  CP_NAME                CP#, CRn, OPC1, CRm, OPC2
 
 // CRn == 0, ID registers.
 #define MIDR				15, 0, 0, 0, 0

@@ -45,9 +45,10 @@ void enable_mmu(void)
 }
 
 /* Set Hyp System Trap Register(HSTR) */
-void enable_traps(addr_t pgtable)
+void enable_traps(void)
 {
-    uint32_t htsr = 0;
+    uint32_t hstr = 0;
 
-    write_cp32(htsr, HSTR);
+    hstr = 1 << 0;
+    write_cp32(hstr, HSTR);
 }

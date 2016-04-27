@@ -33,6 +33,8 @@ void init_system()
 
     irq_init();
 
+    //enable_traps();
+
     if (cpuid == 0) {
         paging_create((addr_t) &__HYP_PGTABLE);
 

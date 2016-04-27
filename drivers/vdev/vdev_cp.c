@@ -1,7 +1,7 @@
 #define DEBUG
 #include <stdio.h>
 #include <core/vm/vcpu.h>
-#include "../../arch/arm/hvc_trap.h"
+#include "../../arch/arm/traps.h"
 #include <vdev.h>
 #include <arch/armv7.h>
 
