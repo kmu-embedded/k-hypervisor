@@ -65,7 +65,7 @@ __do_hvc:
 
     @ service other argument values -> _hyp_hvc_service(sp)
     mov    r0, sp
-    bl     do_hvc_trap    @ r0: HSR
+    bl     do_hyp_trap    @ r0: HSR
 
     @ r0 = return
     tst    r0, #1

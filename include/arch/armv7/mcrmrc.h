@@ -73,23 +73,23 @@ REV/DATE: Fri Mar 18 16:34:44 EST 2005
 * one location...
 */
 
-#define CP(x)           p##x
+#define COPROC(x)           p##x
 #define CR(x)           c##x
 
-#define __CP32(rt, cp, n, opc1, m, opc2)    CP(cp), opc1, rt, CR(n), CR(m), opc2
-#define CP32(rt, args...)                   __CP32(rt, args)
+#define __COPROC32(rt, cp, n, opc1, m, opc2)    COPROC(cp), opc1, rt, CR(n), CR(m), opc2
+#define COPROC32(rt, args...)                   __COPROC32(rt, args)
 
-#define __CP64(rt, rt2, cp, opc1, m)        CP(cp), opc1, rt, rt2, CR(m)
-#define CP64(rt, rt2, args...)              __CP64(rt, rt2, args)
+#define __COPROC64(rt, rt2, cp, opc1, m)        COPROC(cp), opc1, rt, rt2, CR(m)
+#define COPROC64(rt, rt2, args...)              __COPROC64(rt, rt2, args)
 
 
 #ifdef __ASSEMBLY__
 
-#define read_cp32(rt, args...)        	mrc     CP32(rt, args)
-#define write_cp32(rt, args...)       	mcr     CP32(rt, args)
+#define read_cp32(rt, args...)        	mrc     COPROC32(rt, args)
+#define write_cp32(rt, args...)       	mcr     COPROC32(rt, args)
 
-#define read_cp64(rt, rt2, args...)     mrrc    CP64(rt, rt2, args)
-#define write_cp64(rt, rt2, args...)    mcrr    CP64(rt, rt2, args)
+#define read_cp64(rt, rt2, args...)     mrrc    COPROC64(rt, rt2, args)
+#define write_cp64(rt, rt2, args...)    mcrr    COPROC64(rt, rt2, args)
 
 /* * C version of the macros.
 */
@@ -99,25 +99,25 @@ REV/DATE: Fri Mar 18 16:34:44 EST 2005
 #define xstr(s...) str(s)
 #define str(s...) #s
 
-#define read_cp32(args) ({                              \
-    unsigned int val;                                   \
-    asm volatile(                                       \
-    "mrc\t" xstr(CP32(%0, args)) : "=r" (val));         \
-    val; })
+#define read_cp32(args) ({                                  \
+    unsigned int reg;                                       \
+    asm volatile(                                           \
+    "mrc\t" xstr(COPROC32(%0, args)) : "=r" (reg));         \
+    reg; })
 
-#define write_cp32(rt, args) 					        \
-    asm volatile ( 								        \
-    "mcr\t"  xstr(CP32(%0, args)) : : "r" (rt))
+#define write_cp32(rt, args) 					            \
+    asm volatile ( 								            \
+    "mcr\t"  xstr(COPROC32(%0, args)) : : "r" (rt))
 
-#define read_cp64(args) ({                              \
-    unsigned long long val;                             \
-    asm volatile(                                       \
-    "mrrc\t" xstr(CP64(%0, %H0, args)) : "=r" (val));   \
-    val; })
+#define read_cp64(args) ({                                  \
+    unsigned long long reg;                                 \
+    asm volatile(                                           \
+    "mrrc\t" xstr(COPROC64(%0, %H0, args)) : "=r" (reg));   \
+    reg; })
 
-#define write_cp64(rt, args) 				            \
-    asm volatile ( 									    \
-    "mcrr\t"  xstr(CP64(%0, %H0, args)) : : "r" (rt))
+#define write_cp64(rt, args) 				                \
+    asm volatile ( 									        \
+    "mcrr\t"  xstr(COPROC64(%0, %H0, args)) : : "r" (rt))
 
 #endif
 

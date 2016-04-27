@@ -9,11 +9,15 @@
 
 static struct list_head vdev_list;
 
+#define decode_wnr(iss)             (iss & (1 << 6))
+#define decode_srt(iss)             ((iss & 0xF0000) >> 16)
 
-void vdev_handler(struct core_regs *regs, iss_t iss)
+void vdev_handler(struct core_regs *regs, uint32_t iss)
 {
     struct vmcb *vm = get_current_vm();
     uint32_t fipa = 0;
+    uint8_t wnr = decode_wnr(iss);
+    uint8_t srt = decode_srt(iss);
 
     fipa = read_cp32(HPFAR) << 8;
     fipa |= (read_cp32(HDFAR) & PAGE_MASK);
@@ -25,10 +29,10 @@ void vdev_handler(struct core_regs *regs, iss_t iss)
 
         if (vdev_base <= fipa && fipa <= vdev_base + vdev_size) {
             uint32_t offset = fipa - vdev_base;
-            if (iss.dabt.wnr == 1) {
-                instance->module->write(instance->pdata, offset, &(regs->gpr[iss.dabt.srt]));
+            if (wnr) {
+                instance->module->write(instance->pdata, offset, &(regs->gpr[srt]));
             } else {
-                regs->gpr[iss.dabt.srt] = instance->module->read( instance->pdata, offset);
+                regs->gpr[srt] = instance->module->read(instance->pdata, offset);
             }
         }
     }
