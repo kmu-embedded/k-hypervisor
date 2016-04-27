@@ -2,7 +2,7 @@
 #include <arch/armv7.h>
 #include "traps.h"
 
-#define __CP32(cp, n, opc1, m, opc2)    (n << 12 | opc1 << 8 | m << 4 | opc2 << 0)
+#define __CP32(cp, n, opc1, m, opc2)    (n << 12 | opc1 << 8 | m << 4 | opc2)
 #define CP32(args...)                   __CP32(args)
 
 #define opc2_bit                (0x7 << 17)
