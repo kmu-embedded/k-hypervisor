@@ -65,6 +65,7 @@ int handle_data_abort(struct core_regs *regs, uint32_t iss)
                     printf("\t2. When the processor is in a PL1 or PL0 mode and the exception is generated\n");
                     printf("\t   because the Non-secure PL1&0 stage 2 translation identifies the target of\n");
                     printf("\t   an unaligned access as Device or Strongly-ordered memory.\n");
+                    printf("\t   NOTE: please check memory attribute at platform/<target>/guest.c\n");
                 } else {
                     printf("\t3. The processor is in the PL0 mode and HCR.TGE is set to 1.\n");
                     printf("\t   For more information see Synchronous external abort, when HCR.TGE is\n");
