@@ -71,6 +71,8 @@ int handle_data_abort(struct core_regs *regs, uint32_t iss)
                     printf("\t   set to 1 on page B1-1193.\n");
                 }
             }
+            printf("HCR: %x\n",  hcr);
+            printf("HDCR %x\n", read_cp32(HDCR));
             printf("fault address is here 0x%08x\n", fipa);
             break;
         }
