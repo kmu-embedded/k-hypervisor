@@ -11,6 +11,7 @@
 //                abort exception, we must forward the exception to guest VM.
 int do_hyp_trap(struct core_regs *regs)
 {
+    uint8_t pcpuid = smp_processor_id();
     int ret = -1;
     uint32_t hsr = read_cp32(HSR);
     uint32_t ec = decode_ec(hsr);
@@ -48,7 +49,7 @@ int do_hyp_trap(struct core_regs *regs)
     return 0;
 
 trap_error:
-    printf("%s EC: 0x%x ISS: 0x%x\n", __func__, ec, iss);
+    printf("CPU[%d] %s EC: 0x%x ISS: 0x%x\n", pcpuid, __func__, ec, iss);
     printf("r0 %x\n", regs->gpr[0]);
     printf("r1 %x\n", regs->gpr[1]);
     printf("r2 %x\n", regs->gpr[2]);
