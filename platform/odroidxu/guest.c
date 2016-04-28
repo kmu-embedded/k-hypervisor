@@ -3,7 +3,7 @@
 
 /*  label, ipa, pa, size, attr */
 struct memdesc_t vm0_device_md[] = {
-    {"memory", 0x40000000, 0x40000000, 0x40000000, MEMATTR_DEVICE_MEMORY, 1},
+    {"memory", 0x40000000, 0x40000000, 0x40000000, MEMATTR_NORMAL_WB_CACHEABLE, 1},
 
     {"chipid", 0x10000000, 0x10000000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
 
