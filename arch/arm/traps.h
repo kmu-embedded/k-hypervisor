@@ -2,6 +2,7 @@
 #define __HVC_H__
 
 #include <stdint.h>
+#include <arch/armv7.h>
 
 struct iss_abt {
     uint32_t dfsc: 6;
@@ -64,5 +65,5 @@ struct iss_cp64 {
 /* HPFAR */
 #define PAGE_MASK                	0x00000FFF
 
-int handle_data_abort(void *pdata, uint32_t iss);
+int handle_data_abort(struct core_regs *regs, uint32_t iss);
 #endif

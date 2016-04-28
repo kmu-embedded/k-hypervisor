@@ -1,5 +1,5 @@
-#ifndef __CP_H__
-#define __CP_H__
+#ifndef __CP_15_H__
+#define __CP_15_H__
 
 #include <arch/armv7.h>
 

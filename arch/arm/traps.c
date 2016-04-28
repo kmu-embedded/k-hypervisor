@@ -7,6 +7,8 @@
 #define decode_il(hsr)          (hsr & (1 << 25))
 #define decode_iss(hsr)         (hsr & ~(0xfe000000))
 
+// TODO(wonseok): If the traps cause the undefined exception or
+//                abort exception, we must forward the exception to guest VM.
 int do_hyp_trap(struct core_regs *regs)
 {
     int ret = -1;
@@ -46,7 +48,7 @@ int do_hyp_trap(struct core_regs *regs)
     return 0;
 
 trap_error:
-    printf("[hyp] do_hyp_trap: EC 0x%x ISS= 0x%x\n", ec, iss);
+    printf("%s EC: 0x%x ISS: 0x%x\n", __func__, ec, iss);
     printf("r0 %x\n", regs->gpr[0]);
     printf("r1 %x\n", regs->gpr[1]);
     printf("r2 %x\n", regs->gpr[2]);
