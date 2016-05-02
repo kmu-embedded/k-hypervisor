@@ -2,12 +2,12 @@
 #define __IO_H__
 #include <stdint.h>
 
-#define __writew(v, a)  (*(volatile uint8_t *)(a) = (v))
-#define __writeb(v, a)  (*(volatile uint8_t *)(a) = (v))
-#define __readw(a)      (*(volatile uint8_t *)(a))
-#define __readb(a)      (*(volatile uint8_t *)(a))
 #define __writel(v, a)  (*(volatile uint32_t *)(a) = (v))
 #define __readl(a)      (*(volatile uint32_t *)(a))
+#define __writew(v, a)  (*(volatile uint16_t *)(a) = (v))
+#define __readw(a)      (*(volatile uint16_t *)(a))
+#define __writeb(v, a)  (*(volatile uint8_t *)(a) = (v))
+#define __readb(a)      (*(volatile uint8_t *)(a))
 
 #define writel(v, a)    ({ uint32_t vl = v; __writel(vl, a); })
 #define readl(a)        ({ uint32_t vl = __readl(a); vl; })
