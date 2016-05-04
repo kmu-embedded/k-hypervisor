@@ -59,7 +59,7 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
 {
     arch_regs_init(&vcpu->regs);
 
-// TODO(casionwoo): make it neat.
+    // TODO(casionwoo): make it neat.
     switch (vcpu->vmid) {
     case 0:
         SET_VIRQMAP(vcpu->map, 38, 37);
@@ -78,8 +78,8 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
         break;
     }
     // TODO(casionwoo) : Check the return value after scheduler status value defined
-    printf("sched_vcpu_register : vcpuid : %d\n", vcpu->vcpuid);
     vcpu->pcpuid = sched_vcpu_register(vcpu->vcpuid, vcpu->vcpuid);
+    printf("sched_vcpu_register, vcpuid : %d is registered on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
     vcpu->state = VCPU_REGISTERED;
 
     return vcpu->state;
@@ -88,8 +88,8 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
 vcpu_state_t vcpu_start(struct vcpu *vcpu)
 {
     // TODO(casionwoo) : Check the return value after scheduler status value defined
-    printf("sched_vcpu_register : pcuid : %d\n", vcpu->pcpuid);
     sched_vcpu_attach(vcpu->vcpuid, vcpu->pcpuid);
+    printf("sched_vcpu_register, vcpuid : %d is attatched on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
     vcpu->state = VCPU_ACTIVATED;
 
     return vcpu->state;

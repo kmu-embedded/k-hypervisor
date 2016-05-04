@@ -156,8 +156,11 @@ void gic_init(void)
     // Set interrupt configuration do not work.
 
     //GICD_WRITE(GICD_ICFGR(1), 0x0);
-    GICD_WRITE(GICD_ICENABLER(0), 0xffff0000);
-    GICD_WRITE(GICD_ISENABLER(0), 0x0000ffff);
+//    GICD_WRITE(GICD_ICENABLER(0), 0xffff0000);
+//    GICD_WRITE(GICD_ISENABLER(0), 0x0000ffff);
+
+    // TODO(casionwoo) : This ISENABLER should be modified like upper
+    GICD_WRITE(GICD_ISENABLER(0), 0xffffffff);
 
     if (cpuid == 0) {
         for (i = 32; i < GICv2.ITLinesNumber; i += 16) {
