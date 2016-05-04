@@ -50,7 +50,8 @@ int32_t vgicd_create_instance(void **pdata)
     // Initialize GICD_ITARGETSR
     for (i = 0; i < NR_VCPUS; i++) {
         for (j = 0; j < NR_BANKED_ITARGETSR; j++) {
-            vgicd->itargetsr0[i][j] = GICD_READ(GICD_ITARGETSR(j));
+//            vgicd->itargetsr0[i][j] = GICD_READ(GICD_ITARGETSR(j));
+            vgicd->itargetsr0[i][j] = 1 << i | 1 << (8 + i) | 1 << (16 + i) | 1 << (24 + i);
         }
     }
 

@@ -2,13 +2,24 @@
 #include "traps.h"
 #include <arch/armv7.h>
 #include <vdev.h>
+#include <core/vm/vcpu.h>
+#include <core/vm/vm.h>
+#include <core/scheduler.h>
 
 #define decode_fsc(iss)         (iss & 0x3f)
+
+#define decode_wnr(iss)         (iss & (1 << 6))
+#define decode_srt(iss)         ((iss & 0xF0000) >> 16)
+
+
+extern uint32_t linux_smp_pen;
 
 int handle_data_abort(struct core_regs *regs, uint32_t iss)
 {
     int ret = -1;
-    uint32_t fipa = 0x0 ;
+    uint32_t fipa = read_cp32(HPFAR) << 8;
+    fipa |= (read_cp32(HDFAR) & PAGE_MASK);
+
     switch (decode_fsc(iss)) {
         // TODO: remove unused cases.
         case FSR_TRANS_FAULT(1) ... FSR_TRANS_FAULT(3):
@@ -18,12 +29,57 @@ int handle_data_abort(struct core_regs *regs, uint32_t iss)
             printf("\ttranslation, so if you see this message, you have to add a mapping\n");
             printf("\ttable into platform/<your target>/guest.c\n");
             printf("\tfault address is here: 0x%08x\n", fipa);
+
+            ret = 0;
             break;
 
         case FSR_ACCESS_FAULT(1) ... FSR_ACCESS_FAULT(3):
-            vdev_handler(regs, iss);
-            ret = 0;
-            break;
+            {
+                uint8_t wnr = decode_wnr(iss);
+                uint8_t srt = decode_srt(iss);
+
+                if (fipa == 0x1c010030){
+                    printf("========================== ACCESS_FAULT: fipa 0x%08x\n", fipa);
+                    printf("WnR: %s\n", !wnr ? "read" : "write");
+                    printf("SRT: r%d: %x\n", srt, regs->gpr[srt]);
+
+#if 1
+                    struct vmcb *vm = get_current_vm();
+                    struct vcpu *target_vcpu = vm->vcpu[1];
+                    target_vcpu->regs.core_regs.pc = regs->gpr[srt];
+                    target_vcpu = vm->vcpu[2];
+                    target_vcpu->regs.core_regs.pc = regs->gpr[srt];
+
+                    target_vcpu = vm->vcpu[3];
+                    target_vcpu->regs.core_regs.pc = regs->gpr[srt];
+#endif
+
+                    if (wnr) {
+                        writel((regs->gpr[srt]), fipa);
+                    } else {
+                        regs->gpr[srt] = readl(fipa);
+                    }
+                    linux_smp_pen = 1;
+                } else if (fipa >= 0x1c010000 && fipa < 0x1c010030) {
+
+                    if (wnr) {
+                        writel((regs->gpr[srt]), fipa);
+                    } else {
+                        regs->gpr[srt] = readl(fipa);
+                    }
+                } else if (fipa > 0x1c010030 && fipa <= 0x1c011000) {
+                    if (wnr) {
+                        writel((regs->gpr[srt]), fipa);
+                    } else {
+                        regs->gpr[srt] = readl(fipa);
+                    }
+                } else {
+                    vdev_handler(regs, iss);
+                }
+
+                ret = 0;
+                break;
+            }
 
         case FSR_PERM_FAULT(1) ... FSR_PERM_FAULT(3):
             printf("FSR_PERM_FAULT: fipa 0x%08x\n", fipa);
