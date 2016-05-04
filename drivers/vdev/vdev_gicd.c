@@ -127,9 +127,9 @@ static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
 
             if (target_vcpuid < vm->num_vcpus) {
                 target_vcpu = vm->vcpu[target_vcpuid];
-                sgi.entry.CPUTargetList &= ~(1 << target_vcpuid);
                 virq_inject(target_vcpu, sgi.entry.id, sgi.entry.id, SW_IRQ);
             }
+            sgi.entry.CPUTargetList &= ~(1 << target_vcpuid);
         }
         break;
 
