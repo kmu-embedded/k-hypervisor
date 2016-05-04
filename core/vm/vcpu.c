@@ -58,6 +58,7 @@ struct vcpu *vcpu_create()
 vcpu_state_t vcpu_init(struct vcpu *vcpu)
 {
     arch_regs_init(&vcpu->regs);
+    vcpu->regs.cp15.vmpidr |= vcpu->id;
 
     // TODO(casionwoo): make it neat.
     switch (vcpu->vmid) {
@@ -136,7 +137,7 @@ void vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
 
     GICH_WRITE(GICH_VMCR, vcpu->vmcr);
 
-    virq_hw->forward_pending_irq(vcpu->vmid);
+    virq_hw->forward_pending_irq(vcpu->vcpuid);
     virq_hw->enable();
 }
 
