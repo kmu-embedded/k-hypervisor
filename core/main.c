@@ -10,11 +10,12 @@
 #include <core/timer.h>
 
 static uint32_t smp_pen = 0;
+uint32_t linux_smp_pen = 0;
 
 void start_hypervisor()
 {
     int i;
-    uint8_t nr_vcpus = 1; // TODO: It will be read from configuration file.
+    uint8_t nr_vcpus = 4; // TODO: It will be read from configuration file.
 
     uint32_t pcpu = smp_processor_id();
 
@@ -45,6 +46,7 @@ void start_hypervisor()
     } else {
         while (!smp_pen) ;
         printf("cpu[%d] is enabled\n", pcpu);
+        while (!linux_smp_pen) ;
     }
 
     /*

@@ -50,7 +50,8 @@ int32_t vgicd_create_instance(void **pdata)
     // Initialize GICD_ITARGETSR
     for (i = 0; i < NR_VCPUS; i++) {
         for (j = 0; j < NR_BANKED_ITARGETSR; j++) {
-            vgicd->itargetsr0[i][j] = GICD_READ(GICD_ITARGETSR(j));
+//            vgicd->itargetsr0[i][j] = GICD_READ(GICD_ITARGETSR(j));
+            vgicd->itargetsr0[i][j] = 1 << i | 1 << (8 + i) | 1 << (16 + i) | 1 << (24 + i);
         }
     }
 
@@ -127,9 +128,9 @@ static void handler_SGIR(void *pdata, uint32_t offset, uint32_t value)
 
             if (target_vcpuid < vm->num_vcpus) {
                 target_vcpu = vm->vcpu[target_vcpuid];
-                sgi.entry.CPUTargetList &= ~(1 << target_vcpuid);
                 virq_inject(target_vcpu, sgi.entry.id, sgi.entry.id, SW_IRQ);
             }
+            sgi.entry.CPUTargetList &= ~(1 << target_vcpuid);
         }
         break;
 

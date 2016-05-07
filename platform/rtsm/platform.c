@@ -24,6 +24,9 @@ void platform_init()
     paging_add_mapping(gic_base + GICH_OFFSET, gic_base + GICH_OFFSET, MT_DEVICE, SZ_4K);
     paging_add_mapping(gic_base + GICV_OFFSET, gic_base + GICV_OFFSET, MT_DEVICE, SZ_8K);
 
+    // add mapping for write to sysregs instead of VM
+    paging_add_mapping(0x1C010000, 0x1C010000, MT_DEVICE, SZ_4K);
+
     paging_add_mapping(0x1C050000, 0x1C050000, MT_DEVICE, SZ_4K);
 
     // add mapping for serial devices
