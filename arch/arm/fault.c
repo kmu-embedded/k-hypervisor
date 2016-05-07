@@ -34,52 +34,9 @@ int handle_data_abort(struct core_regs *regs, uint32_t iss)
             break;
 
         case FSR_ACCESS_FAULT(1) ... FSR_ACCESS_FAULT(3):
-            {
-                uint8_t wnr = decode_wnr(iss);
-                uint8_t srt = decode_srt(iss);
-
-                if (fipa == 0x1c010030){
-                    printf("========================== ACCESS_FAULT: fipa 0x%08x\n", fipa);
-                    printf("WnR: %s\n", !wnr ? "read" : "write");
-                    printf("SRT: r%d: %x\n", srt, regs->gpr[srt]);
-
-#if 1
-                    struct vmcb *vm = get_current_vm();
-                    struct vcpu *target_vcpu = vm->vcpu[1];
-                    target_vcpu->regs.core_regs.pc = regs->gpr[srt];
-                    target_vcpu = vm->vcpu[2];
-                    target_vcpu->regs.core_regs.pc = regs->gpr[srt];
-
-                    target_vcpu = vm->vcpu[3];
-                    target_vcpu->regs.core_regs.pc = regs->gpr[srt];
-#endif
-
-                    if (wnr) {
-                        writel((regs->gpr[srt]), fipa);
-                    } else {
-                        regs->gpr[srt] = readl(fipa);
-                    }
-                    linux_smp_pen = 1;
-                } else if (fipa >= 0x1c010000 && fipa < 0x1c010030) {
-
-                    if (wnr) {
-                        writel((regs->gpr[srt]), fipa);
-                    } else {
-                        regs->gpr[srt] = readl(fipa);
-                    }
-                } else if (fipa > 0x1c010030 && fipa <= 0x1c011000) {
-                    if (wnr) {
-                        writel((regs->gpr[srt]), fipa);
-                    } else {
-                        regs->gpr[srt] = readl(fipa);
-                    }
-                } else {
-                    vdev_handler(regs, iss);
-                }
-
-                ret = 0;
-                break;
-            }
+            vdev_handler(regs, iss);
+            ret = 0;
+            break;
 
         case FSR_PERM_FAULT(1) ... FSR_PERM_FAULT(3):
             printf("FSR_PERM_FAULT: fipa 0x%08x\n", fipa);
