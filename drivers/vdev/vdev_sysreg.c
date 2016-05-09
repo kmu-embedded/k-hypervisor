@@ -10,21 +10,23 @@
 #define SYS_SW          (0x004)
 #define SYS_LED         (0x008)
 #define SYS_100HZ       (0x024)
-#define SYS_FLAG        (0x030)
+#define SYS_FLAGS       (0x030)
 #define SYS_FLAGSSET    (0x030)
 #define SYS_FLAGSCLR    (0x034)
 #define SYS_NVFLAGS     (0x038)
 #define SYS_NVFLAGSSET  (0x038)
 #define SYS_NVFLAGSCLR  (0x03C)
+#define SYS_MCI         (0x048)
+#define SYS_FLASH       (0x04C)
 #define SYS_CFGSW       (0x058)
 #define SYS_24MHZ       (0x05C)
 #define SYS_MISC        (0x060)
-#define SYS_PCIE_CNTL   (0x070)
-#define SYS_PCIE_GBE_L  (0x074)
-#define SYS_PCIE_GBE_H  (0x078)
+#define SYS_DMA         (0x064)
 #define SYS_PROC_ID0    (0x084)
 #define SYS_PROC_ID1    (0x088)
-#define SYS_SPEED       (0x120)
+#define SYS_CFGDATA     (0x0A0)
+#define SYS_CFGCTRL     (0x0A4)
+#define SYS_CFGSTAT     (0x0A8)
 
 #define SYSREG_BASE  0x1C010000
 
@@ -79,16 +81,16 @@ extern uint32_t linux_smp_pen;
 int32_t vsysreg_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
 {
     switch (offset) {
+    case SYS_ID:
+        writel(readl(addr), SYSREG_BASE + SYS_ID);
+        break;
+
     case SYS_SW:
         writel(readl(addr), SYSREG_BASE + SYS_SW);
         break;
 
     case SYS_LED:
         writel(readl(addr), SYSREG_BASE + SYS_LED);
-        break;
-
-    case SYS_100HZ:
-        writel(readl(addr), SYSREG_BASE + SYS_100HZ);
         break;
 
     case SYS_FLAGSSET: {
@@ -122,6 +124,10 @@ int32_t vsysreg_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
         writel(readl(addr), SYSREG_BASE + SYS_NVFLAGSCLR);
         break;
 
+    case SYS_FLASH:
+        writel(readl(addr), SYSREG_BASE + SYS_FLASH);
+        break;
+
     case SYS_CFGSW:
         writel(readl(addr), SYSREG_BASE + SYS_CFGSW);
         break;
@@ -130,8 +136,8 @@ int32_t vsysreg_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
         writel(readl(addr), SYSREG_BASE + SYS_MISC);
         break;
 
-    case SYS_PCIE_CNTL:
-        writel(readl(addr), SYSREG_BASE + SYS_PCIE_CNTL);
+    case SYS_DMA:
+        writel(readl(addr), SYSREG_BASE + SYS_DMA);
         break;
 
     case SYS_PROC_ID0:
@@ -142,9 +148,18 @@ int32_t vsysreg_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
         writel(readl(addr), SYSREG_BASE + SYS_PROC_ID1);
         break;
 
-    case SYS_SPEED:
-        writel(readl(addr), SYSREG_BASE + SYS_SPEED);
+    case SYS_CFGDATA:
+        writel(readl(addr), SYSREG_BASE + SYS_CFGDATA);
         break;
+
+    case SYS_CFGCTRL:
+        writel(readl(addr), SYSREG_BASE + SYS_CFGCTRL);
+        break;
+
+    case SYS_CFGSTAT:
+        writel(readl(addr), SYSREG_BASE + SYS_CFGSTAT);
+        break;
+
 
     default:
         printf("regsys write fail : %x\n", SYSREG_BASE + offset);
@@ -170,11 +185,17 @@ int32_t vsysreg_read_handler(void *pdata, uint32_t offset)
     case SYS_100HZ:
         return readl(SYSREG_BASE + SYS_100HZ);
 
-    case SYS_FLAG:
-        return readl(SYSREG_BASE + SYS_FLAG);
+    case SYS_FLAGS:
+        return readl(SYSREG_BASE + SYS_FLAGS);
 
     case SYS_NVFLAGS:
         return readl(SYSREG_BASE + SYS_NVFLAGS);
+
+    case SYS_FLASH:
+        return readl(SYSREG_BASE + SYS_FLASH);
+
+    case SYS_MCI:
+        return readl(SYSREG_BASE + SYS_MCI);
 
     case SYS_CFGSW:
         return readl(SYSREG_BASE + SYS_CFGSW);
@@ -185,14 +206,8 @@ int32_t vsysreg_read_handler(void *pdata, uint32_t offset)
     case SYS_MISC:
         return readl(SYSREG_BASE + SYS_MISC);
 
-    case SYS_PCIE_CNTL:
-        return readl(SYSREG_BASE + SYS_PCIE_CNTL);
-
-    case SYS_PCIE_GBE_L:
-        return readl(SYSREG_BASE + SYS_PCIE_GBE_L);
-
-    case SYS_PCIE_GBE_H:
-        return readl(SYSREG_BASE + SYS_PCIE_GBE_H);
+    case SYS_DMA:
+        return readl(SYSREG_BASE + SYS_DMA);
 
     case SYS_PROC_ID0:
         return readl(SYSREG_BASE + SYS_PROC_ID0);
@@ -200,8 +215,14 @@ int32_t vsysreg_read_handler(void *pdata, uint32_t offset)
     case SYS_PROC_ID1:
         return readl(SYSREG_BASE + SYS_PROC_ID1);
 
-    case SYS_SPEED:
-        return readl(SYSREG_BASE + SYS_SPEED);
+    case SYS_CFGDATA:
+        return readl(SYSREG_BASE + SYS_CFGDATA);
+
+    case SYS_CFGCTRL:
+        return readl(SYSREG_BASE + SYS_CFGCTRL);
+
+    case SYS_CFGSTAT:
+        return readl(SYSREG_BASE + SYS_CFGSTAT);
 
     default:
         printf("regsys read fail : %x\n", SYSREG_BASE + offset);
