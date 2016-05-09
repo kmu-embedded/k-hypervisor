@@ -132,6 +132,10 @@ void sched_start(void)
     tm_set_timer(&__sched_timer[pcpu], expiration, true);
     /* timer just started */
 
+    if (vcpu == NULL) {
+        printf("CPU[%d] has no target vcpu\n", pcpu);
+        while(1) ;
+    }
     switch_to(vcpu->vcpuid);
     sched_perform_switch(NULL);
 }
