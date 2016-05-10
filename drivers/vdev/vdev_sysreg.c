@@ -104,12 +104,12 @@ int32_t vsysreg_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
         for (vcpuid = 1; vcpuid < vm->num_vcpus; vcpuid++) {
             target_vcpu = vm->vcpu[vcpuid];
             target_vcpu->regs.core_regs.pc = pc;
+            printf("vcpu[%d] attatched to pcpu[%d] vmpidr : %x\n", target_vcpu->vcpuid, target_vcpu->pcpuid, target_vcpu->regs.cp15.vmpidr);
+            sched_vcpu_attach(target_vcpu->vcpuid, target_vcpu->pcpuid);
+            target_vcpu->state = VCPU_ACTIVATED;
         }
 
         sysreg->sys_flags = pc;
-
-        // This pen is for waking up secondary cpus
-        linux_smp_pen = 1;
 
         break;
     }

@@ -89,9 +89,13 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
 vcpu_state_t vcpu_start(struct vcpu *vcpu)
 {
     // TODO(casionwoo) : Check the return value after scheduler status value defined
-    sched_vcpu_attach(vcpu->vcpuid, vcpu->pcpuid);
-    printf("sched_vcpu_register, vcpuid : %d is attatched on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
-    vcpu->state = VCPU_ACTIVATED;
+    if (vcpu->id == 0) {
+        sched_vcpu_attach(vcpu->vcpuid, vcpu->pcpuid);
+        printf("sched_vcpu_register, vcpuid : %d is attatched on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
+        vcpu->state = VCPU_ACTIVATED;
+    } else {
+        return VCPU_ACTIVATED;
+    }
 
     return vcpu->state;
 }

@@ -183,7 +183,7 @@ int sched_rr_do_schedule(uint64_t *expiration)
     /* TODO:(igkang) change type to bool */
     struct rq_entry_rr *next_entry = NULL;
     bool is_switching_needed = false;
-    int next_vcpuid = -1;
+    int next_vcpuid = VCPUID_INVALID;
 
     /* check pending attach list
      *      then attach them to runqueue_rr */

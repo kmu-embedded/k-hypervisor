@@ -127,15 +127,16 @@ void sched_start(void)
 
     /* Select the first guest context to switch to. */
     uint64_t expiration = 0;
-    vcpu = vcpu_find(__policy[pcpu]->do_schedule(&expiration));
+    uint32_t vcpuid = VCPUID_INVALID;
+
+    while( (vcpuid = __policy[pcpu]->do_schedule(&expiration)) == VCPUID_INVALID) ;
+    vcpu = vcpu_find(vcpuid);
+
     tm_register_timer(&__sched_timer[pcpu], do_schedule);
     tm_set_timer(&__sched_timer[pcpu], expiration, true);
     /* timer just started */
 
-    if (vcpu == NULL) {
-        printf("CPU[%d] has no target vcpu\n", pcpu);
-        while(1) ;
-    }
+
     switch_to(vcpu->vcpuid);
     sched_perform_switch(NULL);
 }
@@ -287,7 +288,6 @@ void do_schedule(void *pdata, uint64_t *expiration)
 
     /* manipulate variables to
      * cause context switch */
-//     printf("%s, next_vcpuid :%d\n", __func__, next_vcpuid);
     switch_to(next_vcpuid);
     sched_perform_switch(pdata);
 }
