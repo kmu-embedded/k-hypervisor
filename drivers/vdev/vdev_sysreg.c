@@ -48,7 +48,7 @@ struct vsysreg {
     uint32_t sys_sw;
     uint32_t sys_led;
     uint32_t sys_100hz;
-    uint32_t sys_flag;
+    uint32_t sys_flags;
     uint32_t sys_flagsset;
     uint32_t sys_flagsclr;
     uint32_t sys_nvflags;
@@ -80,6 +80,8 @@ int32_t vsysreg_create_instance(void **pdata)
 extern uint32_t linux_smp_pen;
 int32_t vsysreg_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
 {
+    struct vsysreg *sysreg = pdata;
+
     switch (offset) {
     case SYS_ID:
         writel(readl(addr), SYSREG_BASE + SYS_ID);
@@ -95,7 +97,7 @@ int32_t vsysreg_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
 
     case SYS_FLAGSSET: {
         int vcpuid;
-        struct vcpu *target_vcpu;
+        struct vcpu *target_vcpu = NULL;
         struct vmcb *vm = get_current_vm();
         uint32_t pc = readl(addr);
 
@@ -104,7 +106,7 @@ int32_t vsysreg_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
             target_vcpu->regs.core_regs.pc = pc;
         }
 
-        writel(pc, SYSREG_BASE + SYS_FLAGSSET);
+        sysreg->sys_flags = pc;
 
         // This pen is for waking up secondary cpus
         linux_smp_pen = 1;
@@ -172,6 +174,8 @@ int32_t vsysreg_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
 
 int32_t vsysreg_read_handler(void *pdata, uint32_t offset)
 {
+    struct vsysreg *sysreg = pdata;
+
     switch (offset) {
     case SYS_ID:
         return readl(SYSREG_BASE + SYS_ID);
@@ -186,7 +190,7 @@ int32_t vsysreg_read_handler(void *pdata, uint32_t offset)
         return readl(SYSREG_BASE + SYS_100HZ);
 
     case SYS_FLAGS:
-        return readl(SYSREG_BASE + SYS_FLAGS);
+        return sysreg->sys_flags;
 
     case SYS_NVFLAGS:
         return readl(SYSREG_BASE + SYS_NVFLAGS);
