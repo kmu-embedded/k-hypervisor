@@ -201,14 +201,13 @@ hvmm_status_t arch_regs_save(struct arch_regs *regs, struct core_regs *current_r
 extern void __set_vcpu_context_first_time(struct core_regs *regs);
 hvmm_status_t arch_regs_restore(struct arch_regs *regs, struct core_regs *current_regs)
 {
-
     // 'current_regs == 0' means there is no vcpu are running on hypervisor.
     // We need a way to boot first vcpu up as below.
     if (!current_regs) {
         restore_cp15(&regs->cp15);
         __set_vcpu_context_first_time(&regs->core_regs);
 
-        /* Reach not here */
+        /* Never reach here */
         return HVMM_STATUS_SUCCESS;
     }
 

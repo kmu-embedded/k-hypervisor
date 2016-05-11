@@ -81,7 +81,7 @@ static void set_enable(uint32_t current_status, uint8_t n, uint32_t old_status)
         pirq = (pirq == PIRQ_INVALID ? virq : pirq);
         virq_enable(vcpu, pirq, virq);
         pirq_enable(vcpu, pirq, virq);
-        printf("enable irq[%d]\n", pirq);
+        printf("VM[%d]-vCPU[%d] enable irq[%d]\n", vcpu->vmid, vcpu->id, pirq);
         gic_enable_irq(pirq);
 
         delta &= ~(1 << offset);
