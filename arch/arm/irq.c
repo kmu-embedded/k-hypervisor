@@ -13,16 +13,11 @@
 static irq_handler_t irq_handlers[MAX_IRQS];
 static irq_handler_t vdev_irq_handlers[MAX_IRQS];
 
-#include <arch_regs.h>
-
 hvmm_status_t do_irq(struct core_regs *regs)
 {
     uint32_t irq = irq_hw->ack();
-//    uint32_t pcpu = smp_processor_id();
 
     irq_hw->eoi(irq);
-
-//    printf("CPU[%d] irq : %d\n", pcpu, irq);
 
     if (irq < 16) {
         // SGI Handler

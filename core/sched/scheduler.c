@@ -129,13 +129,15 @@ void sched_start(void)
     uint64_t expiration = 0;
     uint32_t vcpuid = VCPUID_INVALID;
 
-    while( (vcpuid = __policy[pcpu]->do_schedule(&expiration)) == VCPUID_INVALID) ;
+    /* NOTE : Hanging on while if there's no vcpu to schedule on scheduler */
+    while(vcpuid == VCPUID_INVALID) {
+        vcpuid = __policy[pcpu]->do_schedule(&expiration);
+    }
     vcpu = vcpu_find(vcpuid);
 
     tm_register_timer(&__sched_timer[pcpu], do_schedule);
     tm_set_timer(&__sched_timer[pcpu], expiration, true);
     /* timer just started */
-
 
     switch_to(vcpu->vcpuid);
     sched_perform_switch(NULL);

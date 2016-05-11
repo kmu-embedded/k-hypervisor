@@ -2,15 +2,11 @@
 #include <stdlib.h>
 #include <core/vm/vm.h>
 #include <core/scheduler.h>
-
 #include <config.h>
-
 #include "../arch/arm/init.h"
-
 #include <core/timer.h>
 
 static uint32_t smp_pen = 0;
-uint32_t linux_smp_pen = 0;
 
 void start_hypervisor()
 {
@@ -27,9 +23,6 @@ void start_hypervisor()
 
         for (i = 0; i < NUM_GUESTS_STATIC; i++) {
             vmid_t vmid;
-
-//            if (i == 0) nr_vcpus = 2;
-//            else nr_vcpus = 1;
 
             if ((vmid = vm_create(nr_vcpus)) == VM_CREATE_FAILED) {
                 printf("vm_create(vm[%d]) is failed\n", i);
@@ -49,7 +42,6 @@ void start_hypervisor()
     } else {
         while (!smp_pen) ;
         printf("cpu[%d] is enabled\n", pcpu);
-//        while (!linux_smp_pen) ;
     }
 
     /*

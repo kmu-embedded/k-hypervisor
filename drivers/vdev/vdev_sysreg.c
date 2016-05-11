@@ -49,7 +49,6 @@ struct vsysreg {
     uint32_t sys_led;
     uint32_t sys_100hz;
     uint32_t sys_flags;
-    uint32_t sys_flagsset;
     uint32_t sys_flagsclr;
     uint32_t sys_nvflags;
     uint32_t sys_nvflagsset;
@@ -104,13 +103,12 @@ int32_t vsysreg_write_handler(void *pdata, uint32_t offset, uint32_t *addr)
         for (vcpuid = 1; vcpuid < vm->num_vcpus; vcpuid++) {
             target_vcpu = vm->vcpu[vcpuid];
             target_vcpu->regs.core_regs.pc = pc;
-            printf("vcpu[%d] attatched to pcpu[%d] vmpidr : %x\n", target_vcpu->vcpuid, target_vcpu->pcpuid, target_vcpu->regs.cp15.vmpidr);
+            printf("vcpu[%d] attatched to pcpu[%d] \n", target_vcpu->vcpuid, target_vcpu->pcpuid);
             sched_vcpu_attach(target_vcpu->vcpuid, target_vcpu->pcpuid);
             target_vcpu->state = VCPU_ACTIVATED;
         }
 
         sysreg->sys_flags = pc;
-
         break;
     }
 
