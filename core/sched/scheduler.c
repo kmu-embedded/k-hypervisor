@@ -84,11 +84,6 @@ hvmm_status_t sched_perform_switch(struct core_regs *regs)
 
         debug_print("[sched] curr:%x next:%x\n", __current_vcpuid[pcpu], __next_vcpuid[pcpu]);
 
-        /* __current_vcpuid[pcpu] -> __next_vcpuid[pcpu] */
-//        if (__current_vcpuid[pcpu] == __next_vcpuid[pcpu]) {
-//            return HVMM_STATUS_IGNORED;
-//        }
-
         /* We do the things in this way before do_context_switch()
          *      as we will not come back here on the first context switching */
         previous = __current_vcpuid[pcpu];
@@ -132,7 +127,14 @@ void sched_start(void)
 
     /* Select the first guest context to switch to. */
     uint64_t expiration = 0;
-    vcpu = vcpu_find(__policy[pcpu]->do_schedule(&expiration));
+    uint32_t vcpuid = VCPUID_INVALID;
+
+    /* NOTE : Hanging on while if there's no vcpu to schedule on scheduler */
+    while(vcpuid == VCPUID_INVALID) {
+        vcpuid = __policy[pcpu]->do_schedule(&expiration);
+    }
+    vcpu = vcpu_find(vcpuid);
+
     tm_register_timer(&__sched_timer[pcpu], do_schedule);
     tm_set_timer(&__sched_timer[pcpu], expiration, true);
     /* timer just started */
@@ -288,7 +290,6 @@ void do_schedule(void *pdata, uint64_t *expiration)
 
     /* manipulate variables to
      * cause context switch */
-//     printf("%s, next_vcpuid :%d\n", __func__, next_vcpuid);
     switch_to(next_vcpuid);
     sched_perform_switch(pdata);
 }

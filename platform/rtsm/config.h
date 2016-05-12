@@ -6,7 +6,7 @@
 
 #define HYP_STACK_SIZE          4096
 #define NR_CPUS                 4
-#define NUM_GUESTS_STATIC       1
+#define NUM_GUESTS_STATIC       2
 
 /*
  *  SOC param

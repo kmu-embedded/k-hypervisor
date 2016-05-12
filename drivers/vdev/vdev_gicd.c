@@ -50,7 +50,6 @@ int32_t vgicd_create_instance(void **pdata)
     // Initialize GICD_ITARGETSR
     for (i = 0; i < NR_VCPUS; i++) {
         for (j = 0; j < NR_BANKED_ITARGETSR; j++) {
-//            vgicd->itargetsr0[i][j] = GICD_READ(GICD_ITARGETSR(j));
             vgicd->itargetsr0[i][j] = 1 << i | 1 << (8 + i) | 1 << (16 + i) | 1 << (24 + i);
         }
     }
@@ -82,7 +81,7 @@ static void set_enable(uint32_t current_status, uint8_t n, uint32_t old_status)
         pirq = (pirq == PIRQ_INVALID ? virq : pirq);
         virq_enable(vcpu, pirq, virq);
         pirq_enable(vcpu, pirq, virq);
-        printf("enable irq[%d]\n", pirq);
+        printf("VM[%d]-vCPU[%d] enable irq[%d]\n", vcpu->vmid, vcpu->id, pirq);
         gic_enable_irq(pirq);
 
         delta &= ~(1 << offset);
