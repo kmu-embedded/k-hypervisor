@@ -1,6 +1,7 @@
 #include <asm/macro.h>
 #include <config.h>
 #include <arch/armv7/cp15.h>
+#include <generated/autoconf.h>
 
     .syntax	unified
     .arch_extension sec
@@ -53,7 +54,7 @@ BEGIN_PROC(__start)
 	@ =========== Init IGROUPR0 should be seperated to init secondary cores
 1:
     str	    r3, [r2]
-#ifdef __CONFIG_SMP__
+#ifdef CONFIG_SMP
     mrc	    p15, 0, r5, c0, c0, 5		@ MPIDR (ARMv7 only)
     ands    r5, r5, #0xFF
     cmp     r5, #0x0
@@ -107,7 +108,7 @@ BEGIN_PROC(__start)
     mul     r6, r6, r5
     sub     sp, sp, r6
 
-#ifdef __CONFIG_SMP__
+#ifdef CONFIG_SMP
     read_cp32(r5, MPIDR)
     ands    r5, r5, #0xFF
     cmp     r5, #0x0
@@ -130,7 +131,7 @@ BEGIN_PROC(__start)
 	@ Never reached, here.
     b       __error
 
-#ifdef __CONFIG_SMP__
+#ifdef CONFIG_SMP
     .globl enter_smp_pen
 enter_smp_pen:
     ldr     r0, =secondary_smp_pen
