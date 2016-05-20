@@ -1,7 +1,11 @@
-LIBC_ARCH_ASM +=aeabi_uidivmod.S
-LIBC_ARCH_ASM +=aeabi_uldivmod.S
-LIBC_ARCH_ASM +=divmodsi4.S
-LIBC_ARCH_ASM +=jmp.S
-LIBC_ARCH_ASM +=udivmodsi4.S
-LIBC_ARCH_SRCS +=aeabi_div0.c
-LIBC_ARCH_SRCS +=udivmoddi4.c
+objs-y :=
+
+objs-y += aeabi_uidivmod.o
+objs-y += aeabi_uldivmod.o
+objs-y += divmodsi4.o
+objs-y += jmp.o
+objs-y += udivmodsi4.o
+objs-y += aeabi_div0.o
+objs-y += udivmoddi4.o
+
+obj-y += $(patsubst %, lib/c/src/arch-arm/%, ${objs-y})

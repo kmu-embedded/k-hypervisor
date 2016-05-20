@@ -1,0 +1,8 @@
+config PL01X_SERIAL
+	bool
+
+config SH_SERIAL
+	bool
+
+config S5P_SERIAL
+	bool

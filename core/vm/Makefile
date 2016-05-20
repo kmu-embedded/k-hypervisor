@@ -1,6 +1,10 @@
-VM_SRCS += atags.c
-VM_SRCS += context_switch.c
-VM_SRCS += vcpu.c
-VM_SRCS += virq_map.c
-VM_SRCS += vm.c
-VM_SRCS += vmem.c
+objs-y :=
+
+objs-y += atags.o
+objs-y += context_switch.o
+objs-y += vcpu.o
+objs-y += virq_map.o
+objs-y += vm.o
+objs-y += vmem.o
+
+obj-y += $(patsubst %, core/vm/%, ${objs-y})

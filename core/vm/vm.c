@@ -15,7 +15,7 @@ void vm_setup()
     LIST_INITHEAD(&vm_list);
 
     vcpu_setup();
-#ifdef __CONFIG_ATAGS
+#ifdef CONFIG_ATAGS
     atags_setup();
 #endif
 }

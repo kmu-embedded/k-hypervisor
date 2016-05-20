@@ -1,11 +1,11 @@
 #ifndef __SERIAL_H__
 #define __SERIAL_H__
 
-#ifdef SERIAL_PL01X
+#ifdef CONFIG_PL01X_SERIAL
 #include <drivers/serial_pl01x.h>
-#elif SERIAL_SH
+#elif CONFIG_SH_SERIAL
 #include <drivers/serial_sh.h>
-#elif SERIAL_S5P
+#elif CONFIG_S5P_SERIAL
 #include <drivers/serial_s5p.h>
 #endif
 

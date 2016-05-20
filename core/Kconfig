@@ -1,0 +1,8 @@
+menu "CORE"
+config SMP
+	bool "Set SMP"
+
+config ATAGS
+	bool "Set ATAGS"
+
+endmenu

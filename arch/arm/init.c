@@ -50,7 +50,7 @@ void init_system()
 
         setup_vm_mmap();
 
-#ifdef __CONFIG_SMP__
+#ifdef CONFIG_SMP
         printf("wake up...other CPUs\n");
         secondary_smp_pen = 1;
 #endif

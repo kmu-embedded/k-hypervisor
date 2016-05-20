@@ -1,0 +1,46 @@
+source "drivers/Kconfig"
+source "core/Kconfig"
+
+menu "ARM architecture"
+	depends on ARM
+
+config ARMV7_VIRT
+	bool
+
+config CPU_A7
+	bool
+
+config CPU_A15
+	bool
+
+choice
+	prompt "Target select"
+
+config ARCH_VERSATILE
+	bool "ARM Ltd. Versatile family"
+	select ARMV7_VIRT
+	select CPU_A15
+	select PL01X_SERIAL
+	select VDEV_SAMPLE
+	select VDEV_SP804
+	select VDEV_SYSREG
+
+config RMOBILE
+	bool "Renesas ARM SoCs"
+	select ARMV7_VIRT
+	select CPU_A15
+	select SH_SERIAL
+
+config ARCH_EXYNOS
+	bool "Samsung EXYNOS"
+	select ARMV7_VIRT
+	select CPU_A15
+	select S5P_SERIAL
+	select MCT
+
+endchoice
+
+source "platform/Kconfig"
+
+endmenu
+

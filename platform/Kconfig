@@ -1,0 +1,13 @@
+config ARCH_NAME
+	string
+	default "armv7-a" if ARMV7_VIRT
+
+config CPU_NAME
+	string
+	default "cortex-a15" if CPU_A15
+
+config TARGET_NAME
+	string
+	default "rtsm" if ARCH_VERSATILE
+	default "lager"  if RMOBILE
+	default "odroidxu" if ARCH_EXYNOS
