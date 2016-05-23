@@ -216,7 +216,7 @@
 
 // CRn == 14, Generic Timer registers, if implemented.
 #define CNTFRQ				15, 14, 0, 0, 0
-#define CRTPCT				15, 0, 14
+#define CNTPCT				15, 0, 14
 #define CNTKCTL				15, 14, 0, 1, 0
 #define CNTP_TVAL			15, 14, 0, 2, 0
 #define CNTP_CTL			15, 14, 0, 2, 1
