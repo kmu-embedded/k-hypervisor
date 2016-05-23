@@ -4,128 +4,104 @@
 #include <stdint.h>
 #include <asm/asm.h>
 
+#define NS_PL2_PTIMER_IRQ   26
+#define NS_VTIMER_IRQ       27
+#define PL1_PTIMER_IRQ      29
+#define NS_PL1_PTIMER_IRQ   30
 
-/* Generic Timer */
-#define read_cntfrq()           ({ uint32_t rval; asm volatile(\
-                                " mrc     p15, 0, %0, c14, c0, 0\n\t" \
-                                : "=r" (rval) : : "memory", "cc"); rval; })
+/* *** from sys/arch/arm/include/asm.h of NetBSD *** */
+/*
+ * Copyright (c) 1990 The Regents of the University of California.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * William Jolitz.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *  from: @(#)asm.h 5.5 (Berkeley) 5/7/91
+ */
 
-#define write_cntfrq(val)       asm volatile(\
-                                " mcr     p15, 0, %0, c14, c0, 0\n\t" \
-                                : : "r" ((val)) : "memory", "cc")
+#define __BIT(n)    (1 << (n))
+#define __BITS(hi,lo)   ((~((~0)<<((hi)+1)))&((~0)<<(lo)))
 
-#define read_cnthctl()          ({ uint32_t rval; asm volatile(\
-                                " mrc     p15, 4, %0, c14, c1, 0\n\t" \
-                                : "=r" (rval) : : "memory", "cc"); rval; })
+/* *** from sys/arch/arm/include/armreg.h of NetBSD *** */
+/*
+ * Copyright (c) 2016 Ingu Kang
+ * Copyright (c) 1998, 2001 Ben Harris
+ * Copyright (c) 1994-1996 Mark Brinicombe.
+ * Copyright (c) 1994 Brini.
+ * All rights reserved.
+ *
+ * This code is derived from software written for Brini by Mark Brinicombe
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *  This product includes software developed by Brini.
+ * 4. The name of the company nor the name of the author may be used to
+ *    endorse or promote products derived from this software without specific
+ *    prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY BRINI ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL BRINI OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
 
-#define write_cnthctl(val)      asm volatile(\
-                                " mcr     p15, 4, %0, c14, c1, 0\n\t" \
-                                : : "r" ((val)) : "memory", "cc")
+/* Defines for ARM Generic Timer */
+#define ARM_CNTCTL_ENABLE       __BIT(0) // Timer Enabled
+#define ARM_CNTCTL_IMASK        __BIT(1) // Mask Interrupt
+#define ARM_CNTCTL_ISTATUS      __BIT(2) // Interrupt is pending
 
-#define read_cnthp_ctl()        ({ uint32_t rval; asm volatile(\
-                                " mrc     p15, 4, %0, c14, c2, 1\n\t" \
-                                : "=r" (rval) : : "memory", "cc"); rval; })
+#define ARM_CNTKCTL_PL0PTEN     __BIT(9)
+#define ARM_CNTKCTL_PL0VTEN     __BIT(8)
+#define ARM_CNTKCTL_EVNTI       __BITS(7,4)
+#define ARM_CNTKCTL_EVNTDIR     __BIT(3)
+#define ARM_CNTKCTL_EVNTEN      __BIT(2)
+#define ARM_CNTKCTL_PL0PCTEN        __BIT(1)
+#define ARM_CNTKCTL_PL0VCTEN        __BIT(0)
 
-#define write_cnthp_ctl(val)    asm volatile(\
-                                " mcr     p15, 4, %0, c14, c2, 1\n\t" \
-                                : : "r" ((val)) : "memory", "cc")
-
-#define read_cnthp_cval()       ({ uint32_t v1, v2; asm volatile(\
-                                " mrrc     p15, 6, %0, %1, c14\n\t" \
-                                : "=r" (v1), "=r" (v2) : : "memory", "cc"); \
-                                (((uint64_t)v2 << 32) + (uint64_t)v1); })
-
-#define write_cnthp_cval(val) 	asm volatile(\
-                              	  " mcrr     p15, 6, %0, %1, c14\n\t" \
-								  : : "r" ((val) & 0xFFFFFFFF), "r" ((val) >> 32) \
-								  : "memory", "cc")
-
-#define read_cnthp_tval()       ({ uint32_t rval; asm volatile(\
-                                " mrc     p15, 4, %0, c14, c2, 0\n\t" \
-                                : "=r" (rval) : : "memory", "cc"); rval; })
-
-#define write_cnthp_tval(val)   asm volatile(\
-                                " mcr     p15, 4, %0, c14, c2, 0\n\t" \
-                                : : "r" ((val)) : "memory", "cc")
-
-#define read_cntkctl()          ({ uint32_t rval; asm volatile(\
-                                " mrc     p15, 0, %0, c14, c1, 0\n\t" \
-                                : "=r" (rval) : : "memory", "cc"); rval; })
-
-#define write_cntkctl(val)      asm volatile(\
-                                " mcr     p15, 0, %0, c14, c1, 0\n\t" \
-                                : : "r" ((val)) : "memory", "cc")
-
-#define read_cntp_ctl()         ({ uint32_t rval; asm volatile(\
-                                " mrc     p15, 0, %0, c14, c2, 1\n\t" \
-                                : "=r" (rval) : : "memory", "cc"); rval; })
-
-#define write_cntp_ctl(val)     asm volatile(\
-                                " mcr     p15, 0, %0, c14, c2, 1\n\t" \
-                                : : "r" ((val)) : "memory", "cc")
-
-#define read_cntp_cval()        ({ uint32_t v1, v2; asm volatile(\
-                                " mrrc     p15, 2, %0, %1, c14\n\t" \
-                                : "=r" (v1), "=r" (v2) : : "memory", "cc"); \
-                                (((uint64_t)v2 << 32) + (uint64_t)v1); })
-
-#define write_cntp_cval(val)  	asm volatile(\
-                              	  " mcrr     p15, 2, %0, %1, c14\n\t" \
-								  : : "r" ((val) & 0xFFFFFFFF), "r" ((val) >> 32) \
-								  : "memory", "cc")
-
-#define read_cntp_tval()        ({ uint32_t rval; asm volatile(\
-                                " mrc     p15, 0, %0, c14, c2, 0\n\t" \
-                                : "=r" (rval) : : "memory", "cc"); rval; })
-
-#define write_cntp_tval(val)    asm volatile(\
-                                " mcr     p15, 0, %0, c14, c2, 0\n\t" \
-                                : : "r" ((val)) : "memory", "cc")
-
-#define read_cntpct()           ({ uint32_t v1, v2; asm volatile(\
-                                " mrrc     p15, 0, %0, %1, c14\n\t" \
-                                : "=r" (v1), "=r" (v2) : : "memory", "cc"); \
-                                (((uint64_t)v2 << 32) + (uint64_t)v1); })
-
-#define read_cntv_ctl()         ({ uint32_t rval; asm volatile(\
-                                " mrc     p15, 0, %0, c14, c3, 1\n\t" \
-                                : "=r" (rval) : : "memory", "cc"); rval; })
-
-#define write_cntv_ctl(val)     asm volatile(\
-                                " mcr     p15, 0, %0, c14, c3, 1\n\t" \
-                                : : "r" ((val)) : "memory", "cc")
-
-#define read_cntv_cval()        ({ uint32_t v1, v2; asm volatile(\
-                                " mrrc     p15, 3, %0, %1, c14\n\t" \
-                                : "=r" (v1), "=r" (v2) : : "memory", "cc"); \
-                                (((uint64_t)v2 << 32) + (uint64_t)v1); })
-
-#define write_cntv_cval(val)  asm volatile(\
-                              " mcrr     p15, 3, %0, %1, c14\n\t" \
-                              : : "r" ((val) & 0xFFFFFFFF), "r" ((val) >> 32) \
-                              : "memory", "cc")
-
-#define read_cntv_tval()        ({ uint32_t rval; asm volatile(\
-                                " mrc     p15, 0, %0, c14, c3, 0\n\t" \
-                                : "=r" (rval) : : "memory", "cc"); rval; })
-
-#define write_cntv_tval(val)    asm volatile(\
-                                " mcr     p15, 0, %0, c14, c3, 0\n\t" \
-                                : : "r" ((val)) : "memory", "cc")
-
-#define read_cntvct()           ({ uint32_t v1, v2; asm volatile(\
-                                " mrrc     p15, 1, %0, %1, c14\n\t" \
-                                : "=r" (v1), "=r" (v2) : : "memory", "cc"); \
-                                (((uint64_t)v2 << 32) + (uint64_t)v1); })
-
-#define read_cntvoff()          ({ uint32_t v1, v2; asm volatile(\
-                                " mrrc     p15, 4, %0, %1, c14\n\t" \
-                                : "=r" (v1), "=r" (v2) : : "memory", "cc"); \
-                                (((uint64_t)v2 << 32) + (uint64_t)v1); })
-
-#define write_cntvoff(val)    asm volatile(\
-                              " mcrr     p15, 4, %0, %1, c14\n\t" \
-                              : : "r" ((val) & 0xFFFFFFFF), "r" ((val) >> 32) \
-                              : "memory", "cc")
+#define ARM_CNTHCTL_EVNTI       __BITS(7,4)
+#define ARM_CNTHCTL_EVNTDIR     __BIT(3)
+#define ARM_CNTHCTL_EVNTEN      __BIT(2)
+#define ARM_CNTHCTL_PL1PCTEN        __BIT(1)
+#define ARM_CNTHCTL_PL1VCTEN        __BIT(0)
 
 #endif /* INCLUDE_ARCH_ARM_ARMV7_GENERIC_TIMER_H_ */
