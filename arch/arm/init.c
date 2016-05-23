@@ -11,6 +11,8 @@
 #include <arch/armv7.h>
 #include <stdio.h>
 
+#include <arch/armv7/generic_timer.h>
+
 extern uint32_t __HYP_PGTABLE;
 uint8_t secondary_smp_pen;
 
@@ -44,7 +46,7 @@ void init_system()
 
         vdev_init(); /* Already we have */
 
-        timer_hw_init(26);
+        timer_hw_init(NS_PL2_PTIMER_IRQ);
 
         setup_vm_mmap();
 
