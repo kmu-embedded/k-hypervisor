@@ -1,2 +1,6 @@
-SCHED_SRCS += scheduler.c
-SCHED_SRCS += rr.c
+objs-y :=
+
+objs-y += scheduler.o
+objs-y += rr.o
+
+obj-y += $(patsubst %, core/sched/%, ${objs-y})

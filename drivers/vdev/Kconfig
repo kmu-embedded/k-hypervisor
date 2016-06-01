@@ -1,0 +1,8 @@
+config VDEV_SAMPLE
+	bool
+
+config VDEV_SP804
+	bool
+
+config VDEV_SYSREG
+	bool

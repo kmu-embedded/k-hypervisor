@@ -1,22 +1,15 @@
 # Makefile
 # TODO(wonseok): Add configuration file for board.
 
-TARGET         = rtsm
-DEFINES+=-DSERIAL_PL01X
-#TARGET          = lager
-#DEFINES+=-DSERIAL_SH
-#TARGET        = odroidxu
-#DEFINES+=-DSERIAL_S5P -DCONFIG_MCT
+-include $(CURDIR)/.config
+
 ######################################################
 # MAKEFILE VERBOSE OPTION
 ######################################################
-V ?= 1
-ifeq ($V, 1)
-    Q = @
+ifeq ($(CONFIG_GCC_V), y)
+	Q =
 else
-ifeq ($V, 2)
-    Q =
-endif
+	Q = @
 endif
 
 ######################################################
@@ -27,28 +20,25 @@ export SOURCE_PATH
 BUILD_PATH:=./build
 export BUILD_PATH
 
+obj-y :=
+export obj-y
+
+TARGET = $(CONFIG_TARGET_NAME:"%"=%)
+export TARGET
+
 include ${SOURCE_PATH}/arch/arm/Makefile
 include ${SOURCE_PATH}/core/Makefile
 include ${SOURCE_PATH}/drivers/Makefile
 include ${SOURCE_PATH}/lib/c/src/Makefile
 include ${SOURCE_PATH}/platform/Makefile
 
-ASMS+= $(patsubst %, arch/arm/%, ${ARCH_ASMS})
-ASMS+= $(patsubst %, lib/c/src/%, ${LIBC_ASMS})
-
-SRCS+= $(patsubst %, arch/arm/%, ${ARCH_SRCS})
-SRCS+= $(patsubst %, core/%, ${CORE_SRCS})
-SRCS+= $(patsubst %, drivers/%, ${DRIVER_SRCS})
-SRCS+= $(patsubst %, lib/c/src/%, ${LIBC_SRCS})
-SRCS+= $(patsubst %, platform/%, ${PLAT_SRCS})
-
-OBJS+= $(ASMS:%.S=${BUILD_PATH}/%.o)
-OBJS+= $(SRCS:%.c=${BUILD_PATH}/%.o)
+obj-y:= $(obj-y:%.o=${BUILD_PATH}/%.o)
 
 DIRECTORIES += ${BUILD_PATH}/arch/arm
 DIRECTORIES += ${BUILD_PATH}/core
 DIRECTORIES += ${BUILD_PATH}/drivers
 DIRECTORIES += ${BUILD_PATH}/lib/c/src
+DIRECTORIES += ${BUILD_PATH}/platform
 DIRECTORIES += $(addprefix ${BUILD_PATH}/, ${SUBDIRECTORIES})
 
 ######################################################
@@ -63,8 +53,8 @@ OBJCOPY=${CROSS_COMPILE}objcopy
 ######################################################
 # DEFINE FLAGS
 ######################################################
-CPU:=cortex-a15
-ARMV:=armv7-a
+CPU:=$(CONFIG_CPU_NAME:"%"=%)
+ARMV:=$(CONFIG_ARCH_NAME:"%"=%)
 
 ASFLAGS+= -Wa,-mcpu=${CPU} -Wa,-march=${ARMV}
 
@@ -73,24 +63,20 @@ CFLAGS+= -Wall -Werror
 CFLAGS+= -mcpu=${CPU} -marm
 CFLAGS += --std=c99
 
-#DEFINES= -D__CONFIG_MUTEX__ #-D__CONFIG_SMP__
-DEFINES+=-D__CONFIG_SMP__
-DEFINES+=-D__CONFIG_TICKLESS_TIMER__ #-D__TEST_TIMER__
+CFLAGS += -include $(SOURCE_PATH)/include/generated/autoconf.h
+
 DEFINES+=-DCONFIG_C99
 ASFLAGS+=${DEFINES} -D__ASSEMBLY__
 CFLAGS+=${DEFINES}
 # BUILD: Passed --std==gnu90, --std==gnu99, --std=gnu11
 
-DEBUG=y
-ifdef DEBUG
-    DFLAGS+= -ggdb -g3
+ifeq ($(CONFIG_DEBUG), y)
+	DFLAGS+= -ggdb -g3
 endif
 
 INCLUDES= -I${SOURCE_PATH}/include
 INCLUDES+= -I${SOURCE_PATH}/lib/c/include
 INCLUDES+= -I${SOURCE_PATH}/platform/${TARGET}
-
-DEFINES+=-D__CONFIG_ATAGS
 
 ######################################################
 # OUTPUT FILENAMES
@@ -105,11 +91,12 @@ BIN				= ${OUTPUT}.bin
 ######################################################
 # BUILD RULES
 ######################################################
+
 all: ${ELF} ${TARGET}.lds ${MAP} ${BIN}
 
-${ELF}: ${OBJS} ${TARGET}.lds
+${ELF}: ${obj-y} ${TARGET}.lds
 	${Q}echo "[LD] $@"
-	${Q}${LD} ${LDFLAGS} ${OBJS} -e __start -T ${BUILD_PATH}/${TARGET}.lds -o $@
+	${Q}${LD} ${LDFLAGS} ${obj-y} -e __start -T ${BUILD_PATH}/${TARGET}.lds -o $@
 
 ${TARGET}.lds: ${LD_SCRIPT} | ${DIRECTORIES}
 	${Q}echo "[LD SCRIPT] $@"
@@ -140,8 +127,50 @@ style:
 	${Q}find . -name '*.[chsCHS]' -exec chmod 664 {} \;
 	${Q}find . -name '*.orig' -exec rm {} \;
 
-
 clean:
 	${Q}echo "[CLEAN] ${PROJECT}"
-	${Q}rm -rf ${OBJS} ${ELF} ${BUILD_PATH}/${MACHINE}.lds
+	${Q}rm -rf ${obj-y} ${ELF} ${BUILD_PATH}/${MACHINE}.lds ${SOURCE_PATH}/*.axf
 	${Q}if [ -d $(BUILD_PATH) ]; then rm -r ${BUILD_PATH}; fi
+
+distclean: clean
+	@find . \( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
+        -o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \) \
+        -type f -print | xargs rm -f
+	@find . \( -name 'fixdep' -o -name 'docproc' -o -name 'split-include' \
+        -o -name 'autoconf.h' -o -name '.config' -o -name '.config.old' \
+        -o -name 'qconf' -o -name 'gconf' -o -name 'kxgettext' \
+        -o -name 'mconf' -o -name 'conf' -o -name 'lxdialog' \) \
+        -type f -print | xargs rm -f
+
+
+######################################################
+# KCONFIG
+######################################################
+
+CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
+	else if [ -x /bin/bash ]; then echo /bin/bash; \
+	else echo sh; fi ; fi)
+
+MAKEFLAGS += --include-dir=$(SOURCE_PATH)
+
+HOSTCC = gcc
+HOSTCFLAGS :=
+
+srctree := $(SOURCE_PATH)
+include $(srctree)/scripts/Kbuild.include
+
+export srctree CONFIG_SHELL HOSTCC HOSTCFLAGS
+
+# Basic helpers built in scripts/
+PHONY += scripts_basic
+scripts_basic:
+	$(Q)$(MAKE) -s $(build)=scripts/basic
+
+%config: scripts_basic FORCE
+	$(Q)$(MAKE) -s $(build)=scripts/kconfig $@
+
+PHONY += FORCE
+FORCE:
+
+.PHONY: $(PHONY)
+

@@ -1,6 +1,9 @@
 include ${SOURCE_PATH}/lib/c/src/sys-baremetal/arch-arm/Makefile
 
-LIBC_BM_SRCS += sys_abort.c
-LIBC_BM_SRCS += $(patsubst %, arch-arm/%, ${LIBC_BM_ARCH_SRCS})
+objs-y :=
 
 SUBDIRECTORIES += arch-arm
+
+objs-y += sys_abort.o
+
+obj-y += $(patsubst %, lib/c/src/sys-baremetal/%, ${objs-y})

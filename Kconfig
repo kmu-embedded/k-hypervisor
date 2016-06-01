@@ -1,0 +1,13 @@
+source "arch/Kconfig"
+
+menu "Compile-time checks and compiler options"
+
+config DEBUG
+	bool "Debug compile option"
+	default y
+
+config GCC_V
+	bool "GCC option v"
+	default n
+
+endmenu

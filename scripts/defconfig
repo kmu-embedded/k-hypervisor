@@ -1,0 +1,16 @@
+#
+# Example Menuconfig
+#
+CONFIG_String_Example="abcdef"
+CONFIG_INT_Example=0
+CONFIG_Bool_1_Example=y
+# CONFIG_Bool_2_Example is not set
+CONFIG_Depend_1_example=y
+CONFIG_Depend_2_example=y
+CONFIG_OPTION_1=y
+# CONFIG_OPTION_2 is not set
+# CONFIG_OPTION_3 is not set
+
+#
+# Applets
+#

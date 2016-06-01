@@ -1,0 +1,6 @@
+source "drivers/serial/Kconfig"
+source "drivers/vdev/Kconfig"
+
+config MCT
+	bool
+
