@@ -1,15 +1,7 @@
 include ${SOURCE_PATH}/lib/c/src/arch-arm/Makefile
 include ${SOURCE_PATH}/lib/c/src/sys-baremetal/Makefile
 
-LIBC_ASMS+= $(patsubst %, arch-arm/%, ${LIBC_ARCH_ASM})
-LIBC_SRCS+= $(patsubst %, arch-arm/%, ${LIBC_ARCH_SRCS})
-
-LIBC_SRCS+= $(patsubst %, sys-baremetal/%, ${LIBC_BM_SRCS})
-
-#LIBRARY FOR CURRENT USE, IF YOU WANT TO USE OTHER LIBS, YOU HAVE TO INCLUDE THE FILS AS BELOW
-LIBC_SRCS+= init_libc.c malloc.c strlen.c strcpy.c printf.c memset.c realloc.c
-LIBC_SRCS+= fputc.c memcpy.c vfprintf.c fprintf.c format.c assert.c
-LIBC_SRCS+= sprintf.c
+objs-y :=
 
 #FOR ALL STANDARD C LIBRARY
 #LIBC_SRCS+= memcpy.c strncat.c fgetc.c strpbrk.c fflush.c strcat.c rand.c memcmp.c  \
@@ -26,3 +18,9 @@ LIBC_SRCS+= sprintf.c
 SUBDIRECTORIES += lib/c/src/arch-arm
 SUBDIRECTORIES += lib/c/src/sys-baremetal
 SUBDIRECTORIES += lib/c/src/sys-baremetal/arch-arm
+
+objs-y += init_libc.o malloc.o strlen.o strcpy.o printf.o memset.o realloc.o
+objs-y += fputc.o memcpy.o vfprintf.o fprintf.o format.o assert.o
+objs-y += sprintf.o
+
+obj-y += $(patsubst %, lib/c/src/%, ${objs-y})
