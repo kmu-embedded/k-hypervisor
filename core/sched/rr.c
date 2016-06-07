@@ -24,9 +24,11 @@ struct rq_entry_rr {
     state_rr state;
 };
 
-struct list_head *current[NR_CPUS];
-struct list_head runqueue_rr[NR_CPUS];
-struct list_head registered_list_rr[NR_CPUS];
+struct sched_rr_data {
+    struct list_head *current;
+    struct list_head runqueue_rr;
+    struct list_head registered_list_rr;
+};
 
 /* Function definitions goes here */
 
@@ -36,19 +38,22 @@ struct list_head registered_list_rr[NR_CPUS];
  * @param
  * @return
  */
-int sched_rr_init(uint32_t pcpu)
+void *sched_rr_init(uint32_t pcpu)
 {
+    struct sched_rr_data *d = NULL;
+    d = (struct sched_rr_data *) malloc(sizeof(struct sched_rr_data));
+
     /* Check scheduler config */
 
     /* Allocate memory for system-wide data */
 
     /* Initialize data */
-    current[pcpu] = NULL;
+    d->current = NULL;
 
-    LIST_INITHEAD(&runqueue_rr[pcpu]);
-    LIST_INITHEAD(&registered_list_rr[pcpu]);
+    LIST_INITHEAD(&d->runqueue_rr);
+    LIST_INITHEAD(&d->registered_list_rr);
 
-    return 0;
+    return d;
 }
 
 /**
@@ -61,8 +66,9 @@ int sched_rr_init(uint32_t pcpu)
  * @param vcpu A vCPU
  * @return
  */
-int sched_rr_vcpu_register(vcpuid_t vcpuid, uint32_t pcpu)
+int sched_rr_vcpu_register(vcpuid_t vcpuid, uint32_t pcpu, void *policy_data)
 {
+    struct sched_rr_data *d = (struct sched_rr_data *) policy_data;
     struct rq_entry_rr *new_entry;
 
     /* Check if vcpu is already registered */
@@ -82,7 +88,7 @@ int sched_rr_vcpu_register(vcpuid_t vcpuid, uint32_t pcpu)
     new_entry->state = DETACHED;
 
     /* Add it to registerd vcpus list */
-    LIST_ADDTAIL(&new_entry->registered_list_head, &registered_list_rr[pcpu]);
+    LIST_ADDTAIL(&new_entry->registered_list_head, &d->registered_list_rr);
 
     return 0;
 }
@@ -97,8 +103,10 @@ int sched_rr_vcpu_register(vcpuid_t vcpuid, uint32_t pcpu)
  * @param vcpu A vCPU
  * @return
  */
-int sched_rr_vcpu_unregister(vcpuid_t vcpuid, uint32_t pcpu)
+int sched_rr_vcpu_unregister(vcpuid_t vcpuid, uint32_t pcpu, void *policy_data)
 {
+    // struct sched_rr_data *d = (struct sched_rr_data *) policy_data;
+
     /* Check if vcpu is registered */
 
     /* Check if vcpu is detached. If not, request detachment.*/
@@ -123,13 +131,14 @@ int sched_rr_vcpu_unregister(vcpuid_t vcpuid, uint32_t pcpu)
  * @param
  * @return
  */
-int sched_rr_vcpu_attach(vcpuid_t vcpuid, uint32_t pcpu)
+int sched_rr_vcpu_attach(vcpuid_t vcpuid, uint32_t pcpu, void *policy_data)
 {
+    struct sched_rr_data *d = (struct sched_rr_data *) policy_data;
     struct rq_entry_rr *entry_to_be_attached = NULL;
 
     /* To find entry in registered entry list */
     struct rq_entry_rr *entry = NULL;
-    list_for_each_entry(struct rq_entry_rr, entry, &registered_list_rr[pcpu], registered_list_head) {
+    list_for_each_entry(struct rq_entry_rr, entry, &d->registered_list_rr, registered_list_head) {
         if (entry->vcpuid == vcpuid) {
             entry_to_be_attached = entry;
             break;
@@ -149,7 +158,7 @@ int sched_rr_vcpu_attach(vcpuid_t vcpuid, uint32_t pcpu)
     entry_to_be_attached->state = WAITING;
 
     /* Add it to runqueue */
-    LIST_ADDTAIL(&entry_to_be_attached->head, &runqueue_rr[pcpu]);
+    LIST_ADDTAIL(&entry_to_be_attached->head, &d->runqueue_rr);
 
     return 0;
 }
@@ -160,8 +169,10 @@ int sched_rr_vcpu_attach(vcpuid_t vcpuid, uint32_t pcpu)
  * @param
  * @return
  */
-int sched_rr_vcpu_detach(vcpuid_t vcpuid, uint32_t pcpu)
+int sched_rr_vcpu_detach(vcpuid_t vcpuid, uint32_t pcpu, void *policy_data)
 {
+    // struct sched_rr_data *d = (struct sched_rr_data *) policy_data;
+
     /* Check if vcpu is attached */
 
     /* Remove it from runqueue by setting will_detached flag*/
@@ -177,9 +188,9 @@ int sched_rr_vcpu_detach(vcpuid_t vcpuid, uint32_t pcpu)
  * @param
  * @return next_vcpuid
  */
-int sched_rr_do_schedule(uint64_t *expiration)
+int sched_rr_do_schedule(uint64_t *expiration, void *policy_data)
 {
-    uint32_t pcpu = smp_processor_id();
+    struct sched_rr_data *d = (struct sched_rr_data *) policy_data;
     /* TODO:(igkang) change type to bool */
     struct rq_entry_rr *next_entry = NULL;
     bool is_switching_needed = false;
@@ -192,19 +203,19 @@ int sched_rr_do_schedule(uint64_t *expiration)
     /* TODO:(igkang) improve logical code structure to make it easier to read */
     /* determine next vcpu to be run
      *  - if there is an detach-pending vcpu than detach it. */
-    if (current[pcpu] == NULL) { /* No vCPU is running */
-        if (!LIST_IS_EMPTY(&runqueue_rr[pcpu])) { /* and there are some vcpus waiting */
+    if (d->current == NULL) { /* No vCPU is running */
+        if (!LIST_IS_EMPTY(&d->runqueue_rr)) { /* and there are some vcpus waiting */
             is_switching_needed = true;
         }
     } else { /* There's a vCPU currently running */
         struct rq_entry_rr *current_entry = NULL;
         /* put current entry back to runqueue_rr */
-        current_entry = LIST_ENTRY(struct rq_entry_rr, current[pcpu], head);
-        LIST_ADDTAIL(current[pcpu], &runqueue_rr[pcpu]);
+        current_entry = LIST_ENTRY(struct rq_entry_rr, d->current, head);
+        LIST_ADDTAIL(d->current, &d->runqueue_rr);
 
         /* let's switch as tick is over */
         current_entry->state = WAITING;
-        current[pcpu] = NULL;
+        d->current = NULL;
 
         is_switching_needed = true;
     }
@@ -212,18 +223,18 @@ int sched_rr_do_schedule(uint64_t *expiration)
     /* update scheduling-related data (like tick) */
     if (is_switching_needed) {
         /* move entry from runqueue_rr to current */
-        current[pcpu] = runqueue_rr[pcpu].next;
-        LIST_DELINIT(current[pcpu]);
+        d->current = d->runqueue_rr.next;
+        LIST_DELINIT(d->current);
 
-        next_entry = LIST_ENTRY(struct rq_entry_rr, current[pcpu], head);
+        next_entry = LIST_ENTRY(struct rq_entry_rr, d->current, head);
 
         *expiration =
             timer_get_timenow() + MSEC(1) * (uint64_t) next_entry->tick_reset_val;
     }
 
     /* vcpu of current entry will be the next vcpu */
-    if (current[pcpu] != NULL) {
-        next_entry = LIST_ENTRY(struct rq_entry_rr, current[pcpu], head);
+    if (d->current != NULL) {
+        next_entry = LIST_ENTRY(struct rq_entry_rr, d->current, head);
         next_entry->state = RUNNING;
 
         /* set return next_vcpuid value */
