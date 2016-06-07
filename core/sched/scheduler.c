@@ -13,21 +13,7 @@
 #include <stdio.h>
 #include <lib/list.h>
 
-const struct scheduler *__policy[NR_CPUS]; /* TODO:(igkang) need to be rewritten into 'scheduler instance' structure */
-struct timer __sched_timer[NR_CPUS]; /* TODO:(igkang) may be moved into scheduler instance struct */
-
-vcpuid_t __current_vcpuid[NR_CPUS];
-vcpuid_t __next_vcpuid[NR_CPUS];
-struct vcpu *__current_vcpu[NR_CPUS];
-struct vmcb *__current_vm[NR_CPUS];
-
-/* TODO:(igkang) redesign runqueue & registered list structure for external external access */
-struct list_head __running_vcpus[NR_CPUS];
-
-/* TODO:(igkang) make sched functions run based on phisical CPU-assigned policy
- *   - [v] add pcpu sched mapping
- *   - [ ] modify functions parameters to use pCPU ID
- */
+struct scheduler *sched[NR_CPUS];
 
 void sched_init() /* TODO: const struct sched_config const* sched_config)*/
 {
@@ -38,18 +24,22 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
     /* Initialize data */
     uint32_t pcpu;
     for (pcpu = 0; pcpu < NR_CPUS; pcpu++) {
-        __current_vcpuid[pcpu] = VCPUID_INVALID;
-        __next_vcpuid[pcpu] = VCPUID_INVALID;
-        __current_vcpu[pcpu] = NULL;
-        __current_vm[pcpu] = NULL;
+        struct scheduler *s = sched[pcpu]
+            = (struct scheduler *) malloc(sizeof(struct scheduler));
 
-        LIST_INITHEAD(&__running_vcpus[pcpu]);
+        s->current_vcpuid = VCPUID_INVALID;
+        s->next_vcpuid = VCPUID_INVALID;
+        s->current_vcpu = NULL;
+        s->current_vm = NULL;
+
+        LIST_INITHEAD(&s->registered_list);
+        LIST_INITHEAD(&s->attached_list);
 
         /* TODO:(igkang) choose policy based on config */
-        __policy[pcpu] = &sched_rr;
+        s->policy = &sched_rr;
 
         /* TODO:(igkang) should use some variable like policy->private or something */
-        __policy[pcpu]->init(pcpu);
+        s->policy->init(pcpu);
     }
 }
 
@@ -68,32 +58,34 @@ hvmm_status_t sched_perform_switch(struct core_regs *regs)
     uint32_t pcpu = smp_processor_id();
     struct core_regs *param_regs = regs;
 
+    struct scheduler *const s = sched[pcpu];
+
     /*
      * If the scheduler is not already running, launch default
      * first guest. It occur in initial time.
      */
-    if (__current_vcpuid[pcpu] == VCPUID_INVALID) {
+    if (s->current_vcpuid == VCPUID_INVALID) {
         debug_print("context: launching the first guest\n");
         param_regs = NULL;
     }
 
     /* Only if not from Hyp */
-    if (__next_vcpuid[pcpu] != VCPUID_INVALID) {
+    if (s->next_vcpuid != VCPUID_INVALID) {
         vcpuid_t previous = VCPUID_INVALID;
         vcpuid_t next = VCPUID_INVALID;
 
-        debug_print("[sched] curr:%x next:%x\n", __current_vcpuid[pcpu], __next_vcpuid[pcpu]);
+        debug_print("[sched] curr:%x next:%x\n", s->current_vcpuid, s->next_vcpuid);
 
         /* We do the things in this way before do_context_switch()
-         *      as we will not come back here on the first context switching */
-        previous = __current_vcpuid[pcpu];
-        next = __next_vcpuid[pcpu];
+         *  as we will not come back here on the first context switching */
+        previous = s->current_vcpuid;
+        next = s->next_vcpuid;
 
-        __current_vcpuid[pcpu] = __next_vcpuid[pcpu];
-        __next_vcpuid[pcpu] = VCPUID_INVALID;
+        s->current_vcpuid = s->next_vcpuid;
+        s->next_vcpuid = VCPUID_INVALID;
 
-        __current_vcpu[pcpu] = vcpu_find(__current_vcpuid[pcpu]);
-        __current_vm[pcpu] = vm_find(__current_vcpu[pcpu]->vmid);
+        s->current_vcpu = vcpu_find(s->current_vcpuid);
+        s->current_vm = vm_find(s->current_vcpu->vmid);
 
         do_context_switch(previous, next, param_regs);
         /* MUST NOT COME BACK HERE IF regs == NULL */
@@ -111,7 +103,7 @@ hvmm_status_t switch_to(vcpuid_t vcpuid)
 
     /* TODO:(igkang) check about below comment */
     /* valid and not current vcpuid, switch */
-    __next_vcpuid[pcpu] = vcpuid;
+    sched[pcpu]->next_vcpuid = vcpuid;
     result = HVMM_STATUS_SUCCESS;
 
     return result;
@@ -121,6 +113,7 @@ hvmm_status_t switch_to(vcpuid_t vcpuid)
 void sched_start(void)
 {
     uint32_t pcpu = smp_processor_id();
+    struct scheduler *const s = sched[pcpu];
     struct vcpu *vcpu = NULL;
 
     debug_print("[hyp] switch_to_initial_guest:\n");
@@ -131,12 +124,12 @@ void sched_start(void)
 
     /* NOTE : Hanging on while if there's no vcpu to schedule on scheduler */
     while(vcpuid == VCPUID_INVALID) {
-        vcpuid = __policy[pcpu]->do_schedule(&expiration);
+        vcpuid = s->policy->do_schedule(&expiration);
     }
     vcpu = vcpu_find(vcpuid);
 
-    tm_register_timer(&__sched_timer[pcpu], do_schedule);
-    tm_set_timer(&__sched_timer[pcpu], expiration, true);
+    tm_register_timer(&s->timer, do_schedule);
+    tm_set_timer(&s->timer, expiration, true);
     /* timer just started */
 
     switch_to(vcpu->vcpuid);
@@ -150,31 +143,25 @@ vcpuid_t get_current_vcpuid(void)
     /* TODO:(igkang) let this function use API of policy implementation,
      *   instead of globally defined array */
 
-    return __current_vcpuid[pcpu];
+    return sched[pcpu]->current_vcpuid;
 }
 
 vcpuid_t get_current_vcpuidx(void)
 {
     uint32_t pcpu = smp_processor_id();
-
-    /* TODO:(igkang) let this function use API of policy implementation,
-     *   instead of globally defined array */
-
-    return __current_vcpu[pcpu]->id;
+    return sched[pcpu]->current_vcpu->id;
 }
 
 struct vcpu *get_current_vcpu(void)
 {
     uint32_t pcpu = smp_processor_id();
-
-    return __current_vcpu[pcpu];
+    return sched[pcpu]->current_vcpu;
 }
 
 struct vmcb *get_current_vm(void)
 {
     uint32_t pcpu = smp_processor_id();
-
-    return __current_vm[pcpu];
+    return sched[pcpu]->current_vm;
 }
 
 /**
@@ -190,7 +177,7 @@ struct vmcb *get_current_vm(void)
  */
 int sched_vcpu_register(vcpuid_t vcpuid, uint32_t pcpu)
 {
-    __policy[pcpu]->register_vcpu(vcpuid, pcpu);
+    sched[pcpu]->policy->register_vcpu(vcpuid, pcpu);
 
     /* NOTE(casionwoo) : Return the ID of physical CPU that vCPU is assigned */
     return pcpu;
@@ -215,7 +202,7 @@ int sched_vcpu_register_to_current_pcpu(vcpuid_t vcpuid)
  */
 int sched_vcpu_unregister(vcpuid_t vcpuid, uint32_t pcpu)
 {
-    __policy[pcpu]->unregister_vcpu(vcpuid, pcpu);
+    sched[pcpu]->policy->unregister_vcpu(vcpuid, pcpu);
 
     return 0;
 }
@@ -233,14 +220,15 @@ int sched_vcpu_unregister(vcpuid_t vcpuid, uint32_t pcpu)
 int sched_vcpu_attach(vcpuid_t vcpuid, uint32_t pcpu)
 {
     struct running_vcpus_entry_t *new_entry;
+    struct scheduler *const s = sched[pcpu];
 
-    __policy[pcpu]->attach_vcpu(vcpuid, pcpu);
+    s->policy->attach_vcpu(vcpuid, pcpu);
 
     new_entry = (struct running_vcpus_entry_t *) malloc(sizeof(struct running_vcpus_entry_t));
     new_entry->vcpuid = vcpuid;
 
     LIST_INITHEAD(&new_entry->head);
-    LIST_ADDTAIL(&new_entry->head, &__running_vcpus[pcpu]);
+    LIST_ADDTAIL(&new_entry->head, &s->attached_list);
 
     /* NOTE(casionwoo) : Return the ID of physical CPU that vCPU is assigned */
     return pcpu;
@@ -262,7 +250,7 @@ int sched_vcpu_attach_to_current_pcpu(vcpuid_t vcpuid)
  */
 int sched_vcpu_detach(vcpuid_t vcpuid, uint32_t pcpu)
 {
-    __policy[pcpu]->detach_vcpu(vcpuid, pcpu);
+    sched[pcpu]->policy->detach_vcpu(vcpuid, pcpu);
 
     return 0;
 }
@@ -275,21 +263,17 @@ int sched_vcpu_detach(vcpuid_t vcpuid, uint32_t pcpu)
  */
 void do_schedule(void *pdata, uint64_t *expiration)
 {
-    uint32_t pcpu = smp_processor_id();
     /* TODO:(igkang) function type(return/param) should be renewed */
+    uint32_t pcpu = smp_processor_id();
     int next_vcpuid;
 
-    /* get assigned scheduling policy of pCPU? */
-
-    /* determine next vcpu to be run
-     * by calling scheduler.do_schedule() */
-    /* Also sets timer for next scheduler work */
-    next_vcpuid = __policy[pcpu]->do_schedule(expiration);
+    /* determine next vcpu to be run by calling scheduler.do_schedule() */
+    /* Also sets timer expiration for next scheduler work */
+    next_vcpuid = sched[pcpu]->policy->do_schedule(expiration);
 
     /* update vCPU's running time */
 
-    /* manipulate variables to
-     * cause context switch */
+    /* manipulate variables to cause context switch */
     switch_to(next_vcpuid);
     sched_perform_switch(pdata);
 }
