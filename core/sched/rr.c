@@ -234,7 +234,7 @@ int sched_rr_do_schedule(uint64_t *expiration)
 }
 
 /* TODO:(igkang) assign proper function's address to sched-algo struct */
-const struct scheduler sched_rr = {
+const struct sched_policy sched_rr = {
     .init = sched_rr_init,
     .register_vcpu = sched_rr_vcpu_register,
     .unregister_vcpu = sched_rr_vcpu_unregister,

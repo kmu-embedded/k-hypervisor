@@ -2,13 +2,14 @@
 #define _SCHEDULER_SKELETON_H_
 
 #include <stdint.h>
-
+#include <core/vm/vcpu.h>
 #include "../../types.h"
+#include <lib/list.h>
+#include <core/timer.h>
 
 typedef uint32_t sched_id_t;
-struct scheduler {
-    sched_id_t  id;
 
+struct sched_policy {
     int (*init)(uint32_t);
     int (*register_vcpu)(vcpuid_t, uint32_t);
     int (*unregister_vcpu)(vcpuid_t, uint32_t);
@@ -17,6 +18,39 @@ struct scheduler {
     int (*do_schedule)(uint64_t *);
 };
 
-extern const struct scheduler sched_rr;
+struct sched_entry {
+    struct list_head head;
+    vcpuid_t vcpuid; // how about using the pointer directly?
+};
+
+struct scheduler {
+    sched_id_t  id;
+    // pcpu
+    uint32_t pcpuid;
+
+    //registered vcpus list
+    struct list_head registered_list;
+    struct list_head attached_list;
+
+    // current vcpu ptr
+    vcpuid_t current_vcpuid;
+    vcpuid_t next_vcpuid;
+    struct vcpu *current_vcpu;
+    struct vmcb *current_vm;
+
+    // policy & data
+    const struct sched_policy *policy;
+    void *policy_data;
+
+    // timers?
+    struct timer timer;
+};
+
+struct running_vcpus_entry_t {
+    struct list_head head;
+    vcpuid_t vcpuid;
+};
+
+extern const struct sched_policy sched_rr;
 
 #endif /* _SCHEDULER_SKELETON_H_ */
