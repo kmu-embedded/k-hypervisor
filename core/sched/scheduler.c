@@ -39,7 +39,7 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
         s->policy = &sched_rr;
 
         /* TODO:(igkang) should use some variable like policy->private or something */
-        s->policy->init(pcpu);
+        s->policy_data = s->policy->init(pcpu);
     }
 }
 
@@ -124,7 +124,7 @@ void sched_start(void)
 
     /* NOTE : Hanging on while if there's no vcpu to schedule on scheduler */
     while(vcpuid == VCPUID_INVALID) {
-        vcpuid = s->policy->do_schedule(&expiration);
+        vcpuid = s->policy->do_schedule(&expiration, s->policy_data);
     }
     vcpu = vcpu_find(vcpuid);
 
@@ -177,7 +177,8 @@ struct vmcb *get_current_vm(void)
  */
 int sched_vcpu_register(vcpuid_t vcpuid, uint32_t pcpu)
 {
-    sched[pcpu]->policy->register_vcpu(vcpuid, pcpu);
+    struct scheduler *const s = sched[pcpu];
+    s->policy->register_vcpu(vcpuid, pcpu, s->policy_data);
 
     /* NOTE(casionwoo) : Return the ID of physical CPU that vCPU is assigned */
     return pcpu;
@@ -202,7 +203,8 @@ int sched_vcpu_register_to_current_pcpu(vcpuid_t vcpuid)
  */
 int sched_vcpu_unregister(vcpuid_t vcpuid, uint32_t pcpu)
 {
-    sched[pcpu]->policy->unregister_vcpu(vcpuid, pcpu);
+    struct scheduler *const s = sched[pcpu];
+    s->policy->unregister_vcpu(vcpuid, pcpu, s->policy_data);
 
     return 0;
 }
@@ -222,7 +224,7 @@ int sched_vcpu_attach(vcpuid_t vcpuid, uint32_t pcpu)
     struct running_vcpus_entry_t *new_entry;
     struct scheduler *const s = sched[pcpu];
 
-    s->policy->attach_vcpu(vcpuid, pcpu);
+    s->policy->attach_vcpu(vcpuid, pcpu, s->policy_data);
 
     new_entry = (struct running_vcpus_entry_t *) malloc(sizeof(struct running_vcpus_entry_t));
     new_entry->vcpuid = vcpuid;
@@ -250,7 +252,8 @@ int sched_vcpu_attach_to_current_pcpu(vcpuid_t vcpuid)
  */
 int sched_vcpu_detach(vcpuid_t vcpuid, uint32_t pcpu)
 {
-    sched[pcpu]->policy->detach_vcpu(vcpuid, pcpu);
+    struct scheduler *const s = sched[pcpu];
+    s->policy->detach_vcpu(vcpuid, pcpu, s->policy_data);
 
     return 0;
 }
@@ -265,11 +268,12 @@ void do_schedule(void *pdata, uint64_t *expiration)
 {
     /* TODO:(igkang) function type(return/param) should be renewed */
     uint32_t pcpu = smp_processor_id();
+    struct scheduler *const s = sched[pcpu];
     int next_vcpuid;
 
     /* determine next vcpu to be run by calling scheduler.do_schedule() */
     /* Also sets timer expiration for next scheduler work */
-    next_vcpuid = sched[pcpu]->policy->do_schedule(expiration);
+    next_vcpuid = s->policy->do_schedule(expiration, s->policy_data);
 
     /* update vCPU's running time */
 
