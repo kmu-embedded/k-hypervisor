@@ -34,6 +34,8 @@ void vdev_handler(struct core_regs *regs, uint32_t iss)
             } else {
                 regs->gpr[srt] = instance->module->read(instance->pdata, offset);
             }
+
+            break;
         }
     }
 }
