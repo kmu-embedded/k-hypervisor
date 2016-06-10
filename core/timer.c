@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <irq-chip.h>
-#include <drivers/mct.h>
 
 #include <arch/armv7/generic_timer.h>
 
@@ -123,10 +122,6 @@ hvmm_status_t timer_hw_init(uint32_t irq) /* const struct timer_config const* ti
 
     /* TODO: (igkang) timer related call - check return value */
     timer_requset_irq(irq);
-
-#ifdef CONFIG_MCT
-    mct_init();
-#endif
 
     return HVMM_STATUS_SUCCESS;
 }

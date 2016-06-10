@@ -97,10 +97,6 @@ BEGIN_PROC(__start)
     @ TLBIALLH: flust instruction and data TLBs. r0 will be ignored.
     write_cp32(r0, TLBIALLH)
 
-    /* Replace the NSHyp vector table for khypervisor */
-    ldr     r0, = __hvc_vector
-    write_cp32(r0, HVBAR)
-
     ldr     sp, = __end_stack
     read_cp32(r5, MPIDR)
     ands    r5, r5, #0xFF
@@ -126,7 +122,7 @@ BEGIN_PROC(__start)
     cmp     r2, r3
     blo     1b
 
-    bl     init_system
+    bl     init_cpu
 
 	@ Never reached, here.
     b       __error
@@ -145,7 +141,7 @@ enter_smp_pen:
     isb     /* Make sure the invalidate ops are complete */
     dsb
 
-    bl      init_system
+    bl      init_secondary_cpus
 #endif
 
 __error_ns:

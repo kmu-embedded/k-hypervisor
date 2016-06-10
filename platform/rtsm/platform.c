@@ -51,7 +51,9 @@ void console_init()
     serial_init(115200, 24000000);
 }
 
+#include <core/timer.h>
 void dev_init()
 {
 //    sp804_enable();
+	timer_hw_init(NS_PL2_PTIMER_IRQ);
 }
