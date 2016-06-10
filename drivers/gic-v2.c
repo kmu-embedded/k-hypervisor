@@ -19,7 +19,7 @@
 #define HIGHEST_PRIORITY    0
 
 #define VIRQ_MAX_ENTRIES                64
-#define VGIC_MAINTENANCE_INTERRUPT_IRQ  25
+#define VGIC_MAINTENANCE_IRQ  			25
 #define VGIC_MAX_LISTREGISTERS          VGIC_NUM_MAX_SLOTS
 #define VGIC_SLOT_NOTFOUND              (0xFFFFFFFF)
 
@@ -108,12 +108,9 @@ static lr_entry_t set_lr_entry(uint8_t hw, enum virq_state state, uint32_t prior
 
 static hvmm_status_t gic_maintenance_irq_enable()
 {
-    uint32_t irq = VGIC_MAINTENANCE_INTERRUPT_IRQ;
+    uint32_t irq = VGIC_MAINTENANCE_IRQ;
 
-    register_irq_handler(irq, &gic_isr_maintenance_irq);
-    gic_configure_irq(irq, IRQ_LEVEL_TRIGGERED);
-    gic_enable_irq(irq);
-
+    register_irq_handler(irq, &gic_isr_maintenance_irq, IRQ_LEVEL_SENSITIVE);
     return HVMM_STATUS_SUCCESS;
 }
 
@@ -213,9 +210,9 @@ void gic_configure_irq(uint32_t irq, uint8_t polarity)
         reg = GICD_READ(GICD_ICFGR(irq >> 4));
 
         mask = (reg >> 2 * (irq % 16)) & 0x3;
-        if (polarity == IRQ_LEVEL_TRIGGERED) {
+        if (polarity == IRQ_LEVEL_SENSITIVE) {
             mask &= 0;
-            mask |= IRQ_LEVEL_TRIGGERED << 0;
+            mask |= IRQ_LEVEL_SENSITIVE << 0;
         } else { /* IRQ_EDGE_TRIGGERED */
             mask &= 0;
             mask |= IRQ_EDGE_TRIGGERED << 0;
