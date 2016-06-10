@@ -1,63 +1,86 @@
-#include "init.h"
-#include "cpu.h"
+#include <stdio.h>
 
+#include <arch/armv7.h>
 #include <platform.h>
 #include <libc_init.h>
 #include <arch/irq.h>
-#include "paging.h"
 #include <vdev.h>
 #include <core/timer.h>
 #include <vm_map.h>
-#include <arch/armv7.h>
-#include <stdio.h>
-
 #include <arch/armv7/generic_timer.h>
 
-extern uint32_t __HYP_PGTABLE;
+#include "init.h"
+#include "paging.h"
+
+extern addr_t __hvc_vector;
+extern addr_t __HYP_PGTABLE;
 uint8_t secondary_smp_pen;
 
-void init_system()
+void init_cpu()
 {
     uint8_t cpuid = smp_processor_id();
+    addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
 
-    setup_vector();
+    // For console debugging.
+	console_init();
+	libc_init();
 
-    setup_httbr((uint32_t) &__HYP_PGTABLE);
+	// Set HYP vector table.
+	write_cp32((uint32_t) &__hvc_vector, HVBAR);
+	assert(read_cp32(HVBAR) == (uint32_t) &__hvc_vector);
 
-    setup_mem_attr();
+	// Set pgtable for HYP mode.
+    write_cp64((uint64_t) pgtable, HTTBR);
+    assert(read_cp64(HTTBR) == pgtable);
 
-    if (cpuid == 0) {
-        // TODO(wonseok) console init will be moved dev_init().
-        console_init();
+    // Set memory attributes.
+    write_cp32(HTCR_VALUE, HTCR);
+    write_cp32(HMAIR0_VALUE, HMAIR0);
+    write_cp32(HMAIR1_VALUE, HMAIR1);
 
-        libc_init();
-    }
+	paging_create((addr_t) &__HYP_PGTABLE);
+	platform_init();
+
+	irq_init();
+
+	dev_init(); /* we don't have */
+
+	vdev_init(); /* Already we have */
+
+	setup_vm_mmap();
+
+#ifdef CONFIG_SMP
+	printf("wake up...other CPUs\n");
+	secondary_smp_pen = 1;
+#endif
+
+	printf("%s[%d]: CPU[%d]\n", __func__, __LINE__, cpuid);
+
+    write_cp32(HSCTLR_VALUE, HSCTLR);
+
+	start_hypervisor();
+}
+
+void init_secondary_cpus()
+{
+    uint8_t cpuid = smp_processor_id();
+    addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
+
+	write_cp32((uint32_t) &__hvc_vector, HVBAR);
+	assert(read_cp32(HVBAR) == (uint32_t) &__hvc_vector);
+
+    write_cp64((uint64_t) pgtable, HTTBR);
+    assert(read_cp64(HTTBR) == pgtable);
+
+    write_cp32(HTCR_VALUE, HTCR);
+    write_cp32(HMAIR0_VALUE, HMAIR0);
+    write_cp32(HMAIR1_VALUE, HMAIR1);
 
     irq_init();
 
-    //enable_traps();
-
-    if (cpuid == 0) {
-        paging_create((addr_t) &__HYP_PGTABLE);
-
-        platform_init();
-
-        dev_init(); /* we don't have */
-
-        vdev_init(); /* Already we have */
-
-        timer_hw_init(NS_PL2_PTIMER_IRQ);
-
-        setup_vm_mmap();
-
-#ifdef CONFIG_SMP
-        printf("wake up...other CPUs\n");
-        secondary_smp_pen = 1;
-#endif
-    }
     printf("%s[%d]: CPU[%d]\n", __func__, __LINE__, cpuid);
 
-    enable_mmu();
+    write_cp32(HSCTLR_VALUE, HSCTLR);
 
     start_hypervisor();
 }

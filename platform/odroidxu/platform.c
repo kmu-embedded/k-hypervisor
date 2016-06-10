@@ -38,7 +38,13 @@ void console_init()
     serial_init();
 }
 
+#include <drivers/mct.h>
+
 void dev_init()
 {
+#ifdef CONFIG_MCT
+    mct_init();
+#endif
+	timer_hw_init(NS_PL2_PTIMER_IRQ);
     // init .text.dev section like vdev.
 }

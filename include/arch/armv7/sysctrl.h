@@ -69,7 +69,7 @@
 #define HSCTLR_A         (1 << 1)       /**< Alignment check enable. */
 #define HSCTLR_M         (1 << 0)       /**< MMU enable. */
 #define HSCTLR_BASE      0x30c51878     /**< HSTCLR Base address */
-
+#define HSCTLR_VALUE	 0x30C5187F
 
 #define read_hsctlr()           ({ uint32_t rval; asm volatile(\
                                 " mrc     p15, 4, %0, c1, c0, 0\n\t" \
