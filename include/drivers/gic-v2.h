@@ -49,7 +49,7 @@ struct GICv2_HW {
 } GICv2;
 
 
-#define IRQ_LEVEL_TRIGGERED     0
+#define IRQ_LEVEL_SENSITIVE     0
 #define IRQ_EDGE_TRIGGERED      1
 
 enum gic_sgi {

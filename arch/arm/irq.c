@@ -43,11 +43,13 @@ void irq_init()
     write_cp32((0x10 | 0x8), HCR);
 }
 
-void register_irq_handler(uint32_t irq, irq_handler_t handler)
+void register_irq_handler(uint32_t irq, irq_handler_t handler, uint8_t polarity)
 {
     if (irq < MAX_IRQS) {
         irq_handlers[irq] = handler;
     }
+    irq_hw->set_irq_type(irq, polarity);
+    irq_hw->enable(irq);
 }
 
 void register_vdev_irq_handler(uint32_t irq, irq_handler_t handler)

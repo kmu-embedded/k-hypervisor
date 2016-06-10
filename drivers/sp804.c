@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <io.h>
 #include <arch/irq.h>
-#include <drivers/gic-v2.h>
+//#include <drivers/gic-v2.h>
 #include <drivers/sp804.h>
 
 static uint64_t tickcount = 0;
@@ -27,7 +27,6 @@ void sp804_enable()
 {
     sp804_init();
     writel(0xE2, TIMER1_CONTROL(TIMER1_BASE));
+
     register_irq_handler(34, &sp804_handler);
-    gic_configure_irq(34, IRQ_LEVEL_TRIGGERED);
-    gic_enable_irq(34);
 }

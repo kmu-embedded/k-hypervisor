@@ -106,9 +106,7 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
 
 static void timer_requset_irq(uint32_t irq)
 {
-    register_irq_handler(irq, &timer_irq_handler);
-    irq_hw->set_irq_type(irq, 0);  // 0 is level sensitive.
-    irq_hw->enable(irq);
+    register_irq_handler(irq, &timer_irq_handler, IRQ_LEVEL_SENSITIVE);
 }
 
 hvmm_status_t timer_hw_init(uint32_t irq) /* const struct timer_config const* timer_config)*/
