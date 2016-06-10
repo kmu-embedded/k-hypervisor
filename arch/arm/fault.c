@@ -7,12 +7,8 @@
 #include <core/scheduler.h>
 
 #define decode_fsc(iss)         (iss & 0x3f)
-
 #define decode_wnr(iss)         (iss & (1 << 6))
 #define decode_srt(iss)         ((iss & 0xF0000) >> 16)
-
-
-extern uint32_t linux_smp_pen;
 
 int handle_data_abort(struct core_regs *regs, uint32_t iss)
 {
