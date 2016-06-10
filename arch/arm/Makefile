@@ -9,7 +9,6 @@ objs-y += io.o
 objs-y += irq.o
 objs-y += lpae.o
 objs-y += paging.o
-objs-y += cpu.o
 objs-y += arch_regs.o
 objs-y += fault.o
 
