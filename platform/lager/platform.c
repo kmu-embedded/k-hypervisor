@@ -39,4 +39,5 @@ void console_init()
 void dev_init()
 {
     // init .text.dev section like vdev.
+	timer_hw_init(NS_PL2_PTIMER_IRQ);
 }
