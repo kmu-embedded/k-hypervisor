@@ -9,19 +9,33 @@
 
 typedef uint32_t sched_id_t;
 
+struct scheduler;
+struct sched_entry;
+
+typedef enum {
+    SCHED_DETACHED,
+    SCHED_WAITING,
+    SCHED_RUNNING
+} sched_state;
+
 struct sched_policy {
-    void * (*init)(uint32_t);
-    int (*register_vcpu)(vcpuid_t, uint32_t, void *); /* void * policy_data */
-    int (*unregister_vcpu)(vcpuid_t, uint32_t, void *);
-    int (*attach_vcpu)(vcpuid_t, uint32_t, void *);
-    int (*detach_vcpu)(vcpuid_t, uint32_t, void *);
-    int (*do_schedule)(uint64_t *, void *);
+    size_t size_sched_extra;
+    size_t size_entry_extra;
+
+    void (*init)(struct scheduler *);
+    int (*register_vcpu)(struct scheduler *, struct sched_entry *);
+    int (*unregister_vcpu)(struct scheduler *, struct sched_entry *);
+    int (*attach_vcpu)(struct scheduler *, struct sched_entry *);
+    int (*detach_vcpu)(struct scheduler *, struct sched_entry *);
+    int (*do_schedule)(struct scheduler *, uint64_t *);
 };
 
 struct sched_entry {
-    struct list_head head;
+    struct list_head head_registered;
+    struct list_head head_attached;
     vcpuid_t vcpuid; /* how about using the pointer directly? */
-    void *pdata; /* policy specific data */
+    // struct vcpu *vcpu;
+    sched_state state;
 };
 
 struct scheduler {
@@ -38,12 +52,11 @@ struct scheduler {
     struct vcpu *current_vcpu;
     struct vmcb *current_vm;
 
-    // policy & data
-    const struct sched_policy *policy;
-    void *policy_data;
-
     // timers?
     struct timer timer;
+
+    // policy & data
+    const struct sched_policy *policy;
 };
 
 struct running_vcpus_entry_t {
