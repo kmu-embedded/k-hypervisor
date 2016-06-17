@@ -37,6 +37,7 @@ config ARCH_EXYNOS
 	select CPU_A15
 	select S5P_SERIAL
 	select MCT
+	select PMU
 
 endchoice
 

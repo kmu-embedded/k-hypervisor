@@ -119,8 +119,8 @@ arg-check = $(strip $(filter-out $(1), $(2)) $(filter-out $(2), $(1)) )
 endif
 
 # echo command. Short version is $(quiet) equals quiet, otherwise full command
-echo-cmd = $(if $($(quiet)cmd_$(1)), \
-	echo '  $(call escsq,$($(quiet)cmd_$(1)))';)
+#echo-cmd = $(if $($(quiet)cmd_$(1)), \
+#	echo '  $(call escsq,$($(quiet)cmd_$(1)))';)
 
 make-cmd = $(subst \#,\\\#,$(subst $$,$$$$,$(call escsq,$(cmd_$(1)))))
 

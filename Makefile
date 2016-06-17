@@ -38,7 +38,6 @@ DIRECTORIES += ${BUILD_PATH}/arch/arm
 DIRECTORIES += ${BUILD_PATH}/core
 DIRECTORIES += ${BUILD_PATH}/drivers
 DIRECTORIES += ${BUILD_PATH}/lib/c/src
-DIRECTORIES += ${BUILD_PATH}/platform
 DIRECTORIES += $(addprefix ${BUILD_PATH}/, ${SUBDIRECTORIES})
 
 ######################################################

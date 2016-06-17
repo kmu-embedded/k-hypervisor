@@ -4,3 +4,5 @@ source "drivers/vdev/Kconfig"
 config MCT
 	bool
 
+config PMU
+	bool
