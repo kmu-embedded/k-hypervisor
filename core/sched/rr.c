@@ -8,7 +8,7 @@
 #include <lib/list.h>
 #include <core/timer.h>
 
-struct rq_entry_rr {
+struct entry_data_rr {
     struct list_head head;
 
     /* TODO:(igkang) set field types to abstract types */
@@ -16,7 +16,7 @@ struct rq_entry_rr {
     uint32_t tick_reset_val; //tick_t
 };
 
-struct sched_rr_data {
+struct sched_data_rr {
     struct list_head *current;
     struct list_head runqueue;
 };
@@ -24,21 +24,21 @@ struct sched_rr_data {
 /**
  * Scheduler related data initialization
  */
-void sched_rr_init(struct scheduler *sched)
+void sched_rr_init(struct scheduler *s)
 {
-    struct sched_rr_data *d = (struct sched_rr_data *) (sched + 1);
+    struct sched_data_rr *sd = (struct sched_data_rr *) (s + 1);
 
     /* Check scheduler config */
     /* Allocate memory for system-wide data */
     /* Initialize data */
-    d->current = NULL;
-    LIST_INITHEAD(&d->runqueue);
+    sd->current = NULL;
+    LIST_INITHEAD(&sd->runqueue);
 }
 
-int sched_rr_vcpu_register(struct scheduler *sched, struct sched_entry *e)
+int sched_rr_vcpu_register(struct scheduler *s, struct sched_entry *e)
 {
-    // struct sched_rr_data *d = (struct sched_rr_data *) (sched + 1);
-    struct rq_entry_rr *ed = (struct rq_entry_rr *) (e + 1);
+    // struct sched_data_rr *sd = (struct sched_data_rr *) (s + 1);
+    struct entry_data_rr *ed = (struct entry_data_rr *) (e + 1);
 
     /* FIXME:(igkang) Hardcoded. should use function parameter's value for tick_reset_val init. */
     ed->tick_reset_val = 5;
@@ -47,7 +47,7 @@ int sched_rr_vcpu_register(struct scheduler *sched, struct sched_entry *e)
     return 0;
 }
 
-int sched_rr_vcpu_unregister(struct scheduler *sched, struct sched_entry *e)
+int sched_rr_vcpu_unregister(struct scheduler *s, struct sched_entry *e)
 {
     /* Check if vcpu is registered */
     /* Check if vcpu is detached. If not, request detachment.*/
@@ -57,25 +57,25 @@ int sched_rr_vcpu_unregister(struct scheduler *sched, struct sched_entry *e)
     return 0;
 }
 
-int sched_rr_vcpu_attach(struct scheduler *sched, struct sched_entry *e)
+int sched_rr_vcpu_attach(struct scheduler *s, struct sched_entry *e)
 {
-    struct sched_rr_data *d = (struct sched_rr_data *) (sched + 1);
-    struct rq_entry_rr *ed = (struct rq_entry_rr *) (e + 1);
+    struct sched_data_rr *sd = (struct sched_data_rr *) (s + 1);
+    struct entry_data_rr *ed = (struct entry_data_rr *) (e + 1);
 
     /* Add it to runqueue */
-    LIST_ADDTAIL(&ed->head, &d->runqueue);
+    LIST_ADDTAIL(&ed->head, &sd->runqueue);
 
     return 0;
 }
 
-int sched_rr_vcpu_detach(struct scheduler *sched, struct sched_entry *e)
+int sched_rr_vcpu_detach(struct scheduler *s, struct sched_entry *e)
 {
-    // struct sched_rr_data *d = (struct sched_rr_data *) (sched + 1);
-    struct rq_entry_rr *ed = (struct rq_entry_rr *) (e + 1);
+    // struct sched_data_rr *sd = (struct sched_data_rr *) (s + 1);
+    struct entry_data_rr *ed = (struct entry_data_rr *) (e + 1);
 
     /* Check if vcpu is attached */
     /* Remove it from runqueue by setting will_detached flag*/
-    /* Set rq_entry_rr's fields */
+    /* Set entry_data_rr's fields */
 
     LIST_DELINIT(&ed->head);
 
@@ -85,12 +85,12 @@ int sched_rr_vcpu_detach(struct scheduler *sched, struct sched_entry *e)
 /**
  * Main scheduler routine in RR policy implmentation
  */
-int sched_rr_do_schedule(struct scheduler *sched, uint64_t *expiration)
+int sched_rr_do_schedule(struct scheduler *s, uint64_t *expiration)
 {
-    struct sched_rr_data *d = (struct sched_rr_data *) (sched + 1);
+    struct sched_data_rr *sd = (struct sched_data_rr *) (s + 1);
 
     /* TODO:(igkang) change type to bool */
-    struct rq_entry_rr *next_rr_entry = NULL;
+    struct entry_data_rr *next_ed = NULL;
     bool is_switching_needed = false;
     int next_vcpuid = VCPUID_INVALID;
 
@@ -102,23 +102,23 @@ int sched_rr_do_schedule(struct scheduler *sched, uint64_t *expiration)
 
     /* determine next vcpu to be run
      *  - if there is an detach-pending vcpu than detach it. */
-    if (d->current == NULL) { /* No vCPU is running */
-        if (!LIST_IS_EMPTY(&d->runqueue)) { /* and there are some vcpus waiting */
+    if (sd->current == NULL) { /* No vCPU is running */
+        if (!LIST_IS_EMPTY(&sd->runqueue)) { /* and there are some vcpus waiting */
             is_switching_needed = true;
         }
     } else { /* There's a vCPU currently running */
-        struct rq_entry_rr *current_rr_entry = NULL;
-        struct sched_entry *current_entry = NULL;
+        struct entry_data_rr *current_ed = NULL;
+        struct sched_entry *current_e = NULL;
 
         /* put current entry back to runqueue */
-        current_rr_entry = LIST_ENTRY(struct rq_entry_rr, d->current, head);
-        LIST_ADDTAIL(d->current, &d->runqueue);
+        current_ed = LIST_ENTRY(struct entry_data_rr, sd->current, head);
+        LIST_ADDTAIL(sd->current, &sd->runqueue);
 
         /* let's switch as tick is over */
-        d->current = NULL;
+        sd->current = NULL;
 
-        current_entry = ((struct sched_entry *) current_rr_entry) - 1;
-        current_entry->state = SCHED_WAITING;
+        current_e = ((struct sched_entry *) current_ed) - 1;
+        current_e->state = SCHED_WAITING;
 
         is_switching_needed = true;
     }
@@ -126,34 +126,34 @@ int sched_rr_do_schedule(struct scheduler *sched, uint64_t *expiration)
     /* update scheduling-related data (like tick) */
     if (is_switching_needed) {
         /* move entry from runqueue to current */
-        d->current = d->runqueue.next;
-        LIST_DELINIT(d->current);
+        sd->current = sd->runqueue.next;
+        LIST_DELINIT(sd->current);
 
-        next_rr_entry = LIST_ENTRY(struct rq_entry_rr, d->current, head);
+        next_ed = LIST_ENTRY(struct entry_data_rr, sd->current, head);
 
         *expiration =
-            timer_get_timenow() + MSEC(1) * (uint64_t) next_rr_entry->tick_reset_val;
+            timer_get_timenow() + MSEC(1) * (uint64_t) next_ed->tick_reset_val;
     }
 
     /* vcpu of current entry will be the next vcpu */
-    if (d->current != NULL) {
-        struct sched_entry *next_entry = NULL;
-        next_rr_entry = LIST_ENTRY(struct rq_entry_rr, d->current, head);
+    if (sd->current != NULL) {
+        struct sched_entry *next_e = NULL;
+        next_ed = LIST_ENTRY(struct entry_data_rr, sd->current, head);
 
-        next_entry = ((struct sched_entry *) next_rr_entry) - 1;
-        next_entry->state = SCHED_RUNNING;
+        next_e = ((struct sched_entry *) next_ed) - 1;
+        next_e->state = SCHED_RUNNING;
 
         /* set return next_vcpuid value */
-        next_vcpuid = next_entry->vcpuid;
+        next_vcpuid = next_e->vcpuid;
     }
 
     return next_vcpuid;
 }
 
-/* TODO:(igkang) assign proper function's address to sched-algo struct */
+/* TODO:(igkang) assign proper function's address to s-algo struct */
 const struct sched_policy sched_rr = {
-    .size_sched_extra = sizeof(struct sched_rr_data),
-    .size_entry_extra = sizeof(struct rq_entry_rr),
+    .size_sched_extra = sizeof(struct sched_data_rr),
+    .size_entry_extra = sizeof(struct entry_data_rr),
 
     .init = sched_rr_init,
     .register_vcpu = sched_rr_vcpu_register,
