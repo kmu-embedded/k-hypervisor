@@ -18,13 +18,17 @@ hvmm_status_t do_irq(struct core_regs *regs)
 
     irq_hw->eoi(irq);
 
+//    if (irq == 37)
+//       printf("irq : 37\n");
+
     if (irq < 16) {
         // SGI Handler
         printf("SGI Occurred\n");
     } else if (irq_handlers[irq]) {
         // Handler for Hypervisor
         irq_handlers[irq](irq, regs, 0);
-        irq_hw->dir(irq);
+        if (irq != 37)
+            irq_hw->dir(irq);
     } else {
         // Not found handler that just forward irq to VMs
         is_guest_irq(irq);
