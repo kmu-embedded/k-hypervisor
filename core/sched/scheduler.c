@@ -25,8 +25,10 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
     for (pcpu = 0; pcpu < NR_CPUS; pcpu++) {
         const struct sched_policy *p = &sched_rr;
 
-        struct scheduler *s = sched[pcpu]
-                              = (struct scheduler *) malloc(sizeof(struct scheduler) + sizeof(p->size_sched_extra));
+        struct scheduler *s
+                = sched[pcpu]
+                = (struct scheduler *) malloc(
+                        sizeof(struct scheduler) + sizeof(p->size_sched_extra));
 
         s->policy = p;
         s->policy->init(s);
@@ -38,16 +40,12 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
 
         LIST_INITHEAD(&s->registered_list);
         LIST_INITHEAD(&s->attached_list);
-
     }
 }
 
 /* TODO:(igkang) context switching related fucntions should be redesigned
- *
- * in scheduler.c
  *   - perform_switch
  *   - switchto
- * and outside of scheduler.c
  *   - do_context_switch
  */
 
@@ -135,17 +133,15 @@ void sched_start(void)
     sched_perform_switch(NULL);
 }
 
+/* Current vCPU's ID - in perspective of Hypervisor */
 vcpuid_t get_current_vcpuid(void)
 {
     uint32_t pcpu = smp_processor_id();
 
-    /* TODO:(igkang) let this function use API of policy implementation,
-     *   instead of globally defined array */
-
     return sched[pcpu]->current_vcpuid;
 }
 
-/* FIXME:(igkang) duplicate of above function? */
+/* Current vCPU's ID - in perspective of VM (SMP) */
 vcpuid_t get_current_vcpuidx(void)
 {
     uint32_t pcpu = smp_processor_id();
@@ -164,11 +160,11 @@ struct vmcb *get_current_vm(void)
     return sched[pcpu]->current_vm;
 }
 
+/* Find a entry of given vcpuid in given scheduler instance */
 static inline struct sched_entry *find_entry(struct scheduler *s, vcpuid_t vcpuid)
 {
     struct sched_entry *found_entry = NULL;
 
-    /* Find entry of given vcpuid in entry list */
     struct sched_entry *entry = NULL;
     list_for_each_entry(struct sched_entry, entry,
                         &s->registered_list, head_registered) {
@@ -197,14 +193,15 @@ int sched_vcpu_register(vcpuid_t vcpuid, uint32_t pcpu)
     struct scheduler *const s = sched[pcpu];
     struct sched_entry *new_entry;
 
-    new_entry = (struct sched_entry *) malloc(sizeof(struct sched_entry) + s->policy->size_entry_extra);
+    new_entry = (struct sched_entry *) malloc(
+            sizeof(struct sched_entry) + s->policy->size_entry_extra);
+
     LIST_INITHEAD(&new_entry->head_registered);
     LIST_INITHEAD(&new_entry->head_attached);
     new_entry->state = SCHED_DETACHED;
-
     new_entry->vcpuid = vcpuid;
-    LIST_ADDTAIL(&new_entry->head_registered, &s->registered_list);
 
+    LIST_ADDTAIL(&new_entry->head_registered, &s->registered_list);
     s->policy->register_vcpu(s, new_entry);
 
     /* NOTE(casionwoo) : Return the ID of physical CPU that vCPU is assigned */

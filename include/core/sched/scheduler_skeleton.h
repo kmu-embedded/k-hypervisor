@@ -33,35 +33,31 @@ struct sched_policy {
 struct sched_entry {
     struct list_head head_registered;
     struct list_head head_attached;
-    vcpuid_t vcpuid; /* how about using the pointer directly? */
-    // struct vcpu *vcpu;
+
+    // struct vcpu *vcpu; /* TODO:(igkang) direct vcpu referencing */
+    vcpuid_t vcpuid;
     sched_state state;
+
+    /* policy-specific data follows (allocation) */
 };
 
 struct scheduler {
     sched_id_t  id;
     uint32_t pcpuid;
 
-    //registered vcpus list
     struct list_head registered_list;
     struct list_head attached_list;
 
-    // current vcpu ptr
     vcpuid_t current_vcpuid;
     vcpuid_t next_vcpuid;
     struct vcpu *current_vcpu;
     struct vmcb *current_vm;
 
-    // timers?
     struct timer timer;
 
-    // policy & data
     const struct sched_policy *policy;
-};
 
-struct running_vcpus_entry_t {
-    struct list_head head;
-    vcpuid_t vcpuid;
+    /* policy-specific data follows (allocation) */
 };
 
 extern const struct sched_policy sched_rr;

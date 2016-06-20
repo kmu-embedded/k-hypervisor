@@ -11,9 +11,8 @@
 struct entry_data_rr {
     struct list_head head;
 
-    /* TODO:(igkang) set field types to abstract types */
     vcpuid_t vcpuid;
-    uint32_t tick_reset_val; //tick_t
+    uint32_t tick_reset_val;
 };
 
 struct sched_data_rr {
