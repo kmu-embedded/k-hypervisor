@@ -36,8 +36,6 @@ void pirq_disable(struct vcpu *v, uint32_t pirq)
     v->map[pirq].enabled = GUEST_IRQ_DISABLE;
 }
 
-
-
 #include <arch/armv7.h>
 #include <core/vm/vcpu.h>
 #include <core/scheduler.h>
