@@ -3,6 +3,14 @@
 #include <arch/armv7/cp15.h>
 #include <generated/autoconf.h>
 
+#define PRINT(_s)       \
+    adr   r0, 98f ; \
+    bl    puts    ; \
+    b     99f     ; \
+98: .asciz _s     ; \
+    .align 2      ; \
+99:
+
     .syntax	unified
     .arch_extension sec
     .arch_extension virt
@@ -11,6 +19,15 @@ BEGIN_PROC(__start)
     @ Disable interrupts
 	cpsid   aif
 
+	ldr   r11, =0x12c20000       /* r11 := UART base address */
+    teq   r12, #0                /* Boot CPU sets up the UART too */
+    bleq  init_uart
+  @  @PRINT("- CPU ")
+    mov   r0, r7
+    bl    putn
+    @PRINT(" booting -\r\n")
+
+
 	@ Check HYP mode
 	mrs		r0, cpsr_all
 	and		r0, r0, #0x1F
@@ -18,6 +35,7 @@ BEGIN_PROC(__start)
 	cmp		r0, r8
 	beq		3f
 
+    @PRINT(" Check Secure-\r\n")
     @ Check whether or not current cpu mode is in secure state.
     read_cp32(r0, SCR)
     teq     r0, #0x1
@@ -25,6 +43,7 @@ BEGIN_PROC(__start)
     @ we have to check current cpu mode is HYP or not.
     beq     __error_ns
 
+    @PRINT(" Check VE -\r\n")
     @ Check the virtualization Extensions(VE).
     read_cp32(r0, ID_PFR1)
     tst     r0, #0x00001000         @ Compare the value in ID_PFR[12] to 1 or 0.
@@ -89,6 +108,7 @@ BEGIN_PROC(__start)
 
 
 3:
+    @PRINT(" IN NORMAL WORLD-\r\n")
     /* We are going to initialize for each core, here */
     @ DCIMVAC: invalidate data cache.
     mov     r0, #0
@@ -141,6 +161,7 @@ enter_smp_pen:
     isb     /* Make sure the invalidate ops are complete */
     dsb
 
+    @PRINT(" INIT_SECONDARY CPUS-\r\n")
     bl      init_secondary_cpus
 #endif
 
@@ -149,4 +170,72 @@ __error_ve:
 __error_ge:
 __error:
     b __error
+
+#include "exynos4210-uart.h"
+.macro early_uart_ready rb rc
+1:
+    ldr   \rc, [\rb, #UTRSTAT]   /* <- UTRSTAT (Flag register) */
+    tst   \rc, #UTRSTAT_TXFE     /* Check BUSY bit */
+    beq   1b                     /* Wait for the UART to be ready */
+.endm
+
+/* Exynos 5 UART transmit character
+ * rb: register which contains the UART base address
+ * rt: register which contains the character to transmit */
+.macro early_uart_transmit rb rt
+    str   \rt, [\rb, #UTXH]      /* -> UTXH (Data Register) */
+.endm
+
+/* Print a character on the UART - this function is called by C
+ * r0: character to print */
+BEGIN_PROC(early_putch)
+    ldr   r1, =0x12c20000  /* r1 := VA UART base address */
+    early_uart_ready r1, r2
+    early_uart_transmit r1, r0
+    mov   pc, lr
+
+    /* Flush the UART - this function is called by C */
+BEGIN_PROC(early_flush)
+    ldr   r1, =0x12c20000  /* r1 := VA UART base address */
+    early_uart_ready r1, r2
+    mov   pc, lr
+
+init_uart:
+    adr   r0, 1f
+    b     puts                  /* Jump to puts */
+    1:      .asciz "- UART enabled -\r\n"
+    .align 4
+
+    /* Print early debug messages.
+     * r0: Nul-terminated string to print.
+     * r11: Early UART base address
+     * Clobbers r0-r1 */
+puts:
+    early_uart_ready r11, r1
+    ldrb  r1, [r0], #1           /* Load next char */
+    teq   r1, #0                 /* Exit on nul */
+    moveq pc, lr
+    early_uart_transmit r11, r1
+    b puts
+
+    /* Print a 32-bit number in hex.  Specific to the PL011 UART.
+     * r0: Number to print.
+     * r11: Early UART base address
+     * Clobbers r0-r3 */
+putn:
+    adr   r1, hex
+    mov   r3, #8
+    1:
+    early_uart_ready r11, r2
+    and   r2, r0, #0xf0000000    /* Mask off the top nybble */
+    ldrb  r2, [r1, r2, lsr #28]  /* Convert to a char */
+    early_uart_transmit r11, r2
+    lsl   r0, #4                 /* Roll it through one nybble at a time */
+    subs  r3, r3, #1
+    bne   1b
+    mov   pc, lr
+
+    hex:    .ascii "0123456789abcdef"
+    .align 2
+
 END_PROC(__start)

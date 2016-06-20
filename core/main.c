@@ -5,6 +5,7 @@
 #include <config.h>
 #include "../arch/arm/init.h"
 #include <core/timer.h>
+#include <drivers/pmu.h>
 
 static uint32_t smp_pen = 0;
 
@@ -38,6 +39,12 @@ void start_hypervisor()
             }
         }
 
+        set_boot_addr();
+        for(i=1; i<8; ++i) {
+            boot_secondary(i);
+           // init_secondary(i);
+            printf("cpu[%d] is enabled on PCPU[%d]\n", i, pcpu);
+        }
         smp_pen = 1;
     } else {
         while (!smp_pen) ;
@@ -49,6 +56,7 @@ void start_hypervisor()
      * TODO: Rename guest_sched_start to do_schedule or something others.
      *       do_schedule(vmid) or do_schedule(vcpu_id)
      */
+    while(1);
     printf("sched_start!!!\n");
     sched_start();
 

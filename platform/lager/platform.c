@@ -35,6 +35,7 @@ void console_init()
     // TODO(wonseok): add general initialization for console devices.
     serial_init();
 }
+#include <core/timer.h>
 
 void dev_init()
 {

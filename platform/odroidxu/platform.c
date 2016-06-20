@@ -29,6 +29,10 @@ void platform_init()
     // add mapping for timer devices
     paging_add_mapping(0x101c0000, 0x101c0000, MT_DEVICE, SZ_4K);
 
+    paging_add_mapping(0x02020000, 0x02020000, MT_DEVICE, SZ_4K);
+    paging_add_mapping(0x02073000, 0x02073000, MT_DEVICE, SZ_4K);
+    paging_add_mapping(0x10040000, 0x10040000, MT_DEVICE, SZ_64K);
+
     paging_add_mapping(CFG_HYP_START_ADDRESS, CFG_HYP_START_ADDRESS, MT_WRITEBACK_RW_ALLOC, SZ_128M);
 }
 
@@ -39,11 +43,17 @@ void console_init()
 }
 
 #include <drivers/mct.h>
+#include <drivers/pmu.h>
+#include <core/timer.h>
 
 void dev_init()
 {
 #ifdef CONFIG_MCT
     mct_init();
+#endif
+#ifdef CONFIG_PMU
+    pmu_init();
+    // set boot_addr at ns_base
 #endif
 	timer_hw_init(NS_PL2_PTIMER_IRQ);
     // init .text.dev section like vdev.

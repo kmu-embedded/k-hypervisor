@@ -1,0 +1,69 @@
+#ifndef __PMU_H__
+#define __PMU_H__
+
+#define BIT(nr)     (1 << (nr))
+
+#define EXYNOS5422_CENTRAL_SEQ_OPTION   0x10040208
+#define EXYNOS5422_ARM_L2_OPTION        0x10042608
+#define EXYNOS5422_KFC_L2_OPTION        0x10042688
+#define EXYNOS5422_PMU_SPARE3           0x1004090c
+#define EXYNOS5422_LPI_MASK0            0x10040004
+#define EXYNOS5422_LPI_MASK1            0x10040008
+#define EXYNOS5422_ARM_COMMON_OPTION    0x10042508
+#define EXYNOS5422_PS_HOLD_CONTROL      0x1004330c
+#define EXYNOS_PS_HOLD_CONTROL          0x1004330c
+#define EXYNOS5422_LOGIC_RESET_DURATION3    0x10042d1c
+#define EXYNOS5422_ARM_INTR_SPREAD_ENABLE   0x10040100
+#define EXYNOS5422_ARM_INTR_SPREAD_USE_STANDBYWFI   0x10040104
+#define EXYNOS5422_UP_SCHEDULER         0x10040120
+#define EXYNOS_ARM_CORE0_OPTION         0x10042008
+#define EXYNOS_ARM_CORE_OPTION(_nr)     (EXYNOS_ARM_CORE0_OPTION \
+                        + ((_nr) * 0x80))
+#define EXYNOS5422_KFC_COMMON_OPTION    0x10042588
+#define EXYNOS5422_SCALER_OPTION        0x10044008
+#define EXYNOS5422_ISP_OPTION           0x10044028
+#define EXYNOS5422_MFC_OPTION           0x10044068
+#define EXYNOS5422_G3D_OPTION           0x10044088
+#define EXYNOS5422_DISP1_OPTION         0x100440c8
+#define EXYNOS5422_MAU_OPTION           0x100440e8
+#define EXYNOS5422_G2D_OPTION           0x10044108
+#define EXYNOS5422_MSC_OPTION           0x10044128
+#define EXYNOS5422_TOP_PWR_OPTION       0x10042c48
+#define EXYNOS5422_TOP_PWR_COREBLK_OPTION   0x10042cc8
+#define EXYNOS5422_CAM_OPTION           0x10045108
+
+#define EXYNOS_PMU_SPARE2               0x10040908
+//#define ns_base 0x02020000
+#define ns_base 0x02073000
+
+#define EXYNOS_SWRESET 0x10040400
+
+#define EXYNOS_ARM_CORE0_STATUS         0x10042004
+#define EXYNOS_ARM_CORE_STATUS(_nr)     (EXYNOS_ARM_CORE0_STATUS  + ((_nr) * 0x80))
+#define EXYNOS_CORE_LOCAL_PWR_EN            (0x3)
+
+#define EXYNOS_ARM_CORE0_CONFIGURATION      0x10042000
+#define EXYNOS_ARM_CORE_CONFIGURATION(_nr)  \
+            (EXYNOS_ARM_CORE0_CONFIGURATION + ((_nr) * 0x80))
+
+#define EXYNOS5_USE_RETENTION       BIT(4)
+#define EXYNOS5422_ATB_ISP_ARM      BIT(19)
+#define EXYNOS5422_DIS              BIT(15)
+#define EXYNOS5422_ATB_KFC          BIT(13)
+#define EXYNOS5_SKIP_DEACTIVATE_ACEACP_IN_PWDN      (1 << 7)
+#define EXYNOS_PS_HOLD_OUTPUT_HIGH      (3 << 8)
+#define EXYNOS_PS_HOLD_EN           (1 << 9)
+#define EXYNOS_USE_DELAYED_RESET_ASSERTION      BIT(12)
+#define EXYNOS_ENABLE_AUTOMATIC_WAKEUP      BIT(8)
+#define EXYNOS5_USE_SC_COUNTER      (1 << 0)
+#define EXYNOS5_USE_SC_FEEDBACK     (1 << 1)
+
+
+void pmu_init();
+
+void set_boot_addr();
+
+void boot_secondary(unsigned int cpu);
+
+void init_secondary(unsigned int cpu);
+#endif
