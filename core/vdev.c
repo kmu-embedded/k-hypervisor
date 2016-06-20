@@ -81,13 +81,3 @@ void SECTION(".init.vdev") vdev_init(void)
     }
 }
 
-void vdev_irq_handler_register(uint32_t irq, irq_handler_t handler)
-{
-    if (handler == NULL) {
-        printf("%s failed\n", __func__);
-        return;
-    }
-
-    register_vdev_irq_handler(irq, handler);
-}
-
