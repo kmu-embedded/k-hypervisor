@@ -5,6 +5,7 @@
 #include <irq-chip.h>
 #include <string.h>
 #include <arch/irq.h>
+#include <core/vm/vm.h>
 
 //In rtsm this 37 is for serial 0
 #define PL01x_IRQ_NUM   37
@@ -74,11 +75,13 @@ static void vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
         return;
     }
 
-    // TODO(casionwoo) : How to find the correct vcpuid from vmid ?
-    //  which vcpu is waiting for irq
-    struct vcpu *vcpu = vcpu_find(owner_id);
-    printf("%s VCPUID[%d]\n", __func__, vcpu->vcpuid);
-    virq_hw->forward_irq(vcpu, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
+    int i;
+    struct vmcb *vm = vm_find(owner_id);
+
+    for (i = 0; i < vm->num_vcpus; i++) {
+        struct vcpu *vcpu = vm->vcpu[i];
+        virq_hw->forward_irq(vcpu, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
+    }
 }
 
 #include <stdlib.h>
@@ -97,9 +100,8 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
 
     switch (offset) {
     case UARTDR: {
-        printf("%s[UARTDR]\n", __func__);
         vuart->uartdr = readl(addr);
-        if (vcpu->vcpuid == owner_id) {
+        if (vcpu->vmid == owner_id) {
             writel(vuart->uartdr, UART_ADDR(UARTDR));
             if (vuart->uartdr == 13) {
                 int i;
@@ -112,48 +114,40 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
     }
 
     case UARTRSR_UARTECR:
-        printf("%s[UARTRSR_UARTECR]\n", __func__);
         vuart->uartrsr_uartecr = readl(addr);
         writel(vuart->uartrsr_uartecr, UART_ADDR(UARTRSR_UARTECR));
         break;
 
     case UARTILPR:
-        printf("%s[UARTILPR]\n", __func__);
         vuart->uartilpr = readl(addr);
         writel(vuart->uartilpr, UART_ADDR(UARTILPR));
         break;
 
     case UARTIBRD:
-        printf("%s[UARTIBRD]\n", __func__);
         vuart->uartibrd = readl(addr);
         writel(vuart->uartibrd, UART_ADDR(UARTIBRD));
         break;
 
     case UARTFBRD:
-        printf("%s[UARTFBRD]\n", __func__);
         writel(readl(addr), UART_ADDR(UARTFBRD));
         break;
 
     case UARTLCR_H:
-        printf("%s[UARTLCR_H]\n", __func__);
         writel(readl(addr), UART_ADDR(UARTLCR_H));
         break;
 
     case UARTCR:
-        printf("%s[UARTCR]\n", __func__);
         vuart->uartcr = readl(addr);
         writel(vuart->uartcr, UART_ADDR(UARTCR));
         break;
 
     case UARTIFLS:
-        printf("%s[UARTIFLS]\n", __func__);
         writel(readl(addr), UART_ADDR(UARTIFLS));
         break;
 
     case UARTMSC:
         vuart->uartmsc = readl(addr);
-        printf("%s[UARTMSC] VCPU[%d] %x\n", __func__, vcpu->vcpuid , vuart->uartmsc);
-        if (vuart->uartmsc == 0x70 && vcpu->vcpuid != owner_id) {
+        if (vuart->uartmsc == 0x70 && vcpu->vmid != owner_id) {
             virq_hw->forward_irq(vcpu, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
         }
         writel(vuart->uartmsc, UART_ADDR(UARTMSC));
@@ -161,12 +155,10 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
         break;
 
     case UARTICR:
-        printf("%s[UARTICR]\n", __func__);
         writel(readl(addr), UART_ADDR(UARTICR));
         break;
 
     case UARTDMACR:
-        printf("%s[UARTDMACR]\n", __func__);
         writel(readl(addr), UART_ADDR(UARTDMACR));
         break;
 
@@ -185,12 +177,11 @@ int32_t vuart_read(void *pdata, uint32_t offset)
     switch (offset) {
     case UARTDR: {
         uint32_t data = readl(UART_ADDR(UARTDR));
-        printf("%s[UARTDR]\n", __func__);
 
         if (vcpu->vmid == owner_id) {
             // TODO(casionwoo) : When special key is read, move to the 'CLI'
             if (data == 25) {
-                printf("Changing owner from %d to \t", owner_id);
+                printf("Changing owner from %d to ", owner_id);
                 owner_id = (owner_id + 1) % NUM_GUESTS_STATIC;
                 printf("%d \n", owner_id);
 
@@ -202,61 +193,47 @@ int32_t vuart_read(void *pdata, uint32_t offset)
         return vuart->uartdr;
     }
     case UARTRSR_UARTECR:
-        printf("%s[UARTRSR_UARTECR]\n", __func__);
         return readl(UART_ADDR(UARTRSR_UARTECR));
 
     case UARTFR:
-        printf("%s[UARTFR]\n", __func__);
         return readl(UART_ADDR(UARTFR));
 
     case UARTILPR:
-        printf("%s[UARTILPR]\n", __func__);
         return readl(UART_ADDR(UARTILPR));
 
     case UARTIBRD:
-        printf("%s[UARTIBRD]\n", __func__);
         return readl(UART_ADDR(UARTIBRD));
 
     case UARTFBRD:
-        printf("%s[UARTFBRD]\n", __func__);
         return readl(UART_ADDR(UARTFBRD));
 
     case UARTLCR_H:
-        printf("%s[UARTLCR_H]\n", __func__);
         return readl(UART_ADDR(UARTLCR_H));
 
     case UARTCR:
-        printf("%s[UARTCR]\n", __func__);
         return readl(UART_ADDR(UARTCR));
 
     case UARTIFLS:
-        printf("%s[UARTIFLS]\n", __func__);
         return readl(UART_ADDR(UARTIFLS));
 
     case UARTMSC:
-        printf("%s[UARTMSC]\n", __func__);
         return readl(UART_ADDR(UARTMSC));
 
     case UARTRIS:
-        printf("%s[UARTRIS]\n", __func__);
         return readl(UART_ADDR(UARTRIS));
 
     case UARTMIS:
-        printf("%s[UARTMIS]\n", __func__);
         return readl(UART_ADDR(UARTMIS));
 
     case UARTDMACR:
-        printf("%s[UARTDMACR]\n", __func__);
         return readl(UART_ADDR(UARTDMACR));
 
     case UARTPERIPHID(0) ... UARTPERIPHID(3): {
-        printf("%s[UARTPERIPHID]\n", __func__);
         int index = (offset - UARTPERIPHID(0)) >> 2;
         return readl(UART_ADDR(UARTPERIPHID(index)));
     }
 
     case UARTCELLID(0) ... UARTCELLID(3): {
-        printf("%s[UARTCELLID]\n", __func__);
         int index = (offset - UARTCELLID(0)) >> 2;
         return readl(UART_ADDR(UARTCELLID(index)));
     }
