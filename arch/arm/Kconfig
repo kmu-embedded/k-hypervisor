@@ -24,6 +24,7 @@ config ARCH_VERSATILE
 	select VDEV_SAMPLE
 	select VDEV_SP804
 	select VDEV_SYSREG
+	select VDEV_PL01X_SERIAL
 
 config RMOBILE
 	bool "Renesas ARM SoCs"

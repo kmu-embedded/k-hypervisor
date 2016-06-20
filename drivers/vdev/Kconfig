@@ -6,3 +6,6 @@ config VDEV_SP804
 
 config VDEV_SYSREG
 	bool
+
+config VDEV_PL01X_SERIAL
+	bool

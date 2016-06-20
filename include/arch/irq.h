@@ -23,6 +23,5 @@ static inline uint64_t get_periphbase(void)
 typedef void (*irq_handler_t)(int irq, void *regs, void *pdata);
 void irq_init();
 void register_irq_handler(uint32_t irq, irq_handler_t handler, uint8_t polarity);
-void register_vdev_irq_handler(uint32_t irq, irq_handler_t handler);
 
 #endif
