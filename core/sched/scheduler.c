@@ -38,8 +38,8 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
         s->current_vcpu = NULL;
         s->current_vm = NULL;
 
-        LIST_INITHEAD(&s->registered_list);
-        LIST_INITHEAD(&s->attached_list);
+        LIST_INITHEAD(&s->standby_entries);
+        LIST_INITHEAD(&s->inflight_entries);
     }
 }
 
@@ -163,20 +163,21 @@ struct vmcb *get_current_vm(void)
 /* Find a entry of given vcpuid in given scheduler instance */
 static inline struct sched_entry *find_entry(struct scheduler *s, vcpuid_t vcpuid)
 {
-    struct sched_entry *found_entry = NULL;
-
     struct sched_entry *entry = NULL;
-    list_for_each_entry(struct sched_entry, entry,
-                        &s->registered_list, head_registered) {
-        if (entry->vcpuid == vcpuid) {
-            found_entry = entry;
+
+    struct sched_entry *e = NULL;
+    list_for_each_entry(struct sched_entry, e,
+                        &s->standby_entries, head_standby) {
+        if (e->vcpuid == vcpuid) {
+            entry = e;
             break;
         }
     }
 
-    return found_entry;
+    return entry;
 }
 
+/* TODO:(igkang) Rename fucntions (vcpu_VERB to VERB_vcpu) */
 /**
  * Register a vCPU to a scheduler
  *
@@ -191,18 +192,18 @@ static inline struct sched_entry *find_entry(struct scheduler *s, vcpuid_t vcpui
 int sched_vcpu_register(vcpuid_t vcpuid, uint32_t pcpu)
 {
     struct scheduler *const s = sched[pcpu];
-    struct sched_entry *new_entry;
+    struct sched_entry *new;
 
-    new_entry = (struct sched_entry *) malloc(
+    new = (struct sched_entry *) malloc(
             sizeof(struct sched_entry) + s->policy->size_entry_extra);
 
-    LIST_INITHEAD(&new_entry->head_registered);
-    LIST_INITHEAD(&new_entry->head_attached);
-    new_entry->state = SCHED_DETACHED;
-    new_entry->vcpuid = vcpuid;
+    LIST_INITHEAD(&new->head_standby);
+    LIST_INITHEAD(&new->head_inflight);
+    new->state = SCHED_DETACHED;
+    new->vcpuid = vcpuid;
 
-    LIST_ADDTAIL(&new_entry->head_registered, &s->registered_list);
-    s->policy->register_vcpu(s, new_entry);
+    LIST_ADDTAIL(&new->head_standby, &s->standby_entries);
+    s->policy->register_vcpu(s, new);
 
     /* NOTE(casionwoo) : Return the ID of physical CPU that vCPU is assigned */
     return pcpu;
@@ -228,13 +229,13 @@ int sched_vcpu_register_to_current_pcpu(vcpuid_t vcpuid)
 int sched_vcpu_unregister(vcpuid_t vcpuid, uint32_t pcpu)
 {
     struct scheduler *const s = sched[pcpu];
-    struct sched_entry *entry_to_be_unregistered = NULL;
-    entry_to_be_unregistered = find_entry(s, vcpuid);
+    struct sched_entry *target = NULL;
+    target = find_entry(s, vcpuid);
 
     /* TODO:(igkang) need to check before action */
 
-    s->policy->unregister_vcpu(s, entry_to_be_unregistered);
-    LIST_DELINIT(&entry_to_be_unregistered->head_registered);
+    s->policy->unregister_vcpu(s, target);
+    LIST_DELINIT(&target->head_standby);
 
     return 0;
 }
@@ -252,23 +253,23 @@ int sched_vcpu_unregister(vcpuid_t vcpuid, uint32_t pcpu)
 int sched_vcpu_attach(vcpuid_t vcpuid, uint32_t pcpu)
 {
     struct scheduler *const s = sched[pcpu];
-    struct sched_entry *entry_to_be_attached = NULL;
+    struct sched_entry *target = NULL;
 
-    entry_to_be_attached = find_entry(s, vcpuid);
+    target = find_entry(s, vcpuid);
 
     /* TODO:(igkang) Name the return value constants. */
-    if (entry_to_be_attached == NULL) {
-        return 255;    /* error: not registered */
+    if (target == NULL) {
+        return 255;    /* error: not standby */
     }
 
-    if (entry_to_be_attached->state != SCHED_DETACHED) {
-        return 254;    /* error: already attached */
+    if (target->state != SCHED_DETACHED) {
+        return 254;    /* error: already inflight */
     }
 
-    entry_to_be_attached->state = SCHED_WAITING;
+    target->state = SCHED_WAITING;
 
-    s->policy->attach_vcpu(s, entry_to_be_attached);
-    LIST_ADDTAIL(&entry_to_be_attached->head_attached, &s->attached_list);
+    s->policy->attach_vcpu(s, target);
+    LIST_ADDTAIL(&target->head_inflight, &s->inflight_entries);
 
     /* NOTE(casionwoo) : Return the ID of physical CPU that vCPU is assigned */
     return pcpu;
@@ -291,13 +292,13 @@ int sched_vcpu_attach_to_current_pcpu(vcpuid_t vcpuid)
 int sched_vcpu_detach(vcpuid_t vcpuid, uint32_t pcpu)
 {
     struct scheduler *const s = sched[pcpu];
-    struct sched_entry *entry_to_be_detached = NULL;
-    entry_to_be_detached = find_entry(s, vcpuid);
+    struct sched_entry *target = NULL;
+    target = find_entry(s, vcpuid);
 
     /* TODO:(igkang) need to check before action */
 
-    s->policy->detach_vcpu(s, entry_to_be_detached); /* !@#$ */
-    LIST_DELINIT(&entry_to_be_detached->head_attached);
+    s->policy->detach_vcpu(s, target); /* !@#$ */
+    LIST_DELINIT(&target->head_inflight);
 
     return 0;
 }

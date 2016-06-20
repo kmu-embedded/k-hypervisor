@@ -9,10 +9,10 @@
 #include <core/timer.h>
 
 struct entry_data_rr {
-    struct list_head head;
-
     vcpuid_t vcpuid;
     uint32_t tick_reset_val;
+
+    struct list_head head;
 };
 
 struct sched_data_rr {
