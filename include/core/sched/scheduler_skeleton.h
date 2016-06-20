@@ -31,12 +31,12 @@ struct sched_policy {
 };
 
 struct sched_entry {
-    struct list_head head_registered;
-    struct list_head head_attached;
-
-    // struct vcpu *vcpu; /* TODO:(igkang) direct vcpu referencing */
     vcpuid_t vcpuid;
     sched_state state;
+    // struct vcpu *vcpu; /* TODO:(igkang) direct vcpu referencing */
+
+    struct list_head head_standby;
+    struct list_head head_inflight;
 
     /* policy-specific data follows (allocation) */
 };
@@ -45,15 +45,15 @@ struct scheduler {
     sched_id_t  id;
     uint32_t pcpuid;
 
-    struct list_head registered_list;
-    struct list_head attached_list;
+    struct timer timer;
 
     vcpuid_t current_vcpuid;
     vcpuid_t next_vcpuid;
     struct vcpu *current_vcpu;
     struct vmcb *current_vm;
 
-    struct timer timer;
+    struct list_head standby_entries;
+    struct list_head inflight_entries;
 
     const struct sched_policy *policy;
 
