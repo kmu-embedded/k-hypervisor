@@ -26,8 +26,8 @@ int sched_vcpu_attach_to_current_pcpu(vcpuid_t vcpuid);
 int sched_vcpu_detach(vcpuid_t vcpuid, uint32_t pcpu);
 
 void do_schedule(void *pdata, uint64_t *expiration);
-
 void sched_start(void);
+
 vmid_t get_current_vcpuid(void);
 vcpuid_t get_current_vcpuidx(void);
 struct vcpu *get_current_vcpu(void);
@@ -35,12 +35,5 @@ struct vmcb *get_current_vm(void);
 
 hvmm_status_t guest_switchto(vmid_t vmid);
 hvmm_status_t sched_perform_switch(struct core_regs *regs);
-
-struct running_vcpus_entry_t {
-    struct list_head head;
-    vcpuid_t vcpuid;
-};
-
-extern struct list_head __running_vcpus[];
 
 #endif /* __SCHEDULER_H__ */
