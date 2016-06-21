@@ -20,7 +20,15 @@ static inline uint64_t get_periphbase(void)
     return periphbase;
 }
 
-typedef void (*irq_handler_t)(int irq, void *regs, void *pdata);
+typedef enum {
+    VMM_IRQ,
+    VMM_VM_BOTH_IRQ,
+    VM_IRQ,
+    MAINTENANCE_IRQ,
+    UNEXCEPTED_IRQ
+} irq_return_t;
+
+typedef irq_return_t (*irq_handler_t)(int irq, void *regs, void *pdata);
 void irq_init();
 void register_irq_handler(uint32_t irq, irq_handler_t handler, uint8_t polarity);
 
