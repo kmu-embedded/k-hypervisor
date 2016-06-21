@@ -68,11 +68,11 @@ struct vdev_module pl01x_vuart = {
     .create = vuart_create,
 };
 
-static void vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
+static irq_return_t vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
 {
     if (irq != PL01x_IRQ_NUM) {
         printf("Uncorrect irq nuber\n");
-        return;
+        return UNEXCEPTED_IRQ;
     }
 
     int i;
@@ -82,6 +82,8 @@ static void vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
         struct vcpu *vcpu = vm->vcpu[i];
         virq_hw->forward_irq(vcpu, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
     }
+
+    return VM_IRQ;
 }
 
 #include <stdlib.h>

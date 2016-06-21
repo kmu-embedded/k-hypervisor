@@ -75,7 +75,7 @@ static uint64_t saved_syscnt[NR_CPUS] = {0,};
  * This method handles all timer IRQ.
  */
 // TODO(igkang): rename pregs and pdata for our usage.
-static void timer_irq_handler(int irq, void *pregs, void *pdata)
+static irq_return_t timer_irq_handler(int irq, void *pregs, void *pdata)
 {
     uint32_t pcpu = smp_processor_id();
 
@@ -102,6 +102,8 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
     timer_maintenance();
 
     timer_start();
+
+    return VMM_IRQ;
 }
 
 static void timer_requset_irq(uint32_t irq)
