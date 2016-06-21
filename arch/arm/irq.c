@@ -15,6 +15,7 @@ static irq_handler_t irq_handlers[MAX_IRQS];
 hvmm_status_t do_irq(struct core_regs *regs)
 {
     uint32_t irq = irq_hw->ack();
+    irq_return_t irq_ret;
 
     irq_hw->eoi(irq);
 
@@ -22,14 +23,17 @@ hvmm_status_t do_irq(struct core_regs *regs)
         // SGI Handler
         printf("SGI Occurred\n");
     } else if (irq_handlers[irq]) {
-        // Handler for Hypervisor
-        irq_handlers[irq](irq, regs, 0);
 
-        // TODO(casionwoo) : Every device driver should add dir routine at the end of drvier
-        if (irq != 37)
+        // Routine that Hypervisor handle
+        irq_ret = irq_handlers[irq](irq, regs, 0);
+
+        if (irq_ret != VM_IRQ) {
             irq_hw->dir(irq);
+        }
+
     } else {
-        // Not found handler that just forward irq to VMs
+
+        // Routine that Hypervisor do not handle
         is_guest_irq(irq);
     }
 
