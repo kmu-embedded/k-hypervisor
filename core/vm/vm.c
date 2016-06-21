@@ -167,3 +167,7 @@ void print_vm(struct vmcb *vm)
     debug_print("STATE : %d\n", vm->state);
 }
 
+struct list_head *get_all_vms()
+{
+    return &vm_list;
+}
