@@ -53,9 +53,6 @@ bool is_guest_irq(uint32_t irq)
     list_for_each_entry(struct vcpu, vcpu, vcpus_list, head) {
         virq = pirq_to_virq(vcpu, irq);
 
-//        if (irq == 37)
-//            printf("VIRQ[%d]\n", virq);
-
         if (virq == VIRQ_INVALID) {
             continue;
         }
