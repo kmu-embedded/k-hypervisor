@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <core/vm/vcpu.h>
+#include <core/vm/vm.h>
 
 uint32_t virq_to_pirq(struct vcpu *v, uint32_t virq)
 {
@@ -41,25 +42,40 @@ void pirq_disable(struct vcpu *v, uint32_t pirq)
 #include <core/scheduler.h>
 #include <irq-chip.h>
 
-bool is_guest_irq(uint32_t irq)
+void is_guest_irq(uint32_t irq)
 {
-    bool result = false;
-    uint32_t virq;
     struct vcpu *vcpu;
-    struct list_head *vcpus_list = get_all_vcpus();
+    struct vmcb *vm;
+    uint32_t virq;
+    uint32_t pcpu = smp_processor_id();
+    struct list_head *vm_list = get_all_vms();
 
+    if (irq < 32) { // PPI
+        struct running_vcpus_entry_t *rve;
+        struct list_head *rvs_list = &__running_vcpus[pcpu];
 
-    // NOTE(casionwoo) : Foward to every vcpus.
-    list_for_each_entry(struct vcpu, vcpu, vcpus_list, head) {
-        virq = pirq_to_virq(vcpu, irq);
+        list_for_each_entry(struct running_vcpus_entry_t, rve, rvs_list, head) {
+            vcpu = vcpu_find(rve->vcpuid);
+            virq = pirq_to_virq(vcpu, irq);
 
-        if (virq == VIRQ_INVALID) {
-            continue;
+            if (virq == VIRQ_INVALID) {
+                continue;
+            }
+
+            virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
         }
+    } else if (irq < 1024) { //SPI
 
-        result = virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
+        list_for_each_entry(struct vmcb, vm, vm_list, head) {
+            vcpu = vm->vcpu[0];
+            virq = pirq_to_virq(vcpu, irq);
+
+            if (virq == VIRQ_INVALID || vm->state != RUNNING) {
+                continue;
+            }
+
+            virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
+        }
     }
-
-    return result;
 }
 
