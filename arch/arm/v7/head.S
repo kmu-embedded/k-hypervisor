@@ -22,9 +22,9 @@ BEGIN_PROC(__start)
 	ldr   r11, =0x12c20000       /* r11 := UART base address */
     teq   r12, #0                /* Boot CPU sets up the UART too */
     bleq  init_uart
-  @  @PRINT("- CPU ")
-    mov   r0, r7
-    bl    putn
+    @PRINT("- CPU ")
+    @mov   r0, r7
+    @bl    putn
     @PRINT(" booting -\r\n")
 
 
@@ -75,8 +75,9 @@ BEGIN_PROC(__start)
     str	    r3, [r2]
 #ifdef CONFIG_SMP
     mrc	    p15, 0, r5, c0, c0, 5		@ MPIDR (ARMv7 only)
-    ands    r5, r5, #0xFF
-    cmp     r5, #0x0
+	mov		r4, #BOOTABLE_CPUID
+	orr		r4, r4, #0x80000000
+	cmp     r5, r4
     bne     2f
 #endif
     sub	    r1, r1, #1
@@ -119,15 +120,20 @@ BEGIN_PROC(__start)
 
     ldr     sp, = __end_stack
     read_cp32(r5, MPIDR)
-    ands    r5, r5, #0xFF
+	and     r2, r5, #0x100      @ r2 == CLUSTER ID
+	lsr     r2, r2, 8
+	mov     r2, r2, lsl #2      @ cluster * 4
+	and     r3, r5, #0x03       @ r3 == CPU ID
+	add     r5, r2, r3          @ real cpuid
     mov     r6, #HYP_STACK_SIZE
     mul     r6, r6, r5
     sub     sp, sp, r6
 
 #ifdef CONFIG_SMP
     read_cp32(r5, MPIDR)
-    ands    r5, r5, #0xFF
-    cmp     r5, #0x0
+	mov		r4, #BOOTABLE_CPUID
+	orr		r4, r4, #0x80000000
+	cmp     r5, r4
     beq     1f
     b       enter_smp_pen
 1:
@@ -161,7 +167,7 @@ enter_smp_pen:
     isb     /* Make sure the invalidate ops are complete */
     dsb
 
-    @PRINT(" INIT_SECONDARY CPUS-\r\n")
+	@PRINT(" SECOUNDARY CPU ")
     bl      init_secondary_cpus
 #endif
 

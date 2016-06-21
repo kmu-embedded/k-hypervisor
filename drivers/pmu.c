@@ -167,7 +167,7 @@ static void power_up(unsigned int cpu)
     unsigned int tmp;
     unsigned int addr = EXYNOS_ARM_CORE_CONFIGURATION(cpu_value[cpu]);
 
-    printf("MPIDR: %x cpu[%d] power_up 0x%08x\n", read_mpidr(), cpu, addr);
+    //printf("MPIDR: %x cpu[%d] power_up 0x%08x\n", read_mpidr(), cpu, addr);
     tmp = readl(addr);
     tmp |= EXYNOS_CORE_LOCAL_PWR_EN;
 
@@ -183,7 +183,7 @@ static int power_up_cpu(unsigned int cpu)
 
     if(cpu < 4) {
         while(!readl(EXYNOS_PMU_SPARE2)) {
-//            printf("%s %d: cpu[%d]\n", __func__, __LINE__, cpu);
+            printf("%s %d: cpu[%d]\n", __func__, __LINE__, cpu);
         }
         writel(cpu_addr[cpu], EXYNOS_SWRESET);
     }
@@ -192,12 +192,11 @@ static int power_up_cpu(unsigned int cpu)
 
 void boot_secondary(unsigned int cpu)
 {
+    //printf("%s %d: cpu[%d]\n", __func__, __LINE__, cpu);
     power_up_cpu(cpu);
-
-    // delay
-    smp_rmb();
-    //set_boot_addr();
-    dsb_sev();
+//    smp_rmb();
+//    dsb_sev();
+    //printf("%s %d: cpu[%d]\n", __func__, __LINE__, cpu);
 }
 
 #define HOTPLUG         (1 << 2)

@@ -5,8 +5,9 @@
 #define CFG_CNTFRQ              100000000
 
 #define HYP_STACK_SIZE          4096
-#define NR_CPUS                 2
+#define NR_CPUS                 8
 #define NUM_GUESTS_STATIC       1
+#define BOOTABLE_CPUID          0x100
 
 /*
  *  SOC param

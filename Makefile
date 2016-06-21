@@ -64,8 +64,8 @@ CFLAGS += --std=c99
 
 CFLAGS += -include $(SOURCE_PATH)/include/generated/autoconf.h
 
-DEFINES+=-DCONFIG_C99
-ASFLAGS+=${DEFINES} -D__ASSEMBLY__
+DEFINES+=-DCONFIG_C99 -DCONFIG_MUTEX
+ASFLAGS+=${DEFINES} -D__ASSEMBLY__ -DCONFIG_SMP
 CFLAGS+=${DEFINES}
 # BUILD: Passed --std==gnu90, --std==gnu99, --std=gnu11
 

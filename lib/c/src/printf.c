@@ -87,12 +87,12 @@ Author: Ben Leslie <benjl@cse.unsw.edu.au>
 /* All of these functions do not lock the I/O stream.  They all end up calling
  * format which handles the locking. */
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SPIN_LOCK
 #include <arch/armv7/smp.h>
 static DEFINE_SPINLOCK(PRINTF_LOCK);
 #endif
 
-#ifdef __CONFIG_MUTEX__
+#ifdef CONFIG_MUTEX
 #include <arch/armv7/mutex.h>
 static DEFINE_MUTEX(PRINT_MUTEX);
 #endif
@@ -103,12 +103,12 @@ printf(const char *format, ...)
     int ret;
     va_list ap;
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SPIN_LOCK
     unsigned long flags;
     smp_spin_lock(&PRINTF_LOCK, flags);
 #endif
 
-#ifdef __CONFIG_MUTEX__
+#ifdef CONFIG_MUTEX
     lock_mutex(&PRINT_MUTEX);
 #endif
 
@@ -116,11 +116,11 @@ printf(const char *format, ...)
     ret = vfprintf(stdout, format, ap);
     va_end(ap);
 
-#ifdef __CONFIG_MUTEX__
+#ifdef CONFIG_MUTEX
     unlock_mutex(&PRINT_MUTEX);
 #endif
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SPIN_LOCK
     smp_spin_unlock(&PRINTF_LOCK, flags);
 #endif
 

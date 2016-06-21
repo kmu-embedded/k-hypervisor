@@ -8,6 +8,7 @@
 #include <core/timer.h>
 #include <vm_map.h>
 #include <arch/armv7/generic_timer.h>
+#include <drivers/pmu.h>
 
 #include "init.h"
 #include "paging.h"
@@ -18,7 +19,7 @@ uint8_t secondary_smp_pen;
 
 void init_cpu()
 {
-    uint8_t cpuid = smp_processor_id();
+    uint32_t cpuid = read_mpidr();
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
 
     // For console debugging.
@@ -51,20 +52,35 @@ void init_cpu()
 	setup_vm_mmap();
 
 #ifdef CONFIG_SMP
-	printf("wake up...other CPUs\n");
+	printf("(c%x) wake up...other CPUs\n", cpuid);
 	secondary_smp_pen = 1;
 #endif
 
-	printf("%s[%d]: CPU[%d]\n", __func__, __LINE__, cpuid);
+	printf("(c%x) %s[%d]: CPU[%d]\n", cpuid, __func__, __LINE__, cpuid);
 
+#if 1
+    int i;
+    set_boot_addr();
+    for(i=1; i<4; ++i) {
+        boot_secondary(i);
+        //init_secondary(i);
+        printf("(c%x) cpu[%d] is enabled on PCPU[%d]\n", cpuid, i, cpuid);
+    }
+    smp_rmb();
+    dsb_sev();
+    //while(1);
+#endif
+    printf("(c%x) before enable mmu\n", cpuid);
     write_cp32(HSCTLR_VALUE, HSCTLR);
 
+    printf("(c%x) enable mmu\n", cpuid);
 	start_hypervisor();
 }
 
 void init_secondary_cpus()
 {
-    uint8_t cpuid = smp_processor_id();
+    uint32_t cpuid = read_mpidr() & 0x00000103;
+    printf("(c%x) %s[%d]: CPU[%d]\n", cpuid, __func__, __LINE__, cpuid);
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
 
 	write_cp32((uint32_t) &__hvc_vector, HVBAR);
@@ -78,10 +94,10 @@ void init_secondary_cpus()
     write_cp32(HMAIR1_VALUE, HMAIR1);
 
     irq_init();
-
-    printf("%s[%d]: CPU[%d]\n", __func__, __LINE__, cpuid);
+    printf("(c%x) %s[%d]: CPU[%d]\n", cpuid, __func__, __LINE__, cpuid);
 
     write_cp32(HSCTLR_VALUE, HSCTLR);
+    printf("(c%x) enable mmu\n", cpuid);
 
     start_hypervisor();
 }

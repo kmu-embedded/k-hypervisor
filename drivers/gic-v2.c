@@ -118,7 +118,7 @@ void gic_init(void)
 {
     int i;
     uint32_t periphbase;
-    uint8_t cpuid = smp_processor_id();
+    uint32_t cpuid = read_mpidr() & 0x103;
 
     // This code will be moved other parts, not here. */
     /* Get GICv2 base address */
@@ -133,7 +133,7 @@ void gic_init(void)
      * We usually use the name of variables in lower case, but
      * here, using upper case is special case for readability.
      */
-    if (cpuid == 0) {
+    if (cpuid == BOOTABLE_CPUID) {
         uint32_t gicd_typer = GICD_READ(GICD_TYPER);
         /* maximum number of irq lines: 32(N+1). */
         GICv2.ITLinesNumber = 32 * ((gicd_typer & GICD_NR_IT_LINES_MASK) + 1);
@@ -153,7 +153,7 @@ void gic_init(void)
     // TODO(casionwoo) : This ISENABLER should be modified like upper
     GICD_WRITE(GICD_ISENABLER(0), 0xffffffff);
 
-    if (cpuid == 0) {
+    if (cpuid == BOOTABLE_CPUID) {
         for (i = 32; i < GICv2.ITLinesNumber; i += 16) {
             GICD_WRITE(GICD_ICFGR(i >> 4), 0x0);
         }
@@ -183,17 +183,17 @@ void gic_init(void)
     }
 
     GICC_WRITE(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
-    if (cpuid == 0) {
+    if (cpuid == BOOTABLE_CPUID) {
         GICD_WRITE(GICD_CTLR, 0x1);
     }
 }
 
 void gich_init()
 {
-    uint8_t cpuid = smp_processor_id();
+    uint32_t cpuid = read_mpidr() & 0x103;
 
     // Initialization GICH
-    if (cpuid == 0) {
+    if (cpuid == BOOTABLE_CPUID) {
         GICv2.num_lr = (GICH_READ(GICH_VTR) & GICH_VTR_LISTREGS_MASK) + 1;
         gic_maintenance_irq_enable();
     }

@@ -14,9 +14,11 @@ void start_hypervisor()
     int i;
     uint8_t nr_vcpus = 2; // TODO: It will be read from configuration file.
 
-    uint32_t pcpu = smp_processor_id();
+    //uint32_t pcpu = smp_processor_id();
+    uint32_t pcpu = read_mpidr() & 0x103;
+    printf("%s:%d\n", __func__, __LINE__);
 
-    if (pcpu == 0) {
+    if (pcpu == BOOTABLE_CPUID) {
         timemanager_init();
         sched_init();
 
@@ -38,17 +40,21 @@ void start_hypervisor()
                 goto error;
             }
         }
-
+#if 0
         set_boot_addr();
         for(i=1; i<8; ++i) {
             boot_secondary(i);
            // init_secondary(i);
             printf("cpu[%d] is enabled on PCPU[%d]\n", i, pcpu);
         }
+        smp_rmb();
+        dsb_sev();
+#endif
+        printf("%s: cpu[%d] is enabled\n", __func__, pcpu);
         smp_pen = 1;
     } else {
         while (!smp_pen) ;
-        printf("cpu[%d] is enabled\n", pcpu);
+        printf("%s: cpu[%d] is enabled\n", __func__, pcpu);
     }
 
     /*
