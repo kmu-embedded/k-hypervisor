@@ -34,6 +34,8 @@ hvmm_status_t do_irq(struct core_regs *regs)
     } else {
 
         // Routine that Hypervisor do not handle
+
+        printf("what the fuck IRQ[%d]\n", irq);
         is_guest_irq(irq);
     }
 
@@ -44,6 +46,7 @@ void irq_init()
 {
     set_irqchip_type();
     write_cp32((0x10 | 0x8), HCR);
+    irq_handler_init(irq_handlers);
 }
 
 void register_irq_handler(uint32_t irq, irq_handler_t handler, uint8_t polarity)
