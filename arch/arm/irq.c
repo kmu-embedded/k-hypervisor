@@ -15,28 +15,11 @@ static irq_handler_t irq_handlers[MAX_IRQS];
 hvmm_status_t do_irq(struct core_regs *regs)
 {
     uint32_t irq = irq_hw->ack();
-    irq_return_t irq_ret;
 
     irq_hw->eoi(irq);
 
-    if (irq < 16) {
-        // SGI Handler
-        printf("SGI Occurred\n");
-    } else if (irq_handlers[irq]) {
-
-        // Routine that Hypervisor handle
-        irq_ret = irq_handlers[irq](irq, regs, 0);
-
-        if (irq_ret != VM_IRQ) {
-            irq_hw->dir(irq);
-        }
-
-    } else {
-
-        // Routine that Hypervisor do not handle
-
-        printf("what the fuck IRQ[%d]\n", irq);
-        is_guest_irq(irq);
+    if (irq_handlers[irq](irq, regs, 0) != VM_IRQ) {
+        irq_hw->dir(irq);
     }
 
     return HVMM_STATUS_SUCCESS;
