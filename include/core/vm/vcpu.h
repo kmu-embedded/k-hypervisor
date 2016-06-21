@@ -87,7 +87,7 @@ void virq_enable(struct vcpu *v, uint32_t pirq, uint32_t virq);
 void virq_disable(struct vcpu *v, uint32_t virq);
 void pirq_enable(struct vcpu *v, uint32_t pirq, uint32_t virq);
 void pirq_disable(struct vcpu *v, uint32_t pirq);
-bool is_guest_irq(uint32_t irq);
+void is_guest_irq(uint32_t irq);
 
 struct list_head *get_all_vcpus();
 
