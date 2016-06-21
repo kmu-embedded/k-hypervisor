@@ -88,7 +88,6 @@ void virq_enable(struct vcpu *v, uint32_t pirq, uint32_t virq);
 void virq_disable(struct vcpu *v, uint32_t virq);
 void pirq_enable(struct vcpu *v, uint32_t pirq, uint32_t virq);
 void pirq_disable(struct vcpu *v, uint32_t pirq);
-void is_guest_irq(uint32_t irq);
 
 void irq_handler_init(irq_handler_t *handlers);
 

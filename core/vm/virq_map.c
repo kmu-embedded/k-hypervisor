@@ -43,13 +43,11 @@ void pirq_disable(struct vcpu *v, uint32_t pirq)
 #include <irq-chip.h>
 #include <arch/irq.h>
 
-static irq_return_t _is_guest_irq(int irq, void *pregs, void *pdata)
+static irq_return_t is_guest_ppi(int irq, void *pregs, void *pdata)
 {
     struct vcpu *vcpu;
-    struct vmcb *vm;
     uint32_t virq;
     uint32_t pcpu = smp_processor_id();
-    struct list_head *vm_list = get_all_vms();
 
     if (irq < 32) { // PPI
         struct running_vcpus_entry_t *rve;
@@ -65,7 +63,19 @@ static irq_return_t _is_guest_irq(int irq, void *pregs, void *pdata)
 
             virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
         }
-    } else if (irq < 1024) { //SPI
+    }
+
+    return VM_IRQ;
+}
+
+static irq_return_t is_guest_spi(int irq, void *pregs, void *pdata)
+{
+    struct vcpu *vcpu;
+    struct vmcb *vm;
+    uint32_t virq;
+    struct list_head *vm_list = get_all_vms();
+
+    if (irq < 1024) { //SPI
 
         list_for_each_entry(struct vmcb, vm, vm_list, head) {
             vcpu = vm->vcpu[0];
@@ -89,50 +99,13 @@ void irq_handler_init(irq_handler_t *handler)
     for (i = 16; i < 32; i++){
         if (handler[i])
             continue;
-        handler[i] = _is_guest_irq;
+        handler[i] = is_guest_ppi;
     }
 
     for (i = 32; i < 1025; i++){
         if (handler[i])
             continue;
-        handler[i] = _is_guest_irq;
-    }
-}
-
-void is_guest_irq(uint32_t irq)
-{
-    struct vcpu *vcpu;
-    struct vmcb *vm;
-    uint32_t virq;
-    uint32_t pcpu = smp_processor_id();
-    struct list_head *vm_list = get_all_vms();
-
-    if (irq < 32) { // PPI
-        struct running_vcpus_entry_t *rve;
-        struct list_head *rvs_list = &__running_vcpus[pcpu];
-
-        list_for_each_entry(struct running_vcpus_entry_t, rve, rvs_list, head) {
-            vcpu = vcpu_find(rve->vcpuid);
-            virq = pirq_to_virq(vcpu, irq);
-
-            if (virq == VIRQ_INVALID) {
-                continue;
-            }
-
-            virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
-        }
-    } else if (irq < 1024) { //SPI
-
-        list_for_each_entry(struct vmcb, vm, vm_list, head) {
-            vcpu = vm->vcpu[0];
-            virq = pirq_to_virq(vcpu, irq);
-
-            if (virq == VIRQ_INVALID || vm->state != RUNNING) {
-                continue;
-            }
-
-            virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
-        }
+        handler[i] = is_guest_spi;
     }
 }
 
