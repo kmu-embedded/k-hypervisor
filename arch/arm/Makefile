@@ -3,6 +3,7 @@ include ${SOURCE_PATH}/arch/arm/v7/Makefile
 objs-y:=
 
 objs-y += cp15.o
+objs-y += cp15_64.o
 objs-y += traps.o
 objs-y += init.o
 objs-y += irq.o
