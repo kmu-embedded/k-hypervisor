@@ -9,6 +9,7 @@
 
 //In rtsm this 37 is for serial 0
 #define PL01x_IRQ_NUM   37
+#define PROMPT_MSG  "[vm %d] "
 
 static char prompt[32];
 static int owner_id = 0;
@@ -181,14 +182,14 @@ int32_t vuart_read(void *pdata, uint32_t offset)
         uint32_t data = readl(UART_ADDR(UARTDR));
 
         if (vcpu->vmid == owner_id) {
-            // TODO(casionwoo) : When special key is read, move to the 'CLI'
+            // TODO(casionwoo) : When data is special key(Ctrl + y), Change the OWNER
             if (data == 25) {
-                printf("Changing owner from %d to ", owner_id);
+                printf("OWNER FROM vm[%d] to ", owner_id);
                 owner_id = (owner_id + 1) % NUM_GUESTS_STATIC;
-                printf("%d \n", owner_id);
+                printf("vm[%d] \n", owner_id);
 
                 memset(prompt, 0, 32);
-                sprintf(prompt, "VM %d> ", owner_id);
+                sprintf(prompt, PROMPT_MSG, owner_id);
             }
             return data;
         }
@@ -252,7 +253,7 @@ hvmm_status_t vdev_pl01x_init()
     hvmm_status_t result = HVMM_STATUS_BUSY;
 
     memset(prompt, 0, 32);
-    sprintf(prompt, "VM %d> ", owner_id);
+    sprintf(prompt, PROMPT_MSG, owner_id);
 
     // For trap
     vdev_register(&pl01x_vuart);
