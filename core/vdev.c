@@ -34,8 +34,38 @@ void vdev_handler(struct core_regs *regs, uint32_t iss)
             } else {
                 regs->gpr[srt] = instance->module->read(instance->pdata, offset);
             }
+
+            return;
         }
     }
+
+#if 1
+    if (0x02073000 <= fipa && fipa <= 0x02073000 + 0x1000) {
+        if (wnr) {
+            if (fipa == 0x2073000 + 0x1c) {
+                int vcpuid;
+                struct vcpu *target_vcpu = NULL;
+                struct vmcb *vm = get_current_vm();
+                uint32_t pc = regs->gpr[srt];
+
+                for (vcpuid = 1; vcpuid < vm->num_vcpus; vcpuid++) {
+                    target_vcpu = vm->vcpu[vcpuid];
+                    target_vcpu->regs.core_regs.pc = pc; 
+                    //printf("=============================================vcpu[%d] attatched to pcpu[%d] \n", target_vcpu->vcpuid, target_vcpu->pcpuid);
+                    sched_vcpu_attach(target_vcpu->vcpuid, target_vcpu->pcpuid);
+                    target_vcpu->state = VCPU_ACTIVATED;
+                }
+            } else {
+                writel(regs->gpr[srt], fipa);
+            }
+        } else {
+            regs->gpr[srt] = readl(fipa);
+        }
+        return;
+    }
+#endif
+    printf("%s: FIPA: 0x%08x\n", __func__, fipa);
+    while(1) ;
 }
 void vdev_register(struct vdev_module *module)
 {

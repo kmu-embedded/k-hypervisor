@@ -12,11 +12,10 @@ static uint32_t smp_pen = 0;
 void start_hypervisor()
 {
     int i;
-    uint8_t nr_vcpus = 2; // TODO: It will be read from configuration file.
+    uint8_t nr_vcpus = 8; // TODO: It will be read from configuration file.
 
-    //uint32_t pcpu = smp_processor_id();
     uint32_t pcpu = read_mpidr() & 0x103;
-    printf("%s:%d\n", __func__, __LINE__);
+    printf("(c%x) %s %d\n", pcpu, __func__, __LINE__);
 
     if (pcpu == BOOTABLE_CPUID) {
         timemanager_init();
@@ -40,21 +39,11 @@ void start_hypervisor()
                 goto error;
             }
         }
-#if 0
-        set_boot_addr();
-        for(i=1; i<8; ++i) {
-            boot_secondary(i);
-           // init_secondary(i);
-            printf("cpu[%d] is enabled on PCPU[%d]\n", i, pcpu);
-        }
-        smp_rmb();
-        dsb_sev();
-#endif
-        printf("%s: cpu[%d] is enabled\n", __func__, pcpu);
+        printf("(c%x) %s is enabled\n", pcpu, __func__);
         smp_pen = 1;
     } else {
         while (!smp_pen) ;
-        printf("%s: cpu[%d] is enabled\n", __func__, pcpu);
+        printf("(c%x) %s is enabled\n", pcpu, __func__);
     }
 
     /*
@@ -62,8 +51,12 @@ void start_hypervisor()
      * TODO: Rename guest_sched_start to do_schedule or something others.
      *       do_schedule(vmid) or do_schedule(vcpu_id)
      */
-    while(1);
-    printf("sched_start!!!\n");
+//    while(1);
+//    printf("(c%x) before cpu_start %s\n", pcpu, __func__);
+//    if(pcpu != 0x100) {
+//        while(1);
+//    }
+    printf("(c%x) sched_start!!!\n", pcpu);
     sched_start();
 
     /* The code flow must not reach here */

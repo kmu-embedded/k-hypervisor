@@ -19,7 +19,7 @@ uint8_t secondary_smp_pen;
 
 void init_cpu()
 {
-    uint32_t cpuid = read_mpidr();
+    uint32_t cpuid = read_mpidr() & 0x00000103;
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
 
     // For console debugging.
@@ -50,37 +50,34 @@ void init_cpu()
 	vdev_init(); /* Already we have */
 
 	setup_vm_mmap();
-
 #ifdef CONFIG_SMP
 	printf("(c%x) wake up...other CPUs\n", cpuid);
 	secondary_smp_pen = 1;
 #endif
+	printf("(c%x) %s[%d]: CPU[%x]\n", cpuid, __func__, __LINE__, cpuid);
 
-	printf("(c%x) %s[%d]: CPU[%d]\n", cpuid, __func__, __LINE__, cpuid);
+    printf("(c%x) before enable mmu\n", cpuid);
+    write_cp32(HSCTLR_VALUE, HSCTLR);
+//    write_cp32((HSCTLR_VALUE & ~(1 << 12 | 1 << 2)), HSCTLR);
 
 #if 1
     int i;
     set_boot_addr();
-    for(i=1; i<4; ++i) {
+    for(i=1; i<8; ++i) {
         boot_secondary(i);
-        //init_secondary(i);
-        printf("(c%x) cpu[%d] is enabled on PCPU[%d]\n", cpuid, i, cpuid);
+       // init_secondary(i);
+        printf("(c%x) cpu[%d] is enabled on PCPU[%x]\n", cpuid, i, cpuid);
     }
     smp_rmb();
     dsb_sev();
-    //while(1);
 #endif
-    printf("(c%x) before enable mmu\n", cpuid);
-    write_cp32(HSCTLR_VALUE, HSCTLR);
-
-    printf("(c%x) enable mmu\n", cpuid);
 	start_hypervisor();
 }
 
 void init_secondary_cpus()
 {
     uint32_t cpuid = read_mpidr() & 0x00000103;
-    printf("(c%x) %s[%d]: CPU[%d]\n", cpuid, __func__, __LINE__, cpuid);
+
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
 
 	write_cp32((uint32_t) &__hvc_vector, HVBAR);
@@ -94,9 +91,10 @@ void init_secondary_cpus()
     write_cp32(HMAIR1_VALUE, HMAIR1);
 
     irq_init();
-    printf("(c%x) %s[%d]: CPU[%d]\n", cpuid, __func__, __LINE__, cpuid);
-
+    //printf("(c%x) %s[%d]: CPU[%x]\n", cpuid, __func__, __LINE__, cpuid);
+    //while(1);
     write_cp32(HSCTLR_VALUE, HSCTLR);
+//    write_cp32((HSCTLR_VALUE & ~(1 << 12 | 1 << 2)), HSCTLR);
     printf("(c%x) enable mmu\n", cpuid);
 
     start_hypervisor();

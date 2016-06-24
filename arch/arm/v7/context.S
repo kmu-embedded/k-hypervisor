@@ -1,5 +1,9 @@
 #include <asm/macro.h>
 
+    .syntax	unified
+    .arch_extension sec
+    .arch_extension virt
+
 BEGIN_PROC(__set_vcpu_context_first_time)
     @ r0 = vcpu_regs->core_regs
     ldmfd   r0!, {r1, r2, r3}

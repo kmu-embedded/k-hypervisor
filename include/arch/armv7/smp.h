@@ -5,7 +5,7 @@
 #include "sysctrl.h"
 #include "arm_inline.h"
 
-#define MPIDR_MASK 0xFFFFFF
+#define MPIDR_MASK 0xFF00
 #define MPIDR_CPUID_MASK 0xFF
 
 /**
@@ -20,7 +20,14 @@
  */
 static inline uint32_t smp_processor_id(void)
 {
-    return read_mpidr() & MPIDR_MASK & MPIDR_CPUID_MASK;
+
+    uint32_t value = read_mpidr();
+    uint32_t cluster = (value & MPIDR_MASK) >> 8;
+    uint32_t coreid = value & MPIDR_CPUID_MASK;
+
+    return ( (cluster ? 0 : 1) * 4) + coreid;
+
+//    return read_mpidr() & MPIDR_MASK & MPIDR_CPUID_MASK;
 }
 
 #define __ARCH_SPIN_LOCK_UNLOCKED 0

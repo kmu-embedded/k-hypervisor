@@ -25,12 +25,14 @@ struct vcpu *vcpu_create()
     struct vcpu *vcpu = NULL;
     int i;
 
+    printf("%s[%d]\n", __func__, __LINE__);
     vcpu = malloc(sizeof(struct vcpu));
     if (vcpu == VCPU_CREATE_FAILED) {
         return vcpu;
     }
     memset(vcpu, 0, sizeof(struct vcpu));
 
+    printf("%s[%d]\n", __func__, __LINE__);
     vcpu->vcpuid = nr_vcpus++;
     vcpu->state = VCPU_DEFINED;
 
@@ -42,6 +44,7 @@ struct vcpu *vcpu_create()
         vcpu->map[i].virq = VIRQ_INVALID;
         vcpu->map[i].pirq = PIRQ_INVALID;
     }
+    printf("%s[%d]\n", __func__, __LINE__);
 
     LIST_ADDTAIL(&vcpu->head, &vcpu_list);
 
@@ -80,6 +83,8 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
     }
     // TODO(casionwoo) : Check the return value after scheduler status value defined
     vcpu->pcpuid = sched_vcpu_register(vcpu->vcpuid, vcpu->vcpuid);
+//    vcpu->pcpuid = sched_vcpu_register(vcpu->vcpuid, 0);
+//    vcpu->regs.cp15.vmpidr |= vcpu->pcpuid;
     printf("sched_vcpu_register, vcpuid : %d is registered on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
     vcpu->state = VCPU_REGISTERED;
 

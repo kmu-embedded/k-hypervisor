@@ -5,7 +5,7 @@ OUTPUT_ARCH(arm)
 TARGET(binary)
 ENTRY(__start)
 
-HEAP_SIZE   = 0x00010000;
+HEAP_SIZE   = 0x00100000;
 
 SECTIONS
 {

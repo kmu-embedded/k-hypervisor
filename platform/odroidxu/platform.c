@@ -29,7 +29,6 @@ void platform_init()
     // add mapping for timer devices
     paging_add_mapping(0x101c0000, 0x101c0000, MT_DEVICE, SZ_4K);
 
-    paging_add_mapping(0x02020000, 0x02020000, MT_DEVICE, SZ_4K);
     paging_add_mapping(0x02073000, 0x02073000, MT_DEVICE, SZ_4K);
     paging_add_mapping(0x10040000, 0x10040000, MT_DEVICE, SZ_64K);
 

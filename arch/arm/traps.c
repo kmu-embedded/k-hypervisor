@@ -17,6 +17,8 @@ int do_hyp_trap(struct core_regs *regs)
     uint32_t ec = decode_ec(hsr);
     uint32_t il = decode_il(hsr);
     uint32_t iss = decode_iss(hsr);
+    uint32_t hifar = read_cp32(HIFAR);
+    uint32_t hpfar = read_cp32(HPFAR);
 
     switch (ec) {
     case WFI_WFE:
@@ -50,6 +52,9 @@ int do_hyp_trap(struct core_regs *regs)
 
 trap_error:
     printf("CPU[%d] %s EC: 0x%x ISS: 0x%x\n", pcpuid, __func__, ec, iss);
+    printf("HSR : %x\n", hsr);
+    printf("HPFAR : %x\n", hpfar);
+    printf("HIFSR : %x\n", hifar);
     printf("r0 %x\n", regs->gpr[0]);
     printf("r1 %x\n", regs->gpr[1]);
     printf("r2 %x\n", regs->gpr[2]);
