@@ -33,6 +33,7 @@ int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
     struct vcpu *vcpu = get_current_vcpu();
     struct vdev_timer *v = &vcpu->vtimer;
     uint32_t *target = NULL;
+    uint32_t tmp = 0;
 
     switch (what) {
         case CP32(CNTFRQ)    :
@@ -49,8 +50,25 @@ int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
             break;
 
         case CP32(CNTP_TVAL) :
+            if (read) {
+                target = &tmp;
+                tmp = (uint32_t)
+                    ( v->p_cval - (timer_get_syscounter() - v->p_ct_offset) );
+            } else {
+                /* FIXME:(igkang) sign extension of *rt needed */
+                v->p_cval = (timer_get_syscounter() - v->p_ct_offset + *rt);
+                return 0;
+            }
         case CP32(CNTV_TVAL) :
-            /* do subtraction and set cval instead? */
+            if (read) {
+                tmp = (uint32_t)
+                    ( v->v_cval - (timer_get_syscounter() - v->p_ct_offset) );
+            } else {
+                /* FIXME:(igkang) sign extension of *rt needed */
+                v->v_cval = (timer_get_syscounter() - v->p_ct_offset + *rt);
+                return 0;
+            }
+            /* do subtraction and set cval */
             break;
         default:
             return 1;
@@ -71,10 +89,17 @@ int vdev_timer_access64(uint8_t read, uint32_t what, uint32_t *rt_low, uint32_t 
     struct vcpu *vcpu = get_current_vcpu();
     struct vdev_timer *v = &vcpu->vtimer;
     uint64_t *target = NULL;
+    uint64_t tmp = 0;
 
     switch (what) {
         case CP64(CNTPCT)    :
         case CP64(CNTVCT)    :
+            if (!read) {
+                return 1;
+            } else {
+                target = &tmp;
+                tmp = timer_get_syscounter() + v->p_ct_offset;
+            }
             /* do something */
             break;
         case CP64(CNTP_CVAL) :
