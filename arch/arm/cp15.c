@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <arch/armv7.h>
-
-#define __CP32(cp, n, opc1, m, opc2)    ((n) << 12 | (opc1) << 8 | (m) << 4 | (opc2))
-#define CP32(args...)                   __CP32(args)
+#include <drivers/vdev/vdev_timer.h>
 
 #define opc2_bit                (0x7 << 17)
 #define opc1_bit                (0x7 << 14)
@@ -26,28 +24,27 @@ int32_t emulate_cp15_32(struct core_regs *regs, uint32_t iss)
     uint8_t dir = decode_dir(iss);
 
     switch (decode_cp15(iss)) {
-    case CP32(MIDR): {
-        if (!dir) {
-            write_cp32(regs->gpr[rt], MIDR);
-        } else {
-            regs->gpr[rt] = read_cp32(MIDR);
-        }
-        ret = 0;
-        break;
-    }
-    case CP32(CNTFRQ)    :
-    case CP32(CNTKCTL)   :
-    case CP32(CNTP_TVAL) :
-    case CP32(CNTP_CTL)  :
-    case CP32(CNTV_TVAL) :
-    case CP32(CNTV_CTL)  :
-    case CP32(CNTHCTL)   :
-    case CP32(CNTHP_TVAL):
-    case CP32(CNTHP_CTL) :
-        // break;
-    default:
-        printf("not implement: %x\n", decode_cp15(iss));
-        break;
+        case CP32(MIDR):
+            {
+                if (!dir) {
+                    write_cp32(regs->gpr[rt], MIDR);
+                } else {
+                    regs->gpr[rt] = read_cp32(MIDR);
+                }
+                ret = 0;
+                break;
+            }
+        case CP32(CNTFRQ)    :
+        case CP32(CNTKCTL)   :
+        case CP32(CNTP_TVAL) :
+        case CP32(CNTP_CTL)  :
+        case CP32(CNTV_TVAL) :
+        case CP32(CNTV_CTL)  :
+            vdev_timer_access32(dir, decode_cp15(iss), &regs->gpr[rt]);
+            break;
+        default:
+            printf("not implement: %x\n", decode_cp15(iss));
+            break;
     }
 
     return ret;

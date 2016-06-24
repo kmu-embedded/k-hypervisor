@@ -6,6 +6,7 @@
 #include <core/scheduler.h>
 #include <config.h>
 #include <irq-chip.h>
+#include <drivers/vdev/vdev_timer.h>
 
 // #define DEBUG
 
@@ -13,46 +14,87 @@
 
 extern struct virq_chip *virq_hw;
 
-/* represents a generic timer w/o SE,VE (NS PL1, PL0 timer) */
-struct vdev_timer {
-    /* data for hypervisor */
-    uint64_t p_ct_offset;
-
-    /* regs for guest */
-    uint32_t k_ctl;
-
-    uint32_t p_ctl;
-    uint64_t p_cval;
-
-    uint32_t v_ctl;
-    uint64_t v_cval;
-    uint64_t v_off;
-};
-
 /*
-CP64  CNTPCT
-CP64  CNTVCT
-CP64  CNTP_CVAL
-CP64  CNTV_CVAL
-CP64  CNTVOFF
-CP64  CNTHP_CVAL
+   CP64(CNTPCT)
+   CP64(CNTVCT)
+   CP64(CNTP_CVAL)
+   CP64(CNTV_CVAL)
 
-CP32  CNTFRQ
-CP32  CNTKCTL
-CP32  CNTP_TVAL
-CP32  CNTP_CTL
-CP32  CNTV_TVAL
-CP32  CNTV_CTL
-CP32  CNTHCTL
-CP32  CNTHP_TVAL
-CP32  CNTHP_CTL
- */
+   CP32(CNTFRQ)
+   CP32(CNTKCTL)
+   CP32(CNTP_TVAL)
+   CP32(CNTP_CTL)
+   CP32(CNTV_TVAL)
+   CP32(CNTV_CTL)
+   */
 
-bool vdev_timer_access32(uint8_t dir, uint32_t *rt) {
-    return false;
+int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
+{
+    struct vcpu *vcpu = get_current_vcpu();
+    struct vdev_timer *v = &vcpu->vtimer;
+    uint32_t *target = NULL;
+
+    switch (what) {
+        case CP32(CNTFRQ)    :
+            target = &v->frq;
+            break;
+        case CP32(CNTKCTL)   :
+            target = &v->k_ctl;
+            break;
+        case CP32(CNTP_CTL)  :
+            target = &v->p_ctl;
+            break;
+        case CP32(CNTV_CTL)  :
+            target = &v->v_ctl;
+            break;
+
+        case CP32(CNTP_TVAL) :
+        case CP32(CNTV_TVAL) :
+            /* do subtraction and set cval instead? */
+            break;
+        default:
+            return 1;
+            break;
+    }
+
+    if (read) {
+        *rt = *target;
+    } else { /* write */
+        *target = *rt;
+    }
+
+    return 0;
 }
 
-bool vdev_timer_access64(uint8_t dir, uint32_t *rt_low, uint32_t *rt_high) {
-    return false;
+int vdev_timer_access64(uint8_t read, uint32_t what, uint32_t *rt_low, uint32_t *rt_high)
+{
+    struct vcpu *vcpu = get_current_vcpu();
+    struct vdev_timer *v = &vcpu->vtimer;
+    uint64_t *target = NULL;
+
+    switch (what) {
+        case CP64(CNTPCT)    :
+        case CP64(CNTVCT)    :
+            /* do something */
+            break;
+        case CP64(CNTP_CVAL) :
+            target = &v->p_cval;
+            break;
+        case CP64(CNTV_CVAL) :
+            target = &v->v_cval;
+            break;
+        default:
+            return 1;
+            break;
+    }
+
+    if (read) {
+        *rt_low  = (uint32_t) (*target & 0xFFFFFFFF);
+        *rt_high = (uint32_t) (*target >> 32);
+    } else { /* write */
+        *target = ((uint64_t) *rt_high << 32) | (uint64_t) *rt_low;
+    }
+
+    return 0;
 }
 
