@@ -12,7 +12,7 @@ static uint32_t smp_pen = 0;
 void start_hypervisor()
 {
     int i;
-    uint8_t nr_vcpus = 8; // TODO: It will be read from configuration file.
+    uint8_t nr_vcpus = 1; // TODO: It will be read from configuration file.
 
     uint32_t pcpu = read_mpidr() & 0x103;
     printf("(c%x) %s %d\n", pcpu, __func__, __LINE__);
@@ -53,9 +53,9 @@ void start_hypervisor()
      */
 //    while(1);
 //    printf("(c%x) before cpu_start %s\n", pcpu, __func__);
-//    if(pcpu != 0x100) {
-//        while(1);
-//    }
+    if(pcpu != 0x00) {
+        while(1);
+    }
     printf("(c%x) sched_start!!!\n", pcpu);
     sched_start();
 
