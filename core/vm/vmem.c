@@ -38,6 +38,7 @@ hvmm_status_t vmem_init(struct vmem *vmem)
     } while (vmem->mmap[j].label != 0);
 
     vmem->vtcr = (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
+    vmem->vtcr |= (0x02 << 12);
     vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_ORGN0_BIT);
     vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_IRGN0_BIT);
     write_cp32(vmem->vtcr, VTCR);
