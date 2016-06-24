@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <arch/armv7.h>
-
-#define __CP64(cp, opc1, m)    ((opc1) << 8 | (m) << 4)
-#define CP64(args...)          __CP64(args)
+#include <drivers/vdev/vdev_timer.h>
 
 #define opc1_bit            (0xf << 16)
 #define rt2_bit             (0xf << 10)
@@ -20,18 +18,17 @@
 int32_t emulate_cp15_64(struct core_regs *regs, uint32_t iss)
 {
     int32_t ret = -1;
-    // uint8_t rt = rt(iss);
-    // uint8_t rt2 = rt2(iss);
-    // uint8_t dir = decode_dir(iss);
+    uint8_t rt = rt(iss);
+    uint8_t rt2 = rt2(iss);
+    uint8_t dir = decode_dir(iss);
 
     switch (decode_cp15(iss)) {
     case CP64(CNTPCT)    :
     case CP64(CNTVCT)    :
     case CP64(CNTP_CVAL) :
     case CP64(CNTV_CVAL) :
-    case CP64(CNTVOFF)   :
-    case CP64(CNTHP_CVAL):
-        // break;
+        vdev_timer_access64(dir, decode_cp15(iss), &regs->gpr[rt], &regs->gpr[rt2]);
+        break;
     default:
         printf("not implement: %x\n", decode_cp15(iss));
         break;

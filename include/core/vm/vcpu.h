@@ -5,6 +5,7 @@
 #include <types.h>
 #include <arch_regs.h>
 #include <drivers/gic-v2.h>
+#include <drivers/vdev/vdev_timer.h>
 
 #define VCPU_CREATE_FAILED    NULL
 #define VCPU_NOT_EXISTED      NULL
@@ -62,6 +63,8 @@ struct vcpu {
 
     // TODO(casionwoo): it will be removed.
     struct virq_table map[MAX_NR_IRQ];
+
+    struct vdev_timer vtimer; /* TODO:(igkang) need to move cntfrq, offset to vm? */
 
     struct list_head head;
 };
