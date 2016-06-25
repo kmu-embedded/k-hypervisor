@@ -26,5 +26,6 @@ struct vdev_timer {
 
 int vdev_timer_access64(uint8_t read, uint32_t what, uint32_t *rt_low, uint32_t *rt_high);
 int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt);
+void init_vdev_timer(struct vdev_timer *v);
 
 #endif /* __VDEV_TIMER_H__ */
