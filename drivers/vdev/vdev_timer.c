@@ -12,6 +12,21 @@
 
 // #define DEBUG
 
+/*
+ * CHECK LIST
+ * [ ] vDev Timer instance init
+ * [ ] Timer access handler
+ *      [v] Skeleton
+ *      [ ] Set SW timer value (tm_set_timer)
+ *      [ ] Handle IMASK, Enable/Disable bits
+ * [ ] Timer IRQ handler/injector
+ *      [v] Skeleton
+ *      [ ]
+ * [ ] Generic Timer PL1/PL0 access setting
+ * [ ]
+ *
+ */
+
 #define VTIMER_IRQ 30 /* NS PL1 Timer */
 
 extern struct virq_chip *virq_hw;
