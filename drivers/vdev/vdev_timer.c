@@ -8,6 +8,8 @@
 #include <irq-chip.h>
 #include <drivers/vdev/vdev_timer.h>
 
+// #include <lib/list.h>
+
 // #define DEBUG
 
 #define VTIMER_IRQ 30 /* NS PL1 Timer */
@@ -121,5 +123,37 @@ int vdev_timer_access64(uint8_t read, uint32_t what, uint32_t *rt_low, uint32_t 
     }
 
     return 0;
+}
+
+/* FIXME:(igkang) The macro "container_of()" in lib/list.h is not complete.
+ * References:
+ *      http://fxr.watson.org/fxr/source/contrib/vchiq/interface/compat/list.h
+ */
+#define container_of2(ptr, type, member)                         \
+({                                                              \
+        __typeof(((type *)0)->member) *_p = (ptr);              \
+        (type *)((char *)_p - offsetof(type, member));          \
+})
+
+/* TODO:(igkang) need to rewrite core/timer code to store pdata in each "struct timer" instance */
+void vdev_timer_handler(void *pdata, uint64_t *expiration) {
+    *expiration = 0;
+
+    /* do IRQ injection to vCPU of vdev_timer instance which we currently handling */
+    struct timer *t = container_of2(expiration, struct timer, expiration);
+    struct vdev_timer *v = container_of2(t, struct vdev_timer, swtimer);
+    struct vcpu *vcpu = container_of2(v, struct vcpu, vtimer);
+    virq_hw->forward_irq(vcpu, 29, 29, INJECT_SW);
+}
+
+void init_vdev_timer(struct vdev_timer *v)
+{
+    /* for reset values, see ARMv7 reference manual */
+    // reset _CTLs
+    // timer interrupt mask?
+    // couter offset
+
+    // init and register sw timer
+    tm_register_timer(&v->swtimer, vdev_timer_handler);
 }
 

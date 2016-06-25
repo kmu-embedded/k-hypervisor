@@ -93,7 +93,7 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
     struct timer *t;
     struct timer *tmp;
     LIST_FOR_EACH_ENTRY_SAFE(t, tmp, &active_timers[pcpu], head_active) {
-        if (t->expiration < now) {
+        if (t->state == 1 && t->expiration < now) {
             t->callback(pregs, &t->expiration);
             /* FIXME:(igkang) would be better to use set_timer instead? */
         }
