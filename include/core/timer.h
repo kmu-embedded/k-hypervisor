@@ -68,8 +68,8 @@ hvmm_status_t tm_deactivate_timer(struct timer *t);
 hvmm_status_t timer_stop(void);
 hvmm_status_t timer_start(void);
 
-uint64_t timer_time_to_count(uint64_t time, time_unit_t unit);
-uint64_t timer_count_to_time(uint64_t count, time_unit_t unit);
+uint64_t timer_time_to_count_ns(uint64_t time);
+uint64_t timer_count_to_time_ns(uint64_t count);
 uint64_t timer_get_syscounter(void);
 uint64_t timer_get_timenow(void);
 

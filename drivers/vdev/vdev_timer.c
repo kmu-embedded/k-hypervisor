@@ -17,12 +17,14 @@
  * [ ] vDev Timer instance init
  * [ ] Timer access handler
  *      [v] Skeleton
- *      [ ] Set SW timer value (tm_set_timer)
- *      [ ] Handle IMASK, Enable/Disable bits
+ *      [v] Set SW timer value (tm_set_timer)
+ *      [ ] Handle IMASK, Enable/Disable bits (aborts?)
+ *           [ ] Interrupt Mask
+ *           [ ] Timer enable bit
+ *           [ ] Generic Timer PL1/PL0 access setting
  * [ ] Timer IRQ handler/injector
  *      [v] Skeleton
  *      [ ]
- * [ ] Generic Timer PL1/PL0 access setting
  * [ ]
  *
  */
@@ -44,6 +46,18 @@ extern struct virq_chip *virq_hw;
    CP32(CNTV_TVAL)
    CP32(CNTV_CTL)
    */
+
+inline static int vdev_timer_set_swtimer(struct vdev_timer *v)
+{
+    // hvmm_status_t tm_set_timer(struct timer *t, uint64_t expiration, bool timer_stopstart)
+    // uint64_t timer_count_to_time_ns(uint64_t count)
+    // uint64_t timer_time_to_count_ns(uint64_t time)
+
+    uint64_t exp = timer_count_to_time_ns(v->p_cval + v->p_ct_offset);
+    tm_set_timer(&v->swtimer, exp, true);
+
+    return 0;
+}
 
 int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
 {
@@ -76,8 +90,10 @@ int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
                 v->p_cval = (timer_get_syscounter() - v->p_ct_offset + *rt);
                 return 0;
             }
+            break;
         case CP32(CNTV_TVAL) :
             if (read) {
+                target = &tmp;
                 tmp = (uint32_t)
                     ( v->v_cval - (timer_get_syscounter() - v->p_ct_offset) );
             } else {
