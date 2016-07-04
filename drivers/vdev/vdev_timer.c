@@ -24,11 +24,14 @@
  *           [ ] Generic Timer access control bit
  * [ ] Timer IRQ handler/injector
  *      [v] Skeleton
- *      [ ] Set ISTATUS
- *      [ ] Check ENABLE/IMASK
- * [ ] Periodic mode support
+ *      [v] Set ISTATUS
+ *      [v] Check ENABLE/IMASK
+ *      [ ] Check CPSR.I (IRQ mask bit)
+ * [ ] Support both of CNTP/CNTV
+ *
  * [ ] ??per-vtimer cntfrq
  *
+ * [ ] Periodic mode support
  */
 
 #define VTIMER_IRQ 30 /* NS PL1 Timer */
@@ -75,6 +78,7 @@ int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
         case CP32(CNTKCTL)   :
             target = &v->k_ctl;
             break;
+        /* TODO:(igkang) check permission before reading */
         case CP32(CNTP_CTL)  :
             target = &v->p_ctl;
             break;
@@ -90,6 +94,7 @@ int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
             } else {
                 /* FIXME:(igkang) sign extension of *rt needed */
                 v->p_cval = (timer_get_syscounter() - v->p_ct_offset + *rt);
+                vdev_timer_set_swtimer(v);
                 return 0;
             }
             break;
@@ -101,10 +106,12 @@ int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
             } else {
                 /* FIXME:(igkang) sign extension of *rt needed */
                 v->v_cval = (timer_get_syscounter() - v->p_ct_offset + *rt);
+                // vdev_timer_set_swtimer(v); /* now NSP timer only */
                 return 0;
             }
             /* do subtraction and set cval */
             break;
+
         default:
             return 1;
             break;
@@ -125,6 +132,7 @@ int vdev_timer_access64(uint8_t read, uint32_t what, uint32_t *rt_low, uint32_t 
     struct vdev_timer *v = &vcpu->vtimer;
     uint64_t *target = NULL;
     uint64_t tmp = 0;
+    bool cval_changed = false;
 
     switch (what) {
         case CP64(CNTPCT)    :
@@ -139,9 +147,11 @@ int vdev_timer_access64(uint8_t read, uint32_t what, uint32_t *rt_low, uint32_t 
             break;
         case CP64(CNTP_CVAL) :
             target = &v->p_cval;
+            cval_changed = true;
             break;
         case CP64(CNTV_CVAL) :
             target = &v->v_cval;
+            // cval_changed = true; /* now NSP timer only */
             break;
         default:
             return 1;
@@ -153,6 +163,10 @@ int vdev_timer_access64(uint8_t read, uint32_t what, uint32_t *rt_low, uint32_t 
         *rt_high = (uint32_t) (*target >> 32);
     } else { /* write */
         *target = ((uint64_t) *rt_high << 32) | (uint64_t) *rt_low;
+    }
+
+    if (cval_changed) {
+        vdev_timer_set_swtimer(v);
     }
 
     return 0;
@@ -176,7 +190,19 @@ void vdev_timer_handler(void *pdata, uint64_t *expiration) {
     struct timer *t = container_of2(expiration, struct timer, expiration);
     struct vdev_timer *v = container_of2(t, struct vdev_timer, swtimer);
     struct vcpu *vcpu = container_of2(v, struct vcpu, vtimer);
-    virq_hw->forward_irq(vcpu, 29, 29, INJECT_SW);
+
+    /* check ENABLE */
+    if ((v->p_ctl & 1u) == 1) {
+        v->p_ctl |= 1u << 2; /* set ISTATUS */
+
+        /* check IMASK */
+        if ((v->p_ctl & (1u << 1)) == 0u) {
+            /* TODO:(igkang) may need CPSR IRQ bit check */
+            virq_hw->forward_irq(vcpu, 29, 29, INJECT_SW);
+        }
+    }
+
+    /* FIXME:(igkang) remember, we support only NSP timer for now */
 }
 
 void init_vdev_timer(struct vdev_timer *v)
