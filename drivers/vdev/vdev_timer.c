@@ -15,7 +15,7 @@
 /*
  * CHECK LIST
  * [ ] Generic Timer PL1/PL0 access setting (to cause exception)
- * [ ] vDev Timer instance init
+ * [v] vDev Timer instance init
  * [ ] Timer access handler
  *      [v] Skeleton
  *      [v] Set SW timer value (tm_set_timer)
@@ -24,8 +24,10 @@
  *           [ ] Generic Timer access control bit
  * [ ] Timer IRQ handler/injector
  *      [v] Skeleton
- *      [ ]
- * [ ]
+ *      [ ] Set ISTATUS
+ *      [ ] Check ENABLE/IMASK
+ * [ ] Periodic mode support
+ * [ ] ??per-vtimer cntfrq
  *
  */
 
@@ -179,10 +181,24 @@ void vdev_timer_handler(void *pdata, uint64_t *expiration) {
 
 void init_vdev_timer(struct vdev_timer *v)
 {
-    /* for reset values, see ARMv7 reference manual */
-    // reset _CTLs
-    // timer interrupt mask?
-    // couter offset
+    /* Reset _CTLs
+     *
+     * for reset values, see ARMv7 reference manual
+     *
+     * CHECK LIST
+     * [v] CNTFRQ
+     * [v] CNTKCTL
+     * [v] CNTP_CTL
+     * [v] CNTV_CTL
+     */
+
+    v->frq = 100000000u; /* 100MHz */
+    v->k_ctl = 0u; /* PL0{P,V}TEN, EVENTI, EVNTDIR, EVNTEN, PL0{P,V}CTEN = 0,0, 0000, 0, 0, 0,0 */
+    v->p_ctl = 0u | 1u << 1; /* ISTATUS, IMASK, ENABLE = 0, 1, 0 */
+    v->v_ctl = 0u | 1u << 1; /* TODO:(igkang) Define bit numbers */
+
+    // set couter offset
+    v->p_ct_offset = timer_get_syscounter();
 
     // init and register sw timer
     tm_register_timer(&v->swtimer, vdev_timer_handler);
