@@ -14,14 +14,14 @@
 
 /*
  * CHECK LIST
+ * [ ] Generic Timer PL1/PL0 access setting (to cause exception)
  * [ ] vDev Timer instance init
  * [ ] Timer access handler
  *      [v] Skeleton
  *      [v] Set SW timer value (tm_set_timer)
- *      [ ] Handle IMASK, Enable/Disable bits (aborts?)
- *           [ ] Interrupt Mask
- *           [ ] Timer enable bit
- *           [ ] Generic Timer PL1/PL0 access setting
+ *      [ ] Handle Enable/Disable bits, IMASK --> enable/disable swtimer?
+ *           [ ] Timer enable bit, Interrupt Mask
+ *           [ ] Generic Timer access control bit
  * [ ] Timer IRQ handler/injector
  *      [v] Skeleton
  *      [ ]
