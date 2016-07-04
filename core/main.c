@@ -39,11 +39,13 @@ void start_hypervisor()
                 goto error;
             }
         }
-        printf("(c%x) %s is enabled\n", pcpu, __func__);
         smp_pen = 1;
     } else {
         while (!smp_pen) ;
-        printf("(c%x) %s is enabled\n", pcpu, __func__);
+    }
+
+    if(pcpu != 0x00) {
+        while(1);
     }
 
     /*
@@ -51,11 +53,7 @@ void start_hypervisor()
      * TODO: Rename guest_sched_start to do_schedule or something others.
      *       do_schedule(vmid) or do_schedule(vcpu_id)
      */
-//    while(1);
-//    printf("(c%x) before cpu_start %s\n", pcpu, __func__);
-    if(pcpu != 0x00) {
-        while(1);
-    }
+
     printf("(c%x) sched_start!!!\n", pcpu);
     sched_start();
 

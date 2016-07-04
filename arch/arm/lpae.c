@@ -25,7 +25,8 @@ static pgentry set_entry(addr_t pa, uint8_t mem_attr, uint8_t ap, uint8_t af)
     entry.page.ap = ap;
     entry.page.sh = 3;
     entry.page.af = af;
-    entry.page.ng = 1;
+//    entry.page.ng = 1;
+    entry.page.ng = 0;
     entry.page.cb = 0;
     entry.page.pxn = 0;
     entry.page.xn = 0;

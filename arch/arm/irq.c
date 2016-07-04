@@ -16,12 +16,16 @@ static irq_handler_t vdev_irq_handlers[MAX_IRQS];
 hvmm_status_t do_irq(struct core_regs *regs)
 {
     uint32_t irq = irq_hw->ack();
+    uint32_t pcpu = smp_processor_id();
+
+//    printf("pcpu[%d]: irq %d\n", pcpu, irq);
+//    if(irq > 16) irq_hw->eoi(irq);
 
     irq_hw->eoi(irq);
 
     if (irq < 16) {
         // SGI Handler
-        printf("SGI Occurred\n");
+        printf("CPU[%d] SGI[%d] Occurred\n",pcpu ,irq);
     } else if (irq_handlers[irq]) {
         // Handler for Hypervisor
         irq_handlers[irq](irq, regs, 0);

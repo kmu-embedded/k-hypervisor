@@ -20,6 +20,7 @@ int do_hyp_trap(struct core_regs *regs)
     uint32_t hifar = read_cp32(HIFAR);
     uint32_t hpfar = read_cp32(HPFAR);
     uint32_t hdfar = read_cp32(HDFAR);
+    uint32_t dfsr = read_cp32(DFSR);
 
     switch (ec) {
     case WFI_WFE:
@@ -57,6 +58,7 @@ trap_error:
     printf("HPFAR : %x\n", hpfar);
     printf("HIFAR : %x\n", hifar);
     printf("HDFAR : %x\n", hdfar);
+    printf("DFSR : %x\n", dfsr);
     printf("r0 %x\n", regs->gpr[0]);
     printf("r1 %x\n", regs->gpr[1]);
     printf("r2 %x\n", regs->gpr[2]);

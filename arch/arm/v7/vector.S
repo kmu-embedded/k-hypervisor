@@ -38,6 +38,7 @@ hvc_handler:
     @ Adujst stack pointer for each core.
     read_cp32(r5, MPIDR)
     ands    r5, r5, #0xFF
+	ands	r7, r5, #0xF00
     mov     r6, #HYP_STACK_SIZE
     mul     r6, r6, r5
     sub     sp, sp, r6

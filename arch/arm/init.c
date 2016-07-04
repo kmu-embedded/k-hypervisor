@@ -59,6 +59,7 @@ void init_cpu()
     printf("(c%x) before enable mmu\n", cpuid);
     write_cp32(HSCTLR_VALUE, HSCTLR);
 //    write_cp32((HSCTLR_VALUE & ~(1 << 12 | 1 << 2)), HSCTLR);
+    printf("(c%x) enable mmu\n", cpuid);
 
 #if 1
     int i;

@@ -164,39 +164,62 @@ static int power_state(unsigned int cpu)
 
 static void power_up(unsigned int cpu)
 {
-    unsigned int tmp;
-    unsigned int addr = EXYNOS_ARM_CORE_CONFIGURATION(cpu_value[cpu]);
+    writel(EXYNOS_CORE_LOCAL_PWR_EN, EXYNOS_ARM_CORE_CONFIGURATION(cpu_value[cpu]));
+}
 
-    //printf("MPIDR: %x cpu[%d] power_up 0x%08x\n", read_mpidr(), cpu, addr);
-    tmp = readl(addr);
-    tmp |= EXYNOS_CORE_LOCAL_PWR_EN;
-
-    writel(tmp, addr);
+#include <core/timer.h>
+void udelay(uint32_t usec)
+{
+    uint64_t deadline = timer_get_timenow() + 1000 * usec;
+    while (timer_get_timenow() - deadline < 0)
+        ;
+    dsb();
+    isb();
 }
 
 static int power_up_cpu(unsigned int cpu)
 {
-    if(power_state(cpu)) {
-        return 0;
-    }
-    power_up(cpu);
+    uint32_t timeout, val;
 
-    if(cpu < 4) {
-        while(!readl(EXYNOS_PMU_SPARE2)) {
-            printf("%s %d: cpu[%d]\n", __func__, __LINE__, cpu);
+//    cpu = (cpu + 4) % 8;
+    if(!power_state(cpu)) {
+        power_up(cpu);
+        timeout = 10;
+
+        while(power_state(cpu) != EXYNOS_CORE_LOCAL_PWR_EN)
+        {
+            if (timeout-- == 0)
+                break;
         }
-        writel(cpu_addr[cpu], EXYNOS_SWRESET);
+
+        if (timeout == 0)
+        {
+            printf("pcpu[%d] power enable failed\n", cpu);
+            return -1;
+        }
+    }
+
+//    cpu = (cpu + 4) % 8;
+    if(cpu < 4) {
+        while(!readl(EXYNOS_PMU_SPARE2))
+            udelay(10);
+
+        udelay(10);
+
+        val = ( (1 << 20) | (1 << 8)) << cpu;
+        writel(val, EXYNOS_SWRESET);
     }
     return 0;
 }
 
 void boot_secondary(unsigned int cpu)
 {
-    //printf("%s %d: cpu[%d]\n", __func__, __LINE__, cpu);
-    power_up_cpu(cpu);
-//    smp_rmb();
-//    dsb_sev();
-    //printf("%s %d: cpu[%d]\n", __func__, __LINE__, cpu);
+    int ret;
+    printf("%s %d: cpu[%d]\n", __func__, __LINE__, cpu);
+    ret = power_up_cpu(cpu);
+    smp_rmb();
+    dsb_sev();
+    if (ret == -1) printf("%s %d: cpu[%d] power enable failed\n", __func__, __LINE__, cpu);
 }
 
 #define HOTPLUG         (1 << 2)

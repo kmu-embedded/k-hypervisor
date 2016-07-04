@@ -19,22 +19,6 @@ BEGIN_PROC(__start)
     @ Disable interrupts
 	cpsid   aif
 
-    @read_cp32(r5, MPIDR)
-	@mov		r4, #0x01
-@	orr		r4, r4, #0x100
-@	orr		r4, r4, #0x80000000
-@	cmp     r5, r4
-@
-@	beq		1f
-@
-@	mov		r4, #0x100
-@	orr		r4, r4, #0x80000000
-@	cmp     r5, r4
-@
-@	beq		1f
-@
-@	wfe
-
 1:	ldr   r11, =0x12c20000       /* r11 := UART base address */
     teq   r12, #0                /* Boot CPU sets up the UART too */
     bleq  init_uart
