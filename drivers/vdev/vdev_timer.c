@@ -14,7 +14,7 @@
 
 /*
  * CHECK LIST
- * [ ] Generic Timer PL1/PL0 access setting (to cause exception)
+ * [v] Generic Timer PL1/PL0 access setting (to cause exception)
  * [v] vDev Timer instance init
  * [ ] Timer access handler
  *      [v] Skeleton
@@ -198,7 +198,7 @@ void vdev_timer_handler(void *pdata, uint64_t *expiration) {
         /* check IMASK */
         if ((v->p_ctl & (1u << 1)) == 0u) {
             /* TODO:(igkang) may need CPSR IRQ bit check */
-            virq_hw->forward_irq(vcpu, 29, 29, INJECT_SW);
+            virq_hw->forward_irq(vcpu, VTIMER_IRQ, VTIMER_IRQ, INJECT_SW);
         }
     }
 
