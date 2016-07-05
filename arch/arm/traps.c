@@ -56,6 +56,7 @@ trap_error:
     printf("r2 %x\n", regs->gpr[2]);
     printf("r3 %x\n", regs->gpr[3]);
     printf("guest pc is %x\n", regs->pc);
+    printf("hifar %x\n", read_cp32(HIFAR));
     while (1) ;
 
     return -1;
