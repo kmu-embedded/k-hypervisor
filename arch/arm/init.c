@@ -65,6 +65,7 @@ void init_cpu()
 void init_secondary_cpus()
 {
     uint8_t cpuid = smp_processor_id();
+
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
 
 	write_cp32((uint32_t) &__hvc_vector, HVBAR);
