@@ -7,6 +7,7 @@
 #define HYP_STACK_SIZE          4096
 #define NR_CPUS                 4
 #define NUM_GUESTS_STATIC       2
+#define BOOTABLE_CPUID          0x80000000
 
 /*
  *  SOC param

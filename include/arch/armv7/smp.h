@@ -18,9 +18,18 @@
  *   - MPIDR[7:2] - Reserved, Read as zero
  * @return The current CPU ID.
  */
+#define NR_CLUSTER              1
+#define NR_CLUSTER_MASK         (NR_CLUSTER << 8)
+#define NR_CPUS_PER_CLUSTER     4
+
+#include "cp15.h"
+
 static inline uint32_t smp_processor_id(void)
 {
-    return read_mpidr() & MPIDR_MASK & MPIDR_CPUID_MASK;
+    uint32_t mpidr = read_cp32(MPIDR);
+    // 0x100 will be rename NR_CLUSTER.
+    uint8_t clusterID = (mpidr & 0xF00) >> 8;
+    return ((mpidr & 0x03) + clusterID * NR_CPUS_PER_CLUSTER);
 }
 
 #define __ARCH_SPIN_LOCK_UNLOCKED 0

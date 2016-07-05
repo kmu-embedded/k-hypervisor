@@ -33,14 +33,6 @@ smc_handler:
     movs    pc, lr  @ return in NS state
 
 hvc_handler:
-    ldr     sp, = __end_stack
-    @ TODO(wonseok): make it smart.
-    @ Adujst stack pointer for each core.
-    read_cp32(r5, MPIDR)
-    ands    r5, r5, #0xFF
-    mov     r6, #HYP_STACK_SIZE
-    mul     r6, r6, r5
-    sub     sp, sp, r6
     mrs     lr, elr_hyp
     mov     pc, lr
 
