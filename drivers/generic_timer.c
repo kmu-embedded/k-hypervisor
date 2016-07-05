@@ -183,6 +183,7 @@ static uint64_t timer_read_virt_counter(void)
 }
 #endif
 
+#if 0
 static hvmm_status_t timer_init(void)
 {
 #define TRAP_TIMER_ACCESS
@@ -195,10 +196,11 @@ static hvmm_status_t timer_init(void)
 
     return HVMM_STATUS_SUCCESS;
 }
+#endif
 
 /* TODO:(igkang) add/rename functions - by phys/virt, Hyp/Normal */
 struct timer_ops _timer_ops = {
-    .init = timer_init,
+//    .init = timer_init,
     .enable = timer_enable,
     .disable = timer_disable,
     .get_counter = timer_read_phys_counter,
