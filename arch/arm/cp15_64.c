@@ -17,7 +17,7 @@
 
 int32_t emulate_cp15_64(struct core_regs *regs, uint32_t iss)
 {
-    int32_t ret = -1;
+    int32_t ret = 0;
     uint8_t rt = rt(iss);
     uint8_t rt2 = rt2(iss);
     uint8_t dir = decode_dir(iss);
@@ -31,6 +31,7 @@ int32_t emulate_cp15_64(struct core_regs *regs, uint32_t iss)
         break;
     default:
         printf("not implement: %x\n", decode_cp15(iss));
+        ret = -1;
         break;
     }
 

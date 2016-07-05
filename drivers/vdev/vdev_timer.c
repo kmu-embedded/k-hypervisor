@@ -71,6 +71,8 @@ int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
     uint32_t *target = NULL;
     uint32_t tmp = 0;
 
+    // printf("<trace> %s %d %d\n", __func__, __LINE__, vcpu->pcpuid);
+
     switch (what) {
         case CP32(CNTFRQ)    :
             target = &v->frq;
