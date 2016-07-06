@@ -1,5 +1,5 @@
-#ifndef __GIC_REGS_H__
-#define __GIC_REGS_H__
+#ifndef __GICV2_BITS_H__
+#define __GICV2_BITS_H__
 
 /* Offsets from GIC Base Address */
 #define GICD_OFFSET     0x1000
