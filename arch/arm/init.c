@@ -8,9 +8,9 @@
 #include <core/timer.h>
 #include <vm_map.h>
 #include <arch/armv7/generic_timer.h>
-
-#include "init.h"
 #include "paging.h"
+
+extern void start_hypervisor(void);
 
 extern addr_t __hvc_vector;
 extern addr_t __HYP_PGTABLE;
