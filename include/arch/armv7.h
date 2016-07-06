@@ -4,15 +4,17 @@
 #include <asm/asm.h>
 
 #include "armv7/cache.h"
-#include "armv7/fsr.h"
 #include "armv7/tlb.h"
 #include "armv7/sysctrl.h"
 #include "armv7/vmsa.h"
 #include "armv7/generic_timer.h"
-#include "armv7/arm_inline.h"
 #include "armv7/smp.h"
 #include "armv7/mutex.h"
 #include "armv7/cp15.h"
+#include "armv7/barrier.h"
+#include "armv7/fsr_decode.h"
+#include "armv7/local_irq.h"
+
 
 /* co-processor registers: cp15, cp2 */
 struct cp15 {

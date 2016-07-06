@@ -1,7 +1,7 @@
 #include <drivers/mct.h>
 #include <io.h>
 #include <stdint.h>
-#include <arch/armv7/arm_inline.h>
+#include "../include/arch/armv7/local_irq.h"
 
 static inline uint32_t mct_read(uint32_t offset)
 {
