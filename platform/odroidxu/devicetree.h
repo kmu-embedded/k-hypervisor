@@ -121,5 +121,5 @@ struct memdesc_t vm_device_md[] = {
     {"i2s", 0xdf3f9000, 0xdf3f9000, SZ_64K, MEMATTR_DEVICE_MEMORY, 1},
     {"not_found", 0xb0800000, 0xb0800000, SZ_64K, MEMATTR_DEVICE_MEMORY, 1},
 
-	{0, 0, 0, 0, 0, 0}
+    {0, 0, 0, 0, 0, 0}
 };

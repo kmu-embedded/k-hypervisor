@@ -7,12 +7,11 @@
 #include "../../arch/arm/paging.h"
 
 #include <size.h>
-#include <arch/gic_regs.h>
-
 #include <arch/armv7.h>
 
 #include <config.h>
 #include <arch/irq.h>
+#include "../../include/arch/gicv2_bit.h"
 
 #define CFG_HYP_START_ADDRESS      0xF0000000
 void platform_init()
@@ -56,5 +55,5 @@ void console_init()
 void dev_init()
 {
 //    sp804_enable();
-	timer_hw_init(NS_PL2_PTIMER_IRQ);
+    timer_hw_init(NS_PL2_PTIMER_IRQ);
 }

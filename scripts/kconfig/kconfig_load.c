@@ -10,17 +10,17 @@
 
 void kconfig_load(void)
 {
-	void *handle;
-	char *error;
+    void *handle;
+    char *error;
 
-	handle = dlopen("./libkconfig.so", RTLD_LAZY);
-	if (!handle) {
-		handle = dlopen("./scripts/kconfig/libkconfig.so", RTLD_LAZY);
-		if (!handle) {
-			fprintf(stderr, "%s\n", dlerror());
-			exit(1);
-		}
-	}
+    handle = dlopen("./libkconfig.so", RTLD_LAZY);
+    if (!handle) {
+        handle = dlopen("./scripts/kconfig/libkconfig.so", RTLD_LAZY);
+        if (!handle) {
+            fprintf(stderr, "%s\n", dlerror());
+            exit(1);
+        }
+    }
 
 #define P(name,type,arg)			\
 {						\

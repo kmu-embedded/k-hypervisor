@@ -20,16 +20,16 @@
 #include <arch/armv7.h>
 static inline void write64(uint64_t value, addr_t addr)
 {
-	dsb();
-	asm volatile ("strd\t" "%0, %H0, [%1];" : : "r" (value), "r" (addr) : "memory");
-	dsb();
+    dsb();
+    asm volatile ("strd\t" "%0, %H0, [%1];" : : "r" (value), "r" (addr) : "memory");
+    dsb();
 }
 
 static inline uint64_t read64(addr_t addr)
 {
-	uint64_t value;
-	asm volatile ("ldrd\t" "%0, %H0, [%1];" : "=r" (value) : "r" (addr): "memory");
-	return value;
+    uint64_t value;
+    asm volatile ("ldrd\t" "%0, %H0, [%1];" : "=r" (value) : "r" (addr): "memory");
+    return value;
 }
 
 #endif

@@ -1,4 +1,3 @@
-#include <arch/gic_regs.h>
 #include <vdev.h>
 #include <arch/armv7.h>
 #include <core/scheduler.h>
@@ -8,6 +7,7 @@
 #include <core/vm/vcpu.h>
 #include <drivers/gic-v2.h>
 #include <drivers/vdev/vdev_gicd.h>
+#include "../../include/arch/gicv2_bit.h"
 
 int32_t vgicd_read_handler(void *pdata, uint32_t offset);
 int32_t vgicd_write_handler(void *pdata, uint32_t offset, uint32_t *addr);

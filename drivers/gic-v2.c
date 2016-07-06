@@ -2,7 +2,6 @@
 #include <asm/macro.h>
 
 #include <arch/armv7/smp.h>
-#include <arch/gic_regs.h>
 #include <arch/armv7.h>
 #include <arch/irq.h>
 
@@ -11,6 +10,7 @@
 
 #include <drivers/gic-v2.h>
 
+#include "../include/arch/gicv2_bit.h"
 #include "irq-chip.h"
 
 #define EOI_ENABLE      1

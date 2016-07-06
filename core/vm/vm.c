@@ -58,7 +58,7 @@ vmid_t vm_create(uint8_t num_vcpus)
 }
 
 #include <drivers/gic-v2.h>
-#include <arch/gic_regs.h>
+#include "../../include/arch/gicv2_bit.h"
 
 vmcb_state_t vm_init(vmid_t vmid)
 {

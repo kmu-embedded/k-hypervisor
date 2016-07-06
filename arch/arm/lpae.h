@@ -68,8 +68,6 @@ union lpae_t {
         uint64_t type: 1;
         /* bit[11:2] */
         uint64_t mem_attr: 4;
-        //uint64_t attr_indx:3;
-        //uint64_t ns:1;
         uint64_t ap: 2;
         uint64_t sh: 2;
         uint64_t af: 1;
@@ -109,21 +107,22 @@ typedef union lpae_t pgentry;
  *
  * Attrm[7:0]
  *
- * STRONG_ORDERED 0000_0000
- * DEVICE         0000_0100
- * NON_CACHEABLE  0100_0100
- * WRITETHROUGH_NO_ALLOC 1000_1000
- * WRITETHROUGH_RW_ALLOC 1011_1011
- * WRITEBACK_NO_ALLOC 1100_1100
- * WRITEBACK_RW_ALLOC 1111_1111
+ * STRONG_ORDERED		0000_0000
+ * DEVICE         		0000_0100
+ * NON_CACHEABLE  		0100_0100
+ * WRITETHROUGH_NO_ALLOC 	1000_1000
+ * WRITETHROUGH_RW_ALLOC 	1011_1011
+ * WRITEBACK_NO_ALLOC 		1100_1100
+ * WRITEBACK_RW_ALLOC 		1111_1111
  *
  * - Used initial value of MAIR0, MAIR1.
- * <pre>
- * |     |31       24|23       16|15        8|7         0|
+ * |-----|-----------|-----------|-----------|-----------|
+ * | BIT |31       24|23       16|15        8|7         0|
  * |-----|-----------|-----------|-----------|-----------|
  * |MAIR0| 1000 1000 | 0100 0100 | 0000 0100 | 0000 0000 |
  * |-----|-----------|-----------|-----------|-----------|
  * |MAIR1| 0000 0000 | 1111 1111 | 1100 1100 | 1011 1011 |
+ * |-----|-----------|-----------|-----------|-----------|
  */
 
 #define HMAIR0_VALUE 0x88440400
@@ -132,12 +131,12 @@ typedef union lpae_t pgentry;
 
 typedef enum {
     MT_STRONGLY_ORDERED,    // 0
-    MT_DEVICE,              // 1
-    MT_NONCACHEABLE,        // 2
-    MT_WRITETHROUGH_NO_ALLOC, // 3
-    MT_WRITETHROUGH_RW_ALLOC,  // 4
-    MT_WRITEBACK_NO_ALLOC, // 5
-    MT_WRITEBACK_RW_ALLOC  // 6
+    MT_DEVICE,
+    MT_NONCACHEABLE,
+    MT_WRITETHROUGH_NO_ALLOC,
+    MT_WRITETHROUGH_RW_ALLOC,
+    MT_WRITEBACK_NO_ALLOC,
+    MT_WRITEBACK_RW_ALLOC
 } attr_indx_t;
 
 typedef enum {
@@ -145,17 +144,14 @@ typedef enum {
     UNPREDICTABLE,
     OUTER_SHAREABLE,
     INNER_SHAREABLE
-} shareability; // shareability
+} shareability;
 
 typedef enum {
     NONCACHEABLE,
     WRITEBACK_CACHEABLE,
     WRITETHROUGH_CACHEABLE,
     WRITEBACK_NONCACHEABLE
-} cachebility; //cacheability;
-
-
-typedef uint32_t addr_t;
+} cachebility;
 
 pgentry set_table(addr_t pa);
 void write_pgentry(addr_t base, addr_t va, addr_t pa, uint8_t mem_attr, uint8_t ap, uint8_t af);
@@ -166,6 +162,5 @@ void write_pgentry(addr_t base, addr_t va, addr_t pa, uint8_t mem_attr, uint8_t 
 #define GET_OFFSET(i)        (i << 3)               /* size of pgentry */
 #define GET_L2_INDEX(i)      GET_OFFSET((i << 9))   /* << 9 == 512 */
 #define GET_L3_INDEX(i)      GET_OFFSET((i << 18))  /* << 18 == 512*512 */
-
 
 #endif /* __LPAED_H__ */

@@ -6,13 +6,12 @@
 #include "../../arch/arm/paging.h"
 
 #include <size.h>
-#include <arch/gic_regs.h>
-
 #include <arch/armv7.h>
 #include <stdio.h>
 
 #include <config.h>
 #include <arch/irq.h>
+#include "../../include/arch/gicv2_bit.h"
 
 void platform_init()
 {
@@ -47,6 +46,6 @@ void dev_init()
 #ifdef CONFIG_MCT
     mct_init();
 #endif
-	timer_hw_init(NS_PL2_PTIMER_IRQ);
+    timer_hw_init(NS_PL2_PTIMER_IRQ);
     // init .text.dev section like vdev.
 }

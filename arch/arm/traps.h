@@ -19,7 +19,7 @@ struct iss_abt {
     uint32_t unused: 7;
 };
 
-struct iss_cp32{
+struct iss_cp32 {
     uint32_t dir: 1;
     uint32_t CRm: 4;
     uint32_t Rt: 4;

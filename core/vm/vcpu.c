@@ -113,7 +113,7 @@ vcpu_state_t vcpu_delete(struct vcpu *vcpu)
 
 
 #include <irq-chip.h>
-#include <arch/gic_regs.h>
+#include "../../include/arch/gicv2_bit.h"
 
 void vcpu_save(struct vcpu *vcpu, struct core_regs *regs)
 {
