@@ -12,6 +12,7 @@
 #include <stdio.h>
 
 #include <config.h>
+#include <arch/irq.h>
 
 void platform_init()
 {
@@ -35,6 +36,7 @@ void console_init()
     // TODO(wonseok): add general initialization for console devices.
     serial_init();
 }
+#include <core/timer.h>
 
 void dev_init()
 {

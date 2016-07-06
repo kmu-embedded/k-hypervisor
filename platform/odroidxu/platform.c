@@ -12,6 +12,7 @@
 #include <stdio.h>
 
 #include <config.h>
+#include <arch/irq.h>
 
 void platform_init()
 {
@@ -39,6 +40,7 @@ void console_init()
 }
 
 #include <drivers/mct.h>
+#include <core/timer.h>
 
 void dev_init()
 {

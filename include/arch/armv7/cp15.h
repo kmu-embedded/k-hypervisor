@@ -235,7 +235,7 @@
 
 // CRn == 15, IMPLEMENTATION DEFINED registers.
 // See IMPLEMENTATION DEFINED registers, functional group on page B3-1502.
-
+#define CBAR				15, 15,	4, 0, 0
 
 
 #endif //__CP15_H__

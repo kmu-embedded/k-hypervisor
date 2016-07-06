@@ -12,6 +12,7 @@
 #include <arch/armv7.h>
 
 #include <config.h>
+#include <arch/irq.h>
 
 #define CFG_HYP_START_ADDRESS      0xF0000000
 void platform_init()
