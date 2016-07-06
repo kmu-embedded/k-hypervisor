@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "traps.h"
 #include <arch/armv7.h>
 #include <vdev.h>
 #include <core/vm/vcpu.h>

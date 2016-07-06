@@ -4,7 +4,7 @@
 
 void paging_create(addr_t base)
 {
-    int i;
+    int i = 0;
 
     uint32_t second_base = base + 0x1000;
     uint32_t third_base = second_base + 0x4000;
@@ -20,9 +20,8 @@ void paging_create(addr_t base)
 
 void paging_add_mapping(addr_t va, addr_t pa, uint8_t mem_attr, uint32_t size)
 {
-    int i;
-    uint64_t httbr = 0;
-    httbr = read_cp64(HTTBR);
+    int i = 0;
+    uint64_t httbr = read_cp64(HTTBR);
 
     for (i = 0; i < (size >> PAGE_SHIFT); i++, va += 0x1000, pa += 0x1000) {
         write_pgentry((addr_t) httbr, va >> PAGE_SHIFT, pa, mem_attr, 0, 1);
@@ -31,7 +30,7 @@ void paging_add_mapping(addr_t va, addr_t pa, uint8_t mem_attr, uint32_t size)
 
 void paging_add_ipa_mapping(addr_t base, addr_t ipa, addr_t pa, uint8_t mem_attr, uint8_t af, uint32_t size)
 {
-    int i;
+    int i = 0;
 
     for (i = 0; i < (size >> PAGE_SHIFT); i++, ipa += 0x1000, pa += 0x1000) {
         write_pgentry(base, ipa >> PAGE_SHIFT, pa, mem_attr, 3, af);

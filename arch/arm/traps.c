@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <arch/armv7.h>
-#include "traps.h"
 #include "cp15.h"
 
 #define decode_ec(hsr)          (hsr >> 26)

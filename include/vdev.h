@@ -5,7 +5,6 @@
 #include <types.h>
 #include <lib/list.h>
 #include <arch/armv7.h>
-#include "../arch/arm/traps.h"
 #include <arch/irq.h>
 
 typedef int (*initcall_t)(void);

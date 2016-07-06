@@ -14,6 +14,7 @@
 #include "armv7/barrier.h"
 #include "armv7/fsr_decode.h"
 #include "armv7/local_irq.h"
+#include "armv7/hsr.h"
 
 
 /* co-processor registers: cp15, cp2 */
@@ -69,5 +70,6 @@ struct arch_regs {
     struct banked_regs banked_regs;
 };
 
+int handle_data_abort(struct core_regs *regs, uint32_t iss);
 
 #endif /* armv7.h */
