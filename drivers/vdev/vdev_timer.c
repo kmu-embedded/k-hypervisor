@@ -184,20 +184,14 @@ int vdev_timer_access64(uint8_t read, uint32_t what, uint32_t *rt_low, uint32_t 
         (type *)((char *)_p - offsetof(type, member));          \
 })
 
-#define PRINTNOW() printf("%d %s %d: %x%x\n", pcpu, __func__, __LINE__, read_cp64(CNTPCT))
 /* TODO:(igkang) need to rewrite core/timer code to store pdata in each "struct timer" instance */
 void vdev_timer_handler(void *pdata, uint64_t *expiration) {
     *expiration = 0;
 
-    uint32_t pcpu = smp_processor_id();
-    // uint64_t t1, t2;
-
-    PRINTNOW();
     /* do IRQ injection to vCPU of vdev_timer instance which we currently handling */
     struct timer *t = container_of2(expiration, struct timer, expiration);
     struct vdev_timer *v = container_of2(t, struct vdev_timer, swtimer);
     struct vcpu *vcpu = container_of2(v, struct vcpu, vtimer);
-    PRINTNOW();
 
     /* check ENABLE */
     if ((v->p_ctl & 1u) == 1) {
@@ -205,10 +199,8 @@ void vdev_timer_handler(void *pdata, uint64_t *expiration) {
 
         /* check IMASK */
         if ((v->p_ctl & (1u << 1)) == 0u) {
-            PRINTNOW();
             /* TODO:(igkang) may need CPSR IRQ bit check */
             virq_hw->forward_irq(vcpu, VTIMER_IRQ, VTIMER_IRQ, INJECT_SW);
-            PRINTNOW();
         }
     }
 
