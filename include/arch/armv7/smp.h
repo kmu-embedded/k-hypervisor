@@ -3,10 +3,9 @@
 
 #include <stdint.h>
 #include "sysctrl.h"
-#include "arm_inline.h"
-
-#define MPIDR_MASK 0xFFFFFF
-#define MPIDR_CPUID_MASK 0xFF
+#include "cp15.h"
+#include "barrier.h"
+#include "local_irq.h"
 
 /**
  * @brief Gets current CPU ID of the Symmetric MultiProcessing(SMP).
@@ -18,18 +17,17 @@
  *   - MPIDR[7:2] - Reserved, Read as zero
  * @return The current CPU ID.
  */
-#define NR_CLUSTER              1
-#define NR_CLUSTER_MASK         (NR_CLUSTER << 8)
+#define NR_MAX_CLUSTERS			15
+#define CLUSTER_BIT_MASK		(NR_MAX_CLUSTERS << 8)
 #define NR_CPUS_PER_CLUSTER     4
-
-#include "cp15.h"
+#define NR_CPUS_BIT_MASK		0x3
 
 static inline uint32_t smp_processor_id(void)
 {
     uint32_t mpidr = read_cp32(MPIDR);
-    // 0x100 will be rename NR_CLUSTER.
-    uint8_t clusterID = (mpidr & 0xF00) >> 8;
-    return ((mpidr & 0x03) + clusterID * NR_CPUS_PER_CLUSTER);
+    uint8_t cluster_id = ((mpidr & CLUSTER_BIT_MASK) >> 8) * NR_CPUS_PER_CLUSTER;
+
+    return (mpidr & NR_CPUS_BIT_MASK) + cluster_id;
 }
 
 #define __ARCH_SPIN_LOCK_UNLOCKED 0
@@ -43,14 +41,6 @@ static inline uint32_t smp_processor_id(void)
 
 #define SEV     ALT_SMP("sev", "nop")
 #define WFE(cond)   ALT_SMP("wfe" cond, "nop")
-
-#define mb()    dmb()
-#define rmb()   dmb()
-#define wmb()   dmb()
-
-#define smp_mb()    dmb()
-#define smp_rmb()   dmb()
-#define smp_wmb()   dmb()
 
 static inline void dsb_sev(void)
 {

@@ -1,6 +1,6 @@
 #include <drivers/serial_sh.h>
 #include <io.h>
-#include <arch/armv7/arm_inline.h>
+#include "../../include/arch/armv7/local_irq.h"
 
 int serial_init(void)
 {
