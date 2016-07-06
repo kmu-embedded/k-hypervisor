@@ -5,7 +5,6 @@ objs-y:=
 objs-y += cp15.o
 objs-y += traps.o
 objs-y += init.o
-objs-y += io.o
 objs-y += irq.o
 objs-y += lpae.o
 objs-y += paging.o
