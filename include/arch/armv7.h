@@ -14,22 +14,6 @@
 #include "armv7/mutex.h"
 #include "armv7/cp15.h"
 
-// FIXME: Move get_periphbase() to proper location.
-static inline uint64_t get_periphbase(void)
-{
-    uint64_t periphbase = 0UL;
-    unsigned long cbar = read_cbar();
-    uint64_t upper_periphbase = cbar & 0xFF;
-
-    if (upper_periphbase != 0x0) {
-        periphbase |= upper_periphbase << 32;
-        cbar &= ~(0xFF);
-    }
-    periphbase |= cbar;
-
-    return periphbase;
-}
-
 /* co-processor registers: cp15, cp2 */
 struct cp15 {
     uint32_t vbar;
