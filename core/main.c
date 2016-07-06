@@ -3,7 +3,6 @@
 #include <core/vm/vm.h>
 #include <core/scheduler.h>
 #include <config.h>
-#include "../arch/arm/init.h"
 #include <core/timer.h>
 
 static uint32_t smp_pen = 0;
