@@ -56,7 +56,9 @@ BEGIN_PROC(__start)
     str	    r3, [r2]
 #ifdef CONFIG_SMP
     read_cp32(r5, MPIDR)
-    cmp     r5, #BOOTABLE_CPUID
+    mov		r4, #BOOTABLE_CPUID
+    orr     r4, r4, #0x80000000
+    cmp     r5, r4
     bne     2f
 #endif
     sub	    r1, r1, #1
@@ -109,7 +111,9 @@ BEGIN_PROC(__start)
 
 #ifdef CONFIG_SMP
     read_cp32(r5, MPIDR)
-    cmp     r5, #BOOTABLE_CPUID
+    mov		r4, #BOOTABLE_CPUID
+    orr     r4, r4, #0x80000000
+    cmp     r5, r4
     beq     1f
     b       enter_smp_pen
 1:
