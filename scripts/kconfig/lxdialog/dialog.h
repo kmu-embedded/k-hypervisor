@@ -147,23 +147,23 @@ void print_autowrap(WINDOW * win, const char *prompt, int width, int y, int x);
 void print_button(WINDOW * win, const char *label, int y, int x, int selected);
 void print_title(WINDOW *dialog, const char *title, int width);
 void draw_box(WINDOW * win, int y, int x, int height, int width, chtype box,
-	      chtype border);
+              chtype border);
 void draw_shadow(WINDOW * win, int y, int x, int height, int width);
 
 int first_alpha(const char *string, const char *exempt);
 int dialog_yesno(const char *title, const char *prompt, int height, int width);
 int dialog_msgbox(const char *title, const char *prompt, int height,
-		  int width, int pause);
+                  int width, int pause);
 int dialog_textbox(const char *title, const char *file, int height, int width);
 int dialog_menu(const char *title, const char *prompt, int height, int width,
-		int menu_height, const char *choice, int item_no,
-		const char *const *items);
+                int menu_height, const char *choice, int item_no,
+                const char *const *items);
 int dialog_checklist(const char *title, const char *prompt, int height,
-		     int width, int list_height, int item_no,
-		     const char *const *items);
+                     int width, int list_height, int item_no,
+                     const char *const *items);
 extern char dialog_input_result[];
 int dialog_inputbox(const char *title, const char *prompt, int height,
-		    int width, const char *init);
+                    int width, const char *init);
 
 /*
  * This is the base for fictitious keys, which activate

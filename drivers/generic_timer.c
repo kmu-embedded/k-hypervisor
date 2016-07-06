@@ -27,17 +27,17 @@ static hvmm_status_t generic_timer_set_tval(enum generic_timer_type timer_type,
     hvmm_status_t result = HVMM_STATUS_SUCCESS;
 
     switch (timer_type) {
-        case GENERIC_TIMER_HYP:
-            write_cp32(tval, CNTHP_TVAL);
-            break;
-        case GENERIC_TIMER_VIR:
-            write_cp32(tval, CNTV_TVAL);
-            break;
-        case GENERIC_TIMER_NSP:
-            write_cp32(tval, CNTP_TVAL);
-            break;
-        default:
-            result = HVMM_STATUS_UNSUPPORTED_FEATURE;
+    case GENERIC_TIMER_HYP:
+        write_cp32(tval, CNTHP_TVAL);
+        break;
+    case GENERIC_TIMER_VIR:
+        write_cp32(tval, CNTV_TVAL);
+        break;
+    case GENERIC_TIMER_NSP:
+        write_cp32(tval, CNTP_TVAL);
+        break;
+    default:
+        result = HVMM_STATUS_UNSUPPORTED_FEATURE;
     }
 
     return result;
@@ -49,17 +49,17 @@ static hvmm_status_t generic_timer_set_cval(enum generic_timer_type timer_type,
     hvmm_status_t result = HVMM_STATUS_SUCCESS;
 
     switch (timer_type) {
-        case GENERIC_TIMER_HYP:
-            write_cp64(cval, CNTHP_CVAL);
-            break;
-        case GENERIC_TIMER_VIR:
-            write_cp64(cval, CNTV_CVAL);
-            break;
-        case GENERIC_TIMER_NSP:
-            write_cp64(cval, CNTP_CVAL);
-            break;
-        default:
-            result = HVMM_STATUS_UNSUPPORTED_FEATURE;
+    case GENERIC_TIMER_HYP:
+        write_cp64(cval, CNTHP_CVAL);
+        break;
+    case GENERIC_TIMER_VIR:
+        write_cp64(cval, CNTV_CVAL);
+        break;
+    case GENERIC_TIMER_NSP:
+        write_cp64(cval, CNTP_CVAL);
+        break;
+    default:
+        result = HVMM_STATUS_UNSUPPORTED_FEATURE;
     }
 
     return result;
@@ -71,26 +71,26 @@ static hvmm_status_t generic_timer_enable(enum generic_timer_type timer_type)
     hvmm_status_t result = HVMM_STATUS_SUCCESS;
 
     switch (timer_type) {
-        case GENERIC_TIMER_HYP:
-            ctrl = read_cp32(CNTHP_CTL);
-            ctrl |= ARM_CNTCTL_ENABLE;
-            ctrl &= ~ARM_CNTCTL_IMASK;
-            write_cp32(ctrl, CNTHP_CTL);
-            break;
-        case GENERIC_TIMER_VIR:
-            ctrl = read_cp32(CNTV_CTL);
-            ctrl |= ARM_CNTCTL_ENABLE;
-            ctrl &= ~ARM_CNTCTL_IMASK;
-            write_cp32(ctrl, CNTV_CTL);
-            break;
-        case GENERIC_TIMER_NSP:
-            ctrl = read_cp32(CNTP_CTL);
-            ctrl |= ARM_CNTCTL_ENABLE;
-            ctrl &= ~ARM_CNTCTL_IMASK;
-            write_cp32(ctrl, CNTP_CTL);
-            break;
-        default:
-            result = HVMM_STATUS_UNSUPPORTED_FEATURE;
+    case GENERIC_TIMER_HYP:
+        ctrl = read_cp32(CNTHP_CTL);
+        ctrl |= ARM_CNTCTL_ENABLE;
+        ctrl &= ~ARM_CNTCTL_IMASK;
+        write_cp32(ctrl, CNTHP_CTL);
+        break;
+    case GENERIC_TIMER_VIR:
+        ctrl = read_cp32(CNTV_CTL);
+        ctrl |= ARM_CNTCTL_ENABLE;
+        ctrl &= ~ARM_CNTCTL_IMASK;
+        write_cp32(ctrl, CNTV_CTL);
+        break;
+    case GENERIC_TIMER_NSP:
+        ctrl = read_cp32(CNTP_CTL);
+        ctrl |= ARM_CNTCTL_ENABLE;
+        ctrl &= ~ARM_CNTCTL_IMASK;
+        write_cp32(ctrl, CNTP_CTL);
+        break;
+    default:
+        result = HVMM_STATUS_UNSUPPORTED_FEATURE;
     }
 
     return result;
@@ -102,26 +102,26 @@ static hvmm_status_t generic_timer_disable(enum generic_timer_type timer_type)
     hvmm_status_t result = HVMM_STATUS_SUCCESS;
 
     switch (timer_type) {
-        case GENERIC_TIMER_HYP:
-            ctrl = read_cp32(CNTHP_CTL);
-            ctrl &= ~ARM_CNTCTL_ENABLE;
-            ctrl |= ARM_CNTCTL_IMASK;
-            write_cp32(ctrl, CNTHP_CTL);
-            break;
-        case GENERIC_TIMER_VIR:
-            ctrl = read_cp32(CNTV_CTL);
-            ctrl &= ~ARM_CNTCTL_ENABLE;
-            ctrl |= ARM_CNTCTL_IMASK;
-            write_cp32(ctrl, CNTV_CTL);
-            break;
-        case GENERIC_TIMER_NSP:
-            ctrl = read_cp32(CNTP_CTL);
-            ctrl &= ~ARM_CNTCTL_ENABLE;
-            ctrl |= ARM_CNTCTL_IMASK;
-            write_cp32(ctrl, CNTP_CTL);
-            break;
-        default:
-            result = HVMM_STATUS_UNSUPPORTED_FEATURE;
+    case GENERIC_TIMER_HYP:
+        ctrl = read_cp32(CNTHP_CTL);
+        ctrl &= ~ARM_CNTCTL_ENABLE;
+        ctrl |= ARM_CNTCTL_IMASK;
+        write_cp32(ctrl, CNTHP_CTL);
+        break;
+    case GENERIC_TIMER_VIR:
+        ctrl = read_cp32(CNTV_CTL);
+        ctrl &= ~ARM_CNTCTL_ENABLE;
+        ctrl |= ARM_CNTCTL_IMASK;
+        write_cp32(ctrl, CNTV_CTL);
+        break;
+    case GENERIC_TIMER_NSP:
+        ctrl = read_cp32(CNTP_CTL);
+        ctrl &= ~ARM_CNTCTL_ENABLE;
+        ctrl |= ARM_CNTCTL_IMASK;
+        write_cp32(ctrl, CNTP_CTL);
+        break;
+    default:
+        result = HVMM_STATUS_UNSUPPORTED_FEATURE;
     }
 
     return result;

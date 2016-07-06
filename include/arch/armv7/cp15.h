@@ -3,7 +3,6 @@
 
 #include "mcrmrc.h"
 
-
 //  CP_NAME                CP#, CRn, OPC1, CRm, OPC2
 
 // CRn == 0, ID registers.

@@ -42,10 +42,10 @@ extern "C" {
 #define TF_PARAM	0x0002
 
 struct kconf_id {
-	int name;
-	int token;
-	unsigned int flags;
-	enum symbol_type stype;
+    int name;
+    int token;
+    unsigned int flags;
+    enum symbol_type stype;
 };
 
 int zconfparse(void);
@@ -86,8 +86,8 @@ struct file *file_lookup(const char *name);
 int file_write_dep(const char *name);
 
 struct gstr {
-	size_t len;
-	char  *s;
+    size_t len;
+    char  *s;
 };
 struct gstr str_new(void);
 struct gstr str_assign(const char *s);
@@ -106,38 +106,38 @@ struct symbol *prop_get_symbol(struct property *prop);
 
 static inline tristate sym_get_tristate_value(struct symbol *sym)
 {
-	return sym->curr.tri;
+    return sym->curr.tri;
 }
 
 
 static inline struct symbol *sym_get_choice_value(struct symbol *sym)
 {
-	return (struct symbol *)sym->curr.val;
+    return (struct symbol *)sym->curr.val;
 }
 
 static inline bool sym_set_choice_value(struct symbol *ch, struct symbol *chval)
 {
-	return sym_set_tristate_value(chval, yes);
+    return sym_set_tristate_value(chval, yes);
 }
 
 static inline bool sym_is_choice(struct symbol *sym)
 {
-	return sym->flags & SYMBOL_CHOICE ? true : false;
+    return sym->flags & SYMBOL_CHOICE ? true : false;
 }
 
 static inline bool sym_is_choice_value(struct symbol *sym)
 {
-	return sym->flags & SYMBOL_CHOICEVAL ? true : false;
+    return sym->flags & SYMBOL_CHOICEVAL ? true : false;
 }
 
 static inline bool sym_is_optional(struct symbol *sym)
 {
-	return sym->flags & SYMBOL_OPTIONAL ? true : false;
+    return sym->flags & SYMBOL_OPTIONAL ? true : false;
 }
 
 static inline bool sym_has_value(struct symbol *sym)
 {
-	return sym->flags & SYMBOL_NEW ? false : true;
+    return sym->flags & SYMBOL_NEW ? false : true;
 }
 
 #ifdef __cplusplus

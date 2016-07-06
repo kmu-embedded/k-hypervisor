@@ -28,44 +28,46 @@
 int dialog_msgbox(const char *title, const char *prompt, int height, int width,
                   int pause)
 {
-	int i, x, y, key = 0;
-	WINDOW *dialog;
+    int i, x, y, key = 0;
+    WINDOW *dialog;
 
-	/* center dialog box on screen */
-	x = (COLS - width) / 2;
-	y = (LINES - height) / 2;
+    /* center dialog box on screen */
+    x = (COLS - width) / 2;
+    y = (LINES - height) / 2;
 
-	draw_shadow(stdscr, y, x, height, width);
+    draw_shadow(stdscr, y, x, height, width);
 
-	dialog = newwin(height, width, y, x);
-	keypad(dialog, TRUE);
+    dialog = newwin(height, width, y, x);
+    keypad(dialog, TRUE);
 
-	draw_box(dialog, 0, 0, height, width, dialog_attr, border_attr);
+    draw_box(dialog, 0, 0, height, width, dialog_attr, border_attr);
 
-	print_title(dialog, title, width);
+    print_title(dialog, title, width);
 
-	wattrset(dialog, dialog_attr);
-	print_autowrap(dialog, prompt, width - 2, 1, 2);
+    wattrset(dialog, dialog_attr);
+    print_autowrap(dialog, prompt, width - 2, 1, 2);
 
-	if (pause) {
-		wattrset(dialog, border_attr);
-		mvwaddch(dialog, height - 3, 0, ACS_LTEE);
-		for (i = 0; i < width - 2; i++)
-			waddch(dialog, ACS_HLINE);
-		wattrset(dialog, dialog_attr);
-		waddch(dialog, ACS_RTEE);
+    if (pause) {
+        wattrset(dialog, border_attr);
+        mvwaddch(dialog, height - 3, 0, ACS_LTEE);
+        for (i = 0; i < width - 2; i++) {
+            waddch(dialog, ACS_HLINE);
+        }
+        wattrset(dialog, dialog_attr);
+        waddch(dialog, ACS_RTEE);
 
-		print_button(dialog, "  Ok  ", height - 2, width / 2 - 4, TRUE);
+        print_button(dialog, "  Ok  ", height - 2, width / 2 - 4, TRUE);
 
-		wrefresh(dialog);
-		while (key != ESC && key != '\n' && key != ' ' &&
-		       key != 'O' && key != 'o' && key != 'X' && key != 'x')
-			key = wgetch(dialog);
-	} else {
-		key = '\n';
-		wrefresh(dialog);
-	}
+        wrefresh(dialog);
+        while (key != ESC && key != '\n' && key != ' ' &&
+                key != 'O' && key != 'o' && key != 'X' && key != 'x') {
+            key = wgetch(dialog);
+        }
+    } else {
+        key = '\n';
+        wrefresh(dialog);
+    }
 
-	delwin(dialog);
-	return key == ESC ? -1 : 0;
+    delwin(dialog);
+    return key == ESC ? -1 : 0;
 }

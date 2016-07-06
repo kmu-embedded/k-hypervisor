@@ -22,14 +22,14 @@ void init_cpu()
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
 
     // For console debugging.
-	console_init();
-	libc_init();
+    console_init();
+    libc_init();
 
-	// Set HYP vector table.
-	write_cp32((uint32_t) &__hvc_vector, HVBAR);
-	assert(read_cp32(HVBAR) == (uint32_t) &__hvc_vector);
+    // Set HYP vector table.
+    write_cp32((uint32_t) &__hvc_vector, HVBAR);
+    assert(read_cp32(HVBAR) == (uint32_t) &__hvc_vector);
 
-	// Set pgtable for HYP mode.
+    // Set pgtable for HYP mode.
     write_cp64((uint64_t) pgtable, HTTBR);
     assert(read_cp64(HTTBR) == pgtable);
 
@@ -39,27 +39,27 @@ void init_cpu()
     write_cp32(HMAIR1_VALUE, HMAIR1);
 
     // Two lines as below will be removed.
-	paging_create((addr_t) &__HYP_PGTABLE);
-	platform_init();
+    paging_create((addr_t) &__HYP_PGTABLE);
+    platform_init();
 
-	irq_init();
+    irq_init();
 
-	dev_init(); /* we don't have */
+    dev_init(); /* we don't have */
 
-	vdev_init(); /* Already we have */
+    vdev_init(); /* Already we have */
 
-	setup_vm_mmap();
+    setup_vm_mmap();
 
 #ifdef CONFIG_SMP
-	printf("wake up...other CPUs\n");
-	secondary_smp_pen = 1;
+    printf("wake up...other CPUs\n");
+    secondary_smp_pen = 1;
 #endif
 
-	printf("%s[%d]: CPU[%d]\n", __func__, __LINE__, cpuid);
+    printf("%s[%d]: CPU[%d]\n", __func__, __LINE__, cpuid);
 
     write_cp32(HSCTLR_VALUE, HSCTLR);
 
-	start_hypervisor();
+    start_hypervisor();
 }
 
 void init_secondary_cpus()
@@ -68,8 +68,8 @@ void init_secondary_cpus()
 
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
 
-	write_cp32((uint32_t) &__hvc_vector, HVBAR);
-	assert(read_cp32(HVBAR) == (uint32_t) &__hvc_vector);
+    write_cp32((uint32_t) &__hvc_vector, HVBAR);
+    assert(read_cp32(HVBAR) == (uint32_t) &__hvc_vector);
 
     write_cp64((uint64_t) pgtable, HTTBR);
     assert(read_cp64(HTTBR) == pgtable);

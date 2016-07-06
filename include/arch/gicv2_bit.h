@@ -74,14 +74,13 @@
 #define GICD_SGIR_TARGET_SELF  (0x2<<24)
 
 #define GICD_SGIR_CPU_TARGET_LIST_OFFSET    16
-#define GICD_SGIR_CPU_TARGET_LIST_MASK  \
-    (0xFF<<GICD_SGIR_CPU_TARGET_LIST_OFFSET)
-#define GICD_SGIR_SGI_INT_ID_MASK   0xF
+#define GICD_SGIR_CPU_TARGET_LIST_MASK  	(0xFF<<GICD_SGIR_CPU_TARGET_LIST_OFFSET)
+#define GICD_SGIR_SGI_INT_ID_MASK   		0xF
 
 /* CPU Interface Register Fields */
 #define GICC_CTL_ENABLE     0x1
 #define GICC_CTL_EOI        (0x1 << 9)
-#define GICC_IAR_MASK    0x03ff
+#define GICC_IAR_MASK    	0x03ff
 
 /* Virtual Interface Control */
 #define GICH_HCR_EN             0x1

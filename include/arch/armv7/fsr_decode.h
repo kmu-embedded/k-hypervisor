@@ -1,5 +1,5 @@
-#ifndef ____FSR_DECODE_H____
-#define ____FSR_DECODE_H____
+#ifndef __FSR_DECODE_H__
+#define __FSR_DECODE_H__
 
 /* Long-descriptor format FSR decodings */
 #define FSR_TRANS_FAULT(x)              (x + 0x04)
@@ -16,4 +16,4 @@
 #define FSR_TLB_CONFLICT                (0x30)
 #define FSR_DOMAIN_FAULT(x)             (x + 0x3C)
 
-#endif /* __FSR_DECODE_H___ */
+#endif /* __FSR_DECODE_H__ */

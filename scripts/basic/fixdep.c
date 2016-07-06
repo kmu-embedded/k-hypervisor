@@ -128,8 +128,8 @@ char *cmdline;
 void usage(void)
 
 {
-	fprintf(stderr, "Usage: fixdep <depfile> <target> <cmdline>\n");
-	exit(1);
+    fprintf(stderr, "Usage: fixdep <depfile> <target> <cmdline>\n");
+    exit(1);
 }
 
 /*
@@ -137,7 +137,7 @@ void usage(void)
  */
 void print_cmdline(void)
 {
-	printf("cmd_%s := %s\n\n", target, cmdline);
+    printf("cmd_%s := %s\n\n", target, cmdline);
 }
 
 char * str_config  = NULL;
@@ -150,13 +150,16 @@ int    len_config  = 0;
  */
 void grow_config(int len)
 {
-	while (len_config + len > size_config) {
-		if (size_config == 0)
-			size_config = 2048;
-		str_config = realloc(str_config, size_config *= 2);
-		if (str_config == NULL)
-			{ perror("fixdep:malloc"); exit(1); }
-	}
+    while (len_config + len > size_config) {
+        if (size_config == 0) {
+            size_config = 2048;
+        }
+        str_config = realloc(str_config, size_config *= 2);
+        if (str_config == NULL) {
+            perror("fixdep:malloc");
+            exit(1);
+        }
+    }
 }
 
 
@@ -166,15 +169,16 @@ void grow_config(int len)
  */
 int is_defined_config(const char * name, int len)
 {
-	const char * pconfig;
-	const char * plast = str_config + len_config - len;
-	for ( pconfig = str_config + 1; pconfig < plast; pconfig++ ) {
-		if (pconfig[ -1] == '\n'
-		&&  pconfig[len] == '\n'
-		&&  !memcmp(pconfig, name, len))
-			return 1;
-	}
-	return 0;
+    const char * pconfig;
+    const char * plast = str_config + len_config - len;
+    for ( pconfig = str_config + 1; pconfig < plast; pconfig++ ) {
+        if (pconfig[ -1] == '\n'
+                &&  pconfig[len] == '\n'
+                &&  !memcmp(pconfig, name, len)) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 /*
@@ -182,11 +186,11 @@ int is_defined_config(const char * name, int len)
  */
 void define_config(const char * name, int len)
 {
-	grow_config(len + 1);
+    grow_config(len + 1);
 
-	memcpy(str_config+len_config, name, len);
-	len_config += len;
-	str_config[len_config++] = '\n';
+    memcpy(str_config + len_config, name, len);
+    len_config += len;
+    str_config[len_config++] = '\n';
 }
 
 /*
@@ -194,8 +198,8 @@ void define_config(const char * name, int len)
  */
 void clear_config(void)
 {
-	len_config = 0;
-	define_config("", 0);
+    len_config = 0;
+    define_config("", 0);
 }
 
 /*
@@ -203,202 +207,226 @@ void clear_config(void)
  */
 void use_config(char *m, int slen)
 {
-	char s[PATH_MAX];
-	char *p;
+    char s[PATH_MAX];
+    char *p;
 
-	if (is_defined_config(m, slen))
-	    return;
+    if (is_defined_config(m, slen)) {
+        return;
+    }
 
-	define_config(m, slen);
+    define_config(m, slen);
 
-	memcpy(s, m, slen); s[slen] = 0;
+    memcpy(s, m, slen);
+    s[slen] = 0;
 
-	for (p = s; p < s + slen; p++) {
-		if (*p == '_')
-			*p = '/';
-		else
-			*p = tolower((int)*p);
-	}
-	printf("    $(wildcard include/config/%s.h) \\\n", s);
+    for (p = s; p < s + slen; p++) {
+        if (*p == '_') {
+            *p = '/';
+        } else {
+            *p = tolower((int) * p);
+        }
+    }
+    printf("    $(wildcard include/config/%s.h) \\\n", s);
 }
 
 void parse_config_file(char *map, size_t len)
 {
-	/* modified for bbox */
-	char *end_4 = map + len - 4; /* 4 == length of "USE_" */
-	char *end_7 = map + len - 7;
-	char *p = map;
-	char *q;
-	int off;
+    /* modified for bbox */
+    char *end_4 = map + len - 4; /* 4 == length of "USE_" */
+    char *end_7 = map + len - 7;
+    char *p = map;
+    char *q;
+    int off;
 
-	for (; p < end_4; p++) {
-		if (p < end_7 && p[6] == '_') {
-			if (!memcmp(p, "CONFIG", 6)) goto conf7;
-			if (!memcmp(p, "ENABLE", 6)) goto conf7;
-		}
-		/* We have at least 5 chars: for() has
-		 * "p < end-4", not "p <= end-4"
-		 * therefore we don't need to check p <= end-5 here */
-		if (p[4] == '_')
-			if (!memcmp(p, "SKIP", 4)) goto conf5;
-		/* Ehhh, gcc is too stupid to just compare it as 32bit int */
-		if (p[0] == 'U')
-			if (!memcmp(p, "USE_", 4)) goto conf4;
-		continue;
+    for (; p < end_4; p++) {
+        if (p < end_7 && p[6] == '_') {
+            if (!memcmp(p, "CONFIG", 6)) {
+                goto conf7;
+            }
+            if (!memcmp(p, "ENABLE", 6)) {
+                goto conf7;
+            }
+        }
+        /* We have at least 5 chars: for() has
+         * "p < end-4", not "p <= end-4"
+         * therefore we don't need to check p <= end-5 here */
+        if (p[4] == '_')
+            if (!memcmp(p, "SKIP", 4)) {
+                goto conf5;
+            }
+        /* Ehhh, gcc is too stupid to just compare it as 32bit int */
+        if (p[0] == 'U')
+            if (!memcmp(p, "USE_", 4)) {
+                goto conf4;
+            }
+        continue;
 
-	conf4:	off = 4;
-	conf5:	off = 5;
-	conf7:	off = 7;
-		p += off;
-		for (q = p; q < end_4+4; q++) {
-			if (!(isalnum(*q) || *q == '_'))
-				break;
-		}
-		use_config(p, q-p);
-	}
+conf4:
+        off = 4;
+conf5:
+        off = 5;
+conf7:
+        off = 7;
+        p += off;
+        for (q = p; q < end_4 + 4; q++) {
+            if (!(isalnum(*q) || *q == '_')) {
+                break;
+            }
+        }
+        use_config(p, q - p);
+    }
 }
 
 /* test is s ends in sub */
 int strrcmp(char *s, char *sub)
 {
-	int slen = strlen(s);
-	int sublen = strlen(sub);
+    int slen = strlen(s);
+    int sublen = strlen(sub);
 
-	if (sublen > slen)
-		return 1;
+    if (sublen > slen) {
+        return 1;
+    }
 
-	return memcmp(s + slen - sublen, sub, sublen);
+    return memcmp(s + slen - sublen, sub, sublen);
 }
 
 void do_config_file(char *filename)
 {
-	struct stat st;
-	int fd;
-	void *map;
+    struct stat st;
+    int fd;
+    void *map;
 
-	fd = open(filename, O_RDONLY);
-	if (fd < 0) {
-		fprintf(stderr, "fixdep: ");
-		perror(filename);
-		exit(2);
-	}
-	fstat(fd, &st);
-	if (st.st_size == 0) {
-		close(fd);
-		return;
-	}
-	map = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-	if ((long) map == -1) {
-		perror("fixdep: mmap");
-		close(fd);
-		return;
-	}
+    fd = open(filename, O_RDONLY);
+    if (fd < 0) {
+        fprintf(stderr, "fixdep: ");
+        perror(filename);
+        exit(2);
+    }
+    fstat(fd, &st);
+    if (st.st_size == 0) {
+        close(fd);
+        return;
+    }
+    map = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    if ((long) map == -1) {
+        perror("fixdep: mmap");
+        close(fd);
+        return;
+    }
 
-	parse_config_file(map, st.st_size);
+    parse_config_file(map, st.st_size);
 
-	munmap(map, st.st_size);
+    munmap(map, st.st_size);
 
-	close(fd);
+    close(fd);
 }
 
 void parse_dep_file(void *map, size_t len)
 {
-	char *m = map;
-	char *end = m + len;
-	char *p;
-	char s[PATH_MAX];
+    char *m = map;
+    char *end = m + len;
+    char *p;
+    char s[PATH_MAX];
 
-	p = memchr(m, ':', len);
-	if (!p) {
-		fprintf(stderr, "fixdep: parse error\n");
-		exit(1);
-	}
-	memcpy(s, m, p-m); s[p-m] = 0;
-	printf("deps_%s := \\\n", target);
-	m = p+1;
+    p = memchr(m, ':', len);
+    if (!p) {
+        fprintf(stderr, "fixdep: parse error\n");
+        exit(1);
+    }
+    memcpy(s, m, p - m);
+    s[p - m] = 0;
+    printf("deps_%s := \\\n", target);
+    m = p + 1;
 
-	clear_config();
+    clear_config();
 
-	while (m < end) {
-		while (m < end && (*m == ' ' || *m == '\\' || *m == '\n'))
-			m++;
-		p = m;
-		while (p < end && *p != ' ') p++;
-		if (p == end) {
-			do p--; while (!isalnum(*p));
-			p++;
-		}
-		memcpy(s, m, p-m); s[p-m] = 0;
-		if (strrcmp(s, "include/autoconf.h") &&
-		    strrcmp(s, "arch/um/include/uml-config.h") &&
-		    strrcmp(s, ".ver")) {
-			printf("  %s \\\n", s);
-			do_config_file(s);
-		}
-		m = p + 1;
-	}
-	printf("\n%s: $(deps_%s)\n\n", target, target);
-	printf("$(deps_%s):\n", target);
+    while (m < end) {
+        while (m < end && (*m == ' ' || *m == '\\' || *m == '\n')) {
+            m++;
+        }
+        p = m;
+        while (p < end && *p != ' ') {
+            p++;
+        }
+        if (p == end) {
+            do {
+                p--;
+            } while (!isalnum(*p));
+            p++;
+        }
+        memcpy(s, m, p - m);
+        s[p - m] = 0;
+        if (strrcmp(s, "include/autoconf.h") &&
+                strrcmp(s, "arch/um/include/uml-config.h") &&
+                strrcmp(s, ".ver")) {
+            printf("  %s \\\n", s);
+            do_config_file(s);
+        }
+        m = p + 1;
+    }
+    printf("\n%s: $(deps_%s)\n\n", target, target);
+    printf("$(deps_%s):\n", target);
 }
 
 void print_deps(void)
 {
-	struct stat st;
-	int fd;
-	void *map;
+    struct stat st;
+    int fd;
+    void *map;
 
-	fd = open(depfile, O_RDONLY);
-	if (fd < 0) {
-		fprintf(stderr, "fixdep: ");
-		perror(depfile);
-		exit(2);
-	}
-	fstat(fd, &st);
-	if (st.st_size == 0) {
-		fprintf(stderr,"fixdep: %s is empty\n",depfile);
-		close(fd);
-		return;
-	}
-	map = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-	if ((long) map == -1) {
-		perror("fixdep: mmap");
-		close(fd);
-		return;
-	}
+    fd = open(depfile, O_RDONLY);
+    if (fd < 0) {
+        fprintf(stderr, "fixdep: ");
+        perror(depfile);
+        exit(2);
+    }
+    fstat(fd, &st);
+    if (st.st_size == 0) {
+        fprintf(stderr, "fixdep: %s is empty\n", depfile);
+        close(fd);
+        return;
+    }
+    map = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    if ((long) map == -1) {
+        perror("fixdep: mmap");
+        close(fd);
+        return;
+    }
 
-	parse_dep_file(map, st.st_size);
+    parse_dep_file(map, st.st_size);
 
-	munmap(map, st.st_size);
+    munmap(map, st.st_size);
 
-	close(fd);
+    close(fd);
 }
 
 void traps(void)
 {
-/* bbox: not needed
-	static char test[] __attribute__((aligned(sizeof(int)))) = "CONF";
+    /* bbox: not needed
+    	static char test[] __attribute__((aligned(sizeof(int)))) = "CONF";
 
-	if (*(int *)test != INT_CONF) {
-		fprintf(stderr, "fixdep: sizeof(int) != 4 or wrong endianess? %#x\n",
-			*(int *)test);
-		exit(2);
-	}
-*/
+    	if (*(int *)test != INT_CONF) {
+    		fprintf(stderr, "fixdep: sizeof(int) != 4 or wrong endianess? %#x\n",
+    			*(int *)test);
+    		exit(2);
+    	}
+    */
 }
 
 int main(int argc, char **argv)
 {
-	traps();
+    traps();
 
-	if (argc != 4)
-		usage();
+    if (argc != 4) {
+        usage();
+    }
 
-	depfile = argv[1];
-	target = argv[2];
-	cmdline = argv[3];
+    depfile = argv[1];
+    target = argv[2];
+    cmdline = argv[3];
 
-	print_cmdline();
-	print_deps();
+    print_cmdline();
+    print_deps();
 
-	return 0;
+    return 0;
 }
