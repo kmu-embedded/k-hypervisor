@@ -32,7 +32,7 @@ static int owner_id = 0;
 #define UARTPERIPHID(x)     (0xFE0 + (4 * x))
 #define UARTCELLID(x)       (0xFF0 + (4 * x))
 
-extern struct virq_chip *virq_hw;
+extern struct virq_hw *virq_hw;
 
 int32_t vuart_read(void *pdata, uint32_t offset);
 int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr);
