@@ -1,7 +1,7 @@
 #include <irq-chip.h>
 #include <drivers/gic-v2.h>
 
-struct irq_chip gic_v2 = {
+struct irq_hw gic_v2 = {
     .init = gic_init,
     .enable = gic_enable_irq,
     .disable = gic_disable_irq,
@@ -11,7 +11,7 @@ struct irq_chip gic_v2 = {
     .set_irq_type = gic_configure_irq,
 };
 
-struct virq_chip vgic_v2 = {
+struct virq_hw vgic_v2 = {
     .init = gich_init,
     .enable = gich_enable,
     .disable = gich_disable,
