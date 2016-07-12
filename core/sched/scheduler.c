@@ -26,9 +26,8 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
         const struct sched_policy *p = &sched_rr;
 
         struct scheduler *s
-                    = sched[pcpu]
-              = (struct scheduler *) malloc(
-                    sizeof(struct scheduler) + sizeof(p->size_sched_extra));
+            = sched[pcpu]
+            = (struct scheduler *) malloc(sizeof(struct scheduler));
 
         s->policy = p;
         s->policy->init(s);
