@@ -49,7 +49,7 @@ int sched_rm_vcpu_register(struct scheduler *s, struct sched_entry *e)
     struct entry_data_rm *ed = (struct entry_data_rm *) (e + 1);
 
     /* FIXME:(igkang) Hardcoded. should use config data. */
-    ed->period = 10;
+    ed->period = 2;
     ed->budget = 2;
 
     LIST_INITHEAD(&ed->head);
@@ -109,8 +109,8 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
         timer_get_timenow() + USEC(sd->tick_interval_us);
 
     if (LIST_IS_EMPTY(&sd->runqueue)) {
-        printf("Nothing to run\n");
-        printf("Idle mode not implemented\n");
+        // printf("Nothing to run\n");
+        // printf("Idle mode not implemented\n");
         while(1);
     }
 
@@ -129,17 +129,19 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
     /* Check & decrease all entries' period count */
     struct entry_data_rm *ed = NULL;
     if (is_switching_needed) {
-        uint32_t min = 0xFFFFFFFF;
+        uint32_t min_period = 0xFFFFFFFF;
         next_ed = NULL;
 
         LIST_FOR_EACH_ENTRY(ed, &sd->runqueue, head) {
             if (ed->period_cntdn == 0) {
                 ed->budget_cntdn = ed->budget;
+                ed->period_cntdn = ed->period;
             }
 
             /* find the entry with budget left and shortest period */
-            if (ed->budget_cntdn > 0 && min > ed->period) {
+            if (ed->budget_cntdn > 0 && min_period > ed->period) {
                 next_ed = ed;
+                min_period = ed->period;
             }
 
             ed->period_cntdn -= 1;
@@ -147,13 +149,13 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
 
         if (sd->current != NULL) {
             struct sched_entry *current_e = NULL;
-            current_e = ((struct sched_entry *) current_ed) - 1;
+            current_e = ((struct sched_entry *) current_ed) + 1;
             current_e->state = SCHED_WAITING;
         }
 
         if (next_ed != NULL) {
             struct sched_entry *next_e = NULL;
-            next_e = ((struct sched_entry *) next_ed) - 1;
+            next_e = ((struct sched_entry *) next_ed) + 1;
             next_e->state = SCHED_RUNNING;
 
             sd->current = next_ed;
@@ -162,21 +164,22 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
             next_vcpuid = next_e->vcpuid;
         } else {
             /* TODO:(igkang) handle the situation that there is no entry to run */
-            printf("Nothing to run\n");
-            printf("Idle mode not implemented\n");
+            // printf("Nothing to run\n");
+            // printf("Idle mode not implemented\n");
             while(1);
         }
     } else {
         LIST_FOR_EACH_ENTRY(ed, &sd->runqueue, head) {
             if (ed->period_cntdn == 0) {
                 ed->budget_cntdn = ed->budget;
+                ed->period_cntdn = ed->period;
             }
 
             ed->period_cntdn -= 1;
         }
 
         if (sd->current != NULL) {
-            struct sched_entry *current_e = ((struct sched_entry *) current_ed) - 1;
+            struct sched_entry *current_e = ((struct sched_entry *) current_ed) + 1;
             next_vcpuid = current_e->vcpuid;
         }
     }

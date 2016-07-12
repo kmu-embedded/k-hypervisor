@@ -23,7 +23,7 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
     /* Allocate and initialize data */
     uint32_t pcpu;
     for (pcpu = 0; pcpu < NR_CPUS; pcpu++) {
-        const struct sched_policy *p = &sched_rr;
+        const struct sched_policy *p = &sched_rt_rm;
 
         struct scheduler *s
             = sched[pcpu]
@@ -31,6 +31,8 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
 
         s->policy = p;
         s->policy->init(s);
+        s->pcpuid = pcpu;
+        s->id = pcpu;
 
         s->current_vcpuid = VCPUID_INVALID;
         s->next_vcpuid = VCPUID_INVALID;
@@ -39,6 +41,9 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
 
         LIST_INITHEAD(&s->standby_entries);
         LIST_INITHEAD(&s->inflight_entries);
+
+        printf("init sched #%u\n", s->pcpuid);
+        printf("init sched #%u\n", s->pcpuid);
     }
 }
 
