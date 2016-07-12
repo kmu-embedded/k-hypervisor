@@ -39,6 +39,7 @@ struct sched_entry {
     struct list_head head_inflight;
 
     /* policy-specific data follows (allocation) */
+    void *ed;
 };
 
 struct scheduler {
@@ -58,6 +59,7 @@ struct scheduler {
     const struct sched_policy *policy;
 
     /* policy-specific data follows (allocation) */
+    void *sd;
 };
 
 extern const struct sched_policy sched_rr;
