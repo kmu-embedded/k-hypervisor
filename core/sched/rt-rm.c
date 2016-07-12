@@ -9,7 +9,7 @@
 #include <core/timer.h>
 
 struct entry_data_rm {
-    vcpuid_t vcpuid;
+    struct sched_entry *e;
 
     uint32_t period;
     uint32_t budget;
@@ -21,6 +21,8 @@ struct entry_data_rm {
 };
 
 struct sched_data_rm {
+    struct scheduler *s;
+
     uint64_t tick_interval_us;
     uint64_t tick_count;
 
@@ -31,7 +33,7 @@ struct sched_data_rm {
 /* Scheduler related data initialization */
 void sched_rm_init(struct scheduler *s)
 {
-    struct sched_data_rm *sd = (struct sched_data_rm *) (s + 1);
+    struct sched_data_rm *sd = (struct sched_data_rm *) malloc(sizeof(struct sched_data_rm));
 
     /* Check scheduler config */
     /* Allocate memory for system-wide data */
@@ -39,20 +41,26 @@ void sched_rm_init(struct scheduler *s)
     sd->current = NULL;
     sd->tick_count = 0;
     sd->tick_interval_us = 1000;
+    sd->s = s;
 
     LIST_INITHEAD(&sd->runqueue);
+
+    s->sd = sd;
 }
 
 int sched_rm_vcpu_register(struct scheduler *s, struct sched_entry *e)
 {
-    // struct sched_data_rm *sd = (struct sched_data_rm *) (s + 1);
-    struct entry_data_rm *ed = (struct entry_data_rm *) (e + 1);
+    // struct sched_data_rm *sd = (struct sched_data_rm *) (s->sd);
+    struct entry_data_rm *ed = (struct entry_data_rm *) malloc(sizeof(struct entry_data_rm));
 
     /* FIXME:(igkang) Hardcoded. should use config data. */
     ed->period = 2;
     ed->budget = 2;
+    ed->e = e;
 
     LIST_INITHEAD(&ed->head);
+
+    e->ed = ed;
 
     return 0;
 }
@@ -69,8 +77,8 @@ int sched_rm_vcpu_unregister(struct scheduler *s, struct sched_entry *e)
 
 int sched_rm_vcpu_attach(struct scheduler *s, struct sched_entry *e)
 {
-    struct sched_data_rm *sd = (struct sched_data_rm *) (s + 1);
-    struct entry_data_rm *ed = (struct entry_data_rm *) (e + 1);
+    struct sched_data_rm *sd = (struct sched_data_rm *) (s->sd);
+    struct entry_data_rm *ed = (struct entry_data_rm *) (e->ed);
 
     ed->period_cntdn = ed->period;
     ed->budget_cntdn = ed->budget;
@@ -82,8 +90,8 @@ int sched_rm_vcpu_attach(struct scheduler *s, struct sched_entry *e)
 
 int sched_rm_vcpu_detach(struct scheduler *s, struct sched_entry *e)
 {
-    // struct sched_data_rm *sd = (struct sched_data_rm *) (s + 1);
-    struct entry_data_rm *ed = (struct entry_data_rm *) (e + 1);
+    // struct sched_data_rm *sd = (struct sched_data_rm *) (s->sd);
+    struct entry_data_rm *ed = (struct entry_data_rm *) (e->ed);
 
     /* Check if vcpu is attached */
     /* Remove it from runqueue by setting will_detached flag*/
@@ -99,9 +107,11 @@ int sched_rm_vcpu_detach(struct scheduler *s, struct sched_entry *e)
  */
 int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
 {
-    struct sched_data_rm *sd = (struct sched_data_rm *) (s + 1);
+    struct sched_data_rm *sd = (struct sched_data_rm *) (s->sd);
+
     struct entry_data_rm *current_ed = NULL;
     struct entry_data_rm *next_ed = NULL;
+
     bool is_switching_needed = false;
     int next_vcpuid = VCPUID_INVALID;
 
@@ -148,14 +158,12 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
         }
 
         if (sd->current != NULL) {
-            struct sched_entry *current_e = NULL;
-            current_e = ((struct sched_entry *) current_ed) + 1;
-            current_e->state = SCHED_WAITING;
+            current_ed->e->state = SCHED_WAITING;
         }
 
         if (next_ed != NULL) {
             struct sched_entry *next_e = NULL;
-            next_e = ((struct sched_entry *) next_ed) + 1;
+            next_e = next_ed->e;
             next_e->state = SCHED_RUNNING;
 
             sd->current = next_ed;
@@ -179,8 +187,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
         }
 
         if (sd->current != NULL) {
-            struct sched_entry *current_e = ((struct sched_entry *) current_ed) + 1;
-            next_vcpuid = current_e->vcpuid;
+            next_vcpuid = current_ed->e->vcpuid;
         }
     }
 
@@ -188,9 +195,6 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
 }
 
 const struct sched_policy sched_rt_rm = {
-    .size_sched_extra = sizeof(struct sched_data_rm),
-    .size_entry_extra = sizeof(struct entry_data_rm),
-
     .init = sched_rm_init,
     .register_vcpu = sched_rm_vcpu_register,
     .unregister_vcpu = sched_rm_vcpu_unregister,

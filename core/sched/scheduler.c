@@ -198,8 +198,7 @@ int sched_vcpu_register(vcpuid_t vcpuid, uint32_t pcpu)
     struct scheduler *const s = sched[pcpu];
     struct sched_entry *new;
 
-    new = (struct sched_entry *) malloc(
-              sizeof(struct sched_entry) + s->policy->size_entry_extra);
+    new = (struct sched_entry *) malloc(sizeof(struct sched_entry));
 
     LIST_INITHEAD(&new->head_standby);
     LIST_INITHEAD(&new->head_inflight);
