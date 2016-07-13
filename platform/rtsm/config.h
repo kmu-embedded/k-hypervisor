@@ -6,7 +6,7 @@
 
 #define HYP_STACK_SIZE          4096
 #define NR_CPUS                 4
-#define NUM_GUESTS_STATIC       2
+#define NUM_GUESTS_STATIC       4
 
 #define BOOTABLE_CPUID         	(0 << 8)
 
@@ -39,6 +39,8 @@
 #define CFG_MEMMAP_GUEST1_OFFSET            0x90500000
 #define CFG_MEMMAP_GUEST2_ATAGS_OFFSET      0xA0000000
 #define CFG_MEMMAP_GUEST2_OFFSET            0xA0500000
+#define CFG_MEMMAP_GUEST3_ATAGS_OFFSET      0xB0000000
+#define CFG_MEMMAP_GUEST3_OFFSET            0xB0500000
 #define CFG_GUEST_ATAGS_START_ADDRESS       0x80000000
 #define CFG_GUEST_START_ADDRESS             0x80500000
 

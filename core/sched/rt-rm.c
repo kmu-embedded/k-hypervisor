@@ -1,4 +1,5 @@
 #include <core/sched/scheduler_skeleton.h>
+#include <core/sched/sched-config.h>
 #include <config.h>
 #include <arch/armv7.h>
 #include <stdlib.h>
@@ -40,7 +41,7 @@ void sched_rm_init(struct scheduler *s)
     /* Initialize data */
     sd->current = NULL;
     sd->tick_count = 0;
-    sd->tick_interval_us = 1000;
+    sd->tick_interval_us = schedconf_rm_tick_interval_ms[s->pcpuid];
     sd->s = s;
 
     LIST_INITHEAD(&sd->runqueue);
@@ -53,9 +54,8 @@ int sched_rm_vcpu_register(struct scheduler *s, struct sched_entry *e)
     // struct sched_data_rm *sd = (struct sched_data_rm *) (s->sd);
     struct entry_data_rm *ed = (struct entry_data_rm *) malloc(sizeof(struct entry_data_rm));
 
-    /* FIXME:(igkang) Hardcoded. should use config data. */
-    ed->period = 2;
-    ed->budget = 2;
+    ed->period = schedconf_rm_period_budget[e->vcpuid][0];
+    ed->budget = schedconf_rm_period_budget[e->vcpuid][1];
     ed->e = e;
 
     LIST_INITHEAD(&ed->head);
