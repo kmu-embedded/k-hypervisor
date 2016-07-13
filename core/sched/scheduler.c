@@ -7,6 +7,7 @@
 #include <core/context_switch.h>
 #include <core/scheduler.h>
 #include <core/sched/scheduler_skeleton.h>
+#include <core/sched/sched-config.h>
 
 #include <debug.h>
 #include <stdlib.h>
@@ -23,7 +24,7 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
     /* Allocate and initialize data */
     uint32_t pcpu;
     for (pcpu = 0; pcpu < NR_CPUS; pcpu++) {
-        const struct sched_policy *p = &sched_rt_rm;
+        const struct sched_policy *p = schedconf_g_policy[pcpu];
 
         struct scheduler *s
             = sched[pcpu]
