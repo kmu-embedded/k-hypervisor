@@ -9,6 +9,7 @@
 #define NUM_GUESTS_STATIC       3
 
 #define BOOTABLE_CPUID         	(0 << 8)
+#define CFG_VDEV_SERIAL     0
 
 /*
  *  SOC param

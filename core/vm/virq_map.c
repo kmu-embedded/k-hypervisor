@@ -40,6 +40,7 @@ void pirq_disable(struct vcpu *v, uint32_t pirq)
 #include <arch/armv7.h>
 #include <core/vm/vcpu.h>
 #include <core/scheduler.h>
+#include <core/sched/scheduler_skeleton.h>
 #include <irq-chip.h>
 #include <arch/irq.h>
 
@@ -50,10 +51,10 @@ static irq_return_t is_guest_ppi(int irq, void *pregs, void *pdata)
     uint32_t pcpu = smp_processor_id();
 
     if (irq < 32) { // PPI
-        struct running_vcpus_entry_t *rve;
-        struct list_head *rvs_list = &__running_vcpus[pcpu];
+        struct sched_entry *rve;
+        struct list_head *rvs_list = &sched[pcpu]->inflight_entries;
 
-        list_for_each_entry(struct running_vcpus_entry_t, rve, rvs_list, head) {
+        list_for_each_entry(struct sched_entry, rve, rvs_list, head_inflight) {
             vcpu = vcpu_find(rve->vcpuid);
             virq = pirq_to_virq(vcpu, irq);
 
