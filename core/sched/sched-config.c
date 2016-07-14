@@ -36,9 +36,9 @@ uint32_t schedconf_rm_tick_interval_ms[NR_CPUS] = {
 /* vcpu -> {period, budget} in tick count */
 uint32_t schedconf_rm_period_budget[TOTAL_VCPUS][2] = {
     {10, 2},
-    {10, 3},
+    {20, 3},
     {0, },
-    {10, 5} // {90909, 909} /* magic number for idle task */
+    {90909, 90909} // {90909, 90909} /* magic number for idle task */
 };
 
 /*****
