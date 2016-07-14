@@ -112,7 +112,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
     struct entry_data_rm *current_ed = NULL;
     struct entry_data_rm *next_ed = NULL;
 
-    bool is_switching_needed = false;
+    // bool is_switching_needed = false;
     int next_vcpuid = VCPUID_INVALID;
 
     *expiration =
@@ -124,21 +124,9 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
         while(1);
     }
 
-    /* Check & decrease current running entry's budge count */
-    if (sd->current == NULL) {
-        is_switching_needed = true;
-    } else {
-        current_ed = sd->current;
-        if (current_ed->budget_cntdn == 0) {
-            is_switching_needed = true;
-        } else {
-            current_ed->budget_cntdn -= 1;
-        }
-    }
-
     /* Check & decrease all entries' period count */
     struct entry_data_rm *ed = NULL;
-    if (is_switching_needed) {
+    if (true) { // if (is_switching_needed) {
         uint32_t min_period = 0xFFFFFFFF;
         next_ed = NULL;
 
@@ -158,7 +146,14 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
         }
 
         if (sd->current != NULL) {
-            current_ed->e->state = SCHED_WAITING;
+            current_ed = sd->current;
+
+            if (current_ed->budget_cntdn == 0) { // out of budget
+                current_ed->e->state = SCHED_WAITING;
+            } else if (current_ed->period > next_ed->period) { // preemption!
+            } else { // continue to run
+                next_ed = current_ed;
+            }
         }
 
         if (next_ed != NULL) {
@@ -175,19 +170,6 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
             // printf("Nothing to run\n");
             // printf("Idle mode not implemented\n");
             while(1);
-        }
-    } else {
-        LIST_FOR_EACH_ENTRY(ed, &sd->runqueue, head) {
-            if (ed->period_cntdn == 0) {
-                ed->budget_cntdn = ed->budget;
-                ed->period_cntdn = ed->period;
-            }
-
-            ed->period_cntdn -= 1;
-        }
-
-        if (sd->current != NULL) {
-            next_vcpuid = current_ed->e->vcpuid;
         }
     }
 
