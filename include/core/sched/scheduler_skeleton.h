@@ -63,5 +63,6 @@ struct scheduler {
 };
 
 extern const struct sched_policy sched_rr;
+extern struct scheduler *sched[NR_CPUS];
 
 #endif /* _SCHEDULER_SKELETON_H_ */
