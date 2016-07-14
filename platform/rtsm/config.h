@@ -9,6 +9,10 @@
 #define NUM_GUESTS_STATIC       3
 
 #define BOOTABLE_CPUID         	(0 << 8)
+
+// TODO(casionwoo) : CFG_VDEV_SERIAL setting should be moved to menuconfig
+// CFG_VDEV_SERIAL == 0 : Use vdev_serial
+// CFG_VDEV_SERIAL == 1 : Not use vdev_serial
 #define CFG_VDEV_SERIAL     0
 
 /*

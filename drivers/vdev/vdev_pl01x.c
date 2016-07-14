@@ -106,7 +106,7 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
         vuart->uartdr = readl(addr);
         if (vcpu->vmid == owner_id) {
             writel(vuart->uartdr, UART_ADDR(UARTDR));
-            if (vuart->uartdr == 13) {
+            if (vuart->uartdr == 10) {
                 int i;
                 for (i = 0; i < sizeof(prompt) / sizeof(char); i++) {
                     writel(prompt[i], UART_ADDR(UARTDR));
