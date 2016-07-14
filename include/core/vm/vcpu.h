@@ -9,7 +9,6 @@
 
 #define VCPU_CREATE_FAILED    NULL
 #define VCPU_NOT_EXISTED      NULL
-#define NUM_GUEST_CONTEXTS    NUM_GUESTS_CPU0_STATIC
 
 typedef enum vcpu_state {
     VCPU_UNDEFINED,
