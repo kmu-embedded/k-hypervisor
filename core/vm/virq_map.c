@@ -44,50 +44,50 @@ void pirq_disable(struct vcpu *v, uint32_t pirq)
 #include <irq-chip.h>
 #include <arch/irq.h>
 
-static irq_return_t is_guest_ppi(int irq, void *pregs, void *pdata)
+static irqreturn_t is_guest_sgi(int irq, void *pregs, void *pdata)
+{
+    printf("SGI[%d] is not handled in khypervisor\n", irq);
+    return VM_IRQ;
+}
+
+static irqreturn_t is_guest_ppi(int irq, void *pregs, void *pdata)
 {
     struct vcpu *vcpu;
     uint32_t virq;
     uint32_t pcpu = smp_processor_id();
+    struct sched_entry *rve;
+    struct list_head *rvs_list = &sched[pcpu]->inflight_entries;
 
-    if (irq < 32) { // PPI
-        struct sched_entry *rve;
-        struct list_head *rvs_list = &sched[pcpu]->inflight_entries;
+    list_for_each_entry(struct sched_entry, rve, rvs_list, head_inflight) {
+        vcpu = vcpu_find(rve->vcpuid);
+        virq = pirq_to_virq(vcpu, irq);
 
-        list_for_each_entry(struct sched_entry, rve, rvs_list, head_inflight) {
-            vcpu = vcpu_find(rve->vcpuid);
-            virq = pirq_to_virq(vcpu, irq);
-
-            if (virq == VIRQ_INVALID) {
-                continue;
-            }
-
-            virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
+        if (virq == VIRQ_INVALID) {
+            continue;
         }
+
+        virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
     }
 
     return VM_IRQ;
 }
 
-static irq_return_t is_guest_spi(int irq, void *pregs, void *pdata)
+static irqreturn_t is_guest_spi(int irq, void *pregs, void *pdata)
 {
     struct vcpu *vcpu;
     struct vmcb *vm;
     uint32_t virq;
     struct list_head *vm_list = get_all_vms();
 
-    if (irq < 1024) { //SPI
+    list_for_each_entry(struct vmcb, vm, vm_list, head) {
+        vcpu = vm->vcpu[0];
+        virq = pirq_to_virq(vcpu, irq);
 
-        list_for_each_entry(struct vmcb, vm, vm_list, head) {
-            vcpu = vm->vcpu[0];
-            virq = pirq_to_virq(vcpu, irq);
-
-            if (virq == VIRQ_INVALID || vm->state != RUNNING) {
-                continue;
-            }
-
-            virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
+        if (virq == VIRQ_INVALID || vm->state != RUNNING) {
+            continue;
         }
+
+        virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
     }
 
     return VM_IRQ;
@@ -96,6 +96,12 @@ static irq_return_t is_guest_spi(int irq, void *pregs, void *pdata)
 void irq_handler_init(irq_handler_t *handler)
 {
     int i;
+
+    for (i = 0; i < 16; i++){
+        if (handler[i])
+            continue;
+        handler[i] = is_guest_sgi;
+    }
 
     for (i = 16; i < 32; i++){
         if (handler[i])

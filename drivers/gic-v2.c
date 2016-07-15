@@ -46,7 +46,7 @@ static uint32_t gic_find_free_slot(void)
     return slot;
 }
 
-static irq_return_t gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
+static irqreturn_t gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
 {
     if (GICH_READ(GICH_MISR) & GICH_MISR_EOI) {
         /* clean up invalid entries from List Registers */
