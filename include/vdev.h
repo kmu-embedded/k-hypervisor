@@ -48,6 +48,5 @@ void vdev_init(void);
 
 void vdev_create(struct vdev_instance *, vmid_t);
 void vdev_handler(struct core_regs *regs, uint32_t iss);
-void vdev_irq_handler_register(uint32_t irq, irq_handler_t handler);
 
 #endif /* __VDEV_H_ */

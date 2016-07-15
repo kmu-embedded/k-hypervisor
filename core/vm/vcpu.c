@@ -60,10 +60,12 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
     arch_regs_init(&vcpu->regs);
     vcpu->regs.cp15.vmpidr |= vcpu->id;
 
+
+#if CONFIG_VSERIAL
     // TODO(casionwoo): make it neat.
     switch (vcpu->vmid) {
     case 0:
-        SET_VIRQMAP(vcpu->map, 38, 37);
+        SET_VIRQMAP(vcpu->map, 37, 37);
         break;
 
     case 1:
@@ -78,6 +80,8 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
         debug_print("virq_create error!\n");
         break;
     }
+#endif
+
     // TODO(casionwoo) : Check the return value after scheduler status value defined
     vcpu->pcpuid = sched_vcpu_register(vcpu->vcpuid, vcpu->vcpuid);
     printf("sched_vcpu_register, vcpuid : %d is registered on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);

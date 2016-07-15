@@ -48,5 +48,7 @@ void vm_restore(vmid_t vmid);
 struct vmcb *vm_find(vmid_t vmid);
 void print_all_vm();
 
+struct list_head *get_all_vms();
+
 #endif /* __VM_H__ */
 

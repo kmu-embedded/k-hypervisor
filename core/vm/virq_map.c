@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <core/vm/vcpu.h>
+#include <core/vm/vm.h>
 
 uint32_t virq_to_pirq(struct vcpu *v, uint32_t virq)
 {
@@ -36,32 +37,82 @@ void pirq_disable(struct vcpu *v, uint32_t pirq)
     v->map[pirq].enabled = GUEST_IRQ_DISABLE;
 }
 
-
-
 #include <arch/armv7.h>
 #include <core/vm/vcpu.h>
 #include <core/scheduler.h>
+#include <core/sched/scheduler_skeleton.h>
 #include <irq-chip.h>
+#include <arch/irq.h>
 
-bool is_guest_irq(uint32_t irq)
+static irqreturn_t is_guest_sgi(int irq, void *pregs, void *pdata)
 {
-    bool result = false;
-    uint32_t virq;
+    printf("SGI[%d] is not handled in khypervisor\n", irq);
+    return VM_IRQ;
+}
+
+static irqreturn_t is_guest_ppi(int irq, void *pregs, void *pdata)
+{
     struct vcpu *vcpu;
-    struct list_head *vcpus_list = get_all_vcpus();
+    uint32_t virq;
+    uint32_t pcpu = smp_processor_id();
+    struct sched_entry *rve;
+    struct list_head *rvs_list = &sched[pcpu]->inflight_entries;
 
-
-    // NOTE(casionwoo) : Foward to every vcpus.
-    list_for_each_entry(struct vcpu, vcpu, vcpus_list, head) {
+    list_for_each_entry(struct sched_entry, rve, rvs_list, head_inflight) {
+        vcpu = vcpu_find(rve->vcpuid);
         virq = pirq_to_virq(vcpu, irq);
 
         if (virq == VIRQ_INVALID) {
             continue;
         }
 
-        result = virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
+        virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
     }
 
-    return result;
+    return VM_IRQ;
+}
+
+static irqreturn_t is_guest_spi(int irq, void *pregs, void *pdata)
+{
+    struct vcpu *vcpu;
+    struct vmcb *vm;
+    uint32_t virq;
+    struct list_head *vm_list = get_all_vms();
+
+    list_for_each_entry(struct vmcb, vm, vm_list, head) {
+        vcpu = vm->vcpu[0];
+        virq = pirq_to_virq(vcpu, irq);
+
+        if (virq == VIRQ_INVALID || vm->state != RUNNING) {
+            continue;
+        }
+
+        virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
+    }
+
+    return VM_IRQ;
+}
+
+void irq_handler_init(irq_handler_t *handler)
+{
+    int i;
+
+    for (i = 0; i < 16; i++){
+        if (handler[i])
+            continue;
+        handler[i] = is_guest_sgi;
+    }
+
+    for (i = 16; i < 32; i++){
+        if (handler[i])
+            continue;
+        handler[i] = is_guest_ppi;
+    }
+
+    for (i = 32; i < 1025; i++){
+        if (handler[i])
+            continue;
+        handler[i] = is_guest_spi;
+    }
 }
 

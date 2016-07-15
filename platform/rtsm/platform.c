@@ -43,6 +43,7 @@ void platform_init()
     paging_add_mapping(0x80000000, 0x80000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
     paging_add_mapping(0x90000000, 0x90000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
     paging_add_mapping(0xA0000000, 0xA0000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
+    paging_add_mapping(0xB0000000, 0xB0000000, MT_WRITEBACK_RW_ALLOC, SZ_256K);
 }
 
 void console_init()

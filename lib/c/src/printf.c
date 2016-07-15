@@ -94,7 +94,7 @@ static DEFINE_MUTEX(PRINT_MUTEX);
 #endif
 
 int
-printf(const char *format, ...)
+do_printf(const char *format, ...)
 {
     int ret;
     va_list ap;

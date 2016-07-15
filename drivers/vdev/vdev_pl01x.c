@@ -4,9 +4,12 @@
 #include <core/scheduler.h>
 #include <irq-chip.h>
 #include <string.h>
+#include <arch/irq.h>
+#include <core/vm/vm.h>
 
 //In rtsm this 37 is for serial 0
 #define PL01x_IRQ_NUM   37
+#define PROMPT_MSG  "[vm %d] "
 
 static char prompt[32];
 static int owner_id = 0;
@@ -66,17 +69,22 @@ struct vdev_module pl01x_vuart = {
     .create = vuart_create,
 };
 
-static void vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
+static irqreturn_t vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
 {
     if (irq != PL01x_IRQ_NUM) {
         printf("Uncorrect irq nuber\n");
-        return;
+        return UNEXCEPTED_IRQ;
     }
 
-    // TODO(casionwoo) : How to find the correct vcpuid from vmid ?
-    //  which vcpu is waiting for irq
-    struct vcpu *vcpu = vcpu_find(owner_id);
-    virq_hw->forward_irq(vcpu, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
+    int i;
+    struct vmcb *vm = vm_find(owner_id);
+
+    for (i = 0; i < vm->num_vcpus; i++) {
+        struct vcpu *vcpu = vm->vcpu[i];
+        virq_hw->forward_irq(vcpu, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
+    }
+
+    return VM_IRQ;
 }
 
 #include <stdlib.h>
@@ -96,9 +104,9 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
     switch (offset) {
     case UARTDR: {
         vuart->uartdr = readl(addr);
-        if (vcpu->vcpuid == owner_id) {
+        if (vcpu->vmid == owner_id) {
             writel(vuart->uartdr, UART_ADDR(UARTDR));
-            if (vuart->uartdr == 13) {
+            if (vuart->uartdr == 10) {
                 int i;
                 for (i = 0; i < sizeof(prompt) / sizeof(char); i++) {
                     writel(prompt[i], UART_ADDR(UARTDR));
@@ -142,11 +150,11 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
 
     case UARTMSC:
         vuart->uartmsc = readl(addr);
-        if (vuart->uartmsc == 0x70 && vcpu->vcpuid != owner_id) {
+        if (vuart->uartmsc == 0x70 && vcpu->vmid != owner_id) {
             virq_hw->forward_irq(vcpu, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
         }
+        writel(vuart->uartmsc, UART_ADDR(UARTMSC));
 
-        writel(readl(addr), UART_ADDR(UARTMSC));
         break;
 
     case UARTICR:
@@ -174,14 +182,14 @@ int32_t vuart_read(void *pdata, uint32_t offset)
         uint32_t data = readl(UART_ADDR(UARTDR));
 
         if (vcpu->vmid == owner_id) {
-            // TODO(casionwoo) : When special key is read, move to the 'CLI'
+            // TODO(casionwoo) : When data is special key(Ctrl + y), Change the OWNER
             if (data == 25) {
-                printf("Changing owner from %d to \t", owner_id);
+                printf("OWNER FROM vm[%d] to ", owner_id);
                 owner_id = (owner_id + 1) % NUM_GUESTS_STATIC;
-                printf("%d \n", owner_id);
+                printf("vm[%d] \n", owner_id);
 
                 memset(prompt, 0, 32);
-                sprintf(prompt, "VM %d> ", owner_id);
+                sprintf(prompt, PROMPT_MSG, owner_id);
             }
             return data;
         }
@@ -245,13 +253,13 @@ hvmm_status_t vdev_pl01x_init()
     hvmm_status_t result = HVMM_STATUS_BUSY;
 
     memset(prompt, 0, 32);
-    sprintf(prompt, "VM %d> ", owner_id);
+    sprintf(prompt, PROMPT_MSG, owner_id);
 
     // For trap
     vdev_register(&pl01x_vuart);
 
     // For irq
-    vdev_irq_handler_register(PL01x_IRQ_NUM, vdev_pl01x_irq_handler);
+    register_irq_handler(PL01x_IRQ_NUM, vdev_pl01x_irq_handler, IRQ_LEVEL_SENSITIVE);
     printf("vdev registered:'%s'\n", pl01x_vuart.name);
 
     return result;
