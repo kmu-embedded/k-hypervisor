@@ -61,7 +61,7 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
     vcpu->regs.cp15.vmpidr |= vcpu->id;
 
 
-#if CFG_VDEV_SERIAL
+#if CONFIG_VSERIAL
     // TODO(casionwoo): make it neat.
     switch (vcpu->vmid) {
     case 0:

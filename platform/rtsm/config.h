@@ -1,5 +1,5 @@
-#ifndef __CFG_H__
-#define __CFG_H__
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
 #define MAHINE_TYPE             2272
 #define CFG_CNTFRQ              100000000
@@ -10,12 +10,12 @@
 
 #define BOOTABLE_CPUID         	(0 << 8)
 
-// TODO(casionwoo) : CFG_VDEV_SERIAL setting should be moved to menuconfig
+// TODO(casionwoo) : CONFIG_VSERIAL setting should be moved to menuconfig
 /*
-    CFG_VDEV_SERIAL == 0 : Use vdev_serial
-    CFG_VDEV_SERIAL == 1 : Not use vdev_serial
+    CONFIG_VSERIAL == 0 : Use vdev_serial
+    CONFIG_VSERIAL == 1 : Not use vdev_serial
 */
-#define CFG_VDEV_SERIAL     0
+#define CONFIG_VSERIAL     0
 
 // TODO(casionwoo) : CONFIG_LOG_LEVEL setting should be moved to menuconfig
 /*
@@ -61,4 +61,4 @@
 
 #define CFG_HYP_START_ADDRESS      0xF0000000
 
-#endif  /* RTSM_CFG_H */
+#endif  /* RTSM_CONFIG_H */
