@@ -88,7 +88,7 @@ Author: Ben Leslie <benjl@cse.unsw.edu.au>
  * format which handles the locking. */
 
 
-#ifdef __CONFIG_MUTEX__
+#ifdef CONFIG_SMP
 #include <arch/armv7/mutex.h>
 static DEFINE_MUTEX(PRINT_MUTEX);
 #endif
@@ -99,7 +99,7 @@ printf(const char *format, ...)
     int ret;
     va_list ap;
 
-#ifdef __CONFIG_MUTEX__
+#ifdef CONFIG_SMP
     lock_mutex(&PRINT_MUTEX);
 #endif
 
@@ -107,7 +107,7 @@ printf(const char *format, ...)
     ret = vfprintf(stdout, format, ap);
     va_end(ap);
 
-#ifdef __CONFIG_MUTEX__
+#ifdef CONFIG_SMP
     unlock_mutex(&PRINT_MUTEX);
 #endif
 
