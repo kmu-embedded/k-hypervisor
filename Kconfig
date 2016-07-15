@@ -11,3 +11,12 @@ config GCC_V
 	default n
 
 endmenu
+
+menu "VM configuration"
+
+config NR_VMS
+	int "Number of Virtual Machines(or Guest OS)"
+	default 1
+	range 1 256
+
+endmenu
