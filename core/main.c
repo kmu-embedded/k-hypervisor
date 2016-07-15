@@ -10,7 +10,7 @@ static uint32_t smp_pen = 0;
 void start_hypervisor()
 {
     int i;
-    uint8_t nr_vcpus = 2; // TODO: It will be read from configuration file.
+    uint8_t nr_vcpus = 1; // TODO: It will be read from configuration file.
 
     uint32_t pcpu = smp_processor_id();
 
@@ -22,13 +22,6 @@ void start_hypervisor()
 
         for (i = 0; i < NUM_GUESTS_STATIC; i++) {
             vmid_t vmid;
-
-            if (i == 0)
-                nr_vcpus = 1;
-            else if (i == 1)
-                nr_vcpus = 1;
-            else if (i == 2)
-                nr_vcpus = 2;
 
             if ((vmid = vm_create(nr_vcpus)) == VM_CREATE_FAILED) {
                 printf("vm_create(vm[%d]) is failed\n", i);
