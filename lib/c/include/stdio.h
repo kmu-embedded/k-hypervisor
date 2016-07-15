@@ -158,6 +158,7 @@ FILE *freopen(const char *, const char *, FILE *);
 void setbuf(FILE *, char *);
 int setvbuf(FILE *, char *, int, size_t);
 
+#include <config.h>
 #if CONFIG_LOG_LEVEL == 0
     #define printf(format, ...)   do_printf(format, ##__VA_ARGS__)
 #elif CONFIG_LOG_LEVEL == 1
