@@ -1,0 +1,9 @@
+#include <vm_config.h>
+#include <config.h>
+#include <size.h>
+
+struct vm_config vm_conf[] = {
+    { 2, CFG_GUEST_ATAGS_START_ADDRESS, SZ_256M, CFG_MEMMAP_GUEST0_ATAGS_OFFSET },
+    { 1, CFG_GUEST_ATAGS_START_ADDRESS, SZ_256M, CFG_MEMMAP_GUEST1_ATAGS_OFFSET },
+    { 1, CFG_GUEST_ATAGS_START_ADDRESS, SZ_256M, CFG_MEMMAP_GUEST2_ATAGS_OFFSET }
+};

@@ -2,7 +2,7 @@
 #include <size.h>
 #include "devicetree.h"
 
-struct memdesc_t *vm_mmap[NUM_GUESTS_STATIC];
+struct memdesc_t *vm_mmap[CONFIG_NR_VMS];
 
 
 void setup_vm_mmap(void)

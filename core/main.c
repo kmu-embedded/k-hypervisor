@@ -4,13 +4,15 @@
 #include <core/scheduler.h>
 #include <config.h>
 #include <core/timer.h>
+#include <vm_config.h>
+
+extern struct vm_config vm_conf[];
 
 static uint32_t smp_pen = 0;
 
 void start_hypervisor()
 {
     int i;
-    uint8_t nr_vcpus = 1; // TODO: It will be read from configuration file.
 
     uint32_t pcpu = smp_processor_id();
 
@@ -20,10 +22,10 @@ void start_hypervisor()
 
         vm_setup();
 
-        for (i = 0; i < NUM_GUESTS_STATIC; i++) {
+        for (i = 0; i < CONFIG_NR_VMS; i++) {
             vmid_t vmid;
 
-            if ((vmid = vm_create(nr_vcpus)) == VM_CREATE_FAILED) {
+            if ((vmid = vm_create(vm_conf[i].nr_vcpus)) == VM_CREATE_FAILED) {
                 printf("vm_create(vm[%d]) is failed\n", i);
                 goto error;
             }

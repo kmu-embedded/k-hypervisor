@@ -125,7 +125,7 @@ struct memdesc_t vm3_device_md[] = {
     { 0, 0, 0, 0, 0, 0 }
 };
 
-struct memdesc_t *vm_mmap[NUM_GUESTS_STATIC];
+struct memdesc_t *vm_mmap[CONFIG_NR_VMS];
 
 
 void setup_vm_mmap(void)

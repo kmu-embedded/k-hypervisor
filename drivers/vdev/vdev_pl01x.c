@@ -185,7 +185,7 @@ int32_t vuart_read(void *pdata, uint32_t offset)
             // TODO(casionwoo) : When data is special key(Ctrl + y), Change the OWNER
             if (data == 25) {
                 printf("OWNER FROM vm[%d] to ", owner_id);
-                owner_id = (owner_id + 1) % NUM_GUESTS_STATIC;
+                owner_id = (owner_id + 1) % CONFIG_NR_VMS;
                 printf("vm[%d] \n", owner_id);
 
                 memset(prompt, 0, 32);
