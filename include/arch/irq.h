@@ -26,9 +26,9 @@ typedef enum {
     VM_IRQ,
     MAINTENANCE_IRQ,
     UNEXCEPTED_IRQ
-} irq_return_t;
+} irqreturn_t;
 
-typedef irq_return_t (*irq_handler_t)(int irq, void *regs, void *pdata);
+typedef irqreturn_t (*irq_handler_t)(int irq, void *regs, void *pdata);
 void irq_init();
 void register_irq_handler(uint32_t irq, irq_handler_t handler, uint8_t polarity);
 
