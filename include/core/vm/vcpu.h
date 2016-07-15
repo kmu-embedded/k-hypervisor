@@ -5,6 +5,7 @@
 #include <types.h>
 #include <arch_regs.h>
 #include <drivers/gic-v2.h>
+#include <arch/irq.h>
 
 #define VCPU_CREATE_FAILED    NULL
 #define VCPU_NOT_EXISTED      NULL
@@ -87,7 +88,8 @@ void virq_enable(struct vcpu *v, uint32_t pirq, uint32_t virq);
 void virq_disable(struct vcpu *v, uint32_t virq);
 void pirq_enable(struct vcpu *v, uint32_t pirq, uint32_t virq);
 void pirq_disable(struct vcpu *v, uint32_t pirq);
-bool is_guest_irq(uint32_t irq);
+
+void irq_handler_init(irq_handler_t *handlers);
 
 struct list_head *get_all_vcpus();
 

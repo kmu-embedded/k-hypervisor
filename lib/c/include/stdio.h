@@ -158,10 +158,21 @@ FILE *freopen(const char *, const char *, FILE *);
 void setbuf(FILE *, char *);
 int setvbuf(FILE *, char *, int, size_t);
 
+#include <config.h>
+#if CONFIG_LOG_LEVEL == 0
+    #define printf(format, ...)   do_printf(format, ##__VA_ARGS__)
+#elif CONFIG_LOG_LEVEL == 1
+    #include <arch/armv7/smp.h>
+    #define printf(format, ...)   do_printf("(c%d) " format, smp_processor_id(),##__VA_ARGS__)
+#elif CONFIG_LOG_LEVEL == 2
+    #include <arch/armv7/smp.h>
+    #define printf(format, ...)   do_printf("(c%d) %s[%d] " format, smp_processor_id(), __func__, __LINE__,##__VA_ARGS__)
+#endif
+
 /* 7.19.6 Format i/o functions */
 int fprintf(FILE *, const char *, ...);
 int fscanf(FILE *, const char *, ...);
-int printf(const char *, ...);
+int do_printf(const char *format, ...);
 int scanf(const char *, ...);
 int snprintf(char *, size_t , const char *, ...);
 int sprintf(char *, const char *, ...);

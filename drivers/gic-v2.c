@@ -46,7 +46,7 @@ static uint32_t gic_find_free_slot(void)
     return slot;
 }
 
-static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
+static irqreturn_t gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
 {
     if (GICH_READ(GICH_MISR) & GICH_MISR_EOI) {
         /* clean up invalid entries from List Registers */
@@ -89,7 +89,11 @@ static void gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
                 gic_deactivate_irq(pirq);
             }
         }
+
+        return MAINTENANCE_IRQ;
     }
+
+    return UNEXCEPTED_IRQ;
 }
 
 static lr_entry_t set_lr_entry(uint8_t hw, enum virq_state state, uint32_t priority, uint32_t physicalid, uint32_t virtualid)

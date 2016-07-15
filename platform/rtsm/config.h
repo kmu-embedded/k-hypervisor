@@ -6,9 +6,24 @@
 
 #define HYP_STACK_SIZE          4096
 #define NR_CPUS                 4
-#define NUM_GUESTS_STATIC       2
+#define NUM_GUESTS_STATIC       3
 
 #define BOOTABLE_CPUID         	(0 << 8)
+
+// TODO(casionwoo) : CONFIG_VSERIAL setting should be moved to menuconfig
+/*
+    CONFIG_VSERIAL == 0 : Use vdev_serial
+    CONFIG_VSERIAL == 1 : Not use vdev_serial
+*/
+#define CONFIG_VSERIAL     0
+
+// TODO(casionwoo) : CONFIG_LOG_LEVEL setting should be moved to menuconfig
+/*
+    CONFIG_LOG_LEVEL == 0 : Normal printf
+    CONFIG_LOG_LEVEL == 1 : CPUID prefix + Normal printf
+    CONFIG_LOG_LEVEL == 2 : CPUID prefix + __func__, __LINE + Normal printf
+*/
+#define CONFIG_LOG_LEVEL    0
 
 /*
  *  SOC param
@@ -39,6 +54,8 @@
 #define CFG_MEMMAP_GUEST1_OFFSET            0x90500000
 #define CFG_MEMMAP_GUEST2_ATAGS_OFFSET      0xA0000000
 #define CFG_MEMMAP_GUEST2_OFFSET            0xA0500000
+#define CFG_MEMMAP_GUEST3_ATAGS_OFFSET      0xB0000000
+#define CFG_MEMMAP_GUEST3_OFFSET            0xB0500000
 #define CFG_GUEST_ATAGS_START_ADDRESS       0x80000000
 #define CFG_GUEST_START_ADDRESS             0x80500000
 

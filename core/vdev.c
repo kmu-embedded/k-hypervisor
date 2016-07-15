@@ -34,6 +34,8 @@ void vdev_handler(struct core_regs *regs, uint32_t iss)
             } else {
                 regs->gpr[srt] = instance->module->read(instance->pdata, offset);
             }
+
+            break;
         }
     }
 }
@@ -77,15 +79,5 @@ void SECTION(".init.vdev") vdev_init(void)
     for (fn = __vdev_module_start; fn < __vdev_module_end; fn++) {
         vdev_module_initcall(*fn);
     }
-}
-
-void vdev_irq_handler_register(uint32_t irq, irq_handler_t handler)
-{
-    if (handler == NULL) {
-        printf("%s failed\n", __func__);
-        return;
-    }
-
-    register_vdev_irq_handler(irq, handler);
 }
 

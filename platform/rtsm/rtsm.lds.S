@@ -8,6 +8,7 @@ ENTRY(__start)
 INPUT(../guestimages/guest0.bin)
 INPUT(../guestimages/guest1.bin)
 INPUT(../guestimages/guest2.bin)
+INPUT(../guestimages/guest3.bin)
 
 HEAP_SIZE   = 0x04000000;
 
@@ -38,6 +39,15 @@ SECTIONS
     _guest2_bin_start = .;
     .guest2 : { ../guestimages/guest2.bin }
     _guest2_bin_end = .;
+
+    /* Guest 3 */
+    . = CFG_MEMMAP_GUEST3_ATAGS_OFFSET;
+    . = CFG_MEMMAP_GUEST3_OFFSET;
+    _guest3_bin_start = .;
+    .guest3 : { ../guestimages/guest3.bin }
+    _guest3_bin_end = .;
+
+    . = ALIGN(4);
 
     . = CFG_HYP_START_ADDRESS;
     . = ALIGN(4);
