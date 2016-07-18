@@ -6,7 +6,6 @@
 
 #define HYP_STACK_SIZE          4096
 #define NR_CPUS                 2
-#define NUM_GUESTS_STATIC       1
 #define BOOTABLE_CPUID          (1 << 8)
 
 /*
@@ -19,7 +18,6 @@
 #define NSEC_DIV 1000000000
 #define TIMER_RESOLUTION_NS (NSEC_DIV/CFG_CNTFRQ)
 
-#define NUM_GUESTS_CPU0_STATIC       2
 #define TICKTIME_1MS 1000
 #define MAX_IRQS 1024
 
@@ -33,8 +31,6 @@
 
 #define CFG_MEMMAP_GUEST2_ATAGS_OFFSET      0x60000000
 #define CFG_MEMMAP_GUEST2_OFFSET            0x60500000
-
-#define CFG_GUEST_INITRD_START_ADDRESS      0x42000000
 
 #define CFG_GUEST_ATAGS_START_ADDRESS       0x44000000
 

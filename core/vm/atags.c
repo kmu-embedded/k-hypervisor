@@ -155,7 +155,7 @@ void atags_setup(void)
 {
     int i;
 
-    for (i = 0; i < NUM_GUESTS_STATIC; i++) {
+    for (i = 0; i < CONFIG_NR_VMS; i++) {
         linuxloader_setup_atags(CFG_MEMMAP_GUEST0_ATAGS_OFFSET + (i * CFG_MEMMAP_GUEST_SIZE));
     }
 }

@@ -80,7 +80,7 @@ SECTIONS
     PROVIDE(__VM_PGTABLE = .);
     .vm_pgtable : {
         *(.vm_pgtable)
-        . = . + 0x805000 * NUM_GUESTS_STATIC;
+        . = . + 0x805000 * CONFIG_NR_VMS;
         . = ALIGN(4);
     }
     PROVIDE(__END_VM_PGTABLE = .);
