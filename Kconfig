@@ -19,4 +19,8 @@ config NR_VMS
 	default 1
 	range 1 256
 
+config VA_START
+	hex "Virtual address of guest OS"
+	default 0x00000000
+
 endmenu
