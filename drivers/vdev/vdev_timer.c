@@ -20,8 +20,8 @@ static struct vdev_memory_map _vdev_timer_info = {
     .size = sizeof(struct vdev_vtimer_regs),
 };
 
-static struct vdev_vtimer_regs vtimer_regs[NUM_GUESTS_STATIC];
-static int _timer_status[NUM_GUESTS_STATIC] = {0, };
+static struct vdev_vtimer_regs vtimer_regs[CONFIG_NR_VMS];
+static int _timer_status[CONFIG_NR_VMS] = {0, };
 
 static void vtimer_changed_status(vmid_t vmid, uint32_t status)
 {
@@ -117,7 +117,7 @@ static hvmm_status_t vdev_vtimer_reset(void)
     uint32_t cpu = smp_processor_id();
 
     if (!cpu) {
-        for (i = 0; i < NUM_GUESTS_STATIC; i++) {
+        for (i = 0; i < CONFIG_NR_VMS; i++) {
             _timer_status[i] = 1;
         }
     }

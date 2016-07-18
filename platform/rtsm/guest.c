@@ -28,7 +28,6 @@ struct memdesc_t vm0_device_md[] = {
     { "gicd", CFG_GIC_BASE_PA | 0x1000, CFG_GIC_BASE_PA | 0x1000, SZ_4K, MEMATTR_DEVICE_MEMORY, 0 },
     { "gicc", CFG_GIC_BASE_PA | 0x2000, CFG_GIC_BASE_PA | 0x6000, SZ_8K, MEMATTR_DEVICE_MEMORY, 1 },
 
-    {"start", CFG_GUEST_ATAGS_START_ADDRESS, CFG_MEMMAP_GUEST0_ATAGS_OFFSET, SZ_256M, MEMATTR_NORMAL_WB_CACHEABLE, 1 },
     { 0, 0, 0, 0, 0, 0 }
 };
 
@@ -57,8 +56,6 @@ struct memdesc_t vm1_device_md[] = {
 
     { "gicd", CFG_GIC_BASE_PA | 0x1000, CFG_GIC_BASE_PA | 0x1000, SZ_4K, MEMATTR_DEVICE_MEMORY, 0 },
     { "gicc", CFG_GIC_BASE_PA | 0x2000, CFG_GIC_BASE_PA | 0x6000, SZ_8K, MEMATTR_DEVICE_MEMORY, 1 },
-
-    {"start", CFG_GUEST_ATAGS_START_ADDRESS , CFG_MEMMAP_GUEST1_ATAGS_OFFSET, 0x10000000, MEMATTR_NORMAL_WB_CACHEABLE, 1 },
 
     { 0, 0, 0, 0, 0, 0 }
 };
@@ -89,8 +86,6 @@ struct memdesc_t vm2_device_md[] = {
     { "gicd", CFG_GIC_BASE_PA | 0x1000, CFG_GIC_BASE_PA | 0x1000, SZ_4K, MEMATTR_DEVICE_MEMORY, 0 },
     { "gicc", CFG_GIC_BASE_PA | 0x2000, CFG_GIC_BASE_PA | 0x6000, SZ_8K, MEMATTR_DEVICE_MEMORY, 1 },
 
-    {"start", CFG_GUEST_ATAGS_START_ADDRESS, CFG_MEMMAP_GUEST2_ATAGS_OFFSET, 0x10000000, MEMATTR_NORMAL_WB_CACHEABLE, 1 },
-
     { 0, 0, 0, 0, 0, 0 }
 };
 
@@ -120,12 +115,10 @@ struct memdesc_t vm3_device_md[] = {
     { "gicd", CFG_GIC_BASE_PA | 0x1000, CFG_GIC_BASE_PA | 0x1000, SZ_4K, MEMATTR_DEVICE_MEMORY, 0 },
     { "gicc", CFG_GIC_BASE_PA | 0x2000, CFG_GIC_BASE_PA | 0x6000, SZ_8K, MEMATTR_DEVICE_MEMORY, 1 },
 
-    {"start", CFG_GUEST_ATAGS_START_ADDRESS, CFG_MEMMAP_GUEST3_ATAGS_OFFSET, 0x10000000, MEMATTR_NORMAL_WB_CACHEABLE, 1 },
-
     { 0, 0, 0, 0, 0, 0 }
 };
 
-struct memdesc_t *vm_mmap[NUM_GUESTS_STATIC];
+struct memdesc_t *vm_mmap[CONFIG_NR_VMS];
 
 
 void setup_vm_mmap(void)

@@ -4,6 +4,7 @@
 #include <size.h>
 #include "../../arch/arm/paging.h"
 #include <vm_map.h>
+#include <vm_config.h>
 #include <stdio.h>
 
 extern uint32_t __VM_PGTABLE;
@@ -13,6 +14,8 @@ extern uint32_t __VM_PGTABLE;
 #define VTTBR_VMID_MASK                                 0x00FF000000000000ULL
 #define VTTBR_VMID_SHIFT                                48
 #define VTTBR_BADDR_MASK                                0x000000FFFFFFFFFFULL
+
+extern struct vm_config vm_conf[];
 
 void vmem_create(struct vmem *vmem, vmid_t vmid)
 {
@@ -27,7 +30,7 @@ void vmem_create(struct vmem *vmem, vmid_t vmid)
     vmem->mmap = vm_mmap[vmid];
 }
 
-hvmm_status_t vmem_init(struct vmem *vmem)
+hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
 {
     int j = 0;
 
@@ -36,6 +39,9 @@ hvmm_status_t vmem_init(struct vmem *vmem)
                                vmem->mmap[j].size);
         j++;
     } while (vmem->mmap[j].label != 0);
+
+    paging_add_ipa_mapping(vmem->base, CONFIG_VA_START, vm_conf[vmid].pa_start, MEMATTR_NORMAL_WB_CACHEABLE, 1,
+                           vm_conf[vmid].va_offsets);
 
     vmem->vtcr = (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
     vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_ORGN0_BIT);

@@ -29,7 +29,7 @@ enum memattr {
     MEMATTR_NORMAL_WB_CACHEABLE     = 0xF,  // 11_11
 };
 
-extern struct memdesc_t *vm_mmap[NUM_GUESTS_STATIC];
+extern struct memdesc_t *vm_mmap[CONFIG_NR_VMS];
 
 void setup_vm_mmap(void);
 
