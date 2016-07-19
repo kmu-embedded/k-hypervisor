@@ -92,6 +92,7 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
 
     struct timer *t;
     struct timer *tmp;
+    // SAFE make performance lower than just LIST_FOR_EACH_ENTRY
     LIST_FOR_EACH_ENTRY_SAFE(t, tmp, &active_timers[pcpu], head_active) {
         if (t->expiration < now) {
             t->callback(pregs, &t->expiration);

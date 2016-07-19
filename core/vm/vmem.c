@@ -38,7 +38,7 @@ hvmm_status_t vmem_init(struct vmem *vmem)
     } while (vmem->mmap[j].label != 0);
 
     vmem->vtcr = (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
-    vmem->vtcr |= (0x02 << 12);
+//    vmem->vtcr |= (0x02 << 12);
     vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_ORGN0_BIT);
     vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_IRGN0_BIT);
     write_cp32(vmem->vtcr, VTCR);
@@ -59,15 +59,17 @@ hvmm_status_t vmem_restore(struct vmem *vmem)
 {
     uint32_t hcr = 0;
 #ifdef CONFIG_SMP
-    /* Set SMP bit in ACTLR */
     write_cp32(vmem->vtcr, VTCR);
+    /* SMP bit in ACTLR */
     write_cp32(1 << 6, ACTLR);
 #endif
 
     write_cp64(vmem->vttbr, VTTBR);
 
     hcr = read_cp32(HCR);
-    write_cp32((hcr | (0x1)), HCR);
+    write_cp32((hcr | (0x1) | (0x01 << 27)), HCR);
+    hcr = read_cp32(HCR);
+    printf("%s[%d] HCR : %x\n", __func__, __LINE__, hcr | 0x01);
 
     return HVMM_STATUS_SUCCESS;
 }

@@ -300,7 +300,7 @@ hvmm_status_t gic_inject_pending_irqs(vcpuid_t vcpuid)
 
 void gic_inject_virq(lr_entry_t lr_entry, uint32_t slot)
 {
-    printf("%s[%d]\n", __func__, __LINE__);
+//    printf("%s[%d]\n", __func__, __LINE__);
     GICH_WRITE(GICH_LR(slot), (uint32_t) lr_entry.raw);
 }
 

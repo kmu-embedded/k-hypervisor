@@ -32,7 +32,7 @@ void platform_init()
     paging_add_mapping(0x02073000, 0x02073000, MT_DEVICE, SZ_4K);
     paging_add_mapping(0x10040000, 0x10040000, MT_DEVICE, SZ_64K);
 
-    paging_add_mapping(CFG_HYP_START_ADDRESS, CFG_HYP_START_ADDRESS, MT_WRITEBACK_RW_ALLOC, SZ_128M);
+    paging_add_mapping(CFG_HYP_START_ADDRESS, CFG_HYP_START_ADDRESS, MT_WRITEBACK_RW_ALLOC, SZ_256M);
 }
 
 void console_init()

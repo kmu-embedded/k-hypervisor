@@ -40,7 +40,7 @@
 
 #define CFG_GUEST_START_ADDRESS             0x40008000
 
-#define CFG_HYP_START_ADDRESS               0x70000000
+#define CFG_HYP_START_ADDRESS               0xb0000000
 
 
 #endif  /* ODROIDXU_CONFIG_H */

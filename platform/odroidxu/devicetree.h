@@ -1,8 +1,33 @@
 #include <vm_map.h>
 #include <size.h>
 
+//    char *label
+//    uint32_t ipa
+//    uint32_t pa
+//    uint32_t size
+//    uint8_t attr
+//    uint8_t af
+
+/*
+     MEMATTR_STRONGLY_ORDERED        = 0x0,  // 00_00
+     MEMATTR_DEVICE_MEMORY           = 0x1,  // 00_01
+     MEMATTR_NORMAL_NON_CACHEABLE    = 0x5,  // 01_01
+     MEMATTR_NORMAL_WT_CACHEABLE     = 0xA,  // 10_10
+     MEMATTR_NORMAL_WB_CACHEABLE     = 0xF,  // 11_11
+*/
+
+
 struct memdesc_t vm_device_md[] = {
-    {"memory_1", 0x40000000, 0x40000000, 0x10000000, MEMATTR_NORMAL_WB_CACHEABLE, 1},
+#if 0
+    /* For device */
+    {"dev_mem", 0x00000000, 0x00000000, 0x39999999, MEMATTR_DEVICE_MEMORY, 1},
+    {"interrupt-controller_2", 0x10481000, 0x10481000, 0x1000, MEMATTR_DEVICE_MEMORY, 0},
+    {"firmware_1", 0x02073000, 0x02073000, 0x1000, MEMATTR_DEVICE_MEMORY, 0},
+
+    /* For device */
+    {"memory_1", 0x40000000, 0x40000000, 0x70000000, MEMATTR_NORMAL_WB_CACHEABLE, 1},
+#else
+    /* For device */
     {"chipid_1", 0x10000000, 0x10000000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
     {"interrupt-controller_1", 0x10440000, 0x10440000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
     {"interrupt-controller_2", 0x10481000, 0x10481000, 0x1000, MEMATTR_DEVICE_MEMORY, 0},
@@ -95,9 +120,7 @@ struct memdesc_t vm_device_md[] = {
     {"mixer_1", 0x14450000, 0x14450000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
     {"hdmi_1", 0x14530000, 0x14530000, 0x80000, MEMATTR_DEVICE_MEMORY, 1},
     {"cec_1", 0x101b0000, 0x101b0000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
-    //{"hdmiphy-sys_1", 0x10040700, 0x10040700, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
     {"hdmiphy_1", 0x145d0000, 0x145d0000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
-    //{"video-phy_1", 0x10040728, 0x10040728, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
     {"dp-controller_1", 0x145b0000, 0x145b0000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
     {"fimd_1", 0x14400000, 0x14400000, 0x40000, MEMATTR_DEVICE_MEMORY, 1},
     {"fimd_2", 0x14500000, 0x14500000, 0x8000, MEMATTR_DEVICE_MEMORY, 1},
@@ -118,11 +141,17 @@ struct memdesc_t vm_device_md[] = {
     {"pa_mdma1", 0x11d70000, 0x11d70000, SZ_64K, MEMATTR_DEVICE_MEMORY, 1},
     {"pa_sss", 0x10a90000, 0x10a90000, SZ_64K, MEMATTR_DEVICE_MEMORY, 1},
     {"pa_mscl1", 0x12850000, 0x12850000, SZ_64K, MEMATTR_DEVICE_MEMORY, 1},
-    {"i2s", 0xdf3f9000, 0xdf3f9000, SZ_64K, MEMATTR_DEVICE_MEMORY, 1},
-    {"not_found", 0xb0800000, 0xb0800000, SZ_64K, MEMATTR_DEVICE_MEMORY, 1},
+//    {"i2s", 0xdf3f9000, 0xdf3f9000, SZ_64K, MEMATTR_DEVICE_MEMORY, 1},
+//    {"not_found", 0xb0800000, 0xb0800000, SZ_64K, MEMATTR_DEVICE_MEMORY, 1},
+
+    // sysram
+    {"sysram"   , 0x02020000 , 0x02020000, 0x54000, MEMATTR_DEVICE_MEMORY, 1},
+    // syscon
+    {"syscon"   , 0x10040000 , 0x10040000, 0x5000, MEMATTR_DEVICE_MEMORY, 1},
 
     {"gscl1", 0x13ed0000, 0x13ed0000, SZ_64K, MEMATTR_DEVICE_MEMORY, 1},
-    //{"sysram", 0x02020000, 0x02020000, SZ_512K, MEMATTR_DEVICE_MEMORY, 1},
 
+    {"memory_1", 0x40000000, 0x40000000, 0x70000000, MEMATTR_NORMAL_WB_CACHEABLE, 1},
+#endif
 	{0, 0, 0, 0, 0, 0}
 };

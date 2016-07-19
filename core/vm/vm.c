@@ -25,25 +25,21 @@ vmid_t vm_create(uint8_t num_vcpus)
     int i;
     struct vmcb *vm = NULL;
 
-    printf("%s[%d]\n", __func__, __LINE__);
     vm = malloc(sizeof(struct vmcb));
     if (vm == NULL) {
         return VM_CREATE_FAILED;
     }
     memset(vm, 0, sizeof(struct vmcb));
 
-    printf("%s[%d]\n", __func__, __LINE__);
     vm->vmid = vm_count++;
     vm->state = DEFINED;
     vm->num_vcpus = num_vcpus;
 
-    printf("%s[%d]\n", __func__, __LINE__);
     vm->vcpu = malloc(sizeof(struct vcpu *) * vm->num_vcpus);
     if (vm->vcpu == NULL) {
         return VM_CREATE_FAILED;
     }
 
-    printf("%s[%d]\n", __func__, __LINE__);
     for (i = 0; i < vm->num_vcpus; i++) {
         if ((vm->vcpu[i] = vcpu_create()) == VCPU_CREATE_FAILED) {
             free(vm);
@@ -52,7 +48,6 @@ vmid_t vm_create(uint8_t num_vcpus)
         vm->vcpu[i]->vmid = vm->vmid;
         vm->vcpu[i]->id = i;
     }
-    printf("%s[%d]\n", __func__, __LINE__);
 
     vmem_create(&vm->vmem, vm->vmid);
     vdev_create(&vm->vdevs, vm->vmid);

@@ -130,6 +130,7 @@ typedef union lpae_t pgentry;
 #define HMAIR1_VALUE 0x00FFCCBB
 //#define HTCR_VALUE	 0x80803500
 #define HTCR_VALUE	 0x80802500
+//#define HTCR_VALUE	 0x80802900
 
 typedef enum {
     MT_STRONGLY_ORDERED,    // 0

@@ -44,7 +44,7 @@ void start_hypervisor()
         while (!smp_pen) ;
     }
 
-    if(pcpu != 0x00) {
+    if(pcpu != 0x100) {
         while(1);
     }
 

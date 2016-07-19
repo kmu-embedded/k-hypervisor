@@ -82,9 +82,9 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
         break;
     }
     // TODO(casionwoo) : Check the return value after scheduler status value defined
-//    vcpu->pcpuid = sched_vcpu_register(vcpu->vcpuid, vcpu->vcpuid);
-    vcpu->pcpuid = sched_vcpu_register(vcpu->vcpuid, 4);
-//    vcpu->regs.cp15.vmpidr |= vcpu->pcpuid;
+    vcpu->pcpuid = sched_vcpu_register(vcpu->vcpuid, vcpu->id);
+//    vcpu->pcpuid = sched_vcpu_register(vcpu->vcpuid, 4);
+
     printf("sched_vcpu_register, vcpuid : %d is registered on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
     vcpu->state = VCPU_REGISTERED;
 
@@ -95,7 +95,7 @@ vcpu_state_t vcpu_start(struct vcpu *vcpu)
 {
     // TODO(casionwoo) : This function return only 'VCPU_ACTIVATED' but modify the return for error checking
     if (vcpu->id == 0) {
-        sched_vcpu_attach(vcpu->vcpuid, vcpu->pcpuid);
+        sched_vcpu_attach(vcpu->vcpuid, vcpu->id);
         printf("sched_vcpu_register, vcpuid : %d is attatched on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
         vcpu->state = VCPU_ACTIVATED;
         return vcpu->state;

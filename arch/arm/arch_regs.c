@@ -205,7 +205,6 @@ hvmm_status_t arch_regs_restore(struct arch_regs *regs, struct core_regs *curren
     // We need a way to boot first vcpu up as below.
     if (!current_regs) {
         restore_cp15(&regs->cp15);
-        printf("VM start\n");
         __set_vcpu_context_first_time(&regs->core_regs);
 
         /* Never reach here */

@@ -61,7 +61,8 @@ void init_cpu()
 //    write_cp32((HSCTLR_VALUE & ~(1 << 12 | 1 << 2)), HSCTLR);
     printf("(c%x) enable mmu\n", cpuid);
 
-#if 1
+// NOTE(casionwoo) : This section is for power up secondary cpus
+#if 0
     int i;
     set_boot_addr();
     for(i=1; i<8; ++i) {
