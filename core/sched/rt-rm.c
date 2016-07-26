@@ -18,6 +18,10 @@ struct entry_data_rm {
     uint32_t period_cntdn;
     uint32_t budget_cntdn;
 
+    /* for analysis */
+    uint32_t foreground_ticks;
+    uint32_t preempted;
+
     struct list_head head;
 };
 
@@ -57,6 +61,9 @@ int sched_rm_vcpu_register(struct scheduler *s, struct sched_entry *e)
     ed->period = schedconf_rm_period_budget[e->vcpuid][0];
     ed->budget = schedconf_rm_period_budget[e->vcpuid][1];
     ed->e = e;
+
+    ed->foreground_ticks = 0;
+    ed->preempted = 0;
 
     LIST_INITHEAD(&ed->head);
 
@@ -115,6 +122,8 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
     // bool is_switching_needed = false;
     int next_vcpuid = VCPUID_INVALID;
 
+    sd->tick_count += 1;
+
     if (LIST_IS_EMPTY(&sd->runqueue)) {
         // printf("Nothing to run\n");
         // printf("Idle mode not implemented\n");
@@ -148,6 +157,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
             if (current_ed->budget_cntdn == 0) { // out of budget
                 current_ed->e->state = SCHED_WAITING;
             } else if (current_ed->period > next_ed->period) { // preemption!
+                current_ed->preempted += 1;
             } else { // continue to run
                 next_ed = current_ed;
             }
@@ -160,6 +170,8 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
 
             sd->current = next_ed;
             next_ed->budget_cntdn -= 1;
+
+            next_ed->foreground_ticks += 1;
 
             next_vcpuid = next_e->vcpuid;
         } else {
