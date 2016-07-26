@@ -46,6 +46,19 @@ struct timer_module {
 };
 
 extern struct timer_module _timer_module;
+
+/* cummulative stopwatch */
+struct stopwatch {
+    uint64_t start;
+    uint64_t lastdiff;
+
+    uint64_t min;
+    uint64_t max;
+    uint64_t total;
+
+    uint32_t cnt;
+};
+
 /*
  * Calling this function is required only once in the entire system
  * prior to calls to other functions of Timer module.
@@ -65,5 +78,9 @@ uint64_t timer_count_to_time_ns(uint64_t count);
 uint64_t timer_time_to_count_ns(uint64_t time);
 uint64_t timer_get_syscounter(void);
 uint64_t timer_get_timenow(void);
+
+void stopwatch_init(struct stopwatch *w);
+void stopwatch_start(struct stopwatch *w);
+void stopwatch_stop(struct stopwatch *w);
 
 #endif

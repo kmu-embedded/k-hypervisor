@@ -233,3 +233,30 @@ static hvmm_status_t timer_maintenance(void)
     return HVMM_STATUS_SUCCESS;
 }
 
+/* cummulative stopwatch */
+void stopwatch_init(struct stopwatch *w) {
+    w->start = w->lastdiff = w->max = w->total = 0;
+    w->min = 0xFFFFFFFFFFFFFFFF;
+
+    w->cnt = 0;
+}
+
+void stopwatch_start(struct stopwatch *w) {
+    w->start = get_syscounter();
+    w->lastdiff = 0;
+}
+
+void stopwatch_stop(struct stopwatch *w) {
+    w->lastdiff = get_syscounter() - w->start;
+
+    if (w->lastdiff < w->min) {
+        w->min = w->lastdiff;
+    }
+
+    if (w->lastdiff > w->max) {
+        w->max = w->lastdiff;
+    }
+
+    w->total += w->lastdiff;
+    w->cnt += 1;
+}
