@@ -115,9 +115,6 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
     // bool is_switching_needed = false;
     int next_vcpuid = VCPUID_INVALID;
 
-    *expiration =
-        timer_get_timenow() + USEC(sd->tick_interval_us);
-
     if (LIST_IS_EMPTY(&sd->runqueue)) {
         // printf("Nothing to run\n");
         // printf("Idle mode not implemented\n");
@@ -172,6 +169,14 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
             while(1);
         }
     }
+
+    if (*expiration == 0) {
+        *expiration = timer_get_timenow();
+    }
+
+    *expiration =
+        *expiration + USEC(sd->tick_interval_us);
+
 
     return next_vcpuid;
 }
