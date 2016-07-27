@@ -80,6 +80,7 @@ uint64_t timer_get_syscounter(void);
 uint64_t timer_get_timenow(void);
 
 void stopwatch_init(struct stopwatch *w);
+void stopwatch_reset(struct stopwatch *w);
 void stopwatch_start(struct stopwatch *w);
 void stopwatch_stop(struct stopwatch *w);
 

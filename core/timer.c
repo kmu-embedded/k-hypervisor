@@ -235,9 +235,13 @@ static hvmm_status_t timer_maintenance(void)
 
 /* cummulative stopwatch */
 void stopwatch_init(struct stopwatch *w) {
-    w->start = w->lastdiff = w->max = w->total = 0;
-    w->min = 0xFFFFFFFFFFFFFFFF;
+    w->start = w->lastdiff = 0;
+    stopwatch_reset(w);
+}
 
+void stopwatch_reset(struct stopwatch *w) {
+    w->max = w->total = 0;
+    w->min = 0xFFFFFFFFFFFFFFFF;
     w->cnt = 0;
 }
 
