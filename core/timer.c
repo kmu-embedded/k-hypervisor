@@ -13,8 +13,12 @@ static struct list_head active_timers[NR_CPUS];
 static struct list_head inactive_timers[NR_CPUS];
 static struct timer_ops *__ops;
 
+//#define STOPWATCH_TIMERIRQ
+#ifdef STOPWATCH_TIMERIRQ
 struct stopwatch w_hyp[NR_CPUS];
 struct stopwatch w_guest[NR_CPUS];
+#endif /* STOPWATCH_TIMERIRQ */
+
 static hvmm_status_t timer_maintenance(void);
 
 uint64_t timer_count_to_time_ns(uint64_t count)
@@ -81,10 +85,12 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
 {
     uint32_t pcpu = smp_processor_id();
 
+#ifdef STOPWATCH_TIMERIRQ
     stopwatch_start(&w_hyp[pcpu]);
     if (w_hyp[pcpu].cnt > 0) {
         stopwatch_stop(&w_guest[pcpu]);
     }
+#endif /* STOPWATCH_TIMERIRQ */
 
 #ifdef __TEST_TIMER__
     uint64_t new_syscnt = get_syscounter();
@@ -112,6 +118,7 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
 
     timer_start();
 
+#ifdef STOPWATCH_TIMERIRQ
     stopwatch_start(&w_guest[pcpu]);
     stopwatch_stop(&w_hyp[pcpu]);
 
@@ -130,6 +137,8 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
 
         stopwatch_reset(&w_guest[pcpu]);
     }
+#endif /* STOPWATCH_TIMERIRQ */
+
 }
 
 static void timer_request_irq(uint32_t irq)
@@ -161,8 +170,10 @@ hvmm_status_t timemanager_init() /* TODO: const struct timer_config const* timer
         LIST_INITHEAD(&active_timers[pcpu]);
         LIST_INITHEAD(&inactive_timers[pcpu]);
 
+#ifdef STOPWATCH_TIMERIRQ
         stopwatch_init(&w_hyp[pcpu]);
         stopwatch_init(&w_guest[pcpu]);
+#endif /* STOPWATCH_SCHEDULER */
     }
 
     return HVMM_STATUS_SUCCESS;
