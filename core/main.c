@@ -43,7 +43,7 @@ void start_hypervisor()
         printf("cpu[%d] is enabled\n", pcpu);
     }
 
-#define VTIMER_TRAP
+// #define VTIMER_TRAP
 #ifdef VTIMER_TRAP
     /* FIXME:(igkang) WORKAROUND - enable timer access trap */
     uint32_t val;
