@@ -13,6 +13,8 @@ static struct list_head active_timers[NR_CPUS];
 static struct list_head inactive_timers[NR_CPUS];
 static struct timer_ops *__ops;
 
+struct stopwatch w_hyp[NR_CPUS];
+struct stopwatch w_guest[NR_CPUS];
 static hvmm_status_t timer_maintenance(void);
 
 uint64_t timer_count_to_time_ns(uint64_t count)
@@ -79,6 +81,11 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
 {
     uint32_t pcpu = smp_processor_id();
 
+    stopwatch_start(&w_hyp[pcpu]);
+    if (w_hyp[pcpu].cnt > 0) {
+        stopwatch_stop(&w_guest[pcpu]);
+    }
+
 #ifdef __TEST_TIMER__
     uint64_t new_syscnt = get_syscounter();
     printf("time diff: %luns\n", (uint32_t)timer_count_to_time_ns(new_syscnt - saved_syscnt[pcpu]));
@@ -102,6 +109,25 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
     timer_maintenance();
 
     timer_start();
+
+    stopwatch_start(&w_guest[pcpu]);
+    stopwatch_stop(&w_hyp[pcpu]);
+
+    if (w_hyp[pcpu].cnt >= 1000) {
+        printf("w_hyp[%u]: cnt=%u min=%u max=%u total=%u \n", pcpu,
+            w_hyp[pcpu].cnt, (uint32_t)w_hyp[pcpu].min,
+            (uint32_t)w_hyp[pcpu].max, (uint32_t)w_hyp[pcpu].total);
+
+        stopwatch_reset(&w_hyp[pcpu]);
+    }
+
+    if (w_guest[pcpu].cnt >= 1000) {
+        printf("w_guest[%u]: cnt=%u min=%u max=%u total=%u \n", pcpu,
+            w_guest[pcpu].cnt, (uint32_t)w_guest[pcpu].min,
+            (uint32_t)w_guest[pcpu].max, (uint32_t)w_guest[pcpu].total);
+
+        stopwatch_reset(&w_guest[pcpu]);
+    }
 }
 
 static void timer_requset_irq(uint32_t irq)
@@ -132,6 +158,9 @@ hvmm_status_t timemanager_init() /* TODO: const struct timer_config const* timer
     for (pcpu = 0; pcpu < NR_CPUS; pcpu++) {
         LIST_INITHEAD(&active_timers[pcpu]);
         LIST_INITHEAD(&inactive_timers[pcpu]);
+
+        stopwatch_init(&w_hyp[pcpu]);
+        stopwatch_init(&w_guest[pcpu]);
     }
 
     return HVMM_STATUS_SUCCESS;
