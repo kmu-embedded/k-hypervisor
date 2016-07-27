@@ -43,10 +43,13 @@ void start_hypervisor()
         printf("cpu[%d] is enabled\n", pcpu);
     }
 
+#define VTIMER_TRAP
+#ifdef VTIMER_TRAP
     /* FIXME:(igkang) WORKAROUND - enable timer access trap */
     uint32_t val;
     val = read_cp32(CNTHCTL);
     write_cp32(val & ~(ARM_CNTHCTL_PL1PCEN | ARM_CNTHCTL_PL1PCTEN), CNTHCTL);
+#endif
 
     /*
      * TODO: Add a function - return vmid or vcpu_id to execute for the first time.
