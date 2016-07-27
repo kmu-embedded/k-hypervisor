@@ -100,8 +100,10 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
     struct timer *t;
     struct timer *tmp;
     LIST_FOR_EACH_ENTRY_SAFE(t, tmp, &active_timers[pcpu], head_active) {
-        if (t->expiration < now) {
+        if (t->state == 1 && t->expiration < now) {
             t->callback(pregs, &t->expiration);
+
+            t->state = (t->expiration == 0) ? 0 : 1;
             /* FIXME:(igkang) would be better to use set_timer instead? */
         }
     }
@@ -130,7 +132,7 @@ static void timer_irq_handler(int irq, void *pregs, void *pdata)
     }
 }
 
-static void timer_requset_irq(uint32_t irq)
+static void timer_request_irq(uint32_t irq)
 {
     register_irq_handler(irq, &timer_irq_handler, IRQ_LEVEL_SENSITIVE);
 }
@@ -145,7 +147,7 @@ hvmm_status_t timer_hw_init(uint32_t irq) /* const struct timer_config const* ti
     }
 
     /* TODO: (igkang) timer related call - check return value */
-    timer_requset_irq(irq);
+    timer_request_irq(irq);
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -248,7 +250,6 @@ static hvmm_status_t timer_maintenance(void)
     LIST_FOR_EACH_ENTRY(t, &active_timers[pcpu], head_active) {
         if (t->expiration < nearest) {
             nearest = t->expiration;
-            break;
         }
     }
 
