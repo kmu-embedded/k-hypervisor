@@ -3,6 +3,8 @@
 
 #include <core/timer.h>
 
+#define VTIMER_PERIODIC
+
 /* represents a generic timer w/o SE,VE (Physical, virtual timer) */
 struct vdev_timer {
     /* data for hypervisor */
@@ -20,6 +22,11 @@ struct vdev_timer {
     uint64_t v_cval;
     // uint64_t v_off;
     /* ARM DDI 0406C.c B8-1969 claims that CNTVOFF is only for VE */
+
+#ifdef VTIMER_PERIODIC
+    bool periodic_mode;
+    uint32_t periodic_interval;
+#endif
 
     struct timer swtimer; /* for Physical Timer (?) */
 };

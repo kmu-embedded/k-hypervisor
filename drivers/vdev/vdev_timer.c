@@ -8,8 +8,6 @@
 #include <irq-chip.h>
 #include <drivers/vdev/vdev_timer.h>
 
-// #include <lib/list.h>
-
 // #define DEBUG
 
 /*
@@ -97,6 +95,11 @@ int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
                 /* FIXME:(igkang) sign extension of *rt needed */
                 v->p_cval = (timer_get_syscounter() - v->p_ct_offset + *rt);
                 vdev_timer_set_swtimer(v);
+#ifdef VTIMER_PERIODIC
+                if (v->periodic_mode) {
+                    v->periodic_interval = *rt;
+                }
+#endif
                 return 0;
             }
             break;
@@ -186,12 +189,20 @@ int vdev_timer_access64(uint8_t read, uint32_t what, uint32_t *rt_low, uint32_t 
 
 /* TODO:(igkang) need to rewrite core/timer code to store pdata in each "struct timer" instance */
 void vdev_timer_handler(void *pdata, uint64_t *expiration) {
-    *expiration = 0;
-
     /* do IRQ injection to vCPU of vdev_timer instance which we currently handling */
     struct timer *t = container_of2(expiration, struct timer, expiration);
     struct vdev_timer *v = container_of2(t, struct vdev_timer, swtimer);
     struct vcpu *vcpu = container_of2(v, struct vcpu, vtimer);
+
+#ifdef VTIMER_PERIODIC
+    if (v->periodic_mode) {
+        *expiration = *expiration + timer_count_to_time_ns(v->periodic_interval);
+    } else {
+#endif
+        *expiration = 0;
+#ifdef VTIMER_PERIODIC
+    }
+#endif
 
     /* check ENABLE */
     if ((v->p_ctl & 1u) == 1) {
@@ -209,6 +220,10 @@ void vdev_timer_handler(void *pdata, uint64_t *expiration) {
 
 void init_vdev_timer(struct vdev_timer *v)
 {
+#ifdef VTIMER_PERIODIC
+    v->periodic_mode = true;
+    v->periodic_interval = 0;
+#endif
     /* Reset _CTLs
      *
      * for reset values, see ARMv7 reference manual
