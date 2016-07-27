@@ -7,6 +7,7 @@
 #include <core/context_switch.h>
 #include <core/scheduler.h>
 #include <core/sched/scheduler_skeleton.h>
+#include <core/sched/sched-config.h>
 
 #include <debug.h>
 #include <stdlib.h>
@@ -14,6 +15,12 @@
 #include <lib/list.h>
 
 struct scheduler *sched[NR_CPUS];
+
+// #define STOPWATCH_SCHEDULER
+#ifdef STOPWATCH_SCHEDULER
+struct stopwatch w_hyp[NR_CPUS];
+struct stopwatch w_guest[NR_CPUS];
+#endif /* STOPWATCH_SCHEDULER */
 
 void sched_init() /* TODO: const struct sched_config const* sched_config)*/
 {
@@ -23,7 +30,7 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
     /* Allocate and initialize data */
     uint32_t pcpu;
     for (pcpu = 0; pcpu < NR_CPUS; pcpu++) {
-        const struct sched_policy *p = &sched_rr;
+        const struct sched_policy *p = schedconf_g_policy[pcpu];
 
         struct scheduler *s
             = sched[pcpu]
@@ -31,6 +38,8 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
 
         s->policy = p;
         s->policy->init(s);
+        s->pcpuid = pcpu;
+        s->id = pcpu;
 
         s->current_vcpuid = VCPUID_INVALID;
         s->next_vcpuid = VCPUID_INVALID;
@@ -39,6 +48,14 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
 
         LIST_INITHEAD(&s->standby_entries);
         LIST_INITHEAD(&s->inflight_entries);
+
+#ifdef STOPWATCH_SCHEDULER
+        stopwatch_init(&w_hyp[pcpu]);
+        stopwatch_init(&w_guest[pcpu]);
+#endif /* STOPWATCH_SCHEDULER */
+
+        printf("init sched #%u\n", s->pcpuid);
+        printf("init sched #%u\n", s->pcpuid);
     }
 }
 
@@ -193,8 +210,7 @@ int sched_vcpu_register(vcpuid_t vcpuid, uint32_t pcpu)
     struct scheduler *const s = sched[pcpu];
     struct sched_entry *new;
 
-    new = (struct sched_entry *) malloc(
-              sizeof(struct sched_entry) + s->policy->size_entry_extra);
+    new = (struct sched_entry *) malloc(sizeof(struct sched_entry));
 
     LIST_INITHEAD(&new->head_standby);
     LIST_INITHEAD(&new->head_inflight);
@@ -315,9 +331,37 @@ void do_schedule(void *pdata, uint64_t *expiration)
     struct scheduler *const s = sched[pcpu];
     int next_vcpuid;
 
+#ifdef STOPWATCH_SCHEDULER
+    stopwatch_start(&w_hyp[pcpu]);
+    if (w_hyp[pcpu].cnt > 0) {
+        stopwatch_stop(&w_guest[pcpu]);
+    }
+#endif /* STOPWATCH_SCHEDULER */
+
     /* determine next vcpu to be run by calling scheduler.do_schedule() */
     /* Also sets timer expiration for next scheduler work */
     next_vcpuid = s->policy->do_schedule(s, expiration);
+
+#ifdef STOPWATCH_SCHEDULER
+    stopwatch_start(&w_guest[pcpu]);
+    stopwatch_stop(&w_hyp[pcpu]);
+
+    if (w_hyp[pcpu].cnt >= 1000) {
+        printf("w_hyp[%u]: cnt=%u min=%u max=%u total=%u \n", pcpu,
+            w_hyp[pcpu].cnt, (uint32_t)w_hyp[pcpu].min,
+            (uint32_t)w_hyp[pcpu].max, (uint32_t)w_hyp[pcpu].total);
+
+        stopwatch_reset(&w_hyp[pcpu]);
+    }
+
+    if (w_guest[pcpu].cnt >= 1000) {
+        printf("w_guest[%u]: cnt=%u min=%u max=%u total=%u \n", pcpu,
+            w_guest[pcpu].cnt, (uint32_t)w_guest[pcpu].min,
+            (uint32_t)w_guest[pcpu].max, (uint32_t)w_guest[pcpu].total);
+
+        stopwatch_reset(&w_guest[pcpu]);
+    }
+#endif /* STOPWATCH_SCHEDULER */
 
     /* update vCPU's running time */
 
