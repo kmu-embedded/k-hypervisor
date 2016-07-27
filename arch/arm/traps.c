@@ -21,9 +21,11 @@ int do_hyp_trap(struct core_regs *regs)
     case WFI_WFE:
         break;
     case MCR_MRC_CP15:
-        ret = emulate_cp15(regs, iss);
+        ret = emulate_cp15_32(regs, iss);
         break;
     case MCRR_MRRC_CP15:
+        ret = emulate_cp15_64(regs, iss);
+        break;
     case HCRTR_CP0_CP13:
     case MRC_VMRS_CP10:
     case HVC:
@@ -54,6 +56,7 @@ trap_error:
     printf("r2 %x\n", regs->gpr[2]);
     printf("r3 %x\n", regs->gpr[3]);
     printf("guest pc is %x\n", regs->pc);
+    printf("hifar %x\n", read_cp32(HIFAR));
     while (1) ;
 
     return -1;

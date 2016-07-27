@@ -13,6 +13,12 @@ static struct list_head active_timers[NR_CPUS];
 static struct list_head inactive_timers[NR_CPUS];
 static struct timer_ops *__ops;
 
+//#define STOPWATCH_TIMERIRQ
+#ifdef STOPWATCH_TIMERIRQ
+struct stopwatch w_hyp[NR_CPUS];
+struct stopwatch w_guest[NR_CPUS];
+#endif /* STOPWATCH_TIMERIRQ */
+
 static hvmm_status_t timer_maintenance(void);
 
 uint64_t timer_count_to_time_ns(uint64_t count)
@@ -79,6 +85,13 @@ static irqreturn_t timer_irq_handler(int irq, void *pregs, void *pdata)
 {
     uint32_t pcpu = smp_processor_id();
 
+#ifdef STOPWATCH_TIMERIRQ
+    stopwatch_start(&w_hyp[pcpu]);
+    if (w_hyp[pcpu].cnt > 0) {
+        stopwatch_stop(&w_guest[pcpu]);
+    }
+#endif /* STOPWATCH_TIMERIRQ */
+
 #ifdef __TEST_TIMER__
     uint64_t new_syscnt = get_syscounter();
     printf("time diff: %luns\n", (uint32_t)timer_count_to_time_ns(new_syscnt - saved_syscnt[pcpu]));
@@ -93,8 +106,10 @@ static irqreturn_t timer_irq_handler(int irq, void *pregs, void *pdata)
     struct timer *t;
     struct timer *tmp;
     LIST_FOR_EACH_ENTRY_SAFE(t, tmp, &active_timers[pcpu], head_active) {
-        if (t->expiration < now) {
+        if (t->state == 1 && t->expiration < now) {
             t->callback(pregs, &t->expiration);
+
+            t->state = (t->expiration == 0) ? 0 : 1;
             /* FIXME:(igkang) would be better to use set_timer instead? */
         }
     }
@@ -103,10 +118,31 @@ static irqreturn_t timer_irq_handler(int irq, void *pregs, void *pdata)
 
     timer_start();
 
+#ifdef STOPWATCH_TIMERIRQ
+    stopwatch_start(&w_guest[pcpu]);
+    stopwatch_stop(&w_hyp[pcpu]);
+
+    if (w_hyp[pcpu].cnt >= 1000) {
+        printf("w_hyp[%u]: cnt=%u min=%u max=%u total=%u \n", pcpu,
+            w_hyp[pcpu].cnt, (uint32_t)w_hyp[pcpu].min,
+            (uint32_t)w_hyp[pcpu].max, (uint32_t)w_hyp[pcpu].total);
+
+        stopwatch_reset(&w_hyp[pcpu]);
+    }
+
+    if (w_guest[pcpu].cnt >= 1000) {
+        printf("w_guest[%u]: cnt=%u min=%u max=%u total=%u \n", pcpu,
+            w_guest[pcpu].cnt, (uint32_t)w_guest[pcpu].min,
+            (uint32_t)w_guest[pcpu].max, (uint32_t)w_guest[pcpu].total);
+
+        stopwatch_reset(&w_guest[pcpu]);
+    }
+#endif /* STOPWATCH_TIMERIRQ */
+
     return VMM_IRQ;
 }
 
-static void timer_requset_irq(uint32_t irq)
+static void timer_request_irq(uint32_t irq)
 {
     register_irq_handler(irq, &timer_irq_handler, IRQ_LEVEL_SENSITIVE);
 }
@@ -121,7 +157,7 @@ hvmm_status_t timer_hw_init(uint32_t irq) /* const struct timer_config const* ti
     }
 
     /* TODO: (igkang) timer related call - check return value */
-    timer_requset_irq(irq);
+    timer_request_irq(irq);
 
     return HVMM_STATUS_SUCCESS;
 }
@@ -134,6 +170,11 @@ hvmm_status_t timemanager_init() /* TODO: const struct timer_config const* timer
     for (pcpu = 0; pcpu < NR_CPUS; pcpu++) {
         LIST_INITHEAD(&active_timers[pcpu]);
         LIST_INITHEAD(&inactive_timers[pcpu]);
+
+#ifdef STOPWATCH_TIMERIRQ
+        stopwatch_init(&w_hyp[pcpu]);
+        stopwatch_init(&w_guest[pcpu]);
+#endif /* STOPWATCH_SCHEDULER */
     }
 
     return HVMM_STATUS_SUCCESS;
@@ -221,7 +262,6 @@ static hvmm_status_t timer_maintenance(void)
     LIST_FOR_EACH_ENTRY(t, &active_timers[pcpu], head_active) {
         if (t->expiration < nearest) {
             nearest = t->expiration;
-            break;
         }
     }
 
@@ -235,3 +275,34 @@ static hvmm_status_t timer_maintenance(void)
     return HVMM_STATUS_SUCCESS;
 }
 
+/* cummulative stopwatch */
+void stopwatch_init(struct stopwatch *w) {
+    w->start = w->lastdiff = 0;
+    stopwatch_reset(w);
+}
+
+void stopwatch_reset(struct stopwatch *w) {
+    w->max = w->total = 0;
+    w->min = 0xFFFFFFFFFFFFFFFF;
+    w->cnt = 0;
+}
+
+void stopwatch_start(struct stopwatch *w) {
+    w->start = get_syscounter();
+    w->lastdiff = 0;
+}
+
+void stopwatch_stop(struct stopwatch *w) {
+    w->lastdiff = get_syscounter() - w->start;
+
+    if (w->lastdiff < w->min) {
+        w->min = w->lastdiff;
+    }
+
+    if (w->lastdiff > w->max) {
+        w->max = w->lastdiff;
+    }
+
+    w->total += w->lastdiff;
+    w->cnt += 1;
+}

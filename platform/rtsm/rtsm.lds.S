@@ -40,14 +40,14 @@ SECTIONS
     .guest2 : { ../guestimages/guest2.bin }
     _guest2_bin_end = .;
 
+    . = ALIGN(4);
+
     /* Guest 3 */
     . = CFG_MEMMAP_GUEST3_ATAGS_OFFSET;
     . = CFG_MEMMAP_GUEST3_OFFSET;
     _guest3_bin_start = .;
     .guest3 : { ../guestimages/guest3.bin }
     _guest3_bin_end = .;
-
-    . = ALIGN(4);
 
     . = CFG_HYP_START_ADDRESS;
     . = ALIGN(4);

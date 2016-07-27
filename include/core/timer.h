@@ -17,13 +17,6 @@
 
 typedef void(*timer_callback_t)(void *pdata, uint64_t *expiration);
 
-typedef enum {
-    TIMEUNIT_10NSEC,
-    TIMEUNIT_USEC,
-    TIMEUNIT_MSEC,
-    TIMEUNIT_SEC
-} time_unit_t;
-
 struct timer {
     struct list_head head_active;
     struct list_head head_inactive;
@@ -53,6 +46,19 @@ struct timer_module {
 };
 
 extern struct timer_module _timer_module;
+
+/* cummulative stopwatch */
+struct stopwatch {
+    uint64_t start;
+    uint64_t lastdiff;
+
+    uint64_t min;
+    uint64_t max;
+    uint64_t total;
+
+    uint32_t cnt;
+};
+
 /*
  * Calling this function is required only once in the entire system
  * prior to calls to other functions of Timer module.
@@ -68,9 +74,14 @@ hvmm_status_t tm_deactivate_timer(struct timer *t);
 hvmm_status_t timer_stop(void);
 hvmm_status_t timer_start(void);
 
-uint64_t timer_time_to_count(uint64_t time, time_unit_t unit);
-uint64_t timer_count_to_time(uint64_t count, time_unit_t unit);
+uint64_t timer_count_to_time_ns(uint64_t count);
+uint64_t timer_time_to_count_ns(uint64_t time);
 uint64_t timer_get_syscounter(void);
 uint64_t timer_get_timenow(void);
+
+void stopwatch_init(struct stopwatch *w);
+void stopwatch_reset(struct stopwatch *w);
+void stopwatch_start(struct stopwatch *w);
+void stopwatch_stop(struct stopwatch *w);
 
 #endif
