@@ -34,7 +34,7 @@
 
 #define VTIMER_IRQ 30 /* NS PL1 Timer */
 
-extern struct virq_chip *virq_hw;
+extern struct virq_hw *virq_hw;
 
 /*
    CP64(CNTPCT)
