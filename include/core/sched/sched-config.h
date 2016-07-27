@@ -3,7 +3,7 @@
 
 #include <core/sched/scheduler_skeleton.h>
 
-#define TOTAL_VCPUS NUM_GUESTS_STATIC
+#define TOTAL_VCPUS CONFIG_NR_VMS
 
 extern const struct sched_policy *
     schedconf_g_policy[NR_CPUS];
