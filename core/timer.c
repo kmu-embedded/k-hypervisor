@@ -221,7 +221,6 @@ static hvmm_status_t timer_maintenance(void)
     LIST_FOR_EACH_ENTRY(t, &active_timers[pcpu], head_active) {
         if (t->expiration < nearest) {
             nearest = t->expiration;
-            break;
         }
     }
 
