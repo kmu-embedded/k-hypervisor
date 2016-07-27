@@ -30,6 +30,7 @@ struct sched_data_rm {
 
     uint64_t tick_interval_us;
     uint64_t tick_count;
+    uint64_t tick_1kcount;
 
     struct entry_data_rm *current;
     struct list_head runqueue;
@@ -45,6 +46,7 @@ void sched_rm_init(struct scheduler *s)
     /* Initialize data */
     sd->current = NULL;
     sd->tick_count = 0;
+    sd->tick_1kcount = 1000;
     sd->tick_interval_us = schedconf_rm_tick_interval_ms[s->pcpuid];
     sd->s = s;
 
@@ -180,6 +182,18 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
             // printf("Idle mode not implemented\n");
             while(1);
         }
+    }
+
+    if (sd->tick_count >= sd->tick_1kcount) {
+        printf("RM report (for %u ticks):\n", sd->tick_interval_us);
+
+        LIST_FOR_EACH_ENTRY(ed, &sd->runqueue, head) {
+            printf("    vcpu%u: fg=%u preempt=%u\n", ed->e->vcpuid, ed->foreground_ticks, ed->preempted);
+            ed->foreground_ticks = 0;
+            ed->preempted = 0;
+        }
+
+        sd->tick_1kcount += 1000;
     }
 
     if (*expiration == 0) {
