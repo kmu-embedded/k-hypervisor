@@ -7,6 +7,7 @@
 #include <core/sched/sched-config.h>
 #include <string.h>
 #include <stdlib.h>
+#include <drivers/vdev/vdev_timer.h>
 
 static struct list_head vcpu_list;
 static int nr_vcpus = 0;
@@ -83,6 +84,8 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
     vcpu->pcpuid = sched_vcpu_register(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
     printf("sched_vcpu_register, vcpuid : %d is registered on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
     vcpu->state = VCPU_REGISTERED;
+
+    init_vdev_timer(&vcpu->vtimer);
 
     return vcpu->state;
 }
