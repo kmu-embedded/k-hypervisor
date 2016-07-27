@@ -9,6 +9,8 @@
 #include <lib/list.h>
 #include <core/timer.h>
 
+// #define SCHED_RM_REPORT
+
 struct entry_data_rm {
     struct sched_entry *e;
 
@@ -18,9 +20,11 @@ struct entry_data_rm {
     uint32_t period_cntdn;
     uint32_t budget_cntdn;
 
+#ifdef SCHED_RM_REPORT
     /* for analysis */
     uint32_t foreground_ticks;
     uint32_t preempted;
+#endif
 
     struct list_head head;
 };
@@ -30,7 +34,9 @@ struct sched_data_rm {
 
     uint64_t tick_interval_us;
     uint64_t tick_count;
+#ifdef SCHED_RM_REPORT
     uint64_t tick_1kcount;
+#endif
 
     struct entry_data_rm *current;
     struct list_head runqueue;
@@ -46,7 +52,9 @@ void sched_rm_init(struct scheduler *s)
     /* Initialize data */
     sd->current = NULL;
     sd->tick_count = 0;
+#ifdef SCHED_RM_REPORT
     sd->tick_1kcount = 1000;
+#endif
     sd->tick_interval_us = schedconf_rm_tick_interval_ms[s->pcpuid];
     sd->s = s;
 
@@ -64,8 +72,10 @@ int sched_rm_vcpu_register(struct scheduler *s, struct sched_entry *e)
     ed->budget = schedconf_rm_period_budget[e->vcpuid][1];
     ed->e = e;
 
+#ifdef SCHED_RM_REPORT
     ed->foreground_ticks = 0;
     ed->preempted = 0;
+#endif
 
     LIST_INITHEAD(&ed->head);
 
@@ -159,7 +169,9 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
             if (current_ed->budget_cntdn == 0) { // out of budget
                 current_ed->e->state = SCHED_WAITING;
             } else if (current_ed->period > next_ed->period) { // preemption!
+#ifdef SCHED_RM_REPORT
                 current_ed->preempted += 1;
+#endif
             } else { // continue to run
                 next_ed = current_ed;
             }
@@ -173,7 +185,9 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
             sd->current = next_ed;
             next_ed->budget_cntdn -= 1;
 
+#ifdef SCHED_RM_REPORT
             next_ed->foreground_ticks += 1;
+#endif
 
             next_vcpuid = next_e->vcpuid;
         } else {
@@ -184,6 +198,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
         }
     }
 
+#ifdef SCHED_RM_REPORT
     if (sd->tick_count >= sd->tick_1kcount) {
         printf("RM report (for %u ticks):\n", sd->tick_interval_us);
 
@@ -195,6 +210,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
 
         sd->tick_1kcount += 1000;
     }
+#endif
 
     if (*expiration == 0) {
         *expiration = timer_get_timenow();
