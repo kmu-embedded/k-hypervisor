@@ -332,10 +332,10 @@ void do_schedule(void *pdata, uint64_t *expiration)
     int next_vcpuid;
 
 #ifdef STOPWATCH_SCHEDULER
-    stopwatch_start(&w_hyp[pcpu]);
     if (w_hyp[pcpu].cnt > 0) {
         stopwatch_stop(&w_guest[pcpu]);
     }
+    stopwatch_start(&w_hyp[pcpu]);
 #endif /* STOPWATCH_SCHEDULER */
 
     /* determine next vcpu to be run by calling scheduler.do_schedule() */
@@ -343,8 +343,8 @@ void do_schedule(void *pdata, uint64_t *expiration)
     next_vcpuid = s->policy->do_schedule(s, expiration);
 
 #ifdef STOPWATCH_SCHEDULER
-    stopwatch_start(&w_guest[pcpu]);
     stopwatch_stop(&w_hyp[pcpu]);
+    stopwatch_start(&w_guest[pcpu]);
 
     if (w_hyp[pcpu].cnt >= 1000) {
         printf("w_hyp[%u]: cnt=%u min=%u max=%u total=%u \n", pcpu,
