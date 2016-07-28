@@ -13,7 +13,7 @@ static struct list_head active_timers[NR_CPUS];
 static struct list_head inactive_timers[NR_CPUS];
 static struct timer_ops *__ops;
 
-//#define STOPWATCH_TIMERIRQ
+// #define STOPWATCH_TIMERIRQ
 #ifdef STOPWATCH_TIMERIRQ
 struct stopwatch w_hyp[NR_CPUS];
 struct stopwatch w_guest[NR_CPUS];
@@ -86,10 +86,10 @@ static irqreturn_t timer_irq_handler(int irq, void *pregs, void *pdata)
     uint32_t pcpu = smp_processor_id();
 
 #ifdef STOPWATCH_TIMERIRQ
-    stopwatch_start(&w_hyp[pcpu]);
     if (w_hyp[pcpu].cnt > 0) {
         stopwatch_stop(&w_guest[pcpu]);
     }
+    stopwatch_start(&w_hyp[pcpu]);
 #endif /* STOPWATCH_TIMERIRQ */
 
 #ifdef __TEST_TIMER__
@@ -119,8 +119,8 @@ static irqreturn_t timer_irq_handler(int irq, void *pregs, void *pdata)
     timer_start();
 
 #ifdef STOPWATCH_TIMERIRQ
-    stopwatch_start(&w_guest[pcpu]);
     stopwatch_stop(&w_hyp[pcpu]);
+    stopwatch_start(&w_guest[pcpu]);
 
     if (w_hyp[pcpu].cnt >= 1000) {
         printf("w_hyp[%u]: cnt=%u min=%u max=%u total=%u \n", pcpu,
