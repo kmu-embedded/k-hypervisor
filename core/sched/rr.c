@@ -1,4 +1,5 @@
 #include <core/sched/scheduler_skeleton.h>
+#include <core/sched/sched-config.h>
 #include <config.h>
 #include <arch/armv7.h>
 #include <stdlib.h>
@@ -46,8 +47,7 @@ int sched_rr_vcpu_register(struct scheduler *s, struct sched_entry *e)
     // struct sched_data_rr *sd = (struct sched_data_rr *) (s->sd);
     struct entry_data_rr *ed = (struct entry_data_rr *) malloc(sizeof(struct entry_data_rr));
 
-    /* FIXME:(igkang) Hardcoded. should use function parameter's value for tick_reset_val init. */
-    ed->tick_reset_val = 5;
+    ed->tick_reset_val = schedconf_rr_slice[e->vcpuid];
     ed->e = e;
 
     LIST_INITHEAD(&ed->head);

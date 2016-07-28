@@ -1,6 +1,15 @@
 #include <core/sched/sched-config.h>
 #include <core/sched/scheduler_skeleton.h>
 
+/* Description notation:
+ *
+ *      what array index meaning -> array element meaning
+ *      in short,
+ *      index -> element
+ *
+ *      use ZERO for UNUSED config datas
+ */
+
 /*****
  * Global configs for scheduler
  */
@@ -46,10 +55,10 @@ uint32_t schedconf_rm_period_budget[TOTAL_VCPUS][2] = {
  */
 
 /* vcpu -> {budget} in ms */
-/* uint32_t schedconf_rr_slice[TOTAL_VCPUS] = {
+uint32_t schedconf_rr_slice[TOTAL_VCPUS] = {
     0,
     0,
-    // 0,
-    5
-}; */
+    5,
+    0
+};
 

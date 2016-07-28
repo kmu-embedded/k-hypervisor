@@ -17,6 +17,7 @@ extern uint32_t
 extern uint32_t
     schedconf_rm_period_budget[TOTAL_VCPUS][2];
 
-// extern uint32_t schedconf_rr_slice[TOTAL_VCPUS];
+extern uint32_t
+    schedconf_rr_slice[TOTAL_VCPUS];
 
 #endif /* _SCHEDULER_CONFIG_H_ */
