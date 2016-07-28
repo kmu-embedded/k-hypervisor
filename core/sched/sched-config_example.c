@@ -16,7 +16,7 @@
 
 /* pcpu -> policy */
 const struct sched_policy *schedconf_g_policy[NR_CPUS] = {
-    &sched_rr,
+    &sched_rt_rm,
     &sched_rr,
     &sched_rr,
     &sched_rr
@@ -25,9 +25,9 @@ const struct sched_policy *schedconf_g_policy[NR_CPUS] = {
 /* vcpu -> pcpu to be maped to */
 uint32_t schedconf_g_vcpu_to_pcpu_map[TOTAL_VCPUS] = {
     0,
+    0,
     1,
-    2,
-    3,
+    0
 };
 
 /*****
@@ -36,12 +36,18 @@ uint32_t schedconf_g_vcpu_to_pcpu_map[TOTAL_VCPUS] = {
 
 /* pcpu(=policy) -> scheduler tick interval (mili second) */
 uint32_t schedconf_rm_tick_interval_ms[NR_CPUS] = {
+    1000,
     0,
+    0,
+    0
 };
 
 /* vcpu -> {period, budget} in tick count */
 uint32_t schedconf_rm_period_budget[TOTAL_VCPUS][2] = {
+    {5, 2},
+    {3, 1},
     {0, },
+    {90909, 90909} // {90909, 90909} /* magic number for idle task */
 };
 
 /*****
@@ -50,9 +56,9 @@ uint32_t schedconf_rm_period_budget[TOTAL_VCPUS][2] = {
 
 /* vcpu -> {budget} in ms */
 uint32_t schedconf_rr_slice[TOTAL_VCPUS] = {
+    0,
+    0,
     5,
-    5,
-    5,
-    5
+    0
 };
 
