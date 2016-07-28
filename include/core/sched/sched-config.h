@@ -3,7 +3,8 @@
 
 #include <core/sched/scheduler_skeleton.h>
 
-#define TOTAL_VCPUS CONFIG_NR_VMS
+/* TODO:(igkang) merge this macro with NR_VCPUS in vdev_gicd.h */
+#define TOTAL_VCPUS 8
 
 extern const struct sched_policy *
     schedconf_g_policy[NR_CPUS];

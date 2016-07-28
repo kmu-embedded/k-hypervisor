@@ -23,6 +23,7 @@ struct vdev_timer {
     // uint64_t v_off;
     /* ARM DDI 0406C.c B8-1969 claims that CNTVOFF is only for VE */
 
+/* FIXME:(igkang) This is a workaround. Periodic mode should become configurable */
 #ifdef VTIMER_PERIODIC
     bool periodic_mode;
     uint32_t periodic_interval;
