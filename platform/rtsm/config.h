@@ -14,7 +14,7 @@
     CONFIG_VSERIAL == 0 : Use vdev_serial
     CONFIG_VSERIAL == 1 : Not use vdev_serial
 */
-#define CONFIG_VSERIAL     0
+#define CONFIG_VSERIAL     1
 
 // TODO(casionwoo) : CONFIG_LOG_LEVEL setting should be moved to menuconfig
 /*
