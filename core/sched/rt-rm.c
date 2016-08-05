@@ -22,7 +22,7 @@ struct entry_data_rm {
 
 #ifdef SCHED_RM_REPORT
     /* for analysis */
-    uint32_t foreground_ticks;
+    uint32_t running_tick_cnt;
     uint32_t preempted;
 #endif
 
@@ -33,9 +33,9 @@ struct sched_data_rm {
     struct scheduler *s;
 
     uint64_t tick_interval_us;
-    uint64_t tick_count;
+    uint64_t tick_cnt;
 #ifdef SCHED_RM_REPORT
-    uint64_t tick_1kcount;
+    uint64_t tick_1kcnt;
 #endif
 
     struct entry_data_rm *current;
@@ -45,15 +45,14 @@ struct sched_data_rm {
 /* Scheduler related data initialization */
 void sched_rm_init(struct scheduler *s)
 {
+    /* Allocate memory for system-wide data */
     struct sched_data_rm *sd = (struct sched_data_rm *) malloc(sizeof(struct sched_data_rm));
 
-    /* Check scheduler config */
-    /* Allocate memory for system-wide data */
-    /* Initialize data */
+    /* Initialize data according to config */
     sd->current = NULL;
-    sd->tick_count = 0;
+    sd->tick_cnt = 0;
 #ifdef SCHED_RM_REPORT
-    sd->tick_1kcount = 1000;
+    sd->tick_1kcnt = 1000;
 #endif
     sd->tick_interval_us = schedconf_rm_tick_interval_ms[s->pcpuid];
     sd->s = s;
@@ -65,7 +64,6 @@ void sched_rm_init(struct scheduler *s)
 
 int sched_rm_vcpu_register(struct scheduler *s, struct sched_entry *e)
 {
-    // struct sched_data_rm *sd = (struct sched_data_rm *) (s->sd);
     struct entry_data_rm *ed = (struct entry_data_rm *) malloc(sizeof(struct entry_data_rm));
 
     ed->period = schedconf_rm_period_budget[e->vcpuid][0];
@@ -73,7 +71,7 @@ int sched_rm_vcpu_register(struct scheduler *s, struct sched_entry *e)
     ed->e = e;
 
 #ifdef SCHED_RM_REPORT
-    ed->foreground_ticks = 0;
+    ed->running_tick_cnt = 0;
     ed->preempted = 0;
 #endif
 
@@ -86,10 +84,11 @@ int sched_rm_vcpu_register(struct scheduler *s, struct sched_entry *e)
 
 int sched_rm_vcpu_unregister(struct scheduler *s, struct sched_entry *e)
 {
+    /* TODO:(igkang) Finish writing RM vCPU unregister function */
     /* Check if vcpu is registered */
     /* Check if vcpu is detached. If not, request detachment.*/
     /* If we have requested detachment of vcpu,
-     *   let's wait until it is detached by main scheduling routine */
+     *   wait until it is detached by main scheduling routine */
 
     return 0;
 }
@@ -109,9 +108,9 @@ int sched_rm_vcpu_attach(struct scheduler *s, struct sched_entry *e)
 
 int sched_rm_vcpu_detach(struct scheduler *s, struct sched_entry *e)
 {
-    // struct sched_data_rm *sd = (struct sched_data_rm *) (s->sd);
     struct entry_data_rm *ed = (struct entry_data_rm *) (e->ed);
 
+    /* TODO:(igkang) Finish writing RM vCPU detach function */
     /* Check if vcpu is attached */
     /* Remove it from runqueue by setting will_detached flag*/
     /* Set entry_data_rm's fields */
@@ -131,20 +130,18 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
     struct entry_data_rm *current_ed = NULL;
     struct entry_data_rm *next_ed = NULL;
 
-    // bool is_switching_needed = false;
     int next_vcpuid = VCPUID_INVALID;
 
-    sd->tick_count += 1;
+    sd->tick_cnt += 1;
 
     if (LIST_IS_EMPTY(&sd->runqueue)) {
-        // printf("Nothing to run\n");
-        // printf("Idle mode not implemented\n");
+        printf("Nothing to run\n");
         while(1);
     }
 
     /* Check & decrease all entries' period count */
     struct entry_data_rm *ed = NULL;
-    if (true) { // if (is_switching_needed) {
+    if (true) {
         uint32_t min_period = 0xFFFFFFFF;
         next_ed = NULL;
 
@@ -170,6 +167,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
                 current_ed->e->state = SCHED_WAITING;
             } else if (current_ed->period > next_ed->period) { // preemption!
 #ifdef SCHED_RM_REPORT
+                /* current_ed->e->vcpuid is preempted by next_ed->e->vcpuid */
                 current_ed->preempted += 1;
 #endif
             } else { // continue to run
@@ -186,29 +184,29 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
             next_ed->budget_cntdn -= 1;
 
 #ifdef SCHED_RM_REPORT
-            next_ed->foreground_ticks += 1;
+            next_ed->running_tick_cnt += 1;
 #endif
 
             next_vcpuid = next_e->vcpuid;
         } else {
-            /* TODO:(igkang) handle the situation that there is no entry to run */
-            // printf("Nothing to run\n");
-            // printf("Idle mode not implemented\n");
+            /* Never reach here */
+            /* We use idle guest which does nothing when it is running */
+            printf("Idle guest is needed!\n");
             while(1);
         }
     }
 
 #ifdef SCHED_RM_REPORT
-    if (sd->tick_count >= sd->tick_1kcount) {
+    if (sd->tick_cnt >= sd->tick_1kcnt) {
         printf("RM report (for %u ticks):\n", sd->tick_interval_us);
 
         LIST_FOR_EACH_ENTRY(ed, &sd->runqueue, head) {
-            printf("    vcpu%u: fg=%u preempt=%u\n", ed->e->vcpuid, ed->foreground_ticks, ed->preempted);
-            ed->foreground_ticks = 0;
+            printf("    vcpu%u: fg=%u preempt=%u\n", ed->e->vcpuid, ed->running_tick_cnt, ed->preempted);
+            ed->running_tick_cnt = 0;
             ed->preempted = 0;
         }
 
-        sd->tick_1kcount += 1000;
+        sd->tick_1kcnt += 1000;
     }
 #endif
 
@@ -216,9 +214,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
         *expiration = timer_get_timenow();
     }
 
-    *expiration =
-        *expiration + USEC(sd->tick_interval_us);
-
+    *expiration = *expiration + USEC(sd->tick_interval_us);
 
     return next_vcpuid;
 }

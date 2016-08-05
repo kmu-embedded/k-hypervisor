@@ -52,10 +52,6 @@ extern struct virq_hw *virq_hw;
 
 inline static int vdev_timer_set_swtimer(struct vdev_timer *v)
 {
-    // hvmm_status_t tm_set_timer(struct timer *t, uint64_t expiration, bool timer_stopstart)
-    // uint64_t timer_count_to_time_ns(uint64_t count)
-    // uint64_t timer_time_to_count_ns(uint64_t time)
-
     uint64_t exp = timer_count_to_time_ns(v->p_cval + v->p_ct_offset);
     tm_set_timer(&v->swtimer, exp, true);
 
@@ -68,8 +64,6 @@ int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
     struct vdev_timer *v = &vcpu->vtimer;
     uint32_t *target = NULL;
     uint32_t tmp = 0;
-
-    // printf("<trace> %s %d %d\n", __func__, __LINE__, vcpu->pcpuid);
 
     switch (what) {
         case CP32(CNTFRQ)    :
@@ -111,7 +105,7 @@ int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
             } else {
                 /* FIXME:(igkang) sign extension of *rt needed */
                 v->v_cval = (timer_get_syscounter() - v->p_ct_offset + *rt);
-                // vdev_timer_set_swtimer(v); /* now NSP timer only */
+                // vdev_timer_set_swtimer(v); /* FIXME:(igkang) now NSP timer only */
                 return 0;
             }
             /* do subtraction and set cval */
