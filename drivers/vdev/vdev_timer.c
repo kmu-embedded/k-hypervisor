@@ -8,8 +8,6 @@
 #include <irq-chip.h>
 #include <drivers/vdev/vdev_timer.h>
 
-// #define DEBUG
-
 /*
  * CHECK LIST
  * [v] Generic Timer PL1/PL0 access setting (to cause exception)
@@ -89,7 +87,7 @@ int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
                 /* FIXME:(igkang) sign extension of *rt needed */
                 v->p_cval = (timer_get_syscounter() - v->p_ct_offset + *rt);
                 vdev_timer_set_swtimer(v);
-#ifdef VTIMER_PERIODIC
+#ifdef CONFIG_VTIMER_PERIODIC
                 if (v->periodic_mode) {
                     v->periodic_interval = *rt;
                 }
@@ -188,13 +186,13 @@ void vdev_timer_handler(void *pdata, uint64_t *expiration) {
     struct vdev_timer *v = container_of2(t, struct vdev_timer, swtimer);
     struct vcpu *vcpu = container_of2(v, struct vcpu, vtimer);
 
-#ifdef VTIMER_PERIODIC
+#ifdef CONFIG_VTIMER_PERIODIC
     if (v->periodic_mode) {
         *expiration = *expiration + timer_count_to_time_ns(v->periodic_interval);
     } else {
 #endif
         *expiration = 0;
-#ifdef VTIMER_PERIODIC
+#ifdef CONFIG_VTIMER_PERIODIC
     }
 #endif
 
@@ -214,7 +212,7 @@ void vdev_timer_handler(void *pdata, uint64_t *expiration) {
 
 void init_vdev_timer(struct vdev_timer *v)
 {
-#ifdef VTIMER_PERIODIC
+#ifdef CONFIG_VTIMER_PERIODIC
     v->periodic_mode = true;
     v->periodic_interval = 0;
 #endif

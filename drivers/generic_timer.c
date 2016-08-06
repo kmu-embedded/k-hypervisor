@@ -186,8 +186,8 @@ static uint64_t timer_read_virt_counter(void)
 #if 0
 static hvmm_status_t timer_init(void)
 {
-#define TRAP_TIMER_ACCESS
-#ifdef TRAP_TIMER_ACCESS
+// #define CONFIG_TIMER_ACCESS_TRAP
+#ifdef CONFIG_TIMER_ACCESS_TRAP
     uint32_t val;
 
     val = read_cp32(CNTHCTL);
