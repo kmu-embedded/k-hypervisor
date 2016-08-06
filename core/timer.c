@@ -13,11 +13,10 @@ static struct list_head active_timers[NR_CPUS];
 static struct list_head inactive_timers[NR_CPUS];
 static struct timer_ops *__ops;
 
-// #define STOPWATCH_TIMERIRQ
-#ifdef STOPWATCH_TIMERIRQ
+#ifdef CONFIG_TIMER_IRQ_STOPWATCH
 struct stopwatch w_hyp[NR_CPUS];
 struct stopwatch w_guest[NR_CPUS];
-#endif /* STOPWATCH_TIMERIRQ */
+#endif /* CONFIG_TIMER_IRQ_STOPWATCH */
 
 static hvmm_status_t timer_maintenance(void);
 
@@ -73,7 +72,7 @@ hvmm_status_t timer_stop(void)
     return HVMM_STATUS_UNSUPPORTED_FEATURE;
 }
 
-#ifdef __TEST_TIMER__
+#ifdef CONFIG_TIMER_DEBUG
 static uint64_t saved_syscnt[NR_CPUS] = {0,};
 #endif
 
@@ -85,14 +84,14 @@ static irqreturn_t timer_irq_handler(int irq, void *pregs, void *pdata)
 {
     uint32_t pcpu = smp_processor_id();
 
-#ifdef STOPWATCH_TIMERIRQ
+#ifdef CONFIG_TIMER_IRQ_STOPWATCH
     if (w_hyp[pcpu].cnt > 0) {
         stopwatch_stop(&w_guest[pcpu]);
     }
     stopwatch_start(&w_hyp[pcpu]);
-#endif /* STOPWATCH_TIMERIRQ */
+#endif /* CONFIG_TIMER_IRQ_STOPWATCH */
 
-#ifdef __TEST_TIMER__
+#ifdef CONFIG_TIMER_DEBUG
     uint64_t new_syscnt = get_syscounter();
     printf("time diff: %luns\n", (uint32_t)timer_count_to_time_ns(new_syscnt - saved_syscnt[pcpu]));
     saved_syscnt[pcpu] = new_syscnt;
@@ -118,7 +117,7 @@ static irqreturn_t timer_irq_handler(int irq, void *pregs, void *pdata)
 
     timer_start();
 
-#ifdef STOPWATCH_TIMERIRQ
+#ifdef CONFIG_TIMER_IRQ_STOPWATCH
     stopwatch_stop(&w_hyp[pcpu]);
     stopwatch_start(&w_guest[pcpu]);
 
@@ -137,7 +136,7 @@ static irqreturn_t timer_irq_handler(int irq, void *pregs, void *pdata)
 
         stopwatch_reset(&w_guest[pcpu]);
     }
-#endif /* STOPWATCH_TIMERIRQ */
+#endif /* CONFIG_TIMER_IRQ_STOPWATCH */
 
     return VMM_IRQ;
 }
@@ -171,7 +170,7 @@ hvmm_status_t timemanager_init() /* TODO: const struct timer_config const* timer
         LIST_INITHEAD(&active_timers[pcpu]);
         LIST_INITHEAD(&inactive_timers[pcpu]);
 
-#ifdef STOPWATCH_TIMERIRQ
+#ifdef CONFIG_TIMER_IRQ_STOPWATCH
         stopwatch_init(&w_hyp[pcpu]);
         stopwatch_init(&w_guest[pcpu]);
 #endif /* STOPWATCH_SCHEDULER */

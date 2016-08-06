@@ -9,8 +9,6 @@
 #include <lib/list.h>
 #include <core/timer.h>
 
-// #define SCHED_RM_REPORT
-
 struct entry_data_rm {
     struct sched_entry *e;
 
@@ -20,7 +18,7 @@ struct entry_data_rm {
     uint32_t period_cntdn;
     uint32_t budget_cntdn;
 
-#ifdef SCHED_RM_REPORT
+#ifdef CONFIG_SCHED_RM_REPORT
     /* for analysis */
     uint32_t running_tick_cnt;
     uint32_t preempted;
@@ -34,7 +32,7 @@ struct sched_data_rm {
 
     uint64_t tick_interval_us;
     uint64_t tick_cnt;
-#ifdef SCHED_RM_REPORT
+#ifdef CONFIG_SCHED_RM_REPORT
     uint64_t tick_1kcnt;
 #endif
 
@@ -51,7 +49,7 @@ void sched_rm_init(struct scheduler *s)
     /* Initialize data according to config */
     sd->current = NULL;
     sd->tick_cnt = 0;
-#ifdef SCHED_RM_REPORT
+#ifdef CONFIG_SCHED_RM_REPORT
     sd->tick_1kcnt = 1000;
 #endif
     sd->tick_interval_us = schedconf_rm_tick_interval_ms[s->pcpuid];
@@ -70,7 +68,7 @@ int sched_rm_vcpu_register(struct scheduler *s, struct sched_entry *e)
     ed->budget = schedconf_rm_period_budget[e->vcpuid][1];
     ed->e = e;
 
-#ifdef SCHED_RM_REPORT
+#ifdef CONFIG_SCHED_RM_REPORT
     ed->running_tick_cnt = 0;
     ed->preempted = 0;
 #endif
@@ -166,7 +164,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
             if (current_ed->budget_cntdn == 0) { // out of budget
                 current_ed->e->state = SCHED_WAITING;
             } else if (current_ed->period > next_ed->period) { // preemption!
-#ifdef SCHED_RM_REPORT
+#ifdef CONFIG_SCHED_RM_REPORT
                 /* current_ed->e->vcpuid is preempted by next_ed->e->vcpuid */
                 current_ed->preempted += 1;
 #endif
@@ -183,7 +181,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
             sd->current = next_ed;
             next_ed->budget_cntdn -= 1;
 
-#ifdef SCHED_RM_REPORT
+#ifdef CONFIG_SCHED_RM_REPORT
             next_ed->running_tick_cnt += 1;
 #endif
 
@@ -196,7 +194,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
         }
     }
 
-#ifdef SCHED_RM_REPORT
+#ifdef CONFIG_SCHED_RM_REPORT
     if (sd->tick_cnt >= sd->tick_1kcnt) {
         printf("RM report (for %u ticks):\n", sd->tick_interval_us);
 

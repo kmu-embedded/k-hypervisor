@@ -16,11 +16,10 @@
 
 struct scheduler *sched[NR_CPUS];
 
-// #define STOPWATCH_SCHEDULER
-#ifdef STOPWATCH_SCHEDULER
+#ifdef CONFIG_SCHED_STOPWATCH
 struct stopwatch w_hyp[NR_CPUS];
 struct stopwatch w_guest[NR_CPUS];
-#endif /* STOPWATCH_SCHEDULER */
+#endif /* CONFIG_SCHED_STOPWATCH */
 
 void sched_init() /* TODO: const struct sched_config const* sched_config)*/
 {
@@ -49,10 +48,10 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
         LIST_INITHEAD(&s->standby_entries);
         LIST_INITHEAD(&s->inflight_entries);
 
-#ifdef STOPWATCH_SCHEDULER
+#ifdef CONFIG_SCHED_STOPWATCH
         stopwatch_init(&w_hyp[pcpu]);
         stopwatch_init(&w_guest[pcpu]);
-#endif /* STOPWATCH_SCHEDULER */
+#endif /* CONFIG_SCHED_STOPWATCH */
 
         printf("init sched #%u\n", s->pcpuid);
         printf("init sched #%u\n", s->pcpuid);
@@ -331,18 +330,18 @@ void do_schedule(void *pdata, uint64_t *expiration)
     struct scheduler *const s = sched[pcpu];
     int next_vcpuid;
 
-#ifdef STOPWATCH_SCHEDULER
+#ifdef CONFIG_SCHED_STOPWATCH
     if (w_hyp[pcpu].cnt > 0) {
         stopwatch_stop(&w_guest[pcpu]);
     }
     stopwatch_start(&w_hyp[pcpu]);
-#endif /* STOPWATCH_SCHEDULER */
+#endif /* CONFIG_SCHED_STOPWATCH */
 
     /* determine next vcpu to be run by calling scheduler.do_schedule() */
     /* Also sets timer expiration for next scheduler work */
     next_vcpuid = s->policy->do_schedule(s, expiration);
 
-#ifdef STOPWATCH_SCHEDULER
+#ifdef CONFIG_SCHED_STOPWATCH
     stopwatch_stop(&w_hyp[pcpu]);
     stopwatch_start(&w_guest[pcpu]);
 
@@ -361,7 +360,7 @@ void do_schedule(void *pdata, uint64_t *expiration)
 
         stopwatch_reset(&w_guest[pcpu]);
     }
-#endif /* STOPWATCH_SCHEDULER */
+#endif /* CONFIG_SCHED_STOPWATCH */
 
     /* update vCPU's running time */
 
