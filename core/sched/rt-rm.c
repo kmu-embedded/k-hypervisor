@@ -20,7 +20,7 @@ struct entry_data_rm {
 
 #ifdef CONFIG_SCHED_RM_REPORT
     /* for analysis */
-    uint32_t running_tick_cnt;
+    uint32_t running_ticks;
     uint32_t preempted;
 #endif
 
@@ -31,9 +31,9 @@ struct sched_data_rm {
     struct scheduler *s;
 
     uint64_t tick_interval_us;
-    uint64_t tick_cnt;
+    uint64_t ticks;
 #ifdef CONFIG_SCHED_RM_REPORT
-    uint64_t tick_1kcnt;
+    uint64_t count_1k_ticks;
 #endif
 
     struct entry_data_rm *current;
@@ -48,9 +48,9 @@ void sched_rm_init(struct scheduler *s)
 
     /* Initialize data according to config */
     sd->current = NULL;
-    sd->tick_cnt = 0;
+    sd->ticks = 0;
 #ifdef CONFIG_SCHED_RM_REPORT
-    sd->tick_1kcnt = 1000;
+    sd->count_1k_ticks = 1000;
 #endif
     sd->tick_interval_us = schedconf_rm_tick_interval_ms[s->pcpuid];
     sd->s = s;
@@ -69,7 +69,7 @@ int sched_rm_vcpu_register(struct scheduler *s, struct sched_entry *e)
     ed->e = e;
 
 #ifdef CONFIG_SCHED_RM_REPORT
-    ed->running_tick_cnt = 0;
+    ed->running_ticks = 0;
     ed->preempted = 0;
 #endif
 
@@ -130,7 +130,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
 
     int next_vcpuid = VCPUID_INVALID;
 
-    sd->tick_cnt += 1;
+    sd->ticks += 1;
 
     if (LIST_IS_EMPTY(&sd->runqueue)) {
         printf("Nothing to run\n");
@@ -182,7 +182,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
             next_ed->budget_cntdn -= 1;
 
 #ifdef CONFIG_SCHED_RM_REPORT
-            next_ed->running_tick_cnt += 1;
+            next_ed->running_ticks += 1;
 #endif
 
             next_vcpuid = next_e->vcpuid;
@@ -195,16 +195,16 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
     }
 
 #ifdef CONFIG_SCHED_RM_REPORT
-    if (sd->tick_cnt >= sd->tick_1kcnt) {
+    if (sd->ticks >= sd->count_1k_ticks) {
         printf("RM report (for %u ticks):\n", sd->tick_interval_us);
 
         LIST_FOR_EACH_ENTRY(ed, &sd->runqueue, head) {
-            printf("    vcpu%u: fg=%u preempt=%u\n", ed->e->vcpuid, ed->running_tick_cnt, ed->preempted);
-            ed->running_tick_cnt = 0;
+            printf("    vcpu%u: running=%u preempted=%u\n", ed->e->vcpuid, ed->running_ticks, ed->preempted);
+            ed->running_ticks = 0;
             ed->preempted = 0;
         }
 
-        sd->tick_1kcnt += 1000;
+        sd->count_1k_ticks += 1000;
     }
 #endif
 
