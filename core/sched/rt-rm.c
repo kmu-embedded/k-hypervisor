@@ -145,6 +145,10 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
 
         LIST_FOR_EACH_ENTRY(ed, &sd->runqueue, head) {
             if (ed->period_cntdn == 0) {
+                if (ed->budget_cntdn != 0) {
+                    printf("Deadline miss on vCPU %u !", ed->e->vcpuid);
+                }
+
                 ed->budget_cntdn = ed->budget;
                 ed->period_cntdn = ed->period;
             }
