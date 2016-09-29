@@ -19,39 +19,86 @@
     </section>
 
     <section class="main-content">
-      <h3>
-<a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+    <section id="main_content" class="inner">
+    <h3>
+    <a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to K-hypervisor git.</h3>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here <a href="https://guides.github.com/features/mastering-markdown/">using GitHub Flavored Markdown</a>, select a template crafted by a designer, and publish. After your page is generated, you can check out the new <code>gh-pages</code> branch locally. If you’re using GitHub Desktop, simply sync your repository and you’ll see the new branch.</p>
+    <p>K-hypervisor is an open-source type-1 hypervisor, which aims at providing a monolithic, light-weight, portable, and flexible virtualization solution. It provides a high performance for ARMv7 Virtualization Extensions.</p> 
 
-<h3>
-<a id="designer-templates" class="anchor" href="#designer-templates" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Designer Templates</h3>
+    <p>K-hypervisor primarily supports Full virtualization hence, supports a wide range of unmodified Guest operating systems such as Linux and RTOS, and the Bare Metal Application. </p>
 
-<p>We’ve crafted some handsome templates for you to use. Go ahead and click 'Continue to layouts' to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved.</p>
+    <p>It has most features expected from a modern hypervisor, such as: IO device emulation framework, Pass through hardware access and many more.  </p>
 
-<h3>
-<a id="creating-pages-manually" class="anchor" href="#creating-pages-manually" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Creating pages manually</h3>
+    <p>K-hypervisor is Hardware Accelerated Hypervisor, so it supprots ARM GICv2, ARM Generic Timer and 2-Stage Address Translation.
+    </p>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
 
-<h3>
-<a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+    <h3>
+    <a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Architecture</h3>
+    <img width=597.15px height=324.9px src="./images/arch.png"/>
+    <p>
+    The hypervisor consists of a few sub-systems and device drivers. On a target hardware to run a virtualized software system it needs other software components such as boot-loader, software images for guest software such as Linux and RTOS, and the hypervisor image. A boot-loader is responsible for loading the software images of the hypervisor and guest software to designated address in the memory and triggering the very first execution of the hypervisor image in the memory. It is up to the boot-loader use on the target hardware whether to load the software images from the Flash Memory, an SD Card or any storage media it prefers.
+    </p>
+    <h3>
+    <a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Features</h3>
+    <p>Hardware Acclerated Hypervisor
+    <ol>
+    <li> ARMv7 Virtualization Extensions </li>
+    <li> Hyp Mode, 2-Stage Address Translation, and GICv2 </li>
+    </ol>
 
-<p>You can @mention a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor’s GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+    Full Virtualization
+    <ol>
+    <li>No Guest Modification Required</li>
+    </ol>
 
-<h3>
-<a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Support or Contact</h3>
+    Device Dedication Model
+    <ol>
+    <li>Each VM Reserves Exclusive Access to Dedicated Hardware Devices</li>
+    </ol>
 
-<p>Having trouble with Pages? Check out our <a href="https://help.github.com/pages">documentation</a> or <a href="https://github.com/contact">contact support</a> and we’ll help you sort it out.</p>
+    Supported Guest OS Types: Linux, RTOS(µC/OS-II), Android kernel(linaro kitkat) and Bare Metal Application<br>
+    Supported architecture : ARM Cortex-A15<br>
+    Supported Target Hardware<br>
 
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/kesl-internal/khypervisor-v2">Khypervisor-v2</a> is maintained by <a href="https://github.com/kesl-internal">kesl-internal</a>.</span>
+    <ol>
+    <li>ARM RTSM VE - FastModels <br><img width=260px height=111px src="./images/ds5.png"/></li>
+    <li>InSignal’s Arndale Board – Exynos 5250<br><img src="./images/arndale.jpg"/></li>
+    </ol>
 
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-      </footer>
+    </p>
 
+    <h3>
+    <a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Watch the video</h3>
+    <p>
+
+    <iframe width="560" height="315" src="http://www.youtube.com/embed/-BV1iic_VuQ" frameborder="0" allowfullscreen></iframe>
+    <iframe width="560" height="315" src="http://www.youtube.com/embed/Cv7NU0LpzNo" frameborder="0" allowfullscreen></iframe>
+    </p>
+
+    <h3>
+    <a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Document page</h3>
+    <p><a href="./Document/html/index.html">Doxgen page is here!</a></p>
+
+    <h3>
+    <a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Contact</h3>
+
+    <p>Having trouble with our source? Contact <a href="mailto:kesl@kookmin.ac.kr">kesl@kookmin.ac.kr</a> and we’ll help you sort it out. If you need more information, visit our Labs homepage <a href="http://embedded.kookmin.ac.kr/">http://embedded.kookmin.ac.kr/</a></p>
     </section>
+    </div>
 
-  
-  </body>
-</html>
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+    <footer class="inner">
+    <p class="copyright">K-hypervisor maintained by <a href="https://github.com/kesl">kesl</a>
+    </p>
+    <p>Kookmin Embedded Labs page <a href="http://embedded.kookmin.ac.kr/">http://embedded.kookmin.ac.kr/</a></p>
+    </footer>
+    </div>
+
+
+
+    </body>
+    </html>
