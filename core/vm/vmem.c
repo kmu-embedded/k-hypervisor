@@ -43,6 +43,10 @@ hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
     paging_add_ipa_mapping(vmem->base, CONFIG_VA_START, vm_conf[vmid].pa_start, MEMATTR_NORMAL_WB_CACHEABLE, 1,
                            vm_conf[vmid].va_offsets);
 
+    if (vm_conf[vmid].nr_vcpus > 1) {
+        vmem->actlr = 1 << 6;
+    }
+
     vmem->vtcr = (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
     vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_ORGN0_BIT);
     vmem->vtcr |= (WRITEBACK_CACHEABLE << VTCR_IRGN0_BIT);
@@ -63,12 +67,9 @@ hvmm_status_t vmem_save(void)
 hvmm_status_t vmem_restore(struct vmem *vmem)
 {
     uint32_t hcr = 0;
-#ifdef CONFIG_SMP
-    /* Set SMP bit in ACTLR */
-    write_cp32(vmem->vtcr, VTCR);
-    write_cp32(1 << 6, ACTLR);
-#endif
 
+    write_cp32(vmem->vtcr, VTCR);
+    write_cp32(vmem->actlr, ACTLR);
     write_cp64(vmem->vttbr, VTTBR);
 
     hcr = read_cp32(HCR);
