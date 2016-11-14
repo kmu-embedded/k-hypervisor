@@ -96,20 +96,6 @@ static irqreturn_t gic_isr_maintenance_irq(int irq, void *pregs, void *pdata)
     return UNEXCEPTED_IRQ;
 }
 
-static lr_entry_t set_lr_entry(uint8_t hw, enum virq_state state, uint32_t priority, uint32_t physicalid, uint32_t virtualid)
-{
-    lr_entry_t lr_entry;
-
-    lr_entry.raw = 0;
-    lr_entry.entry.hw = hw;
-    lr_entry.entry.state = state;
-    lr_entry.entry.priority = priority;
-    lr_entry.entry.physicalid = physicalid;
-    lr_entry.entry.virtualid = virtualid;
-
-    return lr_entry;
-}
-
 static hvmm_status_t gic_maintenance_irq_enable()
 {
     uint32_t irq = VGIC_MAINTENANCE_IRQ;
@@ -177,15 +163,6 @@ void gic_init(void)
         GICD_WRITE(GICD_IPRIORITYR(i >> 2), 0xa0a0a0a0);
     }
 
-    // NOTE: GIC_ITRAGETSR0-7 is read-only on multiprocessor environment.
-    for (i = 32; i < GICv2.ITLinesNumber; i += 4) {
-#ifdef CONFIG_ARCH_EXYNOS
-        GICD_WRITE(GICD_ITARGETSR(i >> 2), 0x10 << 0 | 0x10 << 8 | 0x10 << 16 | 0x10 << 24);
-#else
-        GICD_WRITE(GICD_ITARGETSR(i >> 2), 1 << 0 | 1 << 8 | 1 << 16 | 1 << 24);
-#endif
-    }
-
     GICC_WRITE(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
     if (cpuid == 0) {
         GICD_WRITE(GICD_CTLR, 0x1);
@@ -239,6 +216,24 @@ void gic_set_sgi(const uint32_t target, uint32_t sgi)
     GICD_WRITE(GICD_SGIR, GICD_SGIR_TARGET_LIST |
                (target << GICD_SGIR_CPU_TARGET_LIST_OFFSET) |
                (sgi & GICD_SGIR_SGI_INT_ID_MASK));
+}
+
+void gic_set_itargetsr(vmid_t vmid, pcpuid_t pcpu)
+{
+    extern uint32_t *vm_dev[CONFIG_NR_VMS];
+
+    uint32_t *spi = vm_dev[vmid];
+    int i;
+
+    for (i = 0; spi[i] != 0; i++) {
+        if (spi[i] >= GICv2.ITLinesNumber) continue;
+
+        int n = spi[i] / 4;
+        int offset = spi[i] % 4;
+
+        uint32_t old = GICD_READ(GICD_ITARGETSR(n));
+        GICD_WRITE(GICD_ITARGETSR(n), old | (1 << pcpu) << (8 * offset));
+    }
 }
 
 uint32_t gic_get_irq_number(void)
@@ -310,6 +305,9 @@ void gic_inject_virq(lr_entry_t lr_entry, uint32_t slot)
 #include <arch/armv7.h>
 #include <core/vm/vm.h>
 #include <core/scheduler.h>
+
+#define set_lr_entry(hw, pirq, virq) (lr_entry_t) ( 0x10000000 | (hw) << 31 | (pirq) << 10 | (virq) )
+
 bool virq_inject(struct vcpu *vcpu, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
     int i;
@@ -320,8 +318,7 @@ bool virq_inject(struct vcpu *vcpu, uint32_t virq, uint32_t pirq, uint8_t hw)
         pirq |= (EOI_ENABLE << 9);
     }
 
-    lr_entry_t lr_entry = set_lr_entry(hw, VIRQ_STATE_PENDING, GIC_INT_PRIORITY_DEFAULT,
-                                       pirq, virq);
+    lr_entry_t lr_entry = set_lr_entry(hw, pirq, virq);
 
     if (vcpu->vcpuid == get_current_vcpuid()) {
         uint32_t slot = gic_find_free_slot();
