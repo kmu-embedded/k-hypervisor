@@ -69,7 +69,7 @@ hvmm_status_t vmem_restore(struct vmem *vmem)
     hcr = read_cp32(HCR);
     write_cp32((hcr | (0x1) | (0x01 << 27)), HCR);
     hcr = read_cp32(HCR);
-    printf("%s[%d] HCR : %x\n", __func__, __LINE__, hcr | 0x01);
+//    printf("%s[%d] HCR : %x\n", __func__, __LINE__, hcr | 0x01);
 
     return HVMM_STATUS_SUCCESS;
 }
