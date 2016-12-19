@@ -44,8 +44,15 @@ struct vdev_module s5p_vuart = {
     .base   = S5P_BASE,
     .size   = 4096,
     .read   = vuart_read,
-    .write  = vuart_write
+    .write  = vuart_write,
+    .create = vuart_create
 };
+
+int32_t vuart_create(void **pdata)
+{
+    pdata = NULL;
+    return 0;
+}
 
 int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
 {
