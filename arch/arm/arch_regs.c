@@ -7,17 +7,25 @@
 
 static void init_core_regs(struct core_regs *regs)
 {
+    static int cnt = 0;
     memset(regs, 0, sizeof(struct core_regs));
     /*
      * R1 : Machine Number
      * R2 : Atags Address
      */
     regs->gpr[1] = MAHINE_TYPE;
-    regs->gpr[2] = CFG_GUEST_ATAGS_START_ADDRESS;
-    //regs->gpr[2] = CFG_GUEST_INITRD_START_ADDRESS;
-    //regs->gpr[3] = CFG_GUEST_ATAGS_START_ADDRESS;
+//    regs->gpr[2] = CFG_GUEST_ATAGS_START_ADDRESS;
+//    regs->gpr[2] = CFG_GUEST_INITRD_START_ADDRESS;
+//    regs->gpr[3] = CFG_GUEST_ATAGS_START_ADDRESS;
 
-    regs->pc = CFG_GUEST_START_ADDRESS;
+    if (cnt++ == 0) {
+        printf("[%dth] pc assigned 0x%X\n", cnt, CFG_GUEST0_START_ADDRESS);
+        regs->pc = CFG_GUEST0_START_ADDRESS;
+    }
+    else {
+        printf("[%dth] pc assigned 0x%X\n", cnt, CFG_GUEST1_START_ADDRESS);
+        regs->pc = CFG_GUEST1_START_ADDRESS;
+    }
     regs->cpsr = (CPSR_ASYNC_ABT_BIT | CPSR_IRQ_BIT | CPSR_FIQ_BIT | CPSR_MODE_SVC);
 }
 

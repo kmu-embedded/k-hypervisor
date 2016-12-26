@@ -56,17 +56,17 @@ int32_t vuart_create(void **pdata)
 
 int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
 {
-//    struct vcpu *vcpu = get_current_vcpu();
-
-//    writel(readl(addr), S5P_BASE + offset);
-//    printf("[%s] vcpu[%d]\n", __func__, vcpu->vcpuid);
+    struct vcpu *vcpu = get_current_vcpu();
+//    volatile uint32_t val = readl(addr);
+//    writel(val, S5P_BASE + offset);
+    printf("[%s] vcpu[%d]\n", __func__, vcpu->vcpuid);
     return 0;
 }
 
 int32_t vuart_read(void *pdata, uint32_t offset)
 {
-//    struct vcpu *vcpu = get_current_vcpu();
-//    printf("[%s] vcpu[%d] \n",__func__, vcpu->vcpuid);
+    struct vcpu *vcpu = get_current_vcpu();
+    printf("[%s] vcpu[%d] \n",__func__, vcpu->vcpuid);
 //    return readl(S5P_BASE + offset);
     return 0;
 }

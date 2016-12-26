@@ -23,8 +23,8 @@ hvmm_status_t do_irq(struct core_regs *regs)
 
     irq_hw->eoi(irq);
 
-    if (irq != 26)
-        printf("irq[%d]\n", irq);
+//    if (irq != 26)
+//        printf("irq[%d]\n", irq);
 
     if (irq < 16) {
         // SGI Handler
