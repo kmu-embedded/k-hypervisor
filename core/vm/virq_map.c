@@ -74,11 +74,19 @@ static irqreturn_t is_guest_ppi(int irq, void *pregs, void *pdata)
 
 static irqreturn_t is_guest_spi(int irq, void *pregs, void *pdata)
 {
-    struct vcpu *vcpu = get_current_vcpu();
-    uint32_t virq = pirq_to_virq(vcpu, irq);
+    struct vcpu *vcpu;
+    struct vmcb *vm;
+    uint32_t virq;
+    struct list_head *vm_list = get_all_vms();
 
-    if (virq != VIRQ_INVALID) {
-        virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
+    list_for_each_entry(struct vmcb, vm, vm_list, head) {
+        vcpu = vm->vcpu[0];
+        virq = pirq_to_virq(vcpu, irq);
+
+        if (virq != VIRQ_INVALID && vm->state == RUNNING) {
+            virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
+            break;
+        }
     }
 
     return VM_IRQ;
