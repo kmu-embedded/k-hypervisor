@@ -15,7 +15,7 @@ void start_hypervisor()
     uint8_t nr_vcpus = 1; // TODO: It will be read from configuration file.
 
     uint32_t pcpu = read_mpidr() & 0x103;
-    printf("(c%x) %s %d\n", pcpu, __func__, __LINE__);
+    printf("[K-HYP] CREATE VMs\n");
 
     if (pcpu == BOOTABLE_CPUID) {
         timemanager_init();
@@ -41,7 +41,8 @@ void start_hypervisor()
         }
         smp_pen = 1;
     } else {
-        while (!smp_pen) ;
+        while (!smp_pen);
+
     }
 
     if(pcpu != 0x100) {
@@ -54,7 +55,8 @@ void start_hypervisor()
      *       do_schedule(vmid) or do_schedule(vcpu_id)
      */
 
-    printf("(c%x) sched_start!!!\n", pcpu);
+    printf("[K-HYP] VM SCHEDULING START\n");
+//    while(1);
     sched_start();
 
     /* The code flow must not reach here */

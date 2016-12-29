@@ -222,16 +222,21 @@ void boot_secondary(unsigned int cpu)
     if (ret == -1) printf("%s %d: cpu[%d] power enable failed\n", __func__, __LINE__, cpu);
 }
 
+extern void init_secondary_cpus();
 #define HOTPLUG         (1 << 2)
 void init_secondary(unsigned int cpu)
 {
     unsigned int tmp;
     unsigned int addr = 0x02073028 + cpu_clear[cpu];
-    //unsigned int addr = 0x02020028 + cpu_clear[cpu];
+    uint32_t firmware_base_addr = 0x02073000 + cpu_clear[cpu];
+//    uint32_t firmware_base_addr = 0x02073000 + 0x1c;
+    const uint32_t boot_addr = 0xb0000ad4;
+//    const uint32_t boot_addr = 0xb0000000;
 
     tmp = readl(addr);
     tmp |= EXYNOS_CORE_LOCAL_PWR_EN;
     tmp &= ~HOTPLUG;
 
     writel(tmp, addr);
+    writel(boot_addr, firmware_base_addr);
 }

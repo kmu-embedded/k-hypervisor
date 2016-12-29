@@ -33,10 +33,7 @@ static void init_cp15(struct cp15 *cp15)
 {
     memset(cp15, 0, sizeof(struct cp15));
 
-    printf("vmpidr: %x\n", cp15->vmpidr);
     cp15->vmpidr = read_cp32(VMPIDR);
-    printf("vmpidr: %x\n", cp15->vmpidr);
-
     // TODO(casionwoo) : Modify the way of initialize vmpidr later?
     cp15->vmpidr &= 0xFFFFFFFC;
     /* have to fix it

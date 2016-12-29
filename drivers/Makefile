@@ -9,6 +9,6 @@ SUBDIRECTORIES += drivers/serial
 objs-y += generic_timer.o
 objs-y += gic-v2.o
 objs-$(CONFIG_MCT) += mct.o
-objs-$(CONFIG_PMU) += pmu.o
+objs-y += pmu.o
 
 obj-y += $(patsubst %, drivers/%, ${objs-y})

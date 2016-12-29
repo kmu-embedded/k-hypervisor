@@ -47,10 +47,12 @@ void console_init()
 
 void dev_init()
 {
-#ifdef CONFIG_MCT
+//#ifdef CONFIG_MCT
+#if 1
     mct_init();
 #endif
-#ifdef CONFIG_PMU
+//#ifdef CONFIG_PMU
+#if 1
     pmu_init();
     // set boot_addr at ns_base
 #endif

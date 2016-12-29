@@ -25,14 +25,12 @@ struct vcpu *vcpu_create()
     struct vcpu *vcpu = NULL;
     int i;
 
-    printf("%s[%d]\n", __func__, __LINE__);
     vcpu = malloc(sizeof(struct vcpu));
     if (vcpu == VCPU_CREATE_FAILED) {
         return vcpu;
     }
     memset(vcpu, 0, sizeof(struct vcpu));
 
-    printf("%s[%d]\n", __func__, __LINE__);
     vcpu->vcpuid = nr_vcpus++;
     vcpu->state = VCPU_DEFINED;
 
@@ -44,7 +42,6 @@ struct vcpu *vcpu_create()
         vcpu->map[i].virq = VIRQ_INVALID;
         vcpu->map[i].pirq = PIRQ_INVALID;
     }
-    printf("%s[%d]\n", __func__, __LINE__);
 
     LIST_ADDTAIL(&vcpu->head, &vcpu_list);
 

@@ -25,6 +25,8 @@ struct memdesc_t vm_device_md[][117] = {
 #else
         {"serial_1", 0x12c00000, 0x12c00000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
         {"serial_2", 0x12c10000, 0x12c10000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
+
+//        {"serial_3", 0x12c20000, 0x12c00000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
         {"serial_3", 0x12c20000, 0x12c20000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
         {"serial_4", 0x12c30000, 0x12c30000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
 #endif
@@ -159,7 +161,8 @@ struct memdesc_t vm_device_md[][117] = {
 #else
         {"serial_1", 0x12c00000, 0x12c00000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
         {"serial_2", 0x12c10000, 0x12c10000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
-        {"serial_3", 0x12c20000, 0x12c20000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
+//        {"serial_3", 0x12c20000, 0x12c20000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
+        {"serial_3", 0x12c20000, 0x12c00000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
         {"serial_4", 0x12c30000, 0x12c30000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
 #endif
         {"rtc_1", 0x101e0000, 0x101e0000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},

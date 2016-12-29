@@ -26,6 +26,8 @@ void init_cpu()
 	console_init();
 	libc_init();
 
+    printf("[K-HYP] BOOT START\n");
+
 	// Set HYP vector table.
 	write_cp32((uint32_t) &__hvc_vector, HVBAR);
 	assert(read_cp32(HVBAR) == (uint32_t) &__hvc_vector);
@@ -65,10 +67,13 @@ void init_cpu()
 #if 0
     int i;
     set_boot_addr();
-    for(i=1; i<8; ++i) {
+    for(i = 1; i < 2; i++) {
+        printf("%dth cpu start\n", i);
         boot_secondary(i);
-       // init_secondary(i);
-        printf("(c%x) cpu[%d] is enabled on PCPU[%x]\n", cpuid, i, cpuid);
+        init_secondary(i);
+
+        printf("%dth cpu end\n", i);
+//        printf("(c%x) cpu[%d] is enabled on PCPU[%x]\n", cpuid, i, cpuid);
     }
     smp_rmb();
     dsb_sev();
@@ -78,6 +83,7 @@ void init_cpu()
 
 void init_secondary_cpus()
 {
+    printf("%s[%d]\n", __func__, __LINE__);
     uint32_t cpuid = read_mpidr() & 0x00000103;
 
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;

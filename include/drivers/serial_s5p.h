@@ -1,7 +1,8 @@
 #ifndef __S5P_H__
 #define __S5P_H_
 
-#define S5P_BASE 0x12c20000
+#define S5P_BASE    0x12c20000
+#define S5P0_BASE   0x12c00000
 
 #define S5P_ULCON   0x00
 #define S5P_UCON    0x04

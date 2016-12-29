@@ -1,12 +1,18 @@
 #include <drivers/serial_s5p.h>
 #include <io.h>
 
+
 int serial_init(void)
 {
     writel(0x117, S5P_BASE + S5P_UFCON);
     writel(0, S5P_BASE + S5P_UMCON);
     writel(0x3, S5P_BASE + S5P_ULCON);
     writel(0x3C5, S5P_BASE + S5P_UCON);
+
+//    writel(0x117, S5P0_BASE + S5P_UFCON);
+//    writel(0, S5P0_BASE + S5P_UMCON);
+//    writel(0x3, S5P0_BASE + S5P_ULCON);
+//    writel(0x3C5, S5P0_BASE + S5P_UCON);
 
     return 0;
 }
