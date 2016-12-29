@@ -2,11 +2,11 @@
 #define __CONFIG_H__
 
 #define MAHINE_TYPE             4538
-#define CFG_CNTFRQ              100000000
+#define CFG_CNTFRQ              10000000
 
-#define HYP_STACK_SIZE          4096
-#define NR_CPUS                 2
-#define BOOTABLE_CPUID         	(0 << 8)
+#define HYP_STACK_SIZE          8192
+#define NR_CPUS                 1
+#define BOOTABLE_CPUID          (0 << 8)
 
 /*
  *  SOC param
@@ -20,7 +20,7 @@
 
 #define MAX_IRQS 1024
 
-#define CFG_MEMMAP_GUEST_SIZE				0x00100000
+#define CFG_MEMMAP_GUEST_SIZE               0x00100000
 
 #define CFG_MEMMAP_GUEST0_ATAGS_OFFSET      0x40000000
 #define CFG_MEMMAP_GUEST0_OFFSET            0x40500000
@@ -35,7 +35,7 @@
 
 #define CFG_GUEST_START_ADDRESS             0x40007fc0
 
-#define CFG_HYP_START_ADDRESS				0x70000000
+#define CFG_HYP_START_ADDRESS               0x70000000
 
 
 #endif  /* LAGER_CONFIG_H */
