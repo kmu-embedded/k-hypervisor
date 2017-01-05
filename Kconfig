@@ -24,3 +24,31 @@ config VA_START
 	default 0x00000000
 
 endmenu
+
+menu "Timer/Scheduler options"
+
+config SCHED_RM_REPORT
+	bool "Enable rate monotonic policy report printing"
+	default n
+
+config SCHED_STOPWATCH
+	bool "Enable timing scheduler routine"
+	default n
+
+config TIMER_IRQ_STOPWATCH
+	bool "Enable timing timer IRQ routine"
+	default n
+
+config TIMER_DEBUG
+	bool "Enable printing timer debug info"
+	default n
+
+config TIMER_ACCESS_TRAP
+	bool "Enable vTimer, catch timer accesses from guest"
+	default y
+
+config VTIMER_PERIODIC
+	bool "Use vTimer periodic mode"
+	default n
+
+endmenu
