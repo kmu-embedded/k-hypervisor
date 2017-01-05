@@ -6,7 +6,7 @@
 
 #define HYP_STACK_SIZE          4096
 #define NR_CPUS                 8
-#define NUM_GUESTS_STATIC       1
+#define NUM_GUESTS_STATIC       2
 #define BOOTABLE_CPUID          0x100
 
 /*
@@ -38,6 +38,7 @@
 
 #define CFG_GUEST_ATAGS_START_ADDRESS       0x44000000
 
+//#define CFG_GUEST0_START_ADDRESS             0x70008000
 #define CFG_GUEST0_START_ADDRESS             0x40008000
 #define CFG_GUEST1_START_ADDRESS             0x70008000
 

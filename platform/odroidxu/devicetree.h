@@ -7,7 +7,7 @@
 //    uint32_t size;
 //    uint8_t attr;
 //    uint8_t af;
-struct memdesc_t vm_device_md[][118] = {
+struct memdesc_t vm_device_md[][124] = {
     {
         /* For device */
         {"chipid_1", 0x10000000, 0x10000000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
@@ -20,6 +20,12 @@ struct memdesc_t vm_device_md[][118] = {
 
         {"casionwoo_0", 0x11220000, 0x11220000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
         {"casionwoo_1", 0x11230000, 0x11230000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_2", 0x10920000, 0x10920000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_3", 0x11d60000, 0x11d60000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_4", 0x10aa0000, 0x10aa0000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_5", 0x10a80000, 0x10a80000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_6", 0x123c0000, 0x123c0000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_7", 0x10c80000, 0x10c80000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
 
 #if 0
         {"serial_1", 0x12c00000, 0x12c00000, 0x1000, MEMATTR_DEVICE_MEMORY, 0},
@@ -142,6 +148,7 @@ struct memdesc_t vm_device_md[][118] = {
         {"gscl1", 0x13ed0000, 0x13ed0000, SZ_64K, MEMATTR_DEVICE_MEMORY, 1},
 
         // Physical mem mapping
+//        {"memory_1", 0x70000000, 0x70000000, SZ_512M, MEMATTR_NORMAL_WB_CACHEABLE, 1},
         {"memory_1", 0x40000000, 0x40000000, SZ_512M, MEMATTR_NORMAL_WB_CACHEABLE, 1},
         {0, 0, 0, 0, 0, 0}
     }
@@ -158,6 +165,12 @@ struct memdesc_t vm_device_md[][118] = {
 
         {"casionwoo_0", 0x11220000, 0x11220000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
         {"casionwoo_1", 0x11230000, 0x11230000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_2", 0x10920000, 0x10920000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_3", 0x11d60000, 0x11d60000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_4", 0x10aa0000, 0x10aa0000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_5", 0x10a80000, 0x10a80000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_6", 0x123c0000, 0x123c0000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_7", 0x10c80000, 0x10c80000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
 #if 0
         {"serial_1", 0x12c00000, 0x12c00000, 0x1000, MEMATTR_DEVICE_MEMORY, 0},
         {"serial_2", 0x12c10000, 0x12c10000, 0x1000, MEMATTR_DEVICE_MEMORY, 0},
