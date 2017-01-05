@@ -7,7 +7,7 @@
 //    uint32_t size;
 //    uint8_t attr;
 //    uint8_t af;
-struct memdesc_t vm_device_md[][117] = {
+struct memdesc_t vm_device_md[][118] = {
     {
         /* For device */
         {"chipid_1", 0x10000000, 0x10000000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
@@ -17,6 +17,10 @@ struct memdesc_t vm_device_md[][117] = {
         {"dwmmc0_1", 0x12200000, 0x12200000, 0x2000, MEMATTR_DEVICE_MEMORY, 1},
         {"dwmmc1_1", 0x12210000, 0x12210000, 0x2000, MEMATTR_DEVICE_MEMORY, 1},
         {"dwmmc2_1", 0x12220000, 0x12220000, 0x2000, MEMATTR_DEVICE_MEMORY, 1},
+
+        {"casionwoo_0", 0x11220000, 0x11220000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_1", 0x11230000, 0x11230000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+
 #if 0
         {"serial_1", 0x12c00000, 0x12c00000, 0x1000, MEMATTR_DEVICE_MEMORY, 0},
         {"serial_2", 0x12c10000, 0x12c10000, 0x1000, MEMATTR_DEVICE_MEMORY, 0},
@@ -138,7 +142,7 @@ struct memdesc_t vm_device_md[][117] = {
         {"gscl1", 0x13ed0000, 0x13ed0000, SZ_64K, MEMATTR_DEVICE_MEMORY, 1},
 
         // Physical mem mapping
-        {"memory_1", 0x50000000, 0x50000000, SZ_512M, MEMATTR_NORMAL_WB_CACHEABLE, 1},
+        {"memory_1", 0x40000000, 0x40000000, SZ_512M, MEMATTR_NORMAL_WB_CACHEABLE, 1},
         {0, 0, 0, 0, 0, 0}
     }
     ,
@@ -151,6 +155,9 @@ struct memdesc_t vm_device_md[][117] = {
         {"dwmmc0_1", 0x12200000, 0x12200000, 0x2000, MEMATTR_DEVICE_MEMORY, 1},
         {"dwmmc1_1", 0x12210000, 0x12210000, 0x2000, MEMATTR_DEVICE_MEMORY, 1},
         {"dwmmc2_1", 0x12220000, 0x12220000, 0x2000, MEMATTR_DEVICE_MEMORY, 1},
+
+        {"casionwoo_0", 0x11220000, 0x11220000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
+        {"casionwoo_1", 0x11230000, 0x11230000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
 #if 0
         {"serial_1", 0x12c00000, 0x12c00000, 0x1000, MEMATTR_DEVICE_MEMORY, 0},
         {"serial_2", 0x12c10000, 0x12c10000, 0x1000, MEMATTR_DEVICE_MEMORY, 0},
