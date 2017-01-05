@@ -9,6 +9,7 @@ struct vmem {
     struct memdesc_t *mmap;
     uint32_t base;
     uint32_t vtcr;
+    uint32_t actlr;
     uint64_t vttbr;
 };
 
