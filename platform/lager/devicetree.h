@@ -128,5 +128,10 @@ struct memdesc_t vm_device_md[] = {
     {"PRR", 0xff000000, 0xff000000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
     {"powervr", 0xfd000000, 0xfd000000, 0x10000, MEMATTR_DEVICE_MEMORY, 1},
 
+    {"meram", 0xe8080000, 0xe8080000, 0x50000, MEMATTR_DEVICE_MEMORY, 1},
+    {"cpg_clocks_2", 0xe6152000, 0xe6152000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
+    {"meram", 0x66ffe000, 0x66ffe000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
+    {"meram", 0x66fff000, 0x66fff000, 0x1000, MEMATTR_DEVICE_MEMORY, 1},
+
     {0, 0, 0, 0, 0, 0}
 };
