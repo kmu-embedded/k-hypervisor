@@ -183,8 +183,24 @@ static uint64_t timer_read_virt_counter(void)
 }
 #endif
 
+#if 0
+static hvmm_status_t timer_init(void)
+{
+// #define CONFIG_TIMER_ACCESS_TRAP
+#ifdef CONFIG_TIMER_ACCESS_TRAP
+    uint32_t val;
+
+    val = read_cp32(CNTHCTL);
+    write_cp32(val & ~(ARM_CNTHCTL_PL1PCEN | ARM_CNTHCTL_PL1PCTEN), CNTHCTL);
+#endif
+
+    return HVMM_STATUS_SUCCESS;
+}
+#endif
+
 /* TODO:(igkang) add/rename functions - by phys/virt, Hyp/Normal */
 struct timer_ops _timer_ops = {
+//    .init = timer_init,
     .enable = timer_enable,
     .disable = timer_disable,
     .get_counter = timer_read_phys_counter,
