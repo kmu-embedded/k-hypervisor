@@ -25,6 +25,32 @@ struct cp15 {
     uint32_t ttbcr;
     uint32_t sctlr;
     uint32_t vmpidr;
+
+    uint32_t csselr;
+    uint32_t cpacr;
+
+    uint32_t contextidr;
+    uint32_t tpidrurw;
+    uint32_t tpidruro;
+    uint32_t tpidrprw;
+
+    uint32_t cntkctl;
+
+    uint32_t dacr;
+    uint32_t par;
+
+    uint32_t mair0;
+    uint32_t mair1;
+    uint32_t amair0;
+    uint32_t amair1;
+
+    uint32_t dfar;
+    uint32_t ifar;
+    uint32_t dfsr;
+    uint32_t ifsr;
+
+    uint32_t adfsr;
+    uint32_t aifsr;
 };
 
 /* banked registers */

@@ -146,6 +146,34 @@ static void save_cp15(struct cp15 *cp15)
     cp15->ttbcr = read_cp32(TTBCR);
     cp15->sctlr = read_cp32(SCTLR);
     cp15->vmpidr = read_cp32(VMPIDR);
+
+    cp15->csselr = read_cp32(CSSELR);
+    cp15->cpacr = read_cp32(CPACR);
+
+    cp15->contextidr = read_cp32(CONTEXTIDR);
+    cp15->tpidrurw = read_cp32(TPIDRURW);
+    cp15->tpidruro = read_cp32(TPIDRURO);
+    cp15->tpidrprw = read_cp32(TPIDRPRW);
+
+    cp15->cntkctl = read_cp32(CNTKCTL);
+
+    cp15->dacr = read_cp32(DACR);
+    cp15->par = read_cp32(PAR_32);
+
+    cp15->mair0 = read_cp32(MAIR0);
+    cp15->mair1 = read_cp32(MAIR1);
+    cp15->amair0 = read_cp32(AMAIR0);
+    cp15->amair1 = read_cp32(AMAIR1);
+
+    cp15->dfar = read_cp32(DFAR);
+    cp15->ifar = read_cp32(IFAR);
+    cp15->dfsr = read_cp32(DFSR);
+    cp15->ifsr = read_cp32(IFSR);
+
+    cp15->adfsr = read_cp32(ADFSR);
+    cp15->aifsr = read_cp32(AIFSR);
+
+    isb();
 }
 
 static void restore_cp15(struct cp15 *cp15)
@@ -157,6 +185,34 @@ static void restore_cp15(struct cp15 *cp15)
     write_cp32(cp15->ttbcr, TTBCR);
     write_cp32(cp15->sctlr, SCTLR);
     write_cp32(cp15->vmpidr, VMPIDR);
+
+    write_cp32(cp15->csselr, CSSELR);
+    write_cp32(cp15->cpacr, CPACR);
+
+    write_cp32(cp15->contextidr, CONTEXTIDR);
+    write_cp32(cp15->tpidrurw, TPIDRURW);
+    write_cp32(cp15->tpidruro, TPIDRURO);
+    write_cp32(cp15->tpidrprw, TPIDRPRW);
+
+    write_cp32(cp15->cntkctl, CNTKCTL);
+
+    write_cp32(cp15->dacr, DACR);
+    write_cp32(cp15->par, PAR_32);
+
+    write_cp32(cp15->mair0, MAIR0);
+    write_cp32(cp15->mair1, MAIR1);
+    write_cp32(cp15->amair0, AMAIR0);
+    write_cp32(cp15->amair1, AMAIR1);
+
+    write_cp32(cp15->dfar, DFAR);
+    write_cp32(cp15->ifar, IFAR);
+    write_cp32(cp15->dfsr, DFSR);
+    write_cp32(cp15->ifsr, IFSR);
+
+    write_cp32(cp15->adfsr, ADFSR);
+    write_cp32(cp15->aifsr, AIFSR);
+
+    isb();
 }
 
 void print_core_regs(struct core_regs *regs)

@@ -211,7 +211,7 @@
 #define HVBAR				15, 12, 4, 0, 0
 
 // CRn == 13, Process, context, and thread ID registers.
-#define FSCEIDR				15, 13, 0, 0, 0
+#define FCSEIDR				15, 13, 0, 0, 0
 #define CONTEXTIDR			15, 13, 0, 0, 1
 #define TPIDRURW			15, 13, 0, 0, 2
 #define TPIDRURO			15, 13, 0, 0, 3
