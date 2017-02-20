@@ -6,3 +6,6 @@ config SH_SERIAL
 
 config S5P_SERIAL
 	bool
+
+config NS16550_SERIAL
+	bool
