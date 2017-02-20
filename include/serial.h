@@ -7,6 +7,8 @@
 #include <drivers/serial_sh.h>
 #elif CONFIG_S5P_SERIAL
 #include <drivers/serial_s5p.h>
+#elif CONFIG_NS16550_SERIAL
+#include <drivers/serial_ns16550.h>
 #endif
 
 #endif //__SERIAL_H__
