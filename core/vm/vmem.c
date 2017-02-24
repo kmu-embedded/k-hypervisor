@@ -19,8 +19,7 @@ extern struct vm_config vm_conf[];
 
 void vmem_create(struct vmem *vmem, vmid_t vmid)
 {
-
-    vmem->base = (uint32_t) &__VM_PGTABLE + (PGTABLE_SIZE << (vmid - 1));
+    vmem->base = (uint32_t) &__VM_PGTABLE + (PGTABLE_SIZE * vmid);
     paging_create(vmem->base);
 
     vmem->vttbr = ((uint64_t) vmid << VTTBR_VMID_SHIFT) & VTTBR_VMID_MASK;
@@ -34,17 +33,19 @@ hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
 {
     int j = 0;
 
-    do {
+    while (vmem->mmap[j].label != 0) {
         paging_add_ipa_mapping(vmem->base, vmem->mmap[j].ipa, vmem->mmap[j].pa, vmem->mmap[j].attr, vmem->mmap[j].af,
                                vmem->mmap[j].size);
         j++;
-    } while (vmem->mmap[j].label != 0);
+    }
 
     paging_add_ipa_mapping(vmem->base, CONFIG_VA_START, vm_conf[vmid].pa_start, MEMATTR_NORMAL_WB_CACHEABLE, 1,
                            vm_conf[vmid].va_offsets);
 
+    vmem->actlr = read_cp32(ACTLR);
+
     if (vm_conf[vmid].nr_vcpus > 1) {
-        vmem->actlr = 1 << 6;
+        vmem->actlr |= (1 << 6);
     }
 
     vmem->vtcr = (VTCR_SL0_FIRST_LEVEL << VTCR_SL0_BIT);
