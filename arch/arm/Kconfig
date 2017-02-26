@@ -39,6 +39,12 @@ config ARCH_EXYNOS
 	select S5P_SERIAL
 	select MCT
 
+config ARCH_SUNXI
+	bool "Allwinner SUNXI SoCs"
+	select ARMV7_VIRT
+	select CPU_A15
+	select NS16550_SERIAL
+
 endchoice
 
 source "platform/Kconfig"
