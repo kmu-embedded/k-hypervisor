@@ -11,12 +11,20 @@ void serial_init()
     writeb(0x7, NS16550_BASE + NS16550_FCR);
 }
 
-int serial_putc(const char c)
+void ns16550_putc(const char c)
 {
     while (!(readb(NS16550_BASE + NS16550_LSR) & UART_LSR_THRE))
         ;
 
     writeb(c, NS16550_BASE + NS16550_THR);
+}
+
+int serial_putc(const char c)
+{
+    if (c == '\n')
+        ns16550_putc('\r');
+
+    ns16550_putc(c);
 
     return 0;
 }
