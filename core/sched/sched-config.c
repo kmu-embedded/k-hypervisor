@@ -15,7 +15,7 @@
  */
 
 /* pcpu -> policy */
-const struct sched_policy *schedconf_g_policy[NR_CPUS] = {
+const struct sched_policy *schedconf_g_policy[] = {
     &sched_rr,
     &sched_rr,
     &sched_rr,
