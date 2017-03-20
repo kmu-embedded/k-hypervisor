@@ -1,7 +1,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#define MAHINE_TYPE             4538
+#define MACHINE_TYPE            4538
 #define CFG_CNTFRQ              10000000
 
 #define HYP_STACK_SIZE          8192

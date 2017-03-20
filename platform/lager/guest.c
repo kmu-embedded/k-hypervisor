@@ -4,7 +4,7 @@
 
 struct memdesc_t *vm_mmap[CONFIG_NR_VMS];
 
-uint32_t vm_device_all = { 0 };
+uint32_t vm_device_all[MAX_IRQS];
 
 uint32_t vm0_device[] = { 0 };
 uint32_t vm1_device[] = { 0 };
