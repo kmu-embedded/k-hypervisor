@@ -12,7 +12,7 @@ static void init_core_regs(struct core_regs *regs)
      * R1 : Machine Number
      * R2 : Atags Address
      */
-    regs->gpr[1] = MAHINE_TYPE;
+    regs->gpr[1] = MACHINE_TYPE;
     regs->gpr[2] = CFG_GUEST_ATAGS_START_ADDRESS;
 
     regs->pc = CFG_GUEST_START_ADDRESS;

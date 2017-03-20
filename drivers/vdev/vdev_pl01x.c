@@ -72,7 +72,7 @@ struct vdev_module pl01x_vuart = {
 static irqreturn_t vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
 {
     if (irq != PL01x_IRQ_NUM) {
-        printf("Uncorrect irq nuber\n");
+        printf("Uncorrect irq number\n");
         return UNEXCEPTED_IRQ;
     }
 
