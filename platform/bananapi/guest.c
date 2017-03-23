@@ -22,9 +22,4 @@ void setup_vm_mmap(void)
         vm_device_all[i-32] = i;
 
     vm_dev[0] = vm_device_all;
-
-    //vm_dev[0] = vm0_device;
-    //vm_dev[1] = vm1_device;
-    //vm_dev[2] = vm2_device;
-    //vm_dev[3] = vm3_device;
 }

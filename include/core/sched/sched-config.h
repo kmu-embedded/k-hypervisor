@@ -7,7 +7,7 @@
 #define TOTAL_VCPUS 8
 
 extern const struct sched_policy *
-    schedconf_g_policy[NR_CPUS];
+    schedconf_g_policy[];
 
 extern uint32_t
     schedconf_g_vcpu_to_pcpu_map[TOTAL_VCPUS];

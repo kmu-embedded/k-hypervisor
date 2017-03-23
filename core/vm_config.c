@@ -3,8 +3,5 @@
 #include <size.h>
 
 struct vm_config vm_conf[] = {
-    { 1, SZ_256M, 0x80000000 },
-    { 1, SZ_256M, 0x90000000 },
-    { 1, SZ_256M, 0xA0000000 },
-    // { 1, SZ_256M, 0xB0000000 }
+    { 1, SZ_256M, CFG_MEMMAP_GUEST0_ATAGS_OFFSET }
 };
