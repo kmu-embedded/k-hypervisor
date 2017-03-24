@@ -123,16 +123,16 @@ static irqreturn_t timer_irq_handler(int irq, void *pregs, void *pdata)
 
     if (w_hyp[pcpu].cnt >= 1000) {
         printf("w_hyp[%u]: cnt=%u min=%u max=%u total=%u \n", pcpu,
-            w_hyp[pcpu].cnt, (uint32_t)w_hyp[pcpu].min,
-            (uint32_t)w_hyp[pcpu].max, (uint32_t)w_hyp[pcpu].total);
+               w_hyp[pcpu].cnt, (uint32_t)w_hyp[pcpu].min,
+               (uint32_t)w_hyp[pcpu].max, (uint32_t)w_hyp[pcpu].total);
 
         stopwatch_reset(&w_hyp[pcpu]);
     }
 
     if (w_guest[pcpu].cnt >= 1000) {
         printf("w_guest[%u]: cnt=%u min=%u max=%u total=%u \n", pcpu,
-            w_guest[pcpu].cnt, (uint32_t)w_guest[pcpu].min,
-            (uint32_t)w_guest[pcpu].max, (uint32_t)w_guest[pcpu].total);
+               w_guest[pcpu].cnt, (uint32_t)w_guest[pcpu].min,
+               (uint32_t)w_guest[pcpu].max, (uint32_t)w_guest[pcpu].total);
 
         stopwatch_reset(&w_guest[pcpu]);
     }
@@ -275,23 +275,27 @@ static hvmm_status_t timer_maintenance(void)
 }
 
 /* cummulative stopwatch */
-void stopwatch_init(struct stopwatch *w) {
+void stopwatch_init(struct stopwatch *w)
+{
     w->start = w->lastdiff = 0;
     stopwatch_reset(w);
 }
 
-void stopwatch_reset(struct stopwatch *w) {
+void stopwatch_reset(struct stopwatch *w)
+{
     w->max = w->total = 0;
     w->min = 0xFFFFFFFFFFFFFFFF;
     w->cnt = 0;
 }
 
-void stopwatch_start(struct stopwatch *w) {
+void stopwatch_start(struct stopwatch *w)
+{
     w->start = get_syscounter();
     w->lastdiff = 0;
 }
 
-void stopwatch_stop(struct stopwatch *w) {
+void stopwatch_stop(struct stopwatch *w)
+{
     w->lastdiff = get_syscounter() - w->start;
 
     if (w->lastdiff < w->min) {

@@ -64,54 +64,54 @@ int vdev_timer_access32(uint8_t read, uint32_t what, uint32_t *rt)
     uint32_t tmp = 0;
 
     switch (what) {
-        case CP32(CNTFRQ)    :
-            target = &v->frq;
-            break;
-        case CP32(CNTKCTL)   :
-            target = &v->k_ctl;
-            break;
+    case CP32(CNTFRQ)    :
+        target = &v->frq;
+        break;
+    case CP32(CNTKCTL)   :
+        target = &v->k_ctl;
+        break;
         /* TODO:(igkang) check permission before reading */
-        case CP32(CNTP_CTL)  :
-            target = &v->p_ctl;
-            break;
-        case CP32(CNTV_CTL)  :
-            target = &v->v_ctl;
-            break;
+    case CP32(CNTP_CTL)  :
+        target = &v->p_ctl;
+        break;
+    case CP32(CNTV_CTL)  :
+        target = &v->v_ctl;
+        break;
 
-        case CP32(CNTP_TVAL) :
-            if (read) {
-                target = &tmp;
-                tmp = (uint32_t)
-                    ( v->p_cval - (timer_get_syscounter() - v->p_ct_offset) );
-            } else {
-                /* FIXME:(igkang) sign extension of *rt needed */
-                v->p_cval = (timer_get_syscounter() - v->p_ct_offset + *rt);
-                vdev_timer_set_swtimer(v);
+    case CP32(CNTP_TVAL) :
+        if (read) {
+            target = &tmp;
+            tmp = (uint32_t)
+                  ( v->p_cval - (timer_get_syscounter() - v->p_ct_offset) );
+        } else {
+            /* FIXME:(igkang) sign extension of *rt needed */
+            v->p_cval = (timer_get_syscounter() - v->p_ct_offset + *rt);
+            vdev_timer_set_swtimer(v);
 #ifdef CONFIG_VTIMER_PERIODIC
-                if (v->periodic_mode) {
-                    v->periodic_interval = *rt;
-                }
+            if (v->periodic_mode) {
+                v->periodic_interval = *rt;
+            }
 #endif
-                return 0;
-            }
-            break;
-        case CP32(CNTV_TVAL) :
-            if (read) {
-                target = &tmp;
-                tmp = (uint32_t)
-                    ( v->v_cval - (timer_get_syscounter() - v->p_ct_offset) );
-            } else {
-                /* FIXME:(igkang) sign extension of *rt needed */
-                v->v_cval = (timer_get_syscounter() - v->p_ct_offset + *rt);
-                // vdev_timer_set_swtimer(v); /* FIXME:(igkang) now NSP timer only */
-                return 0;
-            }
-            /* do subtraction and set cval */
-            break;
+            return 0;
+        }
+        break;
+    case CP32(CNTV_TVAL) :
+        if (read) {
+            target = &tmp;
+            tmp = (uint32_t)
+                  ( v->v_cval - (timer_get_syscounter() - v->p_ct_offset) );
+        } else {
+            /* FIXME:(igkang) sign extension of *rt needed */
+            v->v_cval = (timer_get_syscounter() - v->p_ct_offset + *rt);
+            // vdev_timer_set_swtimer(v); /* FIXME:(igkang) now NSP timer only */
+            return 0;
+        }
+        /* do subtraction and set cval */
+        break;
 
-        default:
-            return 1;
-            break;
+    default:
+        return 1;
+        break;
     }
 
     if (read) {
@@ -132,34 +132,34 @@ int vdev_timer_access64(uint8_t read, uint32_t what, uint32_t *rt_low, uint32_t 
     bool cval_changed = false;
 
     switch (what) {
-        case CP64(CNTPCT)    :
-        case CP64(CNTVCT)    :
-            if (!read) {
-                return 1;
-            } else {
-                target = &tmp;
-                tmp = timer_get_syscounter() + v->p_ct_offset;
-            }
-            /* do something */
-            break;
-        case CP64(CNTP_CVAL) :
-            target = &v->p_cval;
-            cval_changed = true;
-            break;
-        case CP64(CNTV_CVAL) :
-            target = &v->v_cval;
-            // cval_changed = true; /* now NSP timer only */
-            break;
-        default:
+    case CP64(CNTPCT)    :
+    case CP64(CNTVCT)    :
+        if (!read) {
             return 1;
-            break;
+        } else {
+            target = &tmp;
+            tmp = timer_get_syscounter() + v->p_ct_offset;
+        }
+        /* do something */
+        break;
+    case CP64(CNTP_CVAL) :
+        target = &v->p_cval;
+        cval_changed = true;
+        break;
+    case CP64(CNTV_CVAL) :
+        target = &v->v_cval;
+        // cval_changed = true; /* now NSP timer only */
+        break;
+    default:
+        return 1;
+        break;
     }
 
     if (read) {
         *rt_low  = (uint32_t) (*target & 0xFFFFFFFF);
         *rt_high = (uint32_t) (*target >> 32);
     } else { /* write */
-        *target = ((uint64_t) *rt_high << 32) | (uint64_t) *rt_low;
+        *target = ((uint64_t) * rt_high << 32) | (uint64_t) * rt_low;
     }
 
     if (cval_changed) {
@@ -180,7 +180,8 @@ int vdev_timer_access64(uint8_t read, uint32_t what, uint32_t *rt_low, uint32_t 
 })
 
 /* TODO:(igkang) need to rewrite core/timer code to store pdata in each "struct timer" instance */
-void vdev_timer_handler(void *pdata, uint64_t *expiration) {
+void vdev_timer_handler(void *pdata, uint64_t *expiration)
+{
     /* do IRQ injection to vCPU of vdev_timer instance which we currently handling */
     struct timer *t = container_of2(expiration, struct timer, expiration);
     struct vdev_timer *v = container_of2(t, struct vdev_timer, swtimer);

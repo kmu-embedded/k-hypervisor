@@ -21,8 +21,9 @@ void ns16550_putc(const char c)
 
 int serial_putc(const char c)
 {
-    if (c == '\n')
+    if (c == '\n') {
         ns16550_putc('\r');
+    }
 
     ns16550_putc(c);
 

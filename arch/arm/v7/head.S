@@ -9,14 +9,14 @@
 
 BEGIN_PROC(__start)
     @ Disable interrupts
-	cpsid   aif
+    cpsid   aif
 
-	@ Check HYP mode
-	mrs		r0, cpsr_all
-	and		r0, r0, #0x1F
-	mov		r8, #0x1A
-	cmp		r0, r8
-	beq		3f
+   @ Check HYP mode
+    mrs		r0, cpsr_all
+    and		r0, r0, #0x1F
+    mov		r8, #0x1A
+    cmp		r0, r8
+    beq		3f
 
     @ Check whether or not current cpu mode is in secure state.
     read_cp32(r0, SCR)

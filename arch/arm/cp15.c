@@ -24,28 +24,27 @@ int32_t emulate_cp15_32(struct core_regs *regs, uint32_t iss)
     uint8_t dir = decode_dir(iss);
 
     switch (decode_cp15(iss)) {
-        case CP32(MIDR):
-            {
-                if (!dir) {
-                    write_cp32(regs->gpr[rt], MIDR);
-                } else {
-                    regs->gpr[rt] = read_cp32(MIDR);
-                }
-                ret = 0;
-                break;
-            }
-        case CP32(CNTFRQ)    :
-        case CP32(CNTKCTL)   :
-        case CP32(CNTP_TVAL) :
-        case CP32(CNTP_CTL)  :
-        case CP32(CNTV_TVAL) :
-        case CP32(CNTV_CTL)  :
-            vdev_timer_access32(dir, decode_cp15(iss), &regs->gpr[rt]);
-            break;
-        default:
-            printf("not implement: %x\n", decode_cp15(iss));
-            ret = -1;
-            break;
+    case CP32(MIDR): {
+        if (!dir) {
+            write_cp32(regs->gpr[rt], MIDR);
+        } else {
+            regs->gpr[rt] = read_cp32(MIDR);
+        }
+        ret = 0;
+        break;
+    }
+    case CP32(CNTFRQ)    :
+    case CP32(CNTKCTL)   :
+    case CP32(CNTP_TVAL) :
+    case CP32(CNTP_CTL)  :
+    case CP32(CNTV_TVAL) :
+    case CP32(CNTV_CTL)  :
+        vdev_timer_access32(dir, decode_cp15(iss), &regs->gpr[rt]);
+        break;
+    default:
+        printf("not implement: %x\n", decode_cp15(iss));
+        ret = -1;
+        break;
     }
 
     return ret;

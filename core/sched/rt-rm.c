@@ -134,7 +134,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
 
     if (LIST_IS_EMPTY(&sd->runqueue)) {
         printf("Nothing to run\n");
-        while(1);
+        while (1);
     }
 
     /* Check & decrease all entries' period count */
@@ -194,7 +194,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
             /* Never reach here */
             /* We use idle guest which does nothing when it is running */
             printf("Idle guest is needed!\n");
-            while(1);
+            while (1);
         }
     }
 

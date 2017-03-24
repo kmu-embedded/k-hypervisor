@@ -96,21 +96,24 @@ void irq_handler_init(irq_handler_t *handler)
 {
     int i;
 
-    for (i = 0; i < 16; i++){
-        if (handler[i])
+    for (i = 0; i < 16; i++) {
+        if (handler[i]) {
             continue;
+        }
         handler[i] = is_guest_sgi;
     }
 
-    for (i = 16; i < 32; i++){
-        if (handler[i])
+    for (i = 16; i < 32; i++) {
+        if (handler[i]) {
             continue;
+        }
         handler[i] = is_guest_ppi;
     }
 
-    for (i = 32; i < 1025; i++){
-        if (handler[i])
+    for (i = 32; i < 1025; i++) {
+        if (handler[i]) {
             continue;
+        }
         handler[i] = is_guest_spi;
     }
 }

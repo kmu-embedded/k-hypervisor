@@ -32,8 +32,8 @@ void sched_init() /* TODO: const struct sched_config const* sched_config)*/
         const struct sched_policy *p = schedconf_g_policy[pcpu];
 
         struct scheduler *s
-            = sched[pcpu]
-            = (struct scheduler *) malloc(sizeof(struct scheduler));
+                    = sched[pcpu]
+              = (struct scheduler *) malloc(sizeof(struct scheduler));
 
         s->policy = p;
         s->policy->init(s);
@@ -347,16 +347,16 @@ void do_schedule(void *pdata, uint64_t *expiration)
 
     if (w_hyp[pcpu].cnt >= 1000) {
         printf("w_hyp[%u]: cnt=%u min=%u max=%u total=%u \n", pcpu,
-            w_hyp[pcpu].cnt, (uint32_t)w_hyp[pcpu].min,
-            (uint32_t)w_hyp[pcpu].max, (uint32_t)w_hyp[pcpu].total);
+               w_hyp[pcpu].cnt, (uint32_t)w_hyp[pcpu].min,
+               (uint32_t)w_hyp[pcpu].max, (uint32_t)w_hyp[pcpu].total);
 
         stopwatch_reset(&w_hyp[pcpu]);
     }
 
     if (w_guest[pcpu].cnt >= 1000) {
         printf("w_guest[%u]: cnt=%u min=%u max=%u total=%u \n", pcpu,
-            w_guest[pcpu].cnt, (uint32_t)w_guest[pcpu].min,
-            (uint32_t)w_guest[pcpu].max, (uint32_t)w_guest[pcpu].total);
+               w_guest[pcpu].cnt, (uint32_t)w_guest[pcpu].min,
+               (uint32_t)w_guest[pcpu].max, (uint32_t)w_guest[pcpu].total);
 
         stopwatch_reset(&w_guest[pcpu]);
     }

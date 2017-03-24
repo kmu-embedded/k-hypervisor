@@ -18,8 +18,9 @@ void setup_vm_mmap(void)
     vm_mmap[0] = vm_device_md;
 
     int i;
-    for (i = 32; i < MAX_IRQS; i++)
-        vm_device_all[i-32] = i;
+    for (i = 32; i < MAX_IRQS; i++) {
+        vm_device_all[i - 32] = i;
+    }
 
     vm_dev[0] = vm_device_all;
 

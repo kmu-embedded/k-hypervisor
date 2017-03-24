@@ -226,7 +226,9 @@ void gic_set_itargetsr(vmid_t vmid, pcpuid_t pcpu)
     int i;
 
     for (i = 0; spi[i] != 0; i++) {
-        if (spi[i] >= GICv2.ITLinesNumber) continue;
+        if (spi[i] >= GICv2.ITLinesNumber) {
+            continue;
+        }
 
         int n = spi[i] / 4;
         int offset = spi[i] % 4;
