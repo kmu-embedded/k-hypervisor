@@ -1,6 +1,7 @@
-#include <asm/macro.h>
-#include <config.h>
 #include <arch/armv7/cp15.h>
+#include <arch/armv7/pmodes.h>
+#include <config.h>
+#include <asm/macro.h>
 #include <generated/autoconf.h>
 
     .syntax	unified
@@ -11,10 +12,10 @@ BEGIN_PROC(__start)
     @ Disable interrupts
     cpsid   aif
 
-   @ Check HYP mode
+    @ Check HYP mode
     mrs		r0, cpsr_all
-    and		r0, r0, #0x1F
-    mov		r8, #0x1A
+    and		r0, r0, #SYS_MODE
+    mov		r8, #HYP_MODE
     cmp		r0, r8
     beq		3f
 

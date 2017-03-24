@@ -15,6 +15,7 @@
 #include "armv7/fsr_decode.h"
 #include "armv7/local_irq.h"
 #include "armv7/hsr.h"
+#include "armv7/pmodes.h"
 
 
 /* co-processor registers: cp15, cp2 */
