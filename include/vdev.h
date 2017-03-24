@@ -7,7 +7,7 @@
 #include <arch/armv7.h>
 #include <arch/irq.h>
 
-typedef int (*initcall_t)(void);
+typedef hvmm_status_t (*initcall_t)(void);
 
 extern initcall_t __vdev_module_start[];
 extern initcall_t __vdev_module_end[];
