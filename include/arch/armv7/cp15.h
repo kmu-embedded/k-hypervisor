@@ -6,23 +6,25 @@
 #define __CP32(cp, n, opc1, m, opc2)    ((n) << 12 | (opc1) << 8 | (m) << 4 | (opc2))
 #define CP32(args...)                   __CP32(args)
 
-#define __CP64(cp, opc1, m)    ((opc1) << 8 | (m) << 4)
-#define CP64(args...)          __CP64(args)
+#define __CP64(cp, opc1, m)    		((opc1) << 8 | (m) << 4)
+#define CP64(args...)          		__CP64(args)
 
-//  CP_NAME                CP#, CRn, OPC1, CRm, OPC2
 
+//  CP_NAME                		CP#, CRn, OPC1, CRm, OPC2
 // CRn == 0, ID registers.
 #define MIDR				15, 0, 0, 0, 0
-#define CTR					15, 0, 0, 0, 1
+#define CTR				15, 0, 0, 0, 1
 #define TMCTR				15, 0, 0, 0, 2
 #define TLBTR				15, 0, 0, 0, 3
 #define AMIDR0				15, 0, 0, 0, 4
 #define MPIDR				15, 0, 0, 0, 5
+
 #ifndef OPTIONAL_REV
 #define AMIDR1				15, 0, 0, 0, 6
 #else
 #define REVIDR				15, 0, 0, 0, 6
 #endif
+
 #define AMIDR2				15, 0, 0, 0, 7
 
 #define	ID_PFR0				15, 0, 0, 1, 0
@@ -52,14 +54,14 @@
 #define SCTLR				15, 1, 0, 0, 0
 #define ACTLR				15, 1, 0, 0, 1
 #define CPACR				15, 1, 0, 0, 2
-#define	SCR					15, 1, 0, 1, 0
+#define	SCR				15, 1, 0, 1, 0
 #define SDER				15, 1, 0, 1, 1
 #define NSACR				15, 1, 0, 1, 2
 
 #define HSCTLR				15, 1, 4, 0, 0
 #define HACTLR				15, 1, 4, 0, 1
 
-#define HCR					15, 1, 4, 1, 0
+#define HCR				15, 1, 4, 1, 0
 #define HDCR				15, 1, 4, 1, 1
 #define HCPTR				15, 1, 4, 1, 2
 #define	HSTR				15, 1, 4, 1, 3
@@ -88,7 +90,7 @@
 #define AIFSR				15, 5, 0, 1, 1
 #define HADFSR				15, 5, 4, 1, 0
 #define HAIFSR				15, 5, 4, 1, 1
-#define HSR					15, 5, 4, 2, 0
+#define HSR				15, 5, 4, 2, 0
 
 #define DFAR				15, 6, 0, 0, 0
 #define IFAR				15, 6, 0, 0, 2
@@ -116,7 +118,7 @@
 #define ATS1CUW				15, 7, 0, 8, 3
 #define ATS12NSOPR			15, 7, 0, 8, 4
 #define ATS12NSOPW			15, 7, 0, 8, 5
-#define ATS1ATS12NSOUR		15, 7, 0, 8, 6
+#define ATS1ATS12NSOUR			15, 7, 0, 8, 6
 #define ATS12NSOUW			15, 7, 0, 8, 7
 
 #define	DCCMVAC				15, 7, 0, 10, 1
@@ -153,7 +155,7 @@
 
 #define TLBIALLHIS			15, 8, 4, 3, 0
 #define TLBIMVAHIS			15, 8, 4, 3, 1
-#define TLBIALLNSNHIS		15, 8, 4, 3, 4
+#define TLBIALLNSNHIS			15, 8, 4, 3, 4
 
 #define TLBIALLH			15, 8, 4, 7, 0
 #define TLBIMVAH			15, 8, 4, 7, 1
@@ -189,7 +191,7 @@
 #define MAIR1				15, 10, 0, 2, 1
 #else
 #define PRRR				15, 10, 0, 2, 0
-#define MAIR1				15, 10, 0, 2, 1
+#define NMRR				15, 10, 0, 2, 1
 #endif
 
 #define AMAIR0				15, 10, 0, 3, 0
@@ -206,7 +208,7 @@
 // CRn == 12, Security Extensions registers, if implemented.
 #define VBAR				15, 12, 0, 0, 0
 #define MVBAR				15, 12, 0, 0, 1
-#define ISR					15, 12, 0, 1, 0
+#define ISR				15, 12, 0, 1, 0
 
 #define HVBAR				15, 12, 4, 0, 0
 
@@ -241,6 +243,5 @@
 // CRn == 15, IMPLEMENTATION DEFINED registers.
 // See IMPLEMENTATION DEFINED registers, functional group on page B3-1502.
 #define CBAR				15, 15,	4, 0, 0
-
 
 #endif //__CP15_H__

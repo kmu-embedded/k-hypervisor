@@ -4,9 +4,9 @@
 #include <stdint.h>
 #include <asm/asm.h>
 
-#define HCR_FMO     0x8
-#define HCR_IMO     0x10
-#define HCR_VI      (0x1 << 7)
+#define HCR_FMO     	0x8
+#define HCR_IMO     	0x10
+#define HCR_VI      	(0x1 << 7)
 
 #define HSCTLR_TE        (1 << 30)      /**< Thumb Exception enable. */
 #define HSCTLR_EE        (1 << 25)      /**< Exception Endianness. */

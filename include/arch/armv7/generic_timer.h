@@ -44,7 +44,7 @@
  *  from: @(#)asm.h 5.5 (Berkeley) 5/7/91
  */
 
-#define __BIT(n)    (1 << (n))
+#define __BIT(n)    	(1 << (n))
 #define __BITS(hi,lo)   ((~((~0)<<((hi)+1)))&((~0)<<(lo)))
 
 /* *** from sys/arch/arm/include/armreg.h of NetBSD *** */
@@ -101,7 +101,7 @@
 #define ARM_CNTHCTL_EVNTI       __BITS(7,4)
 #define ARM_CNTHCTL_EVNTDIR     __BIT(3)
 #define ARM_CNTHCTL_EVNTEN      __BIT(2)
-#define ARM_CNTHCTL_PL1PCEN        __BIT(1)
-#define ARM_CNTHCTL_PL1PCTEN        __BIT(0)
+#define ARM_CNTHCTL_PL1PCEN     __BIT(1)
+#define ARM_CNTHCTL_PL1PCTEN    __BIT(0)
 
 #endif /* INCLUDE_ARCH_ARM_ARMV7_GENERIC_TIMER_H_ */
