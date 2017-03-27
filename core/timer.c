@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <irq-chip.h>
 
-#include <arch/armv7/generic_timer.h>
+#include <arch/armv7.h>
 
 static struct list_head active_timers[NR_CPUS];
 static struct list_head inactive_timers[NR_CPUS];

@@ -89,7 +89,7 @@ Author: Ben Leslie <benjl@cse.unsw.edu.au>
 
 
 #ifdef CONFIG_SMP
-#include <arch/armv7/mutex.h>
+#include <arch/armv7.h>
 static DEFINE_MUTEX(PRINT_MUTEX);
 #endif
 

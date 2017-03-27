@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <asm/macro.h>
 
-#include <arch/armv7/smp.h>
 #include <arch/armv7.h>
 #include <arch/irq.h>
 

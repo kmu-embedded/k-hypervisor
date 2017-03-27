@@ -2,7 +2,7 @@
 #include <arch/irq.h>
 #include <config.h>
 #include <core/vm/vcpu.h>
-#include <arch/armv7/smp.h>
+#include <arch/armv7.h>
 #include <irq-chip.h>
 #include <types.h>
 #include <core/scheduler.h>

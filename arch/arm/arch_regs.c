@@ -3,7 +3,6 @@
 #include <arch/armv7.h>
 #include <arch_regs.h>
 #include <config.h>
-#include <arch/armv7/cpsr.h>
 
 static void init_core_regs(struct core_regs *regs)
 {

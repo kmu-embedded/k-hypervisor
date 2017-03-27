@@ -1,5 +1,5 @@
-#include <arch/armv7/cp15.h>
-#include <arch/armv7/cpsr.h>
+#include <arch/v7/cp15.h>
+#include <arch/v7/cpsr.h>
 #include <config.h>
 #include <asm/macro.h>
 #include <generated/autoconf.h>

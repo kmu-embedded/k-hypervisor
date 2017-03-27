@@ -1,7 +1,7 @@
 #include <core/vm/vcpu.h>
 #include <debug.h>
 #include <core/timer.h>
-#include <arch/armv7/smp.h>
+#include <arch/armv7.h>
 #include <stdio.h>
 #include <core/scheduler.h>
 #include <core/sched/sched-config.h>

@@ -1,6 +1,6 @@
 #include <asm/macro.h>
 #include <config.h>
-#include <arch/armv7/cp15.h>
+#include <arch/v7/cp15.h>
 
     .syntax unified
     .arch_extension sec

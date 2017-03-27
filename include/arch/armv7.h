@@ -3,19 +3,19 @@
 
 #include <asm/asm.h>
 
-#include "armv7/cache.h"
-#include "armv7/tlb.h"
-#include "armv7/vmsa.h"
-#include "armv7/generic_timer.h"
-#include "armv7/smp.h"
-#include "armv7/mutex.h"
-#include "armv7/cp15.h"
-#include "armv7/barrier.h"
-#include "armv7/local_irq.h"
-#include "armv7/hsr.h"
-#include "armv7/cpsr.h"
-#include "armv7/hcr.h"
-#include "armv7/hsctlr.h"
+#include "v7/cache.h"
+#include "v7/tlb.h"
+#include "v7/vmsa.h"
+#include "v7/generic_timer.h"
+#include "v7/smp.h"
+#include "v7/mutex.h"
+#include "v7/cp15.h"
+#include "v7/barrier.h"
+#include "v7/local_irq.h"
+#include "v7/hsr.h"
+#include "v7/cpsr.h"
+#include "v7/hcr.h"
+#include "v7/hsctlr.h"
 
 /* co-processor registers: cp15, cp2 */
 struct cp15 {
