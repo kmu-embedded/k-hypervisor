@@ -129,3 +129,9 @@ __asm__ __volatile__ ( 							\
 : : "r" (reg))
 
 #endif
+
+#define __CP32(cp, n, opc1, m, opc2)    ((n) << 12 | (opc1) << 8 | (m) << 4 | (opc2))
+#define CP32(args...)                   __CP32(args)
+
+#define __CP64(cp, opc1, m)    		((opc1) << 8 | (m) << 4)
+#define CP64(args...)          		__CP64(args)

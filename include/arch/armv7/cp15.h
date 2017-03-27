@@ -3,14 +3,8 @@
 
 #include "mcrmrc.h"
 
-#define __CP32(cp, n, opc1, m, opc2)    ((n) << 12 | (opc1) << 8 | (m) << 4 | (opc2))
-#define CP32(args...)                   __CP32(args)
+// #define REG_NAME           		CP#, CRn, OPC1, CRm, OPC2
 
-#define __CP64(cp, opc1, m)    		((opc1) << 8 | (m) << 4)
-#define CP64(args...)          		__CP64(args)
-
-
-//  CP_NAME                		CP#, CRn, OPC1, CRm, OPC2
 // CRn == 0, ID registers.
 #define MIDR				15, 0, 0, 0, 0
 #define CTR				15, 0, 0, 0, 1
@@ -98,6 +92,7 @@
 #define HDFAR				15, 6, 4, 0, 0
 #define HIFAR				15, 6, 4, 0, 2
 #define HPFAR				15, 6, 4, 0, 4
+
 // CRn == 7, Cache maintenance, address translations, miscellaneous.
 #define ICALLUIS			15, 7, 0, 1, 0
 #define BPIALLIS			15, 7, 0, 1, 6
@@ -223,13 +218,13 @@
 
 // CRn == 14, Generic Timer registers, if implemented.
 #define CNTFRQ				15, 14, 0, 0, 0
-#define CNTPCT				15, 0, 14
 #define CNTKCTL				15, 14, 0, 1, 0
 #define CNTP_TVAL			15, 14, 0, 2, 0
 #define CNTP_CTL			15, 14, 0, 2, 1
 #define CNTV_TVAL			15, 14, 0, 3, 0
 #define CNTV_CTL			15, 14, 0, 3, 1
 
+#define CNTPCT				15, 0, 14
 #define CNTVCT				15, 1, 14
 #define CNTP_CVAL			15, 2, 14
 #define CNTV_CVAL			15, 3, 14
