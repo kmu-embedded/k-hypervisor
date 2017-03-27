@@ -4,21 +4,18 @@
 #include <core/vm/vcpu.h>
 #include <core/vm/vm.h>
 #include <core/scheduler.h>
-
-#define decode_fsc(iss)         (iss & 0x3f)
-#define decode_wnr(iss)         (iss & (1 << 6))
-#define decode_srt(iss)         ((iss & 0xF0000) >> 16)
+#include "lpae.h"
 
 int handle_data_abort(struct core_regs *regs, uint32_t iss)
 {
     int ret = -1;
-    uint32_t fipa = read_cp32(HPFAR) << 8;
-    fipa |= (read_cp32(HDFAR) & PAGE_MASK);
+    uint32_t fipa = read_cp32(HPFAR) << IPA_SHIFT;
+    fipa |= (read_cp32(HDFAR) & PAGE_OFFSET_MASK);
+    fipa = read_cp32(HPFAR) << IPA_SHIFT;
 
-    switch (decode_fsc(iss)) {
+    switch (DFSC(iss)) {
         // TODO: remove unused cases.
-    case FSR_TRANS_FAULT(1) ... FSR_TRANS_FAULT(3):
-        fipa = read_cp32(HPFAR) << 8;
+    case TRANS_FAULT(1) ... TRANS_FAULT(3):
         printf("Translation Fault!!\n");
         printf("\tWe do not allow translation fault from guest in stage 2 address\n");
         printf("\ttranslation, so if you see this message, you have to add a mapping\n");
@@ -28,45 +25,46 @@ int handle_data_abort(struct core_regs *regs, uint32_t iss)
         ret = 0;
         break;
 
-    case FSR_ACCESS_FAULT(1) ... FSR_ACCESS_FAULT(3):
+    case ACCESS_FAULT(1) ... ACCESS_FAULT(3):
         vdev_handler(regs, iss);
         ret = 0;
         break;
 
-    case FSR_PERM_FAULT(1) ... FSR_PERM_FAULT(3):
-        printf("FSR_PERM_FAULT: fipa 0x%08x\n", fipa);
+    case PERM_FAULT(1) ... PERM_FAULT(3):
+        printf("PERM_FAULT: fipa 0x%08x\n", fipa);
         break;
 
-    case FSR_SYNC_ABORT:
-        printf("FSR_SYNC_FAULT: fipa 0x%08x\n", fipa);
+    case SYNC_ABORT:
+        printf("SYNC_FAULT: fipa 0x%08x\n", fipa);
         break;
 
-    case FSR_ASYNC_ABORT:
-        printf("FSR_ASYNC_ABORT\n");
+    case ASYNC_ABORT:
+        printf("ASYNC_ABORT\n");
         break;
 
-    case FSR_ABORT_ON_TABLE_WALK(1) ... FSR_ABORT_ON_TABLE_WALK(3):
-        printf("FSR_ABORT_ON_TABLE_WALK\n");
+    case ABORT_ON_TABLE_WALK(1) ... ABORT_ON_TABLE_WALK(3):
+        printf("ABORT_ON_TABLE_WALK\n");
         break;
 
-    case FSR_SYNC_PERORR:
-        printf("FSR_SYNC_PERORR\n");
+    case SYNC_PERORR:
+        printf("SYNC_PERORR\n");
         break;
 
-    case FSR_ASYNC_PERORR:
-        printf("FSR_ASYNC_PERORR\n");
+    case ASYNC_PERORR:
+        printf("ASYNC_PERORR\n");
         break;
 
-    case FSR_PERORR_ON_TABLE_WALK(1) ... FSR_PERORR_ON_TABLE_WALK(3):
-        printf("FSR_PERORR_ON_TABLE_WALK\n");
+    case PERORR_ON_TABLE_WALK(1) ... PERORR_ON_TABLE_WALK(3):
+        printf("PERORR_ON_TABLE_WALK\n");
         break;
 
-    case FSR_ALINGMENT_FAULT: {
-        fipa |= (read_cp32(HDFAR) & PAGE_MASK);
+    case ALINGMENT_FAULT: {
         uint32_t hcr = read_cp32(HCR);
+
         printf("Alignment Fault!!\n");
         printf("ARM defines the root cause of alignment fault taken into hypervisor as belows\n");
-        if (regs->cpsr == 0x1A) {
+
+        if (regs->cpsr == CPSR_MODE(HYP)) {
             printf("\t1. When the processor is in Hyp mode.\n");
         } else {
             if ((hcr & (1 << 27)) != 1) {
@@ -86,16 +84,16 @@ int handle_data_abort(struct core_regs *regs, uint32_t iss)
         printf("HDFAR 0x%08x is available\n", fipa);
         break;
     }
-    case FSR_DEBUG_EVENT:
-        printf("FSR_DEBUG_EVENT\n");
+    case DEBUG_EVENT:
+        printf("DEBUG_EVENT\n");
         break;
 
-    case FSR_TLB_CONFLICT:
-        printf("FSR_TLB_CONFLICT\n");
+    case TLB_CONFLICT:
+        printf("TLB_CONFLICT\n");
         break;
 
-    case FSR_DOMAIN_FAULT(1) ... FSR_DOMAIN_FAULT(3):
-        printf("FSR_DOMAIN_FAULT");
+    case DOMAIN_FAULT(1) ... DOMAIN_FAULT(3):
+        printf("DOMAIN_FAULT");
         break;
 
     default:

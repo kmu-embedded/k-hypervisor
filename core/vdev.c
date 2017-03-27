@@ -9,23 +9,21 @@
 
 static struct list_head vdev_list;
 
-#define decode_wnr(iss)             (iss & (1 << 6))
-#define decode_srt(iss)             ((iss & 0xF0000) >> 16)
-
 void vdev_handler(struct core_regs *regs, uint32_t iss)
 {
     struct vmcb *vm = get_current_vm();
     uint32_t fipa = 0;
-    uint8_t wnr = decode_wnr(iss);
-    uint8_t srt = decode_srt(iss);
+    uint8_t wnr = WNR(iss);
+    uint8_t srt = SRT(iss);
 
-    fipa = read_cp32(HPFAR) << 8;
-    fipa |= (read_cp32(HDFAR) & PAGE_MASK);
+    fipa = read_cp32(HPFAR) << IPA_SHIFT;
+    fipa |= (read_cp32(HDFAR) & PAGE_OFFSET_MASK);
 
     struct vdev_instance *instance;
     list_for_each_entry(struct vdev_instance, instance, &vm->vdevs.head, head) {
         uint32_t vdev_base = instance->module->base;
         uint32_t vdev_size = instance->module->size;
+        printf("vdev_base 0x%08x\n", vdev_base);
 
         if (vdev_base <= fipa && fipa <= vdev_base + vdev_size) {
             uint32_t offset = fipa - vdev_base;

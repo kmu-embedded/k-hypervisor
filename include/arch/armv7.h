@@ -12,9 +12,9 @@
 #include "armv7/mutex.h"
 #include "armv7/cp15.h"
 #include "armv7/barrier.h"
-#include "armv7/fsr_decode.h"
 #include "armv7/local_irq.h"
 #include "armv7/hsr.h"
+#include "armv7/cpsr.h"
 
 /* co-processor registers: cp15, cp2 */
 struct cp15 {

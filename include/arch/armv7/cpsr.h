@@ -27,7 +27,7 @@
 #define Q                       (0b1)
 #define IT0                     (0b11)
 #define J                       (0b11)
-#define RESERVED                (0b1111)
+// #define RESERVED                (0b1111)
 #define GE                      (0b1111)
 #define IT1                     (0b111111)
 #define E                       (0b1)
