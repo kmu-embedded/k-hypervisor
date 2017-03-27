@@ -3,7 +3,7 @@
 #include <arch/armv7.h>
 #include <arch_regs.h>
 #include <config.h>
-#include <arch/cpsr.h>
+#include <arch/armv7/cpsr.h>
 
 static void init_core_regs(struct core_regs *regs)
 {
@@ -16,7 +16,9 @@ static void init_core_regs(struct core_regs *regs)
     regs->gpr[2] = CFG_GUEST_ATAGS_START_ADDRESS;
 
     regs->pc = CFG_GUEST_START_ADDRESS;
-    regs->cpsr = (CPSR_ASYNC_ABT_BIT | CPSR_IRQ_BIT | CPSR_FIQ_BIT | CPSR_MODE_SVC);
+    regs->cpsr = (CPSR_BIT(A) | CPSR_BIT(I) | CPSR_BIT(F));
+    regs->cpsr |= CPSR_MODE(SVC);
+    printf("regs->cpsr %x\n", regs->cpsr);
 }
 
 static void init_cp15(struct cp15 *cp15)
@@ -220,7 +222,7 @@ void print_core_regs(struct core_regs *regs)
     int i;
 
     printf("cpsr: 0x%08x\n", regs->cpsr);
-    printf("cpsr mode(%x)\n", regs->cpsr & CPSR_MODE_MASK);
+    printf("cpsr mode(%x)\n", regs->cpsr & CPSR(M));
     printf("  pc: 0x%08x\n", regs->pc);
     printf("  lr: 0x%08x\n", regs->lr);
     printf(" gpr:\n\r");

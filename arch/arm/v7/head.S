@@ -1,5 +1,5 @@
 #include <arch/armv7/cp15.h>
-#include <arch/armv7/pmodes.h>
+#include <arch/armv7/cpsr.h>
 #include <config.h>
 #include <asm/macro.h>
 #include <generated/autoconf.h>
@@ -14,8 +14,8 @@ BEGIN_PROC(__start)
 
     @ Check HYP mode
     mrs		r0, cpsr_all
-    and		r0, r0, #SYS_MODE
-    mov		r8, #HYP_MODE
+    and		r0, r0, #MODE_SYS
+    mov		r8, #MODE_HYP
     cmp		r0, r8
     beq		3f
 
