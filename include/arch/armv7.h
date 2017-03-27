@@ -5,7 +5,6 @@
 
 #include "armv7/cache.h"
 #include "armv7/tlb.h"
-#include "armv7/sysctrl.h"
 #include "armv7/vmsa.h"
 #include "armv7/generic_timer.h"
 #include "armv7/smp.h"
@@ -15,6 +14,8 @@
 #include "armv7/local_irq.h"
 #include "armv7/hsr.h"
 #include "armv7/cpsr.h"
+#include "armv7/hcr.h"
+#include "armv7/hsctlr.h"
 
 /* co-processor registers: cp15, cp2 */
 struct cp15 {

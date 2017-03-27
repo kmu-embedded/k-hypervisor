@@ -7,7 +7,6 @@
 #include <vdev.h>
 #include <core/timer.h>
 #include <vm_map.h>
-#include <arch/armv7/generic_timer.h>
 #include "paging.h"
 
 extern void start_hypervisor(void);
@@ -20,6 +19,7 @@ void init_cpu()
 {
     uint8_t cpuid = smp_processor_id();
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
+    uint32_t hsctlr;
 
     // For console debugging.
     console_init();
@@ -57,7 +57,9 @@ void init_cpu()
 
     printf("%s[%d]: CPU[%d]\n", __func__, __LINE__, cpuid);
 
-    write_cp32(HSCTLR_VALUE, HSCTLR);
+    hsctlr = read_cp32(HSCTLR);
+    hsctlr |= HSCTLR_BIT(M) | HSCTLR_BIT(A) | HSCTLR_BIT(C) | HSCTLR_BIT(I);
+    write_cp32(hsctlr, HSCTLR);
 
     start_hypervisor();
 }
@@ -65,8 +67,8 @@ void init_cpu()
 void init_secondary_cpus()
 {
     uint8_t cpuid = smp_processor_id();
-
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
+    uint32_t hsctlr;
 
     write_cp32((uint32_t) &__hvc_vector, HVBAR);
     assert(read_cp32(HVBAR) == (uint32_t) &__hvc_vector);
@@ -82,7 +84,9 @@ void init_secondary_cpus()
 
     printf("%s[%d]: CPU[%d]\n", __func__, __LINE__, cpuid);
 
-    write_cp32(HSCTLR_VALUE, HSCTLR);
+    hsctlr = read_cp32(HSCTLR);
+    hsctlr |= HSCTLR_BIT(M) | HSCTLR_BIT(A) | HSCTLR_BIT(C) | HSCTLR_BIT(I);
+    write_cp32(hsctlr, HSCTLR);
 
     start_hypervisor();
 }

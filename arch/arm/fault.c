@@ -67,7 +67,7 @@ int handle_data_abort(struct core_regs *regs, uint32_t iss)
         if (regs->cpsr == CPSR_MODE(HYP)) {
             printf("\t1. When the processor is in Hyp mode.\n");
         } else {
-            if ((hcr & (1 << 27)) != 1) {
+            if ((hcr & HCR_BIT(TGE)) != 1) {
                 printf("\t2. When the processor is in a PL1 or PL0 mode and the exception is generated\n");
                 printf("\t   because the Non-secure PL1&0 stage 2 translation identifies the target of\n");
                 printf("\t   an unaligned access as Device or Strongly-ordered memory.\n");

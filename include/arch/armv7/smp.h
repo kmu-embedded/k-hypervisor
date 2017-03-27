@@ -2,10 +2,7 @@
 #define __SMP_H__
 
 #include <stdint.h>
-#include "sysctrl.h"
 #include "cp15.h"
-#include "barrier.h"
-#include "local_irq.h"
 
 /**
  * @brief Gets current CPU ID of the Symmetric MultiProcessing(SMP).

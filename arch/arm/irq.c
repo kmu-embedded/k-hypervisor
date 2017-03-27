@@ -28,7 +28,8 @@ hvmm_status_t do_irq(struct core_regs *regs)
 void irq_init()
 {
     set_irqchip_type();
-    write_cp32((0x10 | 0x8), HCR);
+    //printf("%x\n", HCR_BIT(IMO) | HCR_BIT(FMO));
+    write_cp32(HCR_BIT(IMO) | HCR_BIT(FMO), HCR);
     irq_handler_init(irq_handlers);
 }
 
