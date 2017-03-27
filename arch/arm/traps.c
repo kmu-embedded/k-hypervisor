@@ -1,47 +1,59 @@
 #include <stdio.h>
 #include <arch/armv7.h>
-#include "cp15.h"
-
-#define decode_ec(hsr)          (hsr >> 26)
-#define decode_il(hsr)          (hsr & (1 << 25))
-#define decode_iss(hsr)         (hsr & ~(0xfe000000))
 
 // TODO(wonseok): If the traps cause the undefined exception or
 //                abort exception, we must forward the exception to guest VM.
+#define INVALID_HSR         -1
+
 int do_hyp_trap(struct core_regs *regs)
 {
     uint8_t pcpuid = smp_processor_id();
-    int ret = -1;
+    int ret = INVALID_HSR;
     uint32_t hsr = read_cp32(HSR);
-    uint32_t ec = decode_ec(hsr);
-    uint32_t il = decode_il(hsr);
-    uint32_t iss = decode_iss(hsr);
+    uint32_t ec = EC(hsr);
+    uint32_t il = IL(hsr);
+    uint32_t iss = ISS(hsr);
 
     switch (ec) {
-    case WFI_WFE:
+    case EC_UNK:
+        /*
+         * if (HCR.TGE == 1) 
+         *      handling undefined instruction
+         * else 
+         *      invalid_hsr;
+         */
+    case EC_WFI_WFE:
+        /* if (CV(iss) == 1) {
+         *     condition = COND(ISS); 
+         * }
+         */
+    case EC_MCR_MRC_CP15:
+    case EC_MCRR_MRRC_CP15:
+    case EC_MCR_MRC_CP14:
+    case EC_LDC_STC_CP14:
+    case EC_HCRTR_CP0_CP13:
+    case EC_MRC_VMRS_CP10:
+    case EC_BXJ:
+    case EC_MRRC_CP14:
+    case EC_SVC:
+    case EC_HVC:
+    case EC_SMC:
+    case EC_PABT_FROM_GUEST:
+    case EC_PABT_FROM_HYP:
         break;
-    case MCR_MRC_CP15:
-        ret = emulate_cp15_32(regs, iss);
-        break;
-    case MCRR_MRRC_CP15:
-        ret = emulate_cp15_64(regs, iss);
-        break;
-    case HCRTR_CP0_CP13:
-    case MRC_VMRS_CP10:
-    case HVC:
-        break;
-    case DABT_FROM_GUEST:
+    case EC_DABT_FROM_GUEST:
         ret = handle_data_abort(regs, iss);
+    case EC_DABT_FROM_HYP:
         break;
     default:
         break;
     }
 
-    if (ret == -1) {
+    if (ret == INVALID_HSR) {
         goto trap_error;
     }
 
-    if (il) {
+    if (il == IL_ARM) {
         regs->pc += 4;
     } else {
         regs->pc += 2;
@@ -59,5 +71,5 @@ trap_error:
     printf("hifar %x\n", read_cp32(HIFAR));
     while (1) ;
 
-    return -1;
+    return INVALID_HSR;
 }
