@@ -7,11 +7,7 @@
 #include <arch/irq.h>
 #include <core/vm/vm.h>
 
-//In rtsm this 37 is for serial 0
-#define PL01x_IRQ_NUM   37
-
 #define UART_BASE 0x1C090000
-
 #define UART_ADDR(x)        (UART_BASE + x)
 
 #define UARTDR              0x000
@@ -140,19 +136,9 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
 
 int32_t vuart_read(void *pdata, uint32_t offset)
 {
-    struct vcpu *vcpu = get_current_vcpu();
-
     switch (offset) {
     case UARTDR: {
         uint32_t data = readl(UART_ADDR(UARTDR));
-
-        /*
-            TODO(casionwoo) : When data is special key(Ctrl + y),
-                              vm_delete and run back-up VM
-        */
-        if (data == 25) {
-            printf("OWNER FROM vm[%d] to ", vcpu->vcpuid);
-        }
         return data;
     }
     case UARTRSR_UARTECR:

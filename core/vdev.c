@@ -30,6 +30,10 @@ void vdev_handler(struct core_regs *regs, uint32_t iss)
                 instance->module->write(instance->pdata, offset, &(regs->gpr[srt]));
             } else {
                 regs->gpr[srt] = instance->module->read(instance->pdata, offset);
+                if (regs->gpr[srt] == 25 && instance->module->base == 0x1C090000) {
+                    // vm_delete and run back-up VM
+                    printf("Delete VM[%d]\n", regs->gpr[srt]);
+                }
             }
 
             break;
