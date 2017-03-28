@@ -11,6 +11,11 @@
 #define VCPU_CREATE_FAILED    NULL
 #define VCPU_NOT_EXISTED      NULL
 
+typedef enum vcpu_type {
+    VCPU_NORMAL,
+    VCPU_KMUS,
+} vcpu_type_t;
+
 typedef enum vcpu_state {
     VCPU_UNDEFINED,
     VCPU_DEFINED,
@@ -59,6 +64,7 @@ struct vcpu {
 
     uint64_t actual_running_time;
 
+    vcpu_type_t type;
     vcpu_state_t state;
 
     // TODO(casionwoo): it will be removed.

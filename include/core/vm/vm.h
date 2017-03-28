@@ -12,6 +12,11 @@
 #define VM_NOT_EXISTED      (-1)
 #define VM_CREATE_FAILED    (-2)
 
+typedef enum vmcb_type {
+    VM_NORMAL,
+    VM_KMUS,
+} vmcb_type_t;
+
 typedef enum vmcb_state {
     UNDEFINED,
     DEFINED,
@@ -31,6 +36,7 @@ struct vmcb {
 
     struct vdev_instance vdevs;
 
+    vmcb_type_t type;
     vmcb_state_t state;
     struct list_head head;
 };
