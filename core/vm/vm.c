@@ -20,7 +20,7 @@ void vm_setup()
 #endif
 }
 
-vmid_t vm_create(uint8_t num_vcpus)
+vmid_t vm_create(uint8_t num_vcpus, vmcb_type_t vmcb_type)
 {
     int i;
     struct vmcb *vm = NULL;
@@ -34,6 +34,7 @@ vmid_t vm_create(uint8_t num_vcpus)
     vm->vmid = vm_count++;
     vm->state = DEFINED;
     vm->num_vcpus = num_vcpus;
+    vm->type = vmcb_type;
 
     vm->vcpu = malloc(sizeof(struct vcpu *) * vm->num_vcpus);
     if (vm->vcpu == NULL) {
@@ -41,7 +42,7 @@ vmid_t vm_create(uint8_t num_vcpus)
     }
 
     for (i = 0; i < vm->num_vcpus; i++) {
-        if ((vm->vcpu[i] = vcpu_create()) == VCPU_CREATE_FAILED) {
+        if ((vm->vcpu[i] = vcpu_create(vm->type)) == VCPU_CREATE_FAILED) {
             free(vm);
             return VM_CREATE_FAILED;
         }
