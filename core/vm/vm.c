@@ -101,6 +101,26 @@ vmcb_state_t vm_start(vmid_t vmid)
     return vm->state;
 }
 
+vmcb_state_t vm_suspend(vmid_t vmid, struct core_regs *regs)
+{
+    struct vmcb *vm = vm_find(vmid);
+    if (vm == NO_VM_FOUND) {
+        return VM_NOT_EXISTED;
+    }
+
+    int i;
+    for (i = 0; i < vm->num_vcpus; i++) {
+        // second parameter should be changed not NULL
+        if (vcpu_suspend(vm->vcpu[i], regs) != VCPU_REGISTERED) {
+            return vm->state;
+        }
+    }
+
+    vm->state = HALTED;
+
+    return vm->state;
+}
+
 vmcb_state_t vm_delete(vmid_t vmid)
 {
     int i;
