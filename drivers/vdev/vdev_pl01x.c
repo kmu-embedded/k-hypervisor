@@ -9,10 +9,6 @@
 
 //In rtsm this 37 is for serial 0
 #define PL01x_IRQ_NUM   37
-#define PROMPT_MSG  "[vm %d] "
-
-static char prompt[32];
-static int owner_id = 0;
 
 #define UART_BASE 0x1C090000
 
@@ -69,24 +65,6 @@ struct vdev_module pl01x_vuart = {
     .create = vuart_create,
 };
 
-static irqreturn_t vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
-{
-    if (irq != PL01x_IRQ_NUM) {
-        printf("Uncorrect irq number\n");
-        return UNEXCEPTED_IRQ;
-    }
-
-    int i;
-    struct vmcb *vm = vm_find(owner_id);
-
-    for (i = 0; i < vm->num_vcpus; i++) {
-        struct vcpu *vcpu = vm->vcpu[i];
-        virq_hw->forward_irq(vcpu, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
-    }
-
-    return VM_IRQ;
-}
-
 #include <stdlib.h>
 int32_t vuart_create(void **pdata)
 {
@@ -99,20 +77,11 @@ int32_t vuart_create(void **pdata)
 int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
 {
     struct pl01x *vuart = pdata;
-    struct vcpu *vcpu = get_current_vcpu();
 
     switch (offset) {
     case UARTDR: {
         vuart->uartdr = readl(addr);
-        if (vcpu->vmid == owner_id) {
-            writel(vuart->uartdr, UART_ADDR(UARTDR));
-            if (vuart->uartdr == 10) {
-                int i;
-                for (i = 0; i < sizeof(prompt) / sizeof(char); i++) {
-                    writel(prompt[i], UART_ADDR(UARTDR));
-                }
-            }
-        }
+        writel(vuart->uartdr, UART_ADDR(UARTDR));
         break;
     }
 
@@ -150,9 +119,6 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
 
     case UARTMSC:
         vuart->uartmsc = readl(addr);
-        if (vuart->uartmsc == 0x70 && vcpu->vmid != owner_id) {
-            virq_hw->forward_irq(vcpu, PL01x_IRQ_NUM, PL01x_IRQ_NUM, INJECT_SW);
-        }
         writel(vuart->uartmsc, UART_ADDR(UARTMSC));
 
         break;
@@ -174,26 +140,20 @@ int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr)
 
 int32_t vuart_read(void *pdata, uint32_t offset)
 {
-    struct pl01x *vuart = pdata;
     struct vcpu *vcpu = get_current_vcpu();
 
     switch (offset) {
     case UARTDR: {
         uint32_t data = readl(UART_ADDR(UARTDR));
 
-        if (vcpu->vmid == owner_id) {
-            // TODO(casionwoo) : When data is special key(Ctrl + y), Change the OWNER
-            if (data == 25) {
-                printf("OWNER FROM vm[%d] to ", owner_id);
-                owner_id = (owner_id + 1) % CONFIG_NR_VMS;
-                printf("vm[%d] \n", owner_id);
-
-                memset(prompt, 0, 32);
-                sprintf(prompt, PROMPT_MSG, owner_id);
-            }
-            return data;
+        /*
+            TODO(casionwoo) : When data is special key(Ctrl + y),
+                              vm_delete and run back-up VM
+        */
+        if (data == 25) {
+            printf("OWNER FROM vm[%d] to ", vcpu->vcpuid);
         }
-        return vuart->uartdr;
+        return data;
     }
     case UARTRSR_UARTECR:
         return readl(UART_ADDR(UARTRSR_UARTECR));
@@ -252,14 +212,8 @@ hvmm_status_t vdev_pl01x_init()
 {
     hvmm_status_t result = HVMM_STATUS_BUSY;
 
-    memset(prompt, 0, 32);
-    sprintf(prompt, PROMPT_MSG, owner_id);
-
     // For trap
     vdev_register(&pl01x_vuart);
-
-    // For irq
-    register_irq_handler(PL01x_IRQ_NUM, vdev_pl01x_irq_handler, IRQ_LEVEL_SENSITIVE);
     printf("vdev registered:'%s'\n", pl01x_vuart.name);
 
     return result;
