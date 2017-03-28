@@ -22,7 +22,7 @@ void vcpu_setup()
     }
 }
 
-struct vcpu *vcpu_create()
+struct vcpu *vcpu_create(vcpu_type_t type)
 {
     struct vcpu *vcpu = NULL;
     int i;
@@ -35,6 +35,7 @@ struct vcpu *vcpu_create()
 
     vcpu->vcpuid = nr_vcpus++;
     vcpu->state = VCPU_DEFINED;
+    vcpu->type = type;
 
     // TODO(casionwoo) : Initialize running_time and actual_running_time after time_module created
     // TODO(casionwoo) : Initialize period and deadline after menuconfig module created
@@ -97,7 +98,7 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
 vcpu_state_t vcpu_start(struct vcpu *vcpu)
 {
     // TODO(casionwoo) : This function return only 'VCPU_ACTIVATED' but modify the return for error checking
-    if (vcpu->id == 0) {
+    if (vcpu->id == 0 && vcpu->type == VCPU_NORMAL) {
         sched_vcpu_attach(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
         printf("sched_vcpu_register, vcpuid : %d is attatched on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
         vcpu->state = VCPU_ACTIVATED;

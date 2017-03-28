@@ -25,7 +25,7 @@ void start_hypervisor()
         for (i = 0; i < CONFIG_NR_VMS; i++) {
             vmid_t vmid;
 
-            if ((vmid = vm_create(vm_conf[i].nr_vcpus)) == VM_CREATE_FAILED) {
+            if ((vmid = vm_create(vm_conf[i].nr_vcpus, vm_conf[i].vmcb_type)) == VM_CREATE_FAILED) {
                 printf("vm_create(vm[%d]) is failed\n", i);
                 goto error;
             }

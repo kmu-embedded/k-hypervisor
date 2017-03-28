@@ -42,7 +42,7 @@ struct vmcb {
 };
 
 void vm_setup();
-vmid_t vm_create(uint8_t num_vcpu);
+vmid_t vm_create(uint8_t num_vcpu, vmcb_type_t vmcb_type);
 vmcb_state_t vm_init(vmid_t vmid);
 vmcb_state_t vm_start(vmid_t vmid);
 vmcb_state_t vm_delete(vmid_t vmid);
