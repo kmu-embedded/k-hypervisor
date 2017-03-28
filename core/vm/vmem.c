@@ -74,7 +74,7 @@ hvmm_status_t vmem_restore(struct vmem *vmem)
     write_cp64(vmem->vttbr, VTTBR);
 
     hcr = read_cp32(HCR);
-    write_cp32((hcr & HCR_BIT(VM)), HCR);
+    write_cp32((hcr | HCR_BIT(VM)), HCR);
 
     return HVMM_STATUS_SUCCESS;
 }
