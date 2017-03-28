@@ -23,7 +23,6 @@ void vdev_handler(struct core_regs *regs, uint32_t iss)
     list_for_each_entry(struct vdev_instance, instance, &vm->vdevs.head, head) {
         uint32_t vdev_base = instance->module->base;
         uint32_t vdev_size = instance->module->size;
-        printf("vdev_base 0x%08x\n", vdev_base);
 
         if (vdev_base <= fipa && fipa <= vdev_base + vdev_size) {
             uint32_t offset = fipa - vdev_base;
