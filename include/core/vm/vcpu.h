@@ -80,6 +80,7 @@ void vcpu_setup();
 struct vcpu *vcpu_create(vcpu_type_t type);
 vcpu_state_t vcpu_init(struct vcpu *vcpu);
 vcpu_state_t vcpu_start(struct vcpu *vcpu);
+vcpu_state_t vcpu_suspend(struct vcpu *vcpu, struct core_regs *regs);
 vcpu_state_t vcpu_delete(struct vcpu *vcpu);
 
 void vcpu_save(struct vcpu *vcpu, struct core_regs *regs);

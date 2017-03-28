@@ -108,6 +108,19 @@ vcpu_state_t vcpu_start(struct vcpu *vcpu)
     return VCPU_ACTIVATED;
 }
 
+vcpu_state_t vcpu_suspend(struct vcpu *vcpu, struct core_regs *regs)
+{
+    // save the vcpu context for resuming in the future
+    vcpu_save(vcpu, regs);
+
+    // detach the vcpu from run queue not to be scheduled
+    sched_vcpu_detach(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
+    printf("sched_vcpu_register, vcpuid : %d is detatched on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
+
+    vcpu->state = VCPU_ACTIVATED;
+    return vcpu->state;
+}
+
 vcpu_state_t vcpu_delete(struct vcpu *vcpu)
 {
     // TODO(casionwoo) : Signal scheduler to stop the vcpu
