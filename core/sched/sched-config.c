@@ -25,7 +25,7 @@ const struct sched_policy *schedconf_g_policy[] = {
 /* vcpu -> pcpu to be maped to */
 uint32_t schedconf_g_vcpu_to_pcpu_map[TOTAL_VCPUS] = {
     0,
-    1,
+    0,
     2,
     3,
 };
