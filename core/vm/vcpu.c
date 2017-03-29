@@ -123,8 +123,9 @@ vcpu_state_t vcpu_suspend(struct vcpu *vcpu, struct core_regs *regs)
 
 vcpu_state_t vcpu_delete(struct vcpu *vcpu)
 {
-    // TODO(casionwoo) : Signal scheduler to stop the vcpu
-    // TODO(casionwoo) : Detach vcpu id from scheduler
+    sched_vcpu_detach(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
+    sched_vcpu_unregister(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
+    printf("sched_vcpu_register, vcpuid : %d is unregister on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
 
     LIST_DEL(&vcpu->head);
 
