@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <atags.h>
+#include <core/scheduler.h>
 
 void print_vm(struct vmcb *vm);
 
@@ -140,6 +141,10 @@ vmcb_state_t vm_delete(vmid_t vmid)
 
     LIST_DEL(&vm->head);
     free(vm);
+
+    // TODO(casionwoo): keep going scheduling but not re-start
+    if (get_current_vm()->vmid == vmid)
+        sched_start();
 
     return UNDEFINED;
 }

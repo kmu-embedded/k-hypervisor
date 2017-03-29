@@ -33,6 +33,7 @@ void vdev_handler(struct core_regs *regs, uint32_t iss)
                 if (regs->gpr[srt] == 25 && instance->module->base == 0x1C090000) {
                     // vm_delete and run back-up VM
                     printf("Delete VM[%d]\n", regs->gpr[srt]);
+                    vm_delete(vm->vmid);
                 }
             }
 
