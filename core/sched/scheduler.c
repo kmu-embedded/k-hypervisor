@@ -314,6 +314,11 @@ int sched_vcpu_detach(vcpuid_t vcpuid, uint32_t pcpu)
     s->policy->detach_vcpu(s, target); /* !@#$ */
     LIST_DELINIT(&target->head_inflight);
 
+    /* TODO(casionwoo): need to be re-scheduled,
+                        if there's no VM to be scheduled, run IDLE VM.
+                        but at the first stage, just call the back-up VM function() */
+
+
     return 0;
 }
 

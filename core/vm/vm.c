@@ -142,7 +142,7 @@ vmcb_state_t vm_delete(vmid_t vmid)
     LIST_DEL(&vm->head);
     free(vm);
 
-    // TODO(casionwoo): keep going scheduling but not re-start
+    // TODO(casionwoo): below procedure should be replaced to detach of vcpu in scheduler feature
     if (get_current_vm()->vmid == vmid)
         sched_start();
 
