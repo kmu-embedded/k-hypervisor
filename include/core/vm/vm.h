@@ -52,6 +52,8 @@ vmcb_state_t vm_delete(vmid_t vmid);
 void vm_save(vmid_t vmid);
 void vm_restore(vmid_t vmid);
 
+void vm_copy(vmid_t from, vmid_t to, struct core_regs *regs);
+
 struct vmcb *vm_find(vmid_t vmid);
 void print_all_vm();
 

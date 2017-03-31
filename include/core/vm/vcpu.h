@@ -86,6 +86,8 @@ vcpu_state_t vcpu_delete(struct vcpu *vcpu);
 void vcpu_save(struct vcpu *vcpu, struct core_regs *regs);
 void vcpu_restore(struct vcpu *vcpu, struct core_regs *regs);
 
+void vcpu_copy(struct vcpu *from, struct vcpu *to, struct core_regs *regs);
+
 struct vcpu *vcpu_find(vcpuid_t vcpuid);
 void print_all_vcpu();
 void print_vcpu(struct vcpu *vcpu);

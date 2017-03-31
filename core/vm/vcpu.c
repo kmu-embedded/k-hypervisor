@@ -167,6 +167,18 @@ void vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
     virq_hw->enable();
 }
 
+void vcpu_copy(struct vcpu *from, struct vcpu *to, struct core_regs *regs)
+{
+    /*
+        TODO(casionwoo):
+            1. arch_regs_copy
+            2. GICH copy
+                2.1 LR register
+                2.2 VMCR
+            3. virq_hw->copy
+    */
+}
+
 struct vcpu *vcpu_find(vcpuid_t vcpuid)
 {
     struct vcpu *vcpu = NULL;
