@@ -166,6 +166,15 @@ void vm_restore(vmid_t restore_vmid)
     vmem_restore(&vm->vmem);
 }
 
+void vm_copy(vmid_t from, vmid_t to, struct core_regs *regs)
+{
+    /*
+        TODO(casionwoo): 
+            1. vmem_copy
+            2. vcpu_copy
+    */
+}
+
 struct vmcb *vm_find(vmid_t vmid)
 {
     struct vmcb *vm = NULL;

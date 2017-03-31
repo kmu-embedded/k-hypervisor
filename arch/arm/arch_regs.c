@@ -272,3 +272,13 @@ hvmm_status_t arch_regs_restore(struct arch_regs *regs, struct core_regs *curren
 
     return HVMM_STATUS_SUCCESS;
 }
+
+void arch_regs_copy(struct arch_regs *from, struct arch_regs *to, struct core_regs *regs)
+{
+    /*
+        TODO(casionwoo):
+            1. cp15 copy
+            2. banked_regs copy
+            3. core_regs copy
+    */
+}
