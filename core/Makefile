@@ -7,6 +7,7 @@ objs-y += main.o
 objs-y += vdev.o
 objs-y += timer.o
 objs-y += vm_config.o
+objs-y += kmus.o
 
 SUBDIRECTORIES += core/sched core/vm
 
