@@ -4,6 +4,7 @@
 #include <core/scheduler.h>
 #include <core/vm/vm.h>
 #include <arch/armv7.h>
+#include <core/kmus.h>
 
 #define MAX_VDEV    256
 
