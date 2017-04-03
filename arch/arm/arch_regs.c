@@ -275,17 +275,17 @@ hvmm_status_t arch_regs_restore(struct arch_regs *regs, struct core_regs *curren
 
 static void cp15_copy(struct cp15 *from, struct cp15 *to)
 {
-
+    memcpy(from, to, sizeof(struct cp15));
 }
 
 static void banked_regs_copy(struct banked_regs *from, struct banked_regs *to)
 {
-
+    memcpy(from, to, sizeof(struct banked_regs));
 }
 
 static void core_regs_copy(struct core_regs *from, struct core_regs *to, struct core_regs *regs)
 {
-
+    memcpy(from, to, sizeof(struct core_regs));
 }
 
 void arch_regs_copy(struct arch_regs *from, struct arch_regs *to, struct core_regs *regs)
