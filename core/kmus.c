@@ -14,8 +14,17 @@ void kmus_start(vmid_t normal_id, vmid_t kmus_id, struct core_regs *regs)
                for return from hyp mode to guestos mode
     */
 
+    // stop the VM (unregister from scheduler)
     vm_suspend(normal_id, regs);
+
+    // copy all of the VM
     vm_copy(normal_id, kmus_id, regs);
+
+    // start the VM (register VM to scheduler)
+    vm_start(kmus_id);
+
+    // delete the VM struct (free the memory)
+    vm_delete(normal_id);
 
     printf("%s[%d]\n", __func__, __LINE__);
 
