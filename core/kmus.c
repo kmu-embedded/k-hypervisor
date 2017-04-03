@@ -1,7 +1,9 @@
 #include <core/kmus.h>
+#include <stdio.h>
 
 void kmus_start(vmid_t normal_id, vmid_t kmus_id, struct core_regs *regs)
 {
+    printf("%s[%d]\n", __func__, __LINE__);
     /*
         TODO(casionwoo) for Kmus:
             1. copy VMCB and vCPU from normal VM to kmus VM
@@ -14,6 +16,8 @@ void kmus_start(vmid_t normal_id, vmid_t kmus_id, struct core_regs *regs)
 
     vm_suspend(normal_id, regs);
     vm_copy(normal_id, kmus_id, regs);
+
+    printf("%s[%d]\n", __func__, __LINE__);
 
     return;
 }
