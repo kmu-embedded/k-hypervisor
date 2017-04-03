@@ -141,10 +141,6 @@ vmcb_state_t vm_delete(vmid_t vmid)
     LIST_DEL(&vm->head);
     free(vm);
 
-    // TODO(casionwoo): below procedure should be replaced to detach of vcpu in scheduler feature
-    if (get_current_vm()->vmid == vmid)
-        sched_start();
-
     return UNDEFINED;
 }
 
@@ -175,6 +171,20 @@ void vm_copy(vmid_t from, vmid_t to, struct core_regs *regs)
             1. vmem_copy
             2. vcpu_copy
     */
+    struct vmcb *vm_from = vm_find(from);
+    struct vmcb *vm_to = vm_find(to);
+    if (vm_from == NO_VM_FOUND || vm_to == NO_VM_FOUND) {
+        printf("%s[%d] vm_find failed\n");
+        return ;
+    }
+
+    vmem_copy(&vm_from->vmem, &vm_to->vmem);
+
+    int i;
+    for (i = 0; i < vm_from->num_vcpus; i++)
+        vcpu_copy(vm_from->vcpu[i], vm_to->vcpu[i], regs);
+
+    vm_from->state = vm_to->state;
 }
 
 struct vmcb *vm_find(vmid_t vmid)

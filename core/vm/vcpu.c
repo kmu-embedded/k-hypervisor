@@ -177,6 +177,13 @@ void vcpu_copy(struct vcpu *from, struct vcpu *to, struct core_regs *regs)
                 2.2 VMCR
             3. virq_hw->copy
     */
+    arch_regs_copy(&from->regs, &to->regs, regs);
+
+    int i;
+    for (i = 0; i < GICv2.num_lr; i++)
+        to->lr[i] = from->lr[i];
+
+    memcpy(&to->vmcr, &from->vmcr, sizeof(to->vmcr));
 }
 
 struct vcpu *vcpu_find(vcpuid_t vcpuid)

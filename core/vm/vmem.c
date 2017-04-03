@@ -79,3 +79,12 @@ hvmm_status_t vmem_restore(struct vmem *vmem)
     return HVMM_STATUS_SUCCESS;
 }
 
+void vmem_copy(struct vmem *from, struct vmem *to)
+{
+    from->mmap = to->mmap;
+    from->base = to->base;
+    from->vtcr = to->vtcr;
+    from->actlr = to->actlr;
+    from->vttbr = to->vttbr;
+}
+
