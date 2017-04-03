@@ -11,6 +11,8 @@ void kmus_start(vmid_t normal_id, vmid_t kmus_id, struct core_regs *regs)
             3. if normal VM is current scheduled VM, schedule mechanism should be called again
                for return from hyp mode to guestos mode
     */
+
+    vm_suspend(normal_id, regs);
     vm_copy(normal_id, kmus_id, regs);
 
     return;
