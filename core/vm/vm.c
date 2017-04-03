@@ -108,6 +108,8 @@ vmcb_state_t vm_suspend(vmid_t vmid, struct core_regs *regs)
         return VM_NOT_EXISTED;
     }
 
+    vm_save(vmid);
+
     int i;
     for (i = 0; i < vm->num_vcpus; i++) {
         // second parameter should be changed not NULL
