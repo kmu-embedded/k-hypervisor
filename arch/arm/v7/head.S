@@ -4,11 +4,24 @@
 #include <asm/macro.h>
 #include <generated/autoconf.h>
 
+#define ZIMAGE_MAGIC_NUMBER 0x016f2818
+
     .syntax	unified
     .arch_extension sec
     .arch_extension virt
 
 BEGIN_PROC(__start)
+    .rept   8
+    nop
+    .endr
+
+    b       1f
+
+    .word   ZIMAGE_MAGIC_NUMBER
+    .word   __start
+    .word   __end
+
+1:
     @ Disable interrupts
     cpsid   aif
 

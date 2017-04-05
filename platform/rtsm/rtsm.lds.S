@@ -124,4 +124,5 @@ SECTIONS
         . = ALIGN(4);
     }
     PROVIDE(__END_VM_PGTABLE = .);
+    __end = .;
 }
