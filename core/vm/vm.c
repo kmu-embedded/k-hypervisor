@@ -169,11 +169,6 @@ void vm_restore(vmid_t restore_vmid)
 
 void vm_copy(vmid_t from, vmid_t to, struct core_regs *regs)
 {
-    /*
-        TODO(casionwoo): 
-            1. vmem_copy
-            2. vcpu_copy
-    */
     struct vmcb *vm_from = vm_find(from);
     struct vmcb *vm_to = vm_find(to);
     if (vm_from == NO_VM_FOUND || vm_to == NO_VM_FOUND) {
@@ -181,11 +176,17 @@ void vm_copy(vmid_t from, vmid_t to, struct core_regs *regs)
         return ;
     }
 
-    vmem_copy(&vm_from->vmem, &vm_to->vmem);
+    /*
+        TODO(casionwoo): 
+            1. vdev_instance
+    */
 
     int i;
     for (i = 0; i < vm_from->num_vcpus; i++)
         vcpu_copy(vm_from->vcpu[i], vm_to->vcpu[i], regs);
+
+    vmem_copy(&vm_from->vmem, &vm_to->vmem);
+    vdev_copy(&vm_from->vdevs, &vm_to->vdevs);
 
     vm_from->state = vm_to->state;
 }

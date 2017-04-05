@@ -24,7 +24,7 @@ void kmus_start(vmid_t normal_id, vmid_t kmus_id, struct core_regs *regs)
     vm_start(kmus_id);
 
     // delete the VM struct (free the memory)
-    vm_delete(normal_id);
+//    vm_delete(normal_id);
 
     printf("%s[%d]\n", __func__, __LINE__);
 
