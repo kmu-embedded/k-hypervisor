@@ -176,11 +176,6 @@ void vm_copy(vmid_t from, vmid_t to, struct core_regs *regs)
         return ;
     }
 
-    /*
-        TODO(casionwoo): 
-            1. vdev_instance
-    */
-
     int i;
     for (i = 0; i < vm_from->num_vcpus; i++)
         vcpu_copy(vm_from->vcpu[i], vm_to->vcpu[i], regs);

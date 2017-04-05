@@ -33,6 +33,7 @@
 int32_t vsysreg_read_handler(void *pdata, uint32_t offset);
 int32_t vsysreg_write_handler(void *pdata, uint32_t offset, uint32_t *addr);
 int32_t vsysreg_create_instance(void **pdata);
+int32_t vsysreg_copy(void *from_pdata, void *to_pdata);
 
 struct vdev_module vdev_sysreg = {
     .name   = "vsysreg",
@@ -41,6 +42,7 @@ struct vdev_module vdev_sysreg = {
     .read   = vsysreg_read_handler,
     .write  = vsysreg_write_handler,
     .create = vsysreg_create_instance,
+    .copy = vsysreg_copy,
 };
 
 struct vsysreg {
@@ -72,6 +74,13 @@ int32_t vsysreg_create_instance(void **pdata)
 
     memset(vsysreg, 0, sizeof(struct vsysreg));
     *pdata = vsysreg;
+
+    return 0;
+}
+
+int32_t vsysreg_copy(void *from_pdata, void *to_pdata)
+{
+    memcpy(from_pdata, to_pdata, sizeof(struct vsysreg));
 
     return 0;
 }
