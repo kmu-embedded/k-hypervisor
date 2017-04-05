@@ -42,6 +42,10 @@ void init_cpu()
     paging_create((addr_t) &__HYP_PGTABLE);
     platform_init();
 
+    hsctlr = read_cp32(HSCTLR);
+    hsctlr |= HSCTLR_BIT(M) | HSCTLR_BIT(A) | HSCTLR_BIT(C) | HSCTLR_BIT(I);
+    write_cp32(hsctlr, HSCTLR);
+
     irq_init();
 
     dev_init(); /* we don't have */
@@ -56,10 +60,6 @@ void init_cpu()
 #endif
 
     printf("%s[%d]: CPU[%d]\n", __func__, __LINE__, cpuid);
-
-    hsctlr = read_cp32(HSCTLR);
-    hsctlr |= HSCTLR_BIT(M) | HSCTLR_BIT(A) | HSCTLR_BIT(C) | HSCTLR_BIT(I);
-    write_cp32(hsctlr, HSCTLR);
 
     start_hypervisor();
 }
@@ -80,13 +80,13 @@ void init_secondary_cpus()
     write_cp32(HMAIR0_VALUE, HMAIR0);
     write_cp32(HMAIR1_VALUE, HMAIR1);
 
-    irq_init();
-
-    printf("%s[%d]: CPU[%d]\n", __func__, __LINE__, cpuid);
-
     hsctlr = read_cp32(HSCTLR);
     hsctlr |= HSCTLR_BIT(M) | HSCTLR_BIT(A) | HSCTLR_BIT(C) | HSCTLR_BIT(I);
     write_cp32(hsctlr, HSCTLR);
+
+    irq_init();
+
+    printf("%s[%d]: CPU[%d]\n", __func__, __LINE__, cpuid);
 
     start_hypervisor();
 }
