@@ -12,6 +12,7 @@
 int32_t vgicd_read_handler(void *pdata, uint32_t offset);
 int32_t vgicd_write_handler(void *pdata, uint32_t offset, uint32_t *addr);
 int32_t vgicd_create_instance(void **pdata);
+int32_t vgicd_copy(void *from_pdata, void *to_pdata);
 
 struct vdev_module vdev_gicd = {
     .name = "vgicd_v2",
@@ -20,6 +21,7 @@ struct vdev_module vdev_gicd = {
     .read = vgicd_read_handler,
     .write = vgicd_write_handler,
     .create = vgicd_create_instance,
+    .copy = vgicd_copy
 };
 
 union sgir {
@@ -59,6 +61,13 @@ int32_t vgicd_create_instance(void **pdata)
     }
 
     *pdata = vgicd;
+
+    return 0;
+}
+
+int32_t vgicd_copy(void *from_pdata, void *to_pdata)
+{
+    memcpy(from_pdata, to_pdata, sizeof(struct vgicd));
 
     return 0;
 }

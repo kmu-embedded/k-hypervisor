@@ -40,6 +40,7 @@ extern struct virq_hw *virq_hw;
 int32_t vuart_read(void *pdata, uint32_t offset);
 int32_t vuart_write(void *pdata, uint32_t offset, uint32_t *addr);
 int32_t vuart_create(void **pdata);
+int32_t vuart_copy(void *from_pdata, void *to_pdata);
 
 struct pl01x {
     uint32_t uartdr;
@@ -67,6 +68,7 @@ struct vdev_module pl01x_vuart = {
     .read   = vuart_read,
     .write  = vuart_write,
     .create = vuart_create,
+    .copy   = vuart_copy
 };
 
 static irqreturn_t vdev_pl01x_irq_handler(int irq, void *regs, void *pdata)
@@ -93,6 +95,13 @@ int32_t vuart_create(void **pdata)
     struct pl01x *vuart = malloc(sizeof(struct pl01x));
 
     *pdata = vuart;
+    return 0;
+}
+
+int32_t vuart_copy(void *from_pdata, void *to_pdata)
+{
+    memcpy(from_pdata, to_pdata, sizeof(struct pl01x));
+
     return 0;
 }
 
