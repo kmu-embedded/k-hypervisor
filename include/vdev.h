@@ -48,6 +48,7 @@ void vdev_register(struct vdev_module *module);
 void vdev_init(void);
 
 void vdev_create(struct vdev_instance *, vmid_t);
+void vdev_delete(struct vdev_instance *vdevs);
 void vdev_handler(struct core_regs *regs, uint32_t iss);
 void vdev_copy(struct vdev_instance *vdev_from, struct vdev_instance *vdev_to);
 
