@@ -63,6 +63,11 @@ void vdev_create(struct vdev_instance *vdevs, vmid_t vmid)
     }
 }
 
+void vdev_delete(struct vdev_instance *vdevs)
+{
+    LIST_DEL(&vdevs->head);
+}
+
 static uint32_t vdev_module_initcall(initcall_t fn)
 {
     return	fn();

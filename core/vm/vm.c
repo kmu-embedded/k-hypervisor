@@ -138,7 +138,9 @@ vmcb_state_t vm_delete(vmid_t vmid)
         }
     }
 
+    vdev_delete(&vm->vdevs);
     LIST_DEL(&vm->head);
+
     free(vm);
 
     return UNDEFINED;

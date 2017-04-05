@@ -48,7 +48,7 @@ vmcb_state_t vm_start(vmid_t vmid);
 vmcb_state_t vm_suspend(vmid_t vmid, struct core_regs *regs);
 vmcb_state_t vm_delete(vmid_t vmid);
 
-// TODO(casionwoo) : vm_suspend, resume, shutdown
+// TODO(casionwoo) : resume, shutdown
 void vm_save(vmid_t vmid);
 void vm_restore(vmid_t vmid);
 
