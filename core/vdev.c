@@ -79,3 +79,18 @@ void SECTION(".init.vdev") vdev_init(void)
     }
 }
 
+void vdev_copy(struct vdev_instance *vdev_from, struct vdev_instance *vdev_to)
+{
+    struct vdev_instance *from_instance;
+    struct vdev_instance *to_instance;
+    list_for_each_entry(struct vdev_instance, from_instance, &vdev_from->head, head) {
+        list_for_each_entry(struct vdev_instance, to_instance, &vdev_to->head, head) {
+            if (from_instance->module->base == to_instance->module->base)
+                if (from_instance->module->copy)
+                    from_instance->module->copy(
+                            &from_instance->pdata, &to_instance->pdata
+                    );
+        }
+    }
+}
+

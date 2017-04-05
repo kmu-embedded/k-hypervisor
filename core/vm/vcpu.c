@@ -171,11 +171,9 @@ void vcpu_copy(struct vcpu *from, struct vcpu *to, struct core_regs *regs)
 {
     /*
         TODO(casionwoo):
-            1. arch_regs_copy
-            2. GICH copy
-                2.1 LR register
-                2.2 VMCR
-            3. virq_hw->copy
+            1. virq_hw->copy
+            2. virq_table
+            3. vdev_timer
     */
     arch_regs_copy(&from->regs, &to->regs, regs);
 
