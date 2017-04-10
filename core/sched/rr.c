@@ -83,10 +83,12 @@ int sched_rr_vcpu_detach(struct scheduler *s, struct sched_entry *e)
 {
     // struct sched_data_rr *sd = (struct sched_data_rr *) (s->sd);
     struct entry_data_rr *ed = (struct entry_data_rr *) (e->ed);
+    struct sched_data_rr *sd = (struct sched_data_rr *) (s->sd);
 
     /* Check if vcpu is attached */
     /* Remove it from runqueue by setting will_detached flag*/
     /* Set entry_data_rr's fields */
+    sd->current = NULL;
 
     LIST_DELINIT(&ed->head);
 

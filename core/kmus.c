@@ -1,6 +1,18 @@
 #include <core/kmus.h>
 #include <stdio.h>
 
+static inline unsigned __get_cpsr(void)
+{
+    unsigned long retval;
+    asm volatile (" mrs %0, cpsr" : "=r" (retval) :  );
+    return retval;
+}
+
+static inline void __set_cpsr(unsigned val)
+{
+    asm volatile (" msr cpsr, %0":  :"r" (val));
+}
+
 void kmus_start(vmid_t normal_id, vmid_t kmus_id, struct core_regs *regs)
 {
     /*
@@ -19,12 +31,24 @@ void kmus_start(vmid_t normal_id, vmid_t kmus_id, struct core_regs *regs)
     // copy all of the VM
     vm_copy(normal_id, kmus_id, regs);
 
+    struct vmcb *vm = vm_find(kmus_id);
+    vm->vcpu[0]->type = VCPU_NORMAL;
+
     // start the VM (register VM to scheduler)
     vm_start(kmus_id);
 
     // delete the VM struct (free the memory)
-//    vm_delete(normal_id);
+    vm_delete(normal_id);
 
+    // if there's no vm by delete normal vm
+    unsigned long retval;
+    asm volatile (" mrs %0, cpsr" : "=r" (retval) :  );
+    printf("CPSR IRQ bit[%x]\n", retval );
+    retval &= (~CPSR_BIT(I));
+    __set_cpsr(retval);
+    printf("CPSR IRQ bit[%x]\n", retval );
+
+    while(1);
 
     return;
 }

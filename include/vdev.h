@@ -30,7 +30,7 @@ struct vdev_module {
     int32_t (* read) (void *pdata, uint32_t offset);
     int32_t (* write) (void *pdata, uint32_t offset, uint32_t *addr);
     int32_t (* handle_irq) (void);
-    int32_t (* copy) (void *pdata_from, void *pdata_to);
+    int32_t (* copy) (void **pdata_from, void **pdata_to);
 
     struct list_head head;
 };

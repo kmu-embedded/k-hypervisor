@@ -115,7 +115,7 @@ vcpu_state_t vcpu_suspend(struct vcpu *vcpu, struct core_regs *regs)
 
     // detach the vcpu from run queue not to be scheduled
     sched_vcpu_detach(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
-    printf("sched_vcpu_register, vcpuid : %d is detatched on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
+    printf("sched_vcpu_detach, vcpuid : %d is detatched on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
 
     vcpu->state = VCPU_ACTIVATED;
     return vcpu->state;
@@ -123,9 +123,9 @@ vcpu_state_t vcpu_suspend(struct vcpu *vcpu, struct core_regs *regs)
 
 vcpu_state_t vcpu_delete(struct vcpu *vcpu)
 {
-    sched_vcpu_detach(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
+    printf("vcpu delete id : %d\n", vcpu->vcpuid);
     sched_vcpu_unregister(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
-    printf("sched_vcpu_register, vcpuid : %d is unregister on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
+    printf("sched_vcpu_unregister, vcpuid : %d is unregister on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
 
     LIST_DEL(&vcpu->head);
 
@@ -169,19 +169,12 @@ void vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
 
 void vcpu_copy(struct vcpu *from, struct vcpu *to, struct core_regs *regs)
 {
-    /*
-        TODO(casionwoo):
-            1. virq_hw->copy
-            2. virq_table
-            3. vdev_timer
-    */
-    arch_regs_copy(&from->regs, &to->regs, regs);
-
     int i;
     for (i = 0; i < GICv2.num_lr; i++)
         to->lr[i] = from->lr[i];
 
-    memcpy(&to->vmcr, &from->vmcr, sizeof(to->vmcr));
+    to->vmcr = from->vmcr;
+    arch_regs_copy(&from->regs, &to->regs, regs);
 }
 
 struct vcpu *vcpu_find(vcpuid_t vcpuid)
