@@ -135,14 +135,15 @@ vmcb_state_t vm_delete(vmid_t vmid)
         return VM_NOT_EXISTED;
     }
 
+    vdev_delete(&vm->vdevs);
+    LIST_DEL(&vm->head);
+
     for (i = 0; i < vm->num_vcpus; i++) {
         if (vcpu_delete(vm->vcpu[i]) != VCPU_UNDEFINED) {
             return vm->state;
         }
     }
 
-    vdev_delete(&vm->vdevs);
-    LIST_DEL(&vm->head);
 
     free(vm);
 
@@ -177,6 +178,7 @@ void vm_copy(vmid_t from, vmid_t to, struct core_regs *regs)
         printf("%s[%d] vm_find failed\n");
         return ;
     }
+
 
     int i;
     for (i = 0; i < vm_from->num_vcpus; i++)

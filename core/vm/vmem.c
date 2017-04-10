@@ -86,5 +86,7 @@ void vmem_copy(struct vmem *from, struct vmem *to)
     from->vtcr = to->vtcr;
     from->actlr = to->actlr;
     from->vttbr = to->vttbr;
+
+    // copy all of the physical memory
 }
 

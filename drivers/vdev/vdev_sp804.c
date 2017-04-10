@@ -6,7 +6,7 @@
 int32_t vtimer_read(void *pdata, uint32_t offset);
 int32_t vtimer_write(void *pdata, uint32_t offset, uint32_t *addr);
 int32_t vtimer_create(void **pdata);
-int32_t vtimer_copy(void *from_pdata, void *to_pdata);
+int32_t vtimer_copy(void **from_pdata, void **to_pdata);
 
 struct sp804 {
     uint32_t timer1_load;
@@ -60,9 +60,9 @@ int32_t vtimer_create(void **pdata)
 }
 
 #include <string.h>
-int32_t vtimer_copy(void *from_pdata, void *to_pdata)
+int32_t vtimer_copy(void **from_pdata, void **to_pdata)
 {
-    memcpy(from_pdata, to_pdata, sizeof(struct sp804));
+    memcpy(*from_pdata, *to_pdata, sizeof(struct sp804));
     return 0;
 }
 

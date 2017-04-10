@@ -78,7 +78,7 @@ hvmm_status_t sched_perform_switch(struct core_regs *regs)
      */
     if (s->current_vcpuid == VCPUID_INVALID) {
         debug_print("context: launching the first guest\n");
-        param_regs = NULL;
+        printf("context: launching the first guest\n");
     }
 
     /* Only if not from Hyp */
@@ -317,7 +317,8 @@ int sched_vcpu_detach(vcpuid_t vcpuid, uint32_t pcpu)
     /* TODO(casionwoo): need to be re-scheduled,
                         if there's no VM to be scheduled, run IDLE VM.
                         but at the first stage, just call the back-up VM function() */
-
+    if (get_current_vcpu()->vcpuid == vcpuid)
+        s->current_vcpuid = VCPUID_INVALID;
 
     return 0;
 }
