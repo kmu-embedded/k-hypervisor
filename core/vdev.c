@@ -32,10 +32,7 @@ void vdev_handler(struct core_regs *regs, uint32_t iss)
             } else {
                 regs->gpr[srt] = instance->module->read(instance->pdata, offset);
                 if (regs->gpr[srt] == 25 && instance->module->base == 0x1C090000) {
-                    /*NOTE(casionwoo): At first stage, only this special key makes a event for kmus
-                                       and call the kmus related fucntion*/
-                    kmus_start(0, 1, regs);
-//                    kmus_start(vm->vmid, 1, regs);
+                    kmus_start(vm->vmid, 1, regs);
                 }
             }
 

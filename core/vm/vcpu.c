@@ -97,7 +97,6 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
 
 vcpu_state_t vcpu_start(struct vcpu *vcpu)
 {
-    // TODO(casionwoo) : This function return only 'VCPU_ACTIVATED' but modify the return for error checking
     if (vcpu->id == 0 && vcpu->type == VCPU_NORMAL) {
         sched_vcpu_attach(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
         printf("sched_vcpu_register, vcpuid : %d is attatched on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
@@ -117,13 +116,12 @@ vcpu_state_t vcpu_suspend(struct vcpu *vcpu, struct core_regs *regs)
     sched_vcpu_detach(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
     printf("sched_vcpu_detach, vcpuid : %d is detatched on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
 
-    vcpu->state = VCPU_ACTIVATED;
+    vcpu->state = VCPU_REGISTERED;
     return vcpu->state;
 }
 
 vcpu_state_t vcpu_delete(struct vcpu *vcpu)
 {
-    printf("vcpu delete id : %d\n", vcpu->vcpuid);
     sched_vcpu_unregister(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
     printf("sched_vcpu_unregister, vcpuid : %d is unregister on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
 
@@ -174,7 +172,14 @@ void vcpu_copy(struct vcpu *from, struct vcpu *to, struct core_regs *regs)
         to->lr[i] = from->lr[i];
 
     to->vmcr = from->vmcr;
+    to->regs.cp15.vmpidr = from->regs.cp15.vmpidr;
     arch_regs_copy(&from->regs, &to->regs, regs);
+
+    for (i = 0; i < MAX_NR_IRQ; i++) {
+        to->map[i].enabled = from->map[i].enabled;
+        to->map[i].virq = from->map[i].virq;
+        to->map[i].pirq = from->map[i].pirq;
+    }
 }
 
 struct vcpu *vcpu_find(vcpuid_t vcpuid)
