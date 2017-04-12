@@ -81,11 +81,11 @@ hvmm_status_t vmem_restore(struct vmem *vmem)
 
 void vmem_copy(struct vmem *from, struct vmem *to)
 {
-    from->mmap = to->mmap;
-    from->base = to->base;
-    from->vtcr = to->vtcr;
-    from->actlr = to->actlr;
-    from->vttbr = to->vttbr;
+    to->mmap = from->mmap;
+    to->base = from->base;
+    to->vtcr = from->vtcr;
+    to->actlr = from->actlr;
+    to->vttbr = from->vttbr;
 
     // copy all of the physical memory
 }

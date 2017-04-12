@@ -112,7 +112,6 @@ vmcb_state_t vm_suspend(vmid_t vmid, struct core_regs *regs)
 
     int i;
     for (i = 0; i < vm->num_vcpus; i++) {
-        // second parameter should be changed not NULL
         if (vcpu_suspend(vm->vcpu[i], regs) != VCPU_REGISTERED) {
             return vm->state;
         }
@@ -184,7 +183,8 @@ void vm_copy(vmid_t from, vmid_t to, struct core_regs *regs)
     vmem_copy(&vm_from->vmem, &vm_to->vmem);
     vdev_copy(&vm_from->vdevs, &vm_to->vdevs);
 
-    vm_from->state = vm_to->state;
+    vm_to->state = vm_from->state;
+    vm_to->type = vm_from->type;
 }
 
 struct vmcb *vm_find(vmid_t vmid)

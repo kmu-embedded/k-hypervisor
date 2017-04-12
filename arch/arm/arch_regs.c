@@ -259,7 +259,6 @@ hvmm_status_t arch_regs_restore(struct arch_regs *regs, struct core_regs *curren
     // 'current_regs == 0' means there is no vcpu are running on hypervisor.
     // We need a way to boot first vcpu up as below.
     if (!current_regs) {
-        printf("%s[%d]\n", __func__, __LINE__);
         restore_cp15(&regs->cp15);
         __set_vcpu_context_first_time(&regs->core_regs);
 
@@ -338,23 +337,18 @@ static void banked_regs_copy(struct banked_regs *from, struct banked_regs *to)
 
 static void core_regs_copy(struct core_regs *from, struct core_regs *to, struct core_regs *regs)
 {
-    to->cpsr = from->cpsr; 	/* CPSR */
-    to->pc = from->pc; 	/* Program Counter */
-    to->pc += 4;
-    to->lr = from->lr;
     int i = 0;
+
+    to->cpsr = regs->cpsr; 	/* CPSR */
+    to->pc = regs->pc + 4; 	/* Program Counter */
+    to->lr = regs->lr;
+
     for(i = 0; i < NR_ARCH_GPR_REGS; i++)
-        to->gpr[i] = from->gpr[i]; /* R0 - R12 */
+        to->gpr[i] = regs->gpr[i]; /* R0 - R12 */
 }
 
 void arch_regs_copy(struct arch_regs *from, struct arch_regs *to, struct core_regs *regs)
 {
-    /*
-        TODO(casionwoo):
-            1. cp15 copy
-            2. banked_regs copy
-            3. core_regs copy
-    */
     cp15_copy(&from->cp15, &to->cp15);
     banked_regs_copy(&from->banked_regs, &to->banked_regs);
     core_regs_copy(&from->core_regs, &to->core_regs, regs);
