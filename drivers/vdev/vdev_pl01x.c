@@ -74,7 +74,29 @@ int32_t vuart_create(void **pdata)
 
 int32_t vuart_copy(void **from_pdata, void **to_pdata)
 {
-    memcpy(*from_pdata, *to_pdata, sizeof(struct pl01x));
+    struct pl01x *from = (struct pl01x *) *from_pdata;
+    struct pl01x *to = (struct pl01x *) *to_pdata;
+
+    to->uartdr = from->uartdr;
+    to->uartrsr_uartecr = from->uartrsr_uartecr;
+    to->uartfr = from->uartfr;
+    to->uartilpr = from->uartilpr;
+    to->uartibrd = from->uartibrd;
+    to->uartfbrd = from->uartfbrd;
+    to->uartlcr_h = from->uartlcr_h;
+    to->uartcr = from->uartcr;
+    to->uartifls = from->uartifls;
+    to->uartmsc = from->uartmsc;
+    to->uartris = from->uartris;
+    to->uartmis = from->uartmis;
+    to->uarticr = from->uarticr;
+    to->uartdmacr = from->uartdmacr;
+
+    int i = 0;
+    for (i = 0 ; i < 4; i ++) {
+        to->uartperiphid[i] = from->uartperiphid[i];
+        to->uartcellid[i] = from->uartcellid[i];
+    }
 
     return 0;
 }
