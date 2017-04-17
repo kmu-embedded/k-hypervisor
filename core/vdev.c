@@ -31,7 +31,9 @@ void vdev_handler(struct core_regs *regs, uint32_t iss)
                 instance->module->write(instance->pdata, offset, &(regs->gpr[srt]));
             } else {
                 regs->gpr[srt] = instance->module->read(instance->pdata, offset);
-                if (regs->gpr[srt] == 25 && instance->module->base == 0x1C090000) {
+                if (regs->gpr[srt] == 21 && instance->module->base == 0x1C090000) { // just copy of origin VM
+                    kmus_snapshot(vm->vmid, 1, regs);
+                } else if (regs->gpr[srt] == 25 && instance->module->base == 0x1C090000) { // kmus
                     kmus_start(vm->vmid, 1, regs);
                 }
             }
