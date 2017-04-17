@@ -83,26 +83,16 @@ hvmm_status_t vmem_restore(struct vmem *vmem)
 #include <vm_config.h>
 void vmem_copy(struct vmem *from, struct vmem *to)
 {
-//    to->mmap = from->mmap;
-//    to->base = from->base;
-//    to->vtcr = from->vtcr;
-//    to->actlr = from->actlr;
-//    to->vttbr = from->vttbr;
-
     to->vtcr = from->vtcr;
     to->actlr = from->actlr;
 
     // copy all of the physical memory
-    printf("%s[%d] offset[%x]\n", __func__, __LINE__, vm_conf[1].va_offsets);
     uint32_t offset = 0;
     uint32_t from_mem = vm_conf[0].pa_start;
     uint32_t to_mem   = vm_conf[1].pa_start;
 
     for (offset = 0; offset < vm_conf[1].va_offsets; offset+=4) {
-//        printf("before offset[%x] %s[%d]\n", offset, __func__, __LINE__);
         writel(readl(from_mem + offset), (to_mem + offset));
-//        printf("after offset[%x] %s[%d]\n", offset, __func__, __LINE__);
     }
-    printf("%s[%d]\n", __func__, __LINE__);
 }
 
