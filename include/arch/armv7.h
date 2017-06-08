@@ -16,6 +16,7 @@
 #include "v7/cpsr.h"
 #include "v7/hcr.h"
 #include "v7/hsctlr.h"
+#include "v7/smccc.h"
 
 /* co-processor registers: cp15, cp2 */
 struct cp15 {

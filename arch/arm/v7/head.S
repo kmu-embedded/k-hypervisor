@@ -96,6 +96,8 @@ BEGIN_PROC(__start)
     write_cp32(r0, NSACR)
 
     /* Initialize vector for monitor mode to enter NSHyp mode */
+    read_cp32(r0, MVBAR)
+
     ldr     r1, = __monitor_vector
     write_cp32(r1, MVBAR)
 

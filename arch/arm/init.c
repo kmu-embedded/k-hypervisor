@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include <arch/armv7.h>
+#include <arch/psci.h>
 #include <platform.h>
 #include <libc_init.h>
 #include <arch/irq.h>
@@ -14,6 +15,17 @@ extern void start_hypervisor(void);
 extern addr_t __hvc_vector;
 extern addr_t __HYP_PGTABLE;
 uint8_t secondary_smp_pen;
+
+void boot_secondary_cpus()
+{
+    unsigned long i;
+
+    for (i = 1; i < NR_CPUS; i++) {
+#ifdef CONFIG_ARM_PSCI
+        psci_cpu_on(i, CFG_HYP_START_ADDRESS);
+#endif
+    }
+}
 
 void init_cpu()
 {
@@ -56,6 +68,7 @@ void init_cpu()
 
 #ifdef CONFIG_SMP
     printf("wake up...other CPUs\n");
+    boot_secondary_cpus();
     secondary_smp_pen = 1;
 #endif
 
