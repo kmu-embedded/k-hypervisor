@@ -58,6 +58,6 @@
 #define SWIO_BIT                    (0b1)
 #define VM_BIT                      (0b1)
 
-#define HCR_BIT(x)                      ( x##_BIT << HCR_##x )
+#define HCR_BIT(x)                  ( x##_BIT << HCR_##x )
 
 #endif //__HCR_H__
