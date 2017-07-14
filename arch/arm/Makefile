@@ -12,6 +12,7 @@ objs-y += paging.o
 objs-y += arch_regs.o
 objs-y += fault.o
 objs-y += psci.o
+objs-y += smccc.o
 
 obj-y += $(patsubst %, arch/arm/%, ${objs-y})
 

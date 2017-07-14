@@ -31,7 +31,7 @@ void init_cpu()
 {
     uint8_t cpuid = smp_processor_id();
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
-    uint32_t hsctlr;
+    uint32_t hsctlr, hcr;
 
     // For console debugging.
     console_init();
@@ -58,6 +58,10 @@ void init_cpu()
     hsctlr |= HSCTLR_BIT(M) | HSCTLR_BIT(A) | HSCTLR_BIT(C) | HSCTLR_BIT(I);
     write_cp32(hsctlr, HSCTLR);
 
+    hcr = read_cp32(HCR);
+    hcr |= HCR_BIT(TSC);
+    write_cp32(hcr, HCR);
+
     irq_init();
 
     dev_init(); /* we don't have */
@@ -81,7 +85,7 @@ void init_secondary_cpus()
 {
     uint8_t cpuid = smp_processor_id();
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
-    uint32_t hsctlr;
+    uint32_t hsctlr, hcr;
 
     write_cp32((uint32_t) &__hvc_vector, HVBAR);
     assert(read_cp32(HVBAR) == (uint32_t) &__hvc_vector);
@@ -96,6 +100,10 @@ void init_secondary_cpus()
     hsctlr = read_cp32(HSCTLR);
     hsctlr |= HSCTLR_BIT(M) | HSCTLR_BIT(A) | HSCTLR_BIT(C) | HSCTLR_BIT(I);
     write_cp32(hsctlr, HSCTLR);
+
+    hcr = read_cp32(HCR);
+    hcr |= HCR_BIT(TSC);
+    write_cp32(hcr, HCR);
 
     irq_init();
 

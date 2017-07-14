@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <arch/armv7.h>
+#include <arch/smccc.h>
 
 #include "cp15.h"
 
@@ -44,12 +45,16 @@ int do_hyp_trap(struct core_regs *regs)
     case EC_MRRC_CP14:
     case EC_SVC:
     case EC_HVC:
+        break;
     case EC_SMC:
+        ret = emulate_arm_smccc(regs);
+        break;
     case EC_PABT_FROM_GUEST:
     case EC_PABT_FROM_HYP:
         break;
     case EC_DABT_FROM_GUEST:
         ret = handle_data_abort(regs, iss);
+        break;
     case EC_DABT_FROM_HYP:
         break;
     default:
