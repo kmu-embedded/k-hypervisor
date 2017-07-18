@@ -59,7 +59,7 @@ void init_cpu()
     write_cp32(hsctlr, HSCTLR);
 
     hcr = read_cp32(HCR);
-    hcr |= HCR_BIT(TSC);
+    hcr |= HCR_BIT(TSC) | HCR_BIT(TSW);
     write_cp32(hcr, HCR);
 
     irq_init();
@@ -102,7 +102,7 @@ void init_secondary_cpus()
     write_cp32(hsctlr, HSCTLR);
 
     hcr = read_cp32(HCR);
-    hcr |= HCR_BIT(TSC);
+    hcr |= HCR_BIT(TSC) | HCR_BIT(TSW);
     write_cp32(hcr, HCR);
 
     irq_init();

@@ -33,6 +33,15 @@ int32_t emulate_cp15_32(struct core_regs *regs, uint32_t iss)
         ret = 0;
         break;
     }
+    case CP32(DCISW):
+        write_cp32(regs->gpr[rt], DCCISW);
+        break;
+    case CP32(DCCSW):
+        write_cp32(regs->gpr[rt], DCCSW);
+        break;
+    case CP32(DCCISW):
+        write_cp32(regs->gpr[rt], DCCISW);
+        break;
     case CP32(CNTFRQ)    :
     case CP32(CNTKCTL)   :
     case CP32(CNTP_TVAL) :
