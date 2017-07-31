@@ -120,13 +120,6 @@ struct memdesc_t vm3_device_md[] = {
 
 struct memdesc_t *vm_mmap[CONFIG_NR_VMS];
 
-uint32_t vm0_device[] = { 37, 46, 0 };
-uint32_t vm1_device[] = { 39, 45, 36, 0 };
-uint32_t vm2_device[] = { 40, 41, 42, 44, 0 };
-uint32_t vm3_device[] = { 0 };
-
-uint32_t *vm_dev[CONFIG_NR_VMS];
-
 void setup_vm_mmap(void)
 {
     // TODO(wonseok): it will be replaced by DTB.
@@ -134,9 +127,4 @@ void setup_vm_mmap(void)
     vm_mmap[1] = vm1_device_md;
     vm_mmap[2] = vm2_device_md;
     vm_mmap[3] = vm3_device_md;
-
-    vm_dev[0] = vm0_device;
-    vm_dev[1] = vm1_device;
-    vm_dev[2] = vm2_device;
-    vm_dev[3] = vm3_device;
 }
