@@ -4,11 +4,24 @@
 #include <asm/macro.h>
 #include <generated/autoconf.h>
 
+#define ZIMAGE_MAGIC_NUMBER 0x016f2818
+
     .syntax	unified
     .arch_extension sec
     .arch_extension virt
 
 BEGIN_PROC(__start)
+    .rept   8
+    nop
+    .endr
+
+    b       1f
+
+    .word   ZIMAGE_MAGIC_NUMBER
+    .word   __start
+    .word   __end
+
+1:
     @ Disable interrupts
     cpsid   aif
 
@@ -83,6 +96,8 @@ BEGIN_PROC(__start)
     write_cp32(r0, NSACR)
 
     /* Initialize vector for monitor mode to enter NSHyp mode */
+    read_cp32(r0, MVBAR)
+
     ldr     r1, = __monitor_vector
     write_cp32(r1, MVBAR)
 

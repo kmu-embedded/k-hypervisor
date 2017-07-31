@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <arch/armv7.h>
+#include <arch/smccc.h>
+
+#include "cp15.h"
 
 // TODO(wonseok): If the traps cause the undefined exception or
 //                abort exception, we must forward the exception to guest VM.
@@ -27,8 +30,13 @@ int do_hyp_trap(struct core_regs *regs)
          *     condition = COND(ISS); 
          * }
          */
+        break;
     case EC_MCR_MRC_CP15:
+        ret = emulate_cp15_32(regs, iss);
+        break;
     case EC_MCRR_MRRC_CP15:
+        ret = emulate_cp15_64(regs, iss);
+        break;
     case EC_MCR_MRC_CP14:
     case EC_LDC_STC_CP14:
     case EC_HCRTR_CP0_CP13:
@@ -37,12 +45,16 @@ int do_hyp_trap(struct core_regs *regs)
     case EC_MRRC_CP14:
     case EC_SVC:
     case EC_HVC:
+        break;
     case EC_SMC:
+        ret = emulate_arm_smccc(regs);
+        break;
     case EC_PABT_FROM_GUEST:
     case EC_PABT_FROM_HYP:
         break;
     case EC_DABT_FROM_GUEST:
         ret = handle_data_abort(regs, iss);
+        break;
     case EC_DABT_FROM_HYP:
         break;
     default:

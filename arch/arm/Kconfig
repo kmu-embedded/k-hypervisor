@@ -49,5 +49,8 @@ endchoice
 
 source "platform/Kconfig"
 
+config ARM_PSCI
+    bool "Support for the ARM PSCI"
+
 endmenu
 

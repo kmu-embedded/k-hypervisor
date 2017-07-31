@@ -18,6 +18,8 @@ BEGIN_PROC(__monitor_vector)
 END_PROC(__monitor_vector)
 
 smc_handler:
+    write_cp32(r0, MVBAR)
+
     // Configure SCR
     @ SCR.NS=1, IRQ,FIQ,EA=0, FW,AW=1, nET=0, SCD=1, HCE=1
     read_cp32(r1, SCR)
