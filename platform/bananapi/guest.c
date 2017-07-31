@@ -6,5 +6,9 @@ struct memdesc_t *vm_mmap[CONFIG_NR_VMS];
 
 void setup_vm_mmap(void)
 {
-    vm_mmap[0] = vm_device_md;
+    int i;
+
+    for(i = 0; i < CONFIG_NR_VMS; i++) {
+        vm_mmap[i] = vm_device_md;
+    }
 }

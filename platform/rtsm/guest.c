@@ -123,6 +123,7 @@ struct memdesc_t *vm_mmap[CONFIG_NR_VMS];
 void setup_vm_mmap(void)
 {
     // TODO(wonseok): it will be replaced by DTB.
+    // TODO(jigi.kim): Fix it to match the number of VMs
     vm_mmap[0] = vm0_device_md;
     vm_mmap[1] = vm1_device_md;
     vm_mmap[2] = vm2_device_md;
