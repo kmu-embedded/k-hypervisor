@@ -1,4 +1,4 @@
-#include <core/sched/scheduler_skeleton.h>
+//#include <core/sched/scheduler_skeleton.h>
 #include <core/sched/sched-config.h>
 #include <config.h>
 #include <arch/armv7.h>
@@ -9,7 +9,7 @@
 #include <lib/list.h>
 #include <core/timer.h>
 
-struct entry_data_rm {
+struct entry_data_edf {
     struct sched_entry *e;
 
     uint32_t period;
@@ -18,7 +18,7 @@ struct entry_data_rm {
     uint32_t period_cntdn;
     uint32_t budget_cntdn;
 
-#ifdef CONFIG_SCHED_RM_REPORT
+#ifdef CONFIG_SCHED_EDF_REPORT
     /* for analysis */
     uint32_t running_ticks;
     uint32_t preempted;
@@ -27,32 +27,32 @@ struct entry_data_rm {
     struct list_head head;
 };
 
-struct sched_data_rm {
+struct sched_data_edf {
     struct scheduler *s;
 
     uint64_t tick_interval_us;
     uint64_t ticks;
-#ifdef CONFIG_SCHED_RM_REPORT
+#ifdef CONFIG_SCHED_EDF_REPORT
     uint64_t count_1k_ticks;
 #endif
 
-    struct entry_data_rm *current;
+    struct entry_data_edf *current;
     struct list_head runqueue;
 };
 
 /* Scheduler related data initialization */
-void sched_rm_init(struct scheduler *s)
+void sched_edf_init(struct scheduler *s)
 {
     /* Allocate memory for system-wide data */
-    struct sched_data_rm *sd = (struct sched_data_rm *) malloc(sizeof(struct sched_data_rm));
+    struct sched_data_edf *sd = (struct sched_data_edf *) malloc(sizeof(struct sched_data_edf));
 
     /* Initialize data according to config */
     sd->current = NULL;
     sd->ticks = 0;
-#ifdef CONFIG_SCHED_RM_REPORT
+#ifdef CONFIG_SCHED_EDF_REPORT
     sd->count_1k_ticks = 1000;
 #endif
-    sd->tick_interval_us = schedconf_rm_tick_interval_us[s->pcpuid];
+    sd->tick_interval_us = schedconf_edf_tick_interval_us[s->pcpuid];
     sd->s = s;
 
     LIST_INITHEAD(&sd->runqueue);
@@ -60,15 +60,15 @@ void sched_rm_init(struct scheduler *s)
     s->sd = sd;
 }
 
-int sched_rm_vcpu_register(struct scheduler *s, struct sched_entry *e)
+int sched_edf_vcpu_register(struct scheduler *s, struct sched_entry *e)
 {
-    struct entry_data_rm *ed = (struct entry_data_rm *) malloc(sizeof(struct entry_data_rm));
+    struct entry_data_edf *ed = (struct entry_data_edf *) malloc(sizeof(struct entry_data_edf));
 
-    ed->period = schedconf_rm_period_budget[e->vcpuid][0];
-    ed->budget = schedconf_rm_period_budget[e->vcpuid][1];
+    ed->period = schedconf_edf_period_budget[e->vcpuid][0];
+    ed->budget = schedconf_edf_period_budget[e->vcpuid][1];
     ed->e = e;
 
-#ifdef CONFIG_SCHED_RM_REPORT
+#ifdef CONFIG_SCHED_EDF_REPORT
     ed->running_ticks = 0;
     ed->preempted = 0;
 #endif
@@ -80,9 +80,9 @@ int sched_rm_vcpu_register(struct scheduler *s, struct sched_entry *e)
     return 0;
 }
 
-int sched_rm_vcpu_unregister(struct scheduler *s, struct sched_entry *e)
+int sched_edf_vcpu_unregister(struct scheduler *s, struct sched_entry *e)
 {
-    /* TODO:(igkang) Finish writing RM vCPU unregister function */
+    /* TODO:(igkang) Finish writing EDF vCPU unregister function */
     /* Check if vcpu is registered */
     /* Check if vcpu is detached. If not, request detachment.*/
     /* If we have requested detachment of vcpu,
@@ -91,10 +91,10 @@ int sched_rm_vcpu_unregister(struct scheduler *s, struct sched_entry *e)
     return 0;
 }
 
-int sched_rm_vcpu_attach(struct scheduler *s, struct sched_entry *e)
+int sched_edf_vcpu_attach(struct scheduler *s, struct sched_entry *e)
 {
-    struct sched_data_rm *sd = (struct sched_data_rm *) (s->sd);
-    struct entry_data_rm *ed = (struct entry_data_rm *) (e->ed);
+    struct sched_data_edf *sd = (struct sched_data_edf *) (s->sd);
+    struct entry_data_edf *ed = (struct entry_data_edf *) (e->ed);
 
     ed->period_cntdn = ed->period;
     ed->budget_cntdn = ed->budget;
@@ -104,14 +104,14 @@ int sched_rm_vcpu_attach(struct scheduler *s, struct sched_entry *e)
     return 0;
 }
 
-int sched_rm_vcpu_detach(struct scheduler *s, struct sched_entry *e)
+int sched_edf_vcpu_detach(struct scheduler *s, struct sched_entry *e)
 {
-    struct entry_data_rm *ed = (struct entry_data_rm *) (e->ed);
+    struct entry_data_edf *ed = (struct entry_data_edf *) (e->ed);
 
-    /* TODO:(igkang) Finish writing RM vCPU detach function */
+    /* TODO:(igkang) Finish writing EDF vCPU detach function */
     /* Check if vcpu is attached */
     /* Remove it from runqueue by setting will_detached flag*/
-    /* Set entry_data_rm's fields */
+    /* Set entry_data_edf's fields */
 
     LIST_DELINIT(&ed->head);
 
@@ -121,12 +121,12 @@ int sched_rm_vcpu_detach(struct scheduler *s, struct sched_entry *e)
 /**
  * Main scheduler routine in RT - Rate Monotonic policy implementation
  */
-int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
+int sched_edf_do_schedule(struct scheduler *s, uint64_t *expiration)
 {
-    struct sched_data_rm *sd = (struct sched_data_rm *) (s->sd);
+    struct sched_data_edf *sd = (struct sched_data_edf *) (s->sd);
 
-    struct entry_data_rm *current_ed = NULL;
-    struct entry_data_rm *next_ed = NULL;
+    struct entry_data_edf *current_ed = NULL;
+    struct entry_data_edf *next_ed = NULL;
 
     int next_vcpuid = VCPUID_INVALID;
 
@@ -138,7 +138,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
     }
 
     /* Check & decrease all entries' period count */
-    struct entry_data_rm *ed = NULL;
+    struct entry_data_edf *ed = NULL;
     uint32_t min_period = 0xFFFFFFFF;
     next_ed = NULL;
 
@@ -152,8 +152,8 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
             ed->period_cntdn = ed->period;
         }
 
-        /* find the entry with budget left and shortest period */
-        if (ed->budget_cntdn > 0 && min_period > ed->period) {
+        /* find the entry with budget left and shortest period left */
+        if (ed->budget_cntdn > 0 && min_period > ed->period_cntdn) {
             next_ed = ed;
             min_period = ed->period;
         }
@@ -166,8 +166,8 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
 
         if (current_ed->budget_cntdn == 0) { // out of budget
             current_ed->e->state = SCHED_WAITING;
-        } else if (current_ed->period > next_ed->period) { // preemption!
-#ifdef CONFIG_SCHED_RM_REPORT
+        } else if (current_ed->period_cntdn > next_ed->period_cntdn) { // preemption!
+#ifdef CONFIG_SCHED_EDF_REPORT
             /* current_ed->e->vcpuid is preempted by next_ed->e->vcpuid */
             current_ed->preempted += 1;
 #endif
@@ -184,7 +184,7 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
         sd->current = next_ed;
         next_ed->budget_cntdn -= 1;
 
-#ifdef CONFIG_SCHED_RM_REPORT
+#ifdef CONFIG_SCHED_EDF_REPORT
         next_ed->running_ticks += 1;
 #endif
 
@@ -196,9 +196,9 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
         while (1);
     }
 
-#ifdef CONFIG_SCHED_RM_REPORT
+#ifdef CONFIG_SCHED_EDF_REPORT
     if (sd->ticks >= sd->count_1k_ticks) {
-        printf("RM report (for %u ticks):\n", sd->tick_interval_us);
+        printf("EDF report (for %u ticks):\n", sd->tick_interval_us);
 
         LIST_FOR_EACH_ENTRY(ed, &sd->runqueue, head) {
             printf("    vcpu%u: running=%u preempted=%u\n", ed->e->vcpuid, ed->running_ticks, ed->preempted);
@@ -219,11 +219,11 @@ int sched_rm_do_schedule(struct scheduler *s, uint64_t *expiration)
     return next_vcpuid;
 }
 
-const struct sched_policy sched_rt_rm = {
-    .init = sched_rm_init,
-    .register_vcpu = sched_rm_vcpu_register,
-    .unregister_vcpu = sched_rm_vcpu_unregister,
-    .attach_vcpu = sched_rm_vcpu_attach,
-    .detach_vcpu = sched_rm_vcpu_detach,
-    .do_schedule = sched_rm_do_schedule
+const struct sched_policy sched_rt_edf = {
+    .init = sched_edf_init,
+    .register_vcpu = sched_edf_vcpu_register,
+    .unregister_vcpu = sched_edf_vcpu_unregister,
+    .attach_vcpu = sched_edf_vcpu_attach,
+    .detach_vcpu = sched_edf_vcpu_detach,
+    .do_schedule = sched_edf_do_schedule
 };

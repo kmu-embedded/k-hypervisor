@@ -64,6 +64,7 @@ struct scheduler {
 
 extern const struct sched_policy sched_rr;
 extern const struct sched_policy sched_rt_rm;
+extern const struct sched_policy sched_rt_edf;
 
 extern struct scheduler *sched[NR_CPUS];
 
