@@ -74,8 +74,6 @@ vmcb_state_t vm_init(vmid_t vmid)
         }
     }
 
-    gic_set_itargetsr(vmid, vm->vcpu[0]->pcpuid);
-
     vm->state = HALTED;
 
     vmem_init(&vm->vmem, vmid);

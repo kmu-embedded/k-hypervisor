@@ -31,20 +31,6 @@ uint32_t schedconf_g_vcpu_to_pcpu_map[TOTAL_VCPUS] = {
 };
 
 /*****
- * Rate Monotonic policy configs
- */
-
-/* pcpu(=policy) -> scheduler tick interval (mili second) */
-uint32_t schedconf_rm_tick_interval_ms[NR_CPUS] = {
-    0,
-};
-
-/* vcpu -> {period, budget} in tick count */
-uint32_t schedconf_rm_period_budget[TOTAL_VCPUS][2] = {
-    {0, },
-};
-
-/*****
  * Round Robin policy configs
  */
 
@@ -54,5 +40,33 @@ uint32_t schedconf_rr_slice[TOTAL_VCPUS] = {
     5,
     5,
     5
+};
+
+/*****
+ * Rate Monotonic policy configs
+ */
+
+/* pcpu(=policy) -> scheduler tick interval (microsecond) */
+uint32_t schedconf_rm_tick_interval_us[NR_CPUS] = {
+    0,
+};
+
+/* vcpu -> {period, budget} in tick count */
+uint32_t schedconf_rm_period_budget[TOTAL_VCPUS][2] = {
+    {0, },
+};
+
+/*****
+ * Earlist Deadline First policy configs
+ */
+
+/* pcpu(=policy) -> scheduler tick interval (microsecond) */
+uint32_t schedconf_edf_tick_interval_us[NR_CPUS] = {
+    0,
+};
+
+/* vcpu -> {period, budget} in tick count */
+uint32_t schedconf_edf_period_budget[TOTAL_VCPUS][2] = {
+    {0, },
 };
 

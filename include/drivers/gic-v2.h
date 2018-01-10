@@ -65,7 +65,6 @@ void gic_deactivate_irq(uint32_t irq);
 void gic_configure_irq(uint32_t irq, uint8_t polarity);
 
 void gic_set_sgi(const uint32_t target, uint32_t sgi);
-void gic_set_itargetsr(vmid_t vmid, pcpuid_t pcpu);
 
 /* GICH related functions */
 void gich_init(void);

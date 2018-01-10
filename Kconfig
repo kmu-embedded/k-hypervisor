@@ -31,6 +31,10 @@ config SCHED_RM_REPORT
 	bool "Enable rate monotonic policy report printing"
 	default n
 
+config SCHED_EDF_REPORT
+	bool "Enable earlist deadline first policy report printing"
+	default n
+
 config SCHED_STOPWATCH
 	bool "Enable timing scheduler routine"
 	default n

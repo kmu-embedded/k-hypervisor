@@ -83,10 +83,11 @@ static irqreturn_t is_guest_spi(int irq, void *pregs, void *pdata)
         vcpu = vm->vcpu[0];
         virq = pirq_to_virq(vcpu, irq);
 
-        if (virq != VIRQ_INVALID && vm->state == RUNNING) {
-            virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
-            break;
+        if (virq == VIRQ_INVALID || vm->state != RUNNING) {
+            continue;
         }
+
+        virq_hw->forward_irq(vcpu, virq, irq, INJECT_SW);
     }
 
     return VM_IRQ;

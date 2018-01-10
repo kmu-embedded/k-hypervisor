@@ -162,6 +162,15 @@ void gic_init(void)
         GICD_WRITE(GICD_IPRIORITYR(i >> 2), 0xa0a0a0a0);
     }
 
+    // NOTE: GIC_ITRAGETSR0-7 is read-only on multiprocessor environment.
+    for (i = 32; i < GICv2.ITLinesNumber; i += 4) {
+#ifdef CONFIG_ARCH_EXYNOS
+        GICD_WRITE(GICD_ITARGETSR(i >> 2), 0x10 << 0 | 0x10 << 8 | 0x10 << 16 | 0x10 << 24);
+#else
+        GICD_WRITE(GICD_ITARGETSR(i >> 2), 1 << 0 | 1 << 8 | 1 << 16 | 1 << 24);
+#endif
+    }
+
     GICC_WRITE(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
     if (cpuid == 0) {
         GICD_WRITE(GICD_CTLR, 0x1);
@@ -215,26 +224,6 @@ void gic_set_sgi(const uint32_t target, uint32_t sgi)
     GICD_WRITE(GICD_SGIR, GICD_SGIR_TARGET_LIST |
                (target << GICD_SGIR_CPU_TARGET_LIST_OFFSET) |
                (sgi & GICD_SGIR_SGI_INT_ID_MASK));
-}
-
-void gic_set_itargetsr(vmid_t vmid, pcpuid_t pcpu)
-{
-    extern uint32_t *vm_dev[CONFIG_NR_VMS];
-
-    uint32_t *spi = vm_dev[vmid];
-    int i;
-
-    for (i = 0; spi[i] != 0; i++) {
-        if (spi[i] >= GICv2.ITLinesNumber) {
-            continue;
-        }
-
-        int n = spi[i] / 4;
-        int offset = spi[i] % 4;
-
-        uint32_t old = GICD_READ(GICD_ITARGETSR(n));
-        GICD_WRITE(GICD_ITARGETSR(n), old | (1 << pcpu) << (8 * offset));
-    }
 }
 
 uint32_t gic_get_irq_number(void)
