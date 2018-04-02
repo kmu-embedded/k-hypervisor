@@ -1,5 +1,6 @@
 #include <arch/armv7.h>
 #include <arch/psci.h>
+#include <arch/smccc.h>
 
 int emulate_arm_smccc(struct core_regs *regs)
 {
@@ -12,7 +13,10 @@ int emulate_arm_smccc(struct core_regs *regs)
         break;
 #endif
     default:
-        break;
+        // Forward SMCCC as intended.
+        arm_smccc_smc(regs->gpr[0], regs->gpr[1], regs->gpr[2], regs->gpr[3],
+                      regs->gpr[4], regs->gpr[5], regs->gpr[6], regs->gpr[7],
+                      (struct arm_smccc_res *) regs->gpr);
     }
 
     return 0;
