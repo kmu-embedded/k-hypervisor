@@ -5,11 +5,27 @@
     .arch_extension virt
 
 BEGIN_PROC(arm_smccc_smc)
-    smc #0
-    bx  lr
+    mov     r12, sp
+    push    {r4-r7}
+    ldm     r12, {r4-r7}
+
+    smc     #0
+
+    pop     {r4-r7}
+    ldr     r12, [sp, #(4 * 4)]
+    stm     r12, {r0-r3}
+    bx      lr
 END_PROC(arm_smccc_smc)
 
 BEGIN_PROC(arm_smccc_hvc)
-    hvc #0
-    bx  lr
+    mov     r12, sp
+    push    {r4-r7}
+    ldm     r12, {r4-r7}
+
+    hvc     #0
+
+    pop     {r4-r7}
+    ldr     r12, [sp, #(4 * 4)]
+    stm     r12, {r0-r3}
+    bx      lr
 END_PROC(arm_smccc_hvc)
