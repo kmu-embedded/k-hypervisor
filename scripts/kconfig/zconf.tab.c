@@ -159,6 +159,10 @@ enum yytokentype {
 int cdebug = PRINTD;
 
 extern int zconflex(void);
+
+/* 2018.04.16 function define */
+extern struct kconf_id *kconf_id_lookup(register const char *str, register unsigned int len);
+
 static void zconfprint(const char *err, ...);
 static void zconf_error(const char *err, ...);
 static void zconferror(const char *err);
