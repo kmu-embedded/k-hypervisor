@@ -28,6 +28,10 @@ void platform_init()
     paging_add_mapping(0x01c28000, 0x01c28000, MT_DEVICE, SZ_1K);
 
     paging_add_mapping(CFG_HYP_START_ADDRESS, CFG_HYP_START_ADDRESS, MT_WRITEBACK_RW_ALLOC, SZ_128M);
+
+    // add optee static shmem area.
+    // TODO(jigi.kim): move below to smc handler
+    paging_add_mapping(0x40000000, 0x40000000, MT_WRITEBACK_RW_ALLOC, SZ_4M);
 }
 
 void console_init()
