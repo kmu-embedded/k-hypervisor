@@ -3,7 +3,9 @@
 #include <arch/smccc.h>
 #include <core/scheduler.h>
 
-int emulate_arm_smccc(struct core_regs *regs)
+void handle_optee_smc(uint32_t *a);
+
+int handle_arm_smccc(struct core_regs *regs)
 {
     uint32_t function_id = regs->gpr[0];
 
@@ -13,25 +15,34 @@ int emulate_arm_smccc(struct core_regs *regs)
         regs->gpr[0] = emulate_psci_cpu_on(regs);
         break;
 #endif
-    //TODO(jigi.kim): Add trusted OS related case, here.
+    //TODO: Add trusted OS related case, here.
     default:
-        // Forward SMCCC as intended.
-        arm_smccc_smc(regs->gpr[0], regs->gpr[1], regs->gpr[2], regs->gpr[3],
-                      regs->gpr[4], regs->gpr[5], regs->gpr[6], regs->gpr[7],
-                      (struct arm_smccc_res *) regs->gpr);
-
-        // Partition OP-TEE static shared memory space for each VM.
-        if ((function_id & 0x0000ffff) == 0x7) {
-            vcpuid_t vcpuid = get_current_vcpuid();
-
-            uint32_t base_addr = regs->gpr[1];
-            uint32_t offset = regs->gpr[2];
-
-            regs->gpr[1] = base_addr + (offset/CONFIG_NR_VMS) * vcpuid;
-            regs->gpr[2] = offset/CONFIG_NR_VMS;
-        }
-
+        handle_optee_smc(regs->gpr);
     }
 
     return 0;
+}
+
+//TODO: Move below to separated c file.
+
+#define FN_GET_SHM_CONFIG   0xb2000007
+
+// how to initialize optee_thread?
+void handle_optee_smc(uint32_t *a)
+{
+    uint32_t function_id = a[0];
+
+    arm_smccc_smc(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7],
+            (struct arm_smccc_res *) a);
+
+    // TODO: make it with switch statement.
+    if (function_id == FN_GET_SHM_CONFIG) {
+        vcpuid_t vcpuid = get_current_vcpuid();
+
+        uint32_t base_addr = a[1];
+        uint32_t offset = a[2];
+
+        a[2] = offset/CONFIG_NR_VMS;
+        a[1] = base_addr + (a[2] * vcpuid);
+    }
 }

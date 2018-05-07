@@ -47,7 +47,7 @@ int do_hyp_trap(struct core_regs *regs)
     case EC_HVC:
         break;
     case EC_SMC:
-        ret = emulate_arm_smccc(regs);
+        ret = handle_arm_smccc(regs);
         break;
     case EC_PABT_FROM_GUEST:
     case EC_PABT_FROM_HYP:
