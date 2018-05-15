@@ -39,8 +39,10 @@ hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
         j++;
     }
 
-    paging_add_ipa_mapping(vmem->base, CONFIG_VA_START, vm_conf[vmid].pa_start, MEMATTR_NORMAL_WB_CACHEABLE, 1,
+    //TODO(jigi.kim): temporarily modified for ipa = pa env.
+    paging_add_ipa_mapping(vmem->base, vm_conf[vmid].pa_start, vm_conf[vmid].pa_start, MEMATTR_NORMAL_WB_CACHEABLE, 1,
                            vm_conf[vmid].va_offsets);
+    //paging_add_ipa_mapping(vmem->base, CONFIG_VA_START, vm_conf[vmid].pa_start, MEMATTR_NORMAL_WB_CACHEABLE, 1,
 
     vmem->actlr = read_cp32(ACTLR);
 
