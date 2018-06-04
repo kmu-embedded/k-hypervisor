@@ -24,7 +24,7 @@ void vdev_handler(struct core_regs *regs, uint32_t iss)
         uint32_t vdev_base = instance->module->base;
         uint32_t vdev_size = instance->module->size;
 
-        if (vdev_base <= fipa && fipa <= vdev_base + vdev_size) {
+        if (vdev_base <= fipa && fipa < vdev_base + vdev_size) {
             uint32_t offset = fipa - vdev_base;
             if (wnr) {
                 instance->module->write(instance->pdata, offset, &(regs->gpr[srt]));
