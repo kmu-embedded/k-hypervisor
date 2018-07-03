@@ -39,6 +39,6 @@ struct optee_thread {
     struct optee_msg_arg *msg;
 } threads[NR_OPTEE_THREAD];
 
-void handle_optee_smc(struct core_regs *regs);
+int handle_optee_smc(struct core_regs *regs);
 
 #endif

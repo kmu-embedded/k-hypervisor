@@ -5,7 +5,7 @@
 #include <core/vm/vcpu.h>
 #include <core/scheduler.h>
 
-void handle_optee_smc(struct core_regs *regs)
+int handle_optee_smc(struct core_regs *regs)
 {
     uint32_t *a = regs->gpr;
     uint32_t function_id = a[0];
@@ -24,7 +24,7 @@ void handle_optee_smc(struct core_regs *regs)
         } else if (thread->rpc == RPC_FUNC_WQ_DUMMY) {
             if (thread->is_sleep) { // make thread to do busy waiting
                 a[0] = a[1] = RPC_FUNC_WQ_DUMMY;
-                return;
+                return 0;
             }
 
             thread->msg->ret = 0;
@@ -67,4 +67,6 @@ void handle_optee_smc(struct core_regs *regs)
             }
         }
     }
+
+    return 0;
 }
