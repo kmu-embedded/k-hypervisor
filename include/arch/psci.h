@@ -26,10 +26,10 @@ typedef enum {
 #define PSCI_RET_NOT_PRESENT        -7
 #define PSCI_RET_DISABLED           -8
 
-void psci_cpu_suspend(uint32_t state, unsigned long entry_point);
-void psci_cpu_off(uint32_t state);
-void psci_cpu_on(unsigned long cpu_id, unsigned long entry_point);
-void psci_migrate(unsigned long cpu_id);
+int psci_cpu_suspend(uint32_t state, unsigned long entry_point);
+int psci_cpu_off(uint32_t state);
+int psci_cpu_on(unsigned long cpu_id, unsigned long entry_point);
+int psci_migrate(unsigned long cpu_id);
 
 int emulate_psci_cpu_on(struct core_regs *regs);
 

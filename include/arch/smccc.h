@@ -8,7 +8,17 @@
 #define SMCCC_FN_SERVICE(fn)    (((fn) & 0x3f000000) >> 24)
 #define SMCCC_FN_NUM(fn)        ((fn) & 0x0000FFFF)
 
-enum smccc_fn_service_range {
+enum smccc_call_type {
+    SMCCC_CALL_TYPE_STD = 0,
+    SMCCC_CALL_TYPE_FAST
+};
+
+enum smccc_convention {
+    SMCCC_CONV_32 = 0,
+    SMCCC_CONV_64
+};
+
+enum smccc_service_range {
     SMCCC_SERVICE_ARCH = 0,
     SMCCC_SERVICE_CPU,
     SMCCC_SERVICE_SIP,
