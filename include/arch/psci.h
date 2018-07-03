@@ -11,7 +11,9 @@ typedef enum {
     PSCI_FN_CPU_SUSPEND = PSCI_FN_BASE,
     PSCI_FN_CPU_OFF,
     PSCI_FN_CPU_ON,
-    PSCI_FN_MIGRATE
+    PSCI_FN_MIGRATE,
+
+    PSCI_FN_LAST = PSCI_FN_MIGRATE
 } psci_fn;
 
 #define PSCI_RET_SUCCESS             0
