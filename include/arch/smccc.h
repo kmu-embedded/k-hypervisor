@@ -3,14 +3,33 @@
 
 #include <arch/armv7.h>
 
-#define SMCCC_FN_CALL_TYPE(fn)  (((fn) & 0x80000000) >> 31)
-#define SMCCC_FN_CONV(fn)       (((fn) & 0x40000000) >> 30)
-#define SMCCC_FN_SERVICE(fn)    (((fn) & 0x3f000000) >> 24)
-#define SMCCC_FN_NUM(fn)        ((fn) & 0x0000FFFF)
+#define SMCCC_TYPE_SHIFT    31
+#define SMCCC_CONV_SHIFT    30
+#define SMCCC_SERVICE_SHIFT 24
+#define SMCCC_FN_NUM_SHIFT   0
+
+#define SMCCC_TYPE_MASK     0x1
+#define SMCCC_CONV_MASK     0x1
+#define SMCCC_SERVICE_MASK  0x3f
+#define SMCCC_FN_NUM_MASK   0xffff
+
+#define __SMCCC_GET_FROM_ID(desc, id) \
+    (((id) >> SMCCC_##desc##_SHIFT) & SMCCC_##desc##_MASK)
+
+#define SMCCC_IS_FAST_CALL(fn)  __SMCCC_GET_FROM_ID(TYPE, fn)
+#define SMCCC_IS_64(fn)         __SMCCC_GET_FROM_ID(CONV, fn)
+#define SMCCC_SERVICE(fn)       __SMCCC_GET_FROM_ID(SERVICE, fn)
+#define SMCCC_FN_NUM(fn)        __SMCCC_GET_FROM_ID(FN_NUM, fn)
+
+#define SMCCC_FN_ID(type, conv, service, fn_num) ( \
+    (((type) & SMCCC_CALL_TYPE_MASK) << SMCCC_CALL_TYPE_SHIFT) | \
+    (((conv) & SMCCC_CONV_MASK) << SMCCC_CONV_SHIFT) | \
+    (((service) & SMCCC_SERVICE_MASK) << SMCCC_SERVICE_SHIFT) | \
+    (((fn_num) & SMCCC_FN_NUM_MASK) << SMCCC_FN_NUM_SHIFT))
 
 enum smccc_call_type {
-    SMCCC_CALL_TYPE_STD = 0,
-    SMCCC_CALL_TYPE_FAST
+    SMCCC_TYPE_STD = 0,
+    SMCCC_TYPE_FAST
 };
 
 enum smccc_convention {

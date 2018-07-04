@@ -11,7 +11,7 @@ int handle_arm_smccc(struct core_regs *regs)
     uint32_t function_id = regs->gpr[0];
     int ret = INVALID_SMCCC_FN;
 
-    switch(SMCCC_FN_SERVICE(function_id)) {
+    switch(SMCCC_SERVICE(function_id)) {
     case SMCCC_SERVICE_ARCH:
     case SMCCC_SERVICE_CPU:
     case SMCCC_SERVICE_SIP:
@@ -29,6 +29,10 @@ int handle_arm_smccc(struct core_regs *regs)
 
     if (ret == INVALID_SMCCC_FN) {
         printf("No corresponding smc handler for fn 0x%08x\n", function_id);
+        printf("type : %s\n", SMCCC_IS_FAST_CALL(function_id) ? "fast" : "std");
+        printf("conv : %d\n", SMCCC_IS_64(function_id) ? 64 : 32);
+        printf("owner: %d\n", SMCCC_SERVICE(function_id));
+        printf("func : 0x%04x\n", SMCCC_FN_NUM(function_id));
     }
 
     return ret;
