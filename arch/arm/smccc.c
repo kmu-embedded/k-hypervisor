@@ -11,7 +11,7 @@ int handle_arm_smccc(struct core_regs *regs)
     uint32_t function_id = regs->gpr[0];
     int ret = INVALID_SMCCC_FN;
 
-    switch(SMCCC_SERVICE(function_id)) {
+    switch (SMCCC_SERVICE(function_id)) {
     case SMCCC_SERVICE_ARCH:
     case SMCCC_SERVICE_CPU:
     case SMCCC_SERVICE_SIP:
