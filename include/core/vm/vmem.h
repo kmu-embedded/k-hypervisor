@@ -6,6 +6,7 @@
 #include <types.h>
 
 struct vmem {
+    struct memdesc_t dram;
     struct memdesc_t *mmap;
     uint32_t base;
     uint32_t vtcr;

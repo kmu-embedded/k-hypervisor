@@ -27,6 +27,10 @@ void vmem_create(struct vmem *vmem, vmid_t vmid)
     vmem->vttbr |= (uint32_t) vmem->base & VTTBR_BADDR_MASK;
 
     vmem->mmap = vm_mmap[vmid];
+
+    vmem->dram.pa = vm_conf[vmid].pa_start;
+    vmem->dram.ipa = CONFIG_VA_START;
+    vmem->dram.size = vm_conf[vmid].va_offsets;
 }
 
 hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
@@ -39,8 +43,8 @@ hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
         j++;
     }
 
-    paging_add_ipa_mapping(vmem->base, CONFIG_VA_START, vm_conf[vmid].pa_start, MEMATTR_NORMAL_WB_CACHEABLE, 1,
-                           vm_conf[vmid].va_offsets);
+    paging_add_ipa_mapping(vmem->base, vmem->dram.ipa, vmem->dram.pa, MEMATTR_NORMAL_WB_CACHEABLE, 1,
+                           vmem->dram.size);
 
     vmem->actlr = read_cp32(ACTLR);
 
@@ -88,11 +92,10 @@ void vmem_copy(struct vmem *from, struct vmem *to)
 
     // copy all of the physical memory
     uint32_t offset = 0;
-    uint32_t from_mem = vm_conf[0].pa_start;
-    uint32_t to_mem   = vm_conf[1].pa_start;
+    uint32_t from_mem = from->dram.pa;
+    uint32_t to_mem = to->dram.pa;
 
-    for (offset = 0; offset < vm_conf[1].va_offsets; offset+=4) {
+    for (offset = 0; offset < from->dram.size; offset+=4) {
         writel(readl(from_mem + offset), (to_mem + offset));
     }
 }
-
