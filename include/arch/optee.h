@@ -42,11 +42,31 @@ enum optee_msg_cmd {
 
 // OPTEE_API_64_FAST_CALL (prefix: 0xffff)
 
-#define OPTEE_RPC_FUNC_ALLOC     0Xffff0000
-#define OPTEE_RPC_FUNC_FREE      0Xffff0002
-#define OPTEE_RPC_FUNC_FOREIGN   0Xffff0004
-#define OPTEE_RPC_FUNC_CMD       0Xffff0005
-#define OPTEE_RPC_FUNC_DUMMY     0Xfffffff0
+#define OPTEE_RPC_PREFIX            0xffff0000
+
+#define OPTEE_RPC_FUNC_ALLOC        0Xffff0000
+#define OPTEE_RPC_FUNC_FREE         0Xffff0002
+#define OPTEE_RPC_FUNC_FOREIGN      0Xffff0004
+#define OPTEE_RPC_FUNC_CMD          0Xffff0005
+#define OPTEE_RPC_FUNC_DUMMY        0Xfffffff0
+
+// OPTEE_SMC_RET_TYPES
+
+#define OPTEE_SMC_RET_UNKNOWN_FUNC  0xffffffff
+
+#define OPTEE_SMC_RET_OK            0x0
+#define OPTEE_SMC_RET_ETHREAD_LIMIT 0x1
+#define OPTEE_SMC_RET_EBUSY         0x2
+#define OPTEE_SMC_RET_ERESUME       0x3
+#define OPTEE_SMC_RET_EBADADDR      0x4
+#define OPTEE_SMC_RET_EBADCMD       0x5
+#define OPTEE_SMC_RET_ENOMEM        0x6
+#define OPTEE_SMC_RET_ENOTAVAIL     0x7
+
+#define OPTEE_SMC_RET_IS_RPC(ret) \
+    (((ret) != OPTEE_SMC_RET_UNKNOWN_FUNC) && \
+    (((ret) & OPTEE_RPC_PREFIX) == OPTEE_RPC_PREFIX))
+
 
 enum optee_rpc_cmd {
     OPTEE_RPC_CMD_LOAD_TA = 0,
@@ -58,11 +78,6 @@ enum optee_rpc_cmd {
     OPTEE_RPC_CMD_SHM_ALLOC,
     OPTEE_RPC_CMD_SHM_FREE,
     OPTEE_RPC_CMD_BENCH_REG = 20
-};
-
-enum optee_rpc_cmd_wq {
-    OPTEE_RPC_CMD_WQ_SLEEP = 0,
-    OPTEE_RPC_CMD_WQ_WAKE
 };
 
 struct optee_msg_param_tmem {
@@ -111,6 +126,11 @@ struct optee_thread {
     bool is_sleep;
 
     struct optee_msg_arg *msg;
+};
+
+struct optee_shm {
+    uint32_t base;
+    uint32_t size;
 };
 
 int handle_optee_smc(struct core_regs *regs);

@@ -9,72 +9,97 @@
 
 struct optee_thread threads[CONFIG_NR_OPTEE_THREAD];
 
-// TODO(jigi.kim): modify handling routine with switch statement.
+void handle_optee_get_shm_config(struct core_regs *regs);
+void handle_optee_return_from_rpc(struct core_regs *regs);
+void handle_optee_rpc(struct core_regs *regs);
+
 int handle_optee_smc(struct core_regs *regs)
 {
-    uint32_t *a = regs->gpr;
-    uint32_t function_id = a[0];
+    uint32_t function_id = regs->gpr[0];
 
-    // TODO(jigi.kim): add case for open session (for thread-vm mapping)
-    if (function_id == OPTEE_SMC_RETURN_FROM_RPC) {
-        uint32_t shm_pa = a[2];
-        uint32_t thread_id = a[3];
-
-        struct optee_thread *thread = &threads[thread_id];
-
-        if (thread->rpc == OPTEE_RPC_FUNC_ALLOC) {
-            thread->msg = (struct optee_msg_arg *) shm_pa;
-            thread->rpc = -1;
-        } else if (thread->rpc == OPTEE_RPC_FUNC_DUMMY) {
-            if (thread->is_sleep) { // make thread to do busy waiting
-                a[0] = a[1] = OPTEE_RPC_FUNC_DUMMY;
-                return 0;
-            }
-
-            thread->msg->ret = 0;
-            thread->rpc = -1;
-        }
+    switch (function_id) {
+    case OPTEE_SMC_GET_SHM_CONFIG:
+        handle_optee_get_shm_config(regs);
+        return 0;
+    case OPTEE_SMC_RETURN_FROM_RPC:
+        handle_optee_return_from_rpc(regs);
     }
 
-    arm_smccc_smc(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7],
-            (struct arm_smccc_res *) a);
+    arm_smccc_smc(regs->gpr[0], regs->gpr[1], regs->gpr[2], regs->gpr[3],
+                  regs->gpr[4], regs->gpr[5], regs->gpr[6], regs->gpr[7],
+                  (struct arm_smccc_res *) regs->gpr);
 
-    // TODO(jigi.kim): save shm config at first time and reuse it
-    if (function_id == OPTEE_SMC_GET_SHM_CONFIG) {
-        struct vmcb *vm = get_current_vm();
-        vcpuid_t vcpuid = get_current_vcpuid();
-
-        uint32_t addr = a[1];
-        uint32_t offset = a[2];
-
-        a[2] = offset/CONFIG_NR_VMS;
-        a[1] = addr + (a[2] * vcpuid);
-
-        paging_add_mapping(addr, addr, MT_WRITEBACK_RW_ALLOC, offset);
-        paging_add_ipa_mapping(vm->vmem.base, addr, addr,
-                MEMATTR_NORMAL_WT_CACHEABLE, 1, offset);
-    }
-
-    // TODO(jigi.kim): add case for rpc function free
-    if (a[0] == OPTEE_RPC_FUNC_ALLOC) {
-        struct optee_thread *thread = &threads[a[3]];
-
-        thread->rpc = OPTEE_RPC_FUNC_ALLOC;
-    } else if (a[0] == OPTEE_RPC_FUNC_CMD) {
-        struct optee_thread *thread = &threads[a[3]];
-        struct optee_msg_arg *msg = thread->msg;
-
-        if (msg->cmd == OPTEE_RPC_CMD_WAIT_QUEUE) { 
-            if (msg->params[0].u.val.a) { // wake
-                thread->rpc = OPTEE_RPC_CMD_WAIT_QUEUE;
-                thread = &threads[msg->params[0].u.val.b];
-                thread->is_sleep = false;
-            } else { // sleep
-                thread->is_sleep = true;
-                thread->rpc = a[0] = OPTEE_RPC_FUNC_DUMMY;
-            }
-        }
+    if (OPTEE_SMC_RET_IS_RPC(regs->gpr[0])) {
+        handle_optee_rpc(regs);
     }
 
     return 0;
+}
+
+void handle_optee_get_shm_config(struct core_regs *regs)
+{
+    static struct optee_shm shm = { -1, -1 };
+    struct vmcb *vm = get_current_vm();
+
+    if (shm.base == (uint32_t) -1) {
+        arm_smccc_smc(regs->gpr[0], 0, 0, 0, 0, 0, 0, 0,
+                (struct arm_smccc_res *) regs->gpr);
+
+        shm.base = regs->gpr[1];
+        shm.size = regs->gpr[2];
+
+        paging_add_mapping(shm.base, shm.base, MT_WRITEBACK_RW_ALLOC, shm.size);
+    }
+
+    // TODO: need alignment if CONFIG_NR_VMS is not a multiple of 2
+    regs->gpr[2] = shm.size / CONFIG_NR_VMS;
+    regs->gpr[1] = shm.base + (regs->gpr[2] * vm->vmid);
+
+    paging_add_ipa_mapping(vm->vmem.base, shm.base, shm.base,
+            MEMATTR_NORMAL_WT_CACHEABLE, 1, shm.size);
+}
+
+void handle_optee_return_from_rpc(struct core_regs *regs)
+{
+    uint32_t thread_id = regs->gpr[3];
+    struct optee_thread *thread = &threads[thread_id];
+
+    switch (thread->rpc) {
+    case OPTEE_RPC_FUNC_ALLOC:
+        thread->msg = (struct optee_msg_arg *) regs->gpr[2];
+        break;
+    case OPTEE_RPC_FUNC_FREE:
+        thread->msg = NULL;
+        break;
+    case OPTEE_RPC_FUNC_DUMMY:
+        if (thread->is_sleep) // make normal world's thread to do busy waiting
+            regs->gpr[0] = OPTEE_RPC_FUNC_DUMMY;
+        else
+            thread->msg->ret = 0;
+    }
+
+    thread->rpc = -1;
+}
+
+void handle_optee_rpc(struct core_regs *regs)
+{
+    uint32_t thread_id = regs->gpr[3];
+    struct optee_thread *thread = &threads[thread_id];
+
+    thread->rpc = regs->gpr[0];
+
+    if (thread->rpc != OPTEE_RPC_FUNC_CMD) return;
+
+    struct optee_msg_arg *msg = thread->msg;
+
+    switch (msg->cmd) {
+    case OPTEE_RPC_CMD_WAIT_QUEUE:
+        if (msg->params[0].u.val.a) { // OPTEE_RPC_CMD_WQ_WAKE
+            thread = &threads[msg->params[0].u.val.b];
+            thread->is_sleep = false;
+        } else { // OPTEE_RPC_CMD_WQ_SLEEP
+            thread->rpc = regs->gpr[0] = OPTEE_RPC_FUNC_DUMMY;
+            thread->is_sleep = true;
+        }
+    }
 }

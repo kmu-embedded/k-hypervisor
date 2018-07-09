@@ -44,7 +44,7 @@ int handle_misc_arm_smccc(struct core_regs *regs)
 {
     uint32_t function_id = regs->gpr[0];
 
-    switch(function_id) {
+    switch (function_id) {
 #ifdef CONFIG_ARM_PSCI
     case PSCI_FN_CPU_ON:
         regs->gpr[0] = emulate_psci_cpu_on(regs);
