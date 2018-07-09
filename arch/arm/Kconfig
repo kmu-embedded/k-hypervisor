@@ -50,7 +50,10 @@ endchoice
 source "platform/Kconfig"
 
 config ARM_PSCI
-    bool "Support for the ARM PSCI"
+    bool "Support for ARM PSCI"
+
+config OPTEE
+    bool "Support for OP-TEE Trusted OS"
 
 endmenu
 

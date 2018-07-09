@@ -21,7 +21,9 @@ int handle_arm_smccc(struct core_regs *regs)
         break;
     case SMCCC_SERVICE_TRUSTED_APP ... SMCCC_SERVICE_TRUSTED_APP_END:
     case SMCCC_SERVICE_TRUSTED_OS ... SMCCC_SERVICE_TRUSTED_OS_END:
+#ifdef CONFIG_OPTEE
         ret = handle_optee_smc(regs);
+#endif
         break;
     default:
         ret = handle_misc_arm_smccc(regs);

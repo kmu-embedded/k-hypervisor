@@ -11,8 +11,8 @@ objs-y += lpae.o
 objs-y += paging.o
 objs-y += arch_regs.o
 objs-y += fault.o
-objs-y += optee.o
-objs-y += psci.o
+objs-$(CONFIG_OPTEE) += optee.o
+objs-$(CONFIG_ARM_PSCI) += psci.o
 objs-y += smccc.o
 
 obj-y += $(patsubst %, arch/arm/%, ${objs-y})
