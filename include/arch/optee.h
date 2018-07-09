@@ -4,9 +4,6 @@
 #include <core/vm/vm.h>
 #include <arch/smccc.h>
 
-// TODO(jigi.kim): Make this macro configurable
-#define NR_OPTEE_THREAD 8
-
 #define OPTEE_SMC_SERVICE_TRUSTED_OS 50
 #define OPTEE_SMC_SERVICE_TRUSTED_OS_API 63
 

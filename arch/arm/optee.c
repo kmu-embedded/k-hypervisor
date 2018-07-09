@@ -5,15 +5,15 @@
 #include <core/vm/vcpu.h>
 #include <core/scheduler.h>
 
-struct optee_thread threads[NR_OPTEE_THREAD];
+struct optee_thread threads[CONFIG_NR_OPTEE_THREAD];
 
+// TODO(jigi.kim): modify handling routine with switch statement.
 int handle_optee_smc(struct core_regs *regs)
 {
     uint32_t *a = regs->gpr;
     uint32_t function_id = a[0];
 
     // TODO(jigi.kim): add case for open session (for thread-vm mapping)
-    // TODO(jigi.kim): make it with switch statement.
     if (function_id == OPTEE_SMC_RETURN_FROM_RPC) {
         uint32_t shm_pa = a[2];
         uint32_t thread_id = a[3];
@@ -37,7 +37,6 @@ int handle_optee_smc(struct core_regs *regs)
     arm_smccc_smc(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7],
             (struct arm_smccc_res *) a);
 
-    // TODO(jigi.kim): make it with switch statement.
     if (function_id == OPTEE_SMC_GET_SMC_CONFIG) {
         vcpuid_t vcpuid = get_current_vcpuid();
 
@@ -48,7 +47,7 @@ int handle_optee_smc(struct core_regs *regs)
         a[1] = base_addr + (a[2] * vcpuid);
     }
 
-    // TODO(jigi.kim): make it with switch statement.
+    // TODO(jigi.kim): add case for rpc function free
     if (a[0] == OPTEE_RPC_FUNC_ALLOC) {
         struct optee_thread *thread = &threads[a[3]];
 

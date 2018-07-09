@@ -52,8 +52,17 @@ source "platform/Kconfig"
 config ARM_PSCI
     bool "Support for ARM PSCI"
 
-config OPTEE
+menuconfig OPTEE
     bool "Support for OP-TEE Trusted OS"
+
+if OPTEE
+
+config NR_OPTEE_THREAD
+    int "Number of OP-TEE threads"
+    default 8
+    range 1 256
+
+endif
 
 endmenu
 
