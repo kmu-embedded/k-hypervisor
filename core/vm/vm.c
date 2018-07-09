@@ -60,8 +60,9 @@ vmid_t vm_create(uint8_t num_vcpus)
 #include <drivers/gic-v2.h>
 #include "../../include/arch/gicv2_bit.h"
 
-//TODO(jigi.kim): temporarily added for ipa = pa env.
+#ifdef CONFIG_OPTEE
 #include <vm_config.h>
+#endif
 
 vmcb_state_t vm_init(vmid_t vmid)
 {
@@ -76,10 +77,12 @@ vmcb_state_t vm_init(vmid_t vmid)
             return vm->state;
         }
 
-        //TODO(jigi.kim): temporarily added for ipa = pa env.
+#ifdef CONFIG_OPTEE
+        // for now, we need to make ipa equal to pa to support op-tee
         printf("vmid[%d] to pa[0x%08x]!\n", vmid, vm_conf[vmid].pa_start);
         vm->vcpu[i]->regs.core_regs.gpr[2] = vm_conf[vmid].pa_start;
         vm->vcpu[i]->regs.core_regs.pc = vm_conf[vmid].pa_start;
+#endif
     }
 
     vm->state = HALTED;
