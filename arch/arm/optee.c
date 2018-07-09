@@ -5,6 +5,8 @@
 #include <core/vm/vcpu.h>
 #include <core/scheduler.h>
 
+#include "paging.h"
+
 struct optee_thread threads[CONFIG_NR_OPTEE_THREAD];
 
 // TODO(jigi.kim): modify handling routine with switch statement.
@@ -37,14 +39,20 @@ int handle_optee_smc(struct core_regs *regs)
     arm_smccc_smc(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7],
             (struct arm_smccc_res *) a);
 
-    if (function_id == OPTEE_SMC_GET_SMC_CONFIG) {
+    // TODO(jigi.kim): save shm config at first time and reuse it
+    if (function_id == OPTEE_SMC_GET_SHM_CONFIG) {
+        struct vmcb *vm = get_current_vm();
         vcpuid_t vcpuid = get_current_vcpuid();
 
-        uint32_t base_addr = a[1];
+        uint32_t addr = a[1];
         uint32_t offset = a[2];
 
         a[2] = offset/CONFIG_NR_VMS;
-        a[1] = base_addr + (a[2] * vcpuid);
+        a[1] = addr + (a[2] * vcpuid);
+
+        paging_add_mapping(addr, addr, MT_WRITEBACK_RW_ALLOC, offset);
+        paging_add_ipa_mapping(vm->vmem.base, addr, addr,
+                MEMATTR_NORMAL_WT_CACHEABLE, 1, offset);
     }
 
     // TODO(jigi.kim): add case for rpc function free

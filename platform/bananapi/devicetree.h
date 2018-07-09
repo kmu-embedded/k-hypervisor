@@ -2,11 +2,6 @@
 #include <size.h>
 
 struct memdesc_t vm_device_md[] = {
-    // TODO: The address below is for OP-TEE static shmem and temporarily added.
-    //       It actually is not appropriate to be here.
-    //       So, have to move this one into somewhere else.
-    {"optee shmem", 0x40000000, 0x40000000, SZ_4M, MEMATTR_NORMAL_WT_CACHEABLE, 1},
-
     {"sram a1", 0x00000000, 0x00000000, SZ_16K, MEMATTR_DEVICE_MEMORY, 1},
     {"sram a2", 0x00004000, 0x00004000, SZ_16K, MEMATTR_DEVICE_MEMORY, 1},
     {"sram a3-4", 0x00008000, 0x00008000, SZ_16K, MEMATTR_DEVICE_MEMORY, 1},
