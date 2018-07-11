@@ -131,6 +131,7 @@ struct optee_thread {
 struct optee_shm {
     uint32_t base;
     uint32_t size;
+    uint32_t cached;
 };
 
 int handle_optee_smc(struct core_regs *regs);
