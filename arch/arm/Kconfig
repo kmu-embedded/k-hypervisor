@@ -1,4 +1,3 @@
-source "drivers/Kconfig"
 source "core/Kconfig"
 
 menu "ARM architecture"

@@ -1,9 +1,11 @@
 include ${SOURCE_PATH}/drivers/vdev/Makefile
 include ${SOURCE_PATH}/drivers/serial/Makefile
+include ${SOURCE_PATH}/drivers/dma/Makefile
 
 objs-y :=
 
 SUBDIRECTORIES += drivers/vdev
+SUBDIRECTORIES += drivers/dma
 SUBDIRECTORIES += drivers/serial
 
 objs-y += generic_timer.o
