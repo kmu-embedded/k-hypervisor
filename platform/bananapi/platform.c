@@ -1,7 +1,6 @@
 #include "platform.h"
 #include <stdint.h>
 #include <serial.h>
-#include <drivers/dma/sun4i-dma.h>
 
 // TODO(wonseok): moved header files from arch/arm to proper dir.
 #include "../../arch/arm/paging.h"
@@ -38,12 +37,18 @@ void console_init()
     // TODO(wonseok): add general initialization for console devices.
     serial_init();
 }
+
 #include <core/timer.h>
+
+#if defined(CONFIG_DMA_ENGINE) && defined(CONFIG_SUN4I_DMA)
+#include <drivers/dma/sun4i-dma.h>
+#endif
 
 void dev_init()
 {
     // init .text.dev section like vdev.
     timer_hw_init(NS_PL2_PTIMER_IRQ);
+#if defined(CONFIG_DMA_ENGINE) && defined(CONFIG_SUN4I_DMA)
     dma_irq_enable();
-    
+#endif
 }

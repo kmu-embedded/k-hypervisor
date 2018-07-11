@@ -1,6 +1,21 @@
 source "drivers/serial/Kconfig"
 source "drivers/vdev/Kconfig"
 
+menu "Device Drivers"
+
 config MCT
 	bool
 
+menuconfig DMA_ENGINE
+    bool "DMA Engine support"
+
+if DMA_ENGINE
+
+config SUN4I_DMA
+    bool "Support for sun4i DMA controller"
+    depends on ARCH_SUNXI
+    default ARCH_SUNXI
+
+endif
+
+endmenu

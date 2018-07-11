@@ -25,6 +25,8 @@ config VA_START
 
 endmenu
 
+source "drivers/Kconfig"
+
 menu "Timer/Scheduler options"
 
 config SCHED_RM_REPORT
