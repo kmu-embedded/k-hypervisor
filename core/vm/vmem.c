@@ -39,8 +39,14 @@ hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid)
         j++;
     }
 
+#ifdef CONFIG_OPTEE
+    // for now, we need to make ipa equal to pa to support op-tee
+    paging_add_ipa_mapping(vmem->base, vm_conf[vmid].pa_start, vm_conf[vmid].pa_start, MEMATTR_NORMAL_WB_CACHEABLE, 1,
+                           vm_conf[vmid].va_offsets);
+#else
     paging_add_ipa_mapping(vmem->base, CONFIG_VA_START, vm_conf[vmid].pa_start, MEMATTR_NORMAL_WB_CACHEABLE, 1,
                            vm_conf[vmid].va_offsets);
+#endif
 
     vmem->actlr = read_cp32(ACTLR);
 

@@ -51,3 +51,18 @@ void write_pgentry(addr_t base, addr_t va, addr_t pa, uint8_t mem_attr, uint8_t 
     write64(read64(l2_entry_addr) | set_valid, l2_entry_addr);
     write64(set_entry(pa, mem_attr, ap, af).raw, l3_entry_addr);
 }
+
+pgentry read_pgentry(addr_t base, addr_t va)
+{
+    uint32_t l1_index, l2_index, l3_index;
+    addr_t l3_entry_addr;
+
+    l1_index = ((va & 0xC0000) >> ENTRY_SHIFT) >> ENTRY_SHIFT;
+    l2_index = ((va & 0x3FE00) >> ENTRY_SHIFT);
+    l3_index = (va & 0x001FF);
+
+    l3_entry_addr = (base + 0x5000) + GET_L3_INDEX(l1_index) + GET_L2_INDEX(l2_index)
+                    + GET_OFFSET(l3_index);
+
+    return (pgentry) read64(l3_entry_addr);
+}

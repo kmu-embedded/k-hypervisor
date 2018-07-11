@@ -6,24 +6,36 @@
 #include <core/vm/vm.h>
 #include <core/vm/vcpu.h>
 
-void psci_cpu_suspend(uint32_t state, unsigned long entry_point)
+int psci_cpu_suspend(uint32_t state, unsigned long entry_point)
 {
-    arm_smccc_smc(PSCI_FN_CPU_SUSPEND, state, entry_point, 0);
+    struct arm_smccc_res res;
+
+    arm_smccc_smc(PSCI_FN_CPU_SUSPEND, state, entry_point, 0, 0, 0, 0, 0, &res);
+    return res.a0;
 }
 
-void psci_cpu_off(uint32_t state)
+int psci_cpu_off(uint32_t state)
 {
-    arm_smccc_smc(PSCI_FN_CPU_OFF, state, 0, 0);
+    struct arm_smccc_res res;
+
+    arm_smccc_smc(PSCI_FN_CPU_OFF, state, 0, 0, 0, 0, 0, 0, &res);
+    return res.a0;
 }
 
-void psci_cpu_on(unsigned long cpu_id, unsigned long entry_point)
+int psci_cpu_on(unsigned long cpu_id, unsigned long entry_point)
 {
-    arm_smccc_smc(PSCI_FN_CPU_ON, cpu_id, entry_point, 0);
+    struct arm_smccc_res res;
+
+    arm_smccc_smc(PSCI_FN_CPU_ON, cpu_id, entry_point, 0, 0, 0, 0, 0, &res);
+    return res.a0;
 }
 
-void psci_migrate(unsigned long cpu_id)
+int psci_migrate(unsigned long cpu_id)
 {
-    arm_smccc_smc(PSCI_FN_MIGRATE, cpu_id, 0, 0);
+    struct arm_smccc_res res;
+
+    arm_smccc_smc(PSCI_FN_MIGRATE, cpu_id, 0, 0, 0, 0, 0, 0, &res);
+    return res.a0;
 }
 
 int emulate_psci_cpu_on(struct core_regs *regs)
