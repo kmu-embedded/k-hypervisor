@@ -1,6 +1,7 @@
 #include "platform.h"
 #include <stdint.h>
 #include <serial.h>
+#include <drivers/dma/sun4i-dma.h>
 
 // TODO(wonseok): moved header files from arch/arm to proper dir.
 #include "../../arch/arm/paging.h"
@@ -26,6 +27,8 @@ void platform_init()
 
     // add mapping for serial devices
     paging_add_mapping(0x01c28000, 0x01c28000, MT_DEVICE, SZ_1K);
+    // add mapping for dma
+    paging_add_mapping(0x01c02000, 0x01c02000, MT_DEVICE, SZ_4K);
 
     paging_add_mapping(CFG_HYP_START_ADDRESS, CFG_HYP_START_ADDRESS, MT_WRITEBACK_RW_ALLOC, SZ_128M);
 }
@@ -41,4 +44,6 @@ void dev_init()
 {
     // init .text.dev section like vdev.
     timer_hw_init(NS_PL2_PTIMER_IRQ);
+    dma_irq_enable();
+    
 }
