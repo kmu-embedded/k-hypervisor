@@ -67,7 +67,7 @@ config ARM_PSCI_VERSION_1_1
 
 endchoice
 
-config ARM_PSCI_BASE
+config ARM_PSCI_FN_BASE
     hex "ARM PSCI base function id"
     default 0x84000000 if ARM_PSCI_VERSION_1_0 || ARM_PSCI_VERSION_1_1
 

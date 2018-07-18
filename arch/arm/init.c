@@ -1,7 +1,6 @@
 #include <stdio.h>
 
 #include <arch/armv7.h>
-#include <arch/psci.h>
 #include <platform.h>
 #include <libc_init.h>
 #include <arch/irq.h>
@@ -9,6 +8,10 @@
 #include <core/timer.h>
 #include <vm_map.h>
 #include "paging.h"
+
+#ifdef CONFIG_ARM_PSCI
+#include <arch/psci.h>
+#endif
 
 extern void start_hypervisor(void);
 

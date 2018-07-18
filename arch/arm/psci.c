@@ -40,7 +40,6 @@ int psci_migrate(unsigned long cpu_id)
 
 int emulate_psci_cpu_on(struct core_regs *regs)
 {
-    // TODO(jigi.kim): Separate general secondary vcpu init behavior as a function.
     uint32_t vcpuid = regs->gpr[1];
     uint32_t entry_point = regs->gpr[2];
 

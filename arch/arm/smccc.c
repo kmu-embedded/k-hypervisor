@@ -1,8 +1,14 @@
 #include <stdio.h>
 #include <arch/armv7.h>
-#include <arch/optee.h>
-#include <arch/psci.h>
 #include <arch/smccc.h>
+
+#ifdef CONFIG_OPTEE
+#include <arch/optee.h>
+#endif
+
+#ifdef CONFIG_ARM_PSCI
+#include <arch/psci.h>
+#endif
 
 int handle_misc_arm_smccc(struct core_regs *regs);
 
