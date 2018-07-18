@@ -48,8 +48,30 @@ endchoice
 
 source "platform/Kconfig"
 
-config ARM_PSCI
+menuconfig ARM_PSCI
     bool "Support for ARM PSCI"
+
+if ARM_PSCI
+
+choice
+    prompt "ARM PSCI version"
+
+config ARM_PSCI_VERSION_0_1
+    bool "ARM PSCI version 0.1"
+
+config ARM_PSCI_VERSION_1_0
+    bool "ARM PSCI version 1.0"
+
+config ARM_PSCI_VERSION_1_1
+    bool "ARM PSCI version 1.1"
+
+endchoice
+
+config ARM_PSCI_BASE
+    hex "ARM PSCI base function id"
+    default 0x84000000 if ARM_PSCI_VERSION_1_0 || ARM_PSCI_VERSION_1_1
+
+endif
 
 menuconfig OPTEE
     bool "Support for OP-TEE Trusted OS"
