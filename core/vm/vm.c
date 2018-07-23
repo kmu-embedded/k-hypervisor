@@ -20,7 +20,7 @@ void vm_setup()
 #endif
 }
 
-vmid_t vm_create(uint8_t num_vcpus)
+vmid_t vm_create(uint8_t num_vcpus, vmcb_type_t vmcb_type)
 {
     int i;
     struct vmcb *vm = NULL;
@@ -34,6 +34,7 @@ vmid_t vm_create(uint8_t num_vcpus)
     vm->vmid = vm_count++;
     vm->state = DEFINED;
     vm->num_vcpus = num_vcpus;
+    vm->type = vmcb_type;
 
     vm->vcpu = malloc(sizeof(struct vcpu *) * vm->num_vcpus);
     if (vm->vcpu == NULL) {
@@ -41,7 +42,7 @@ vmid_t vm_create(uint8_t num_vcpus)
     }
 
     for (i = 0; i < vm->num_vcpus; i++) {
-        if ((vm->vcpu[i] = vcpu_create()) == VCPU_CREATE_FAILED) {
+        if ((vm->vcpu[i] = vcpu_create(vm->type)) == VCPU_CREATE_FAILED) {
             free(vm);
             return VM_CREATE_FAILED;
         }
@@ -111,6 +112,27 @@ vmcb_state_t vm_start(vmid_t vmid)
     return vm->state;
 }
 
+vmcb_state_t vm_suspend(vmid_t vmid, struct core_regs *regs)
+{
+    struct vmcb *vm = vm_find(vmid);
+    if (vm == NO_VM_FOUND) {
+        return VM_NOT_EXISTED;
+    }
+
+    vm_save(vmid);
+
+    int i;
+    for (i = 0; i < vm->num_vcpus; i++) {
+        if (vcpu_suspend(vm->vcpu[i], regs) != VCPU_REGISTERED) {
+            return vm->state;
+        }
+    }
+
+    vm->state = HALTED;
+
+    return vm->state;
+}
+
 vmcb_state_t vm_delete(vmid_t vmid)
 {
     int i;
@@ -120,13 +142,16 @@ vmcb_state_t vm_delete(vmid_t vmid)
         return VM_NOT_EXISTED;
     }
 
+    vdev_delete(&vm->vdevs);
+    LIST_DEL(&vm->head);
+
     for (i = 0; i < vm->num_vcpus; i++) {
         if (vcpu_delete(vm->vcpu[i]) != VCPU_UNDEFINED) {
             return vm->state;
         }
     }
 
-    LIST_DEL(&vm->head);
+
     free(vm);
 
     return UNDEFINED;
@@ -150,6 +175,27 @@ void vm_restore(vmid_t restore_vmid)
     }
 
     vmem_restore(&vm->vmem);
+}
+
+void vm_copy(vmid_t from, vmid_t to, struct core_regs *regs)
+{
+    struct vmcb *vm_from = vm_find(from);
+    struct vmcb *vm_to = vm_find(to);
+    if (vm_from == NO_VM_FOUND || vm_to == NO_VM_FOUND) {
+        printf("%s[%d] vm_find failed\n");
+        return ;
+    }
+
+
+    int i;
+    for (i = 0; i < vm_from->num_vcpus; i++)
+        vcpu_copy(vm_from->vcpu[i], vm_to->vcpu[i], regs);
+
+    vmem_copy(&vm_from->vmem, &vm_to->vmem);
+    vdev_copy(&vm_from->vdevs, &vm_to->vdevs);
+
+    vm_to->state = vm_from->state;
+    vm_to->type = vm_from->type;
 }
 
 struct vmcb *vm_find(vmid_t vmid)

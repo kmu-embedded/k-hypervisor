@@ -6,6 +6,7 @@
 int32_t vtimer_read(void *pdata, uint32_t offset);
 int32_t vtimer_write(void *pdata, uint32_t offset, uint32_t *addr);
 int32_t vtimer_create(void **pdata);
+int32_t vtimer_copy(void **from_pdata, void **to_pdata);
 
 struct sp804 {
     uint32_t timer1_load;
@@ -46,6 +47,7 @@ struct vdev_module sp804_vtimer1 = {
     .read = vtimer_read,
     .write = vtimer_write,
     .create = vtimer_create,
+    .copy = vtimer_copy
 };
 
 #include <stdlib.h>
@@ -54,6 +56,13 @@ int32_t vtimer_create(void **pdata)
     struct sp804 *vtimer = malloc(sizeof(struct sp804));
 
     *pdata = vtimer;
+    return 0;
+}
+
+#include <string.h>
+int32_t vtimer_copy(void **from_pdata, void **to_pdata)
+{
+    memcpy(*from_pdata, *to_pdata, sizeof(struct sp804));
     return 0;
 }
 

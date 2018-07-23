@@ -272,3 +272,84 @@ hvmm_status_t arch_regs_restore(struct arch_regs *regs, struct core_regs *curren
 
     return HVMM_STATUS_SUCCESS;
 }
+
+static void cp15_copy(struct cp15 *from, struct cp15 *to)
+{
+    to->vbar = from->vbar;
+    to->ttbr0 = from->ttbr0;
+    to->ttbr1 = from->ttbr1;
+    to->ttbcr = from->ttbcr;
+    to->sctlr = from->sctlr;
+    to->vmpidr = from->vmpidr;
+
+    to->csselr = from->csselr;
+    to->cpacr = from->cpacr;
+
+    to->contextidr = from->contextidr;
+    to->tpidrurw = from->tpidrurw;
+    to->tpidruro = from->tpidruro;
+    to->tpidrprw = from->tpidrprw;
+
+    to->cntkctl = from->cntkctl;
+
+    to->dacr = from->dacr;
+    to->par = from->par;
+
+    to->mair0 = from->mair0;
+    to->mair1 = from->mair1;
+    to->amair0 = from->amair0;
+    to->amair1 = from->amair1;
+
+    to->dfar = from->dfar;
+    to->ifar = from->ifar;
+    to->dfsr = from->dfsr;
+    to->ifsr = from->ifsr;
+
+    to->adfsr = from->adfsr;
+    to->aifsr = from->aifsr;
+}
+
+static void banked_regs_copy(struct banked_regs *from, struct banked_regs *to)
+{
+    to->sp_usr = from->sp_usr;
+
+    to->spsr_svc = from->spsr_svc;
+    to->sp_svc = from->sp_svc;
+    to->lr_svc = from->lr_svc;
+    to->spsr_abt = from->spsr_abt;
+    to->sp_abt = from->sp_abt;
+    to->lr_abt = from->lr_abt;
+    to->spsr_und = from->spsr_und;
+    to->sp_und = from->sp_und;
+    to->lr_und = from->lr_und;
+    to->spsr_irq = from->spsr_irq;
+    to->sp_irq = from->sp_irq;
+    to->lr_irq = from->lr_irq;
+
+    to->spsr_fiq = from->spsr_fiq;
+    to->lr_fiq = from->lr_fiq;
+    to->r8_fiq = from->r8_fiq;
+    to->r9_fiq = from->r9_fiq;
+    to->r10_fiq = from->r10_fiq;
+    to->r11_fiq = from->r11_fiq;
+    to->r12_fiq = from->r12_fiq;
+}
+
+static void core_regs_copy(struct core_regs *from, struct core_regs *to, struct core_regs *regs)
+{
+    int i = 0;
+
+    to->cpsr = regs->cpsr; 	/* CPSR */
+    to->pc = regs->pc + 4; 	/* Program Counter */
+    to->lr = regs->lr;
+
+    for(i = 0; i < NR_ARCH_GPR_REGS; i++)
+        to->gpr[i] = regs->gpr[i]; /* R0 - R12 */
+}
+
+void arch_regs_copy(struct arch_regs *from, struct arch_regs *to, struct core_regs *regs)
+{
+    cp15_copy(&from->cp15, &to->cp15);
+    banked_regs_copy(&from->banked_regs, &to->banked_regs);
+    core_regs_copy(&from->core_regs, &to->core_regs, regs);
+}

@@ -4,6 +4,7 @@
 #include <core/scheduler.h>
 #include <core/vm/vm.h>
 #include <arch/armv7.h>
+#include <core/kmus.h>
 
 #define MAX_VDEV    256
 
@@ -62,6 +63,11 @@ void vdev_create(struct vdev_instance *vdevs, vmid_t vmid)
     }
 }
 
+void vdev_delete(struct vdev_instance *vdevs)
+{
+    LIST_DEL(&vdevs->head);
+}
+
 static uint32_t vdev_module_initcall(initcall_t fn)
 {
     return	fn();
@@ -75,6 +81,23 @@ void SECTION(".init.vdev") vdev_init(void)
     initcall_t *fn;
     for (fn = __vdev_module_start; fn < __vdev_module_end; fn++) {
         vdev_module_initcall(*fn);
+    }
+}
+
+void vdev_copy(struct vdev_instance *vdev_from, struct vdev_instance *vdev_to)
+{
+    struct vdev_instance *from_instance;
+    struct vdev_instance *to_instance;
+
+    list_for_each_entry(struct vdev_instance, from_instance, &vdev_from->head, head) {
+        list_for_each_entry(struct vdev_instance, to_instance, &vdev_to->head, head) {
+            if (from_instance->module->base == to_instance->module->base) {
+                printf("kmus [%s] vdev copy\n", from_instance->module->name);
+                if (from_instance->module->copy)
+                    from_instance->module->copy(&from_instance->pdata, &to_instance->pdata);
+                break;
+            }
+        }
     }
 }
 

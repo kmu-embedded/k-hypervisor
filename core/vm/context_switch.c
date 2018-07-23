@@ -12,6 +12,7 @@ hvmm_status_t do_context_switch(vcpuid_t current_id, vcpuid_t next_id, struct co
     if (current_id == VCPUID_INVALID) {
         vm_restore(next->vmid);
         vcpu_restore(next, current_regs);
+
         return HVMM_STATUS_SUCCESS;
     }
 

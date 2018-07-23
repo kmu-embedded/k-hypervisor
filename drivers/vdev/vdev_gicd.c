@@ -12,6 +12,7 @@
 int32_t vgicd_read_handler(void *pdata, uint32_t offset);
 int32_t vgicd_write_handler(void *pdata, uint32_t offset, uint32_t *addr);
 int32_t vgicd_create_instance(void **pdata);
+int32_t vgicd_copy(void **from_pdata, void **to_pdata);
 
 struct vdev_module vdev_gicd = {
     .name = "vgicd_v2",
@@ -20,6 +21,7 @@ struct vdev_module vdev_gicd = {
     .read = vgicd_read_handler,
     .write = vgicd_write_handler,
     .create = vgicd_create_instance,
+    .copy = vgicd_copy
 };
 
 union sgir {
@@ -59,6 +61,83 @@ int32_t vgicd_create_instance(void **pdata)
     }
 
     *pdata = vgicd;
+
+    return 0;
+}
+
+int32_t vgicd_copy(void **from_pdata, void **to_pdata)
+{
+    int i = 0, j = 0;
+    struct vgicd *from = (struct vgicd *) *from_pdata;
+    struct vgicd *to = (struct vgicd *) *to_pdata;
+
+    to->ctlr = from->ctlr;
+    to->typer = from->typer;
+    to->iidr = from->iidr;
+    for (i = 0; i < NR_VCPUS; i++)
+        to->igroupr0[i] = from->igroupr0[i];
+    for (i = 0; i < NR_IGROUPR; i++)
+        to->igroupr[i] = from->igroupr[i];
+
+    for (i = 0; i < NR_VCPUS; i++)
+        to->isenabler0[i] = from->isenabler0[i];
+    for (i = 0; i < NR_ISENABLER; i++)
+        to->isenabler[i] = from->isenabler[i];
+
+    for (i = 0; i < NR_VCPUS; i++)
+        to->icenabler0[i] = from->icenabler0[i];
+    for (i = 0; i < NR_ICENABLER; i++)
+        to->icenabler[i] = from->icenabler[i];
+
+    for (i = 0; i < NR_VCPUS; i++)
+        to->ispendr0[i] = from->ispendr0[i];
+    for (i = 0; i < NR_ISPENDR; i++)
+        to->ispendr[i] = from->ispendr[i];
+
+    for (i = 0; i < NR_VCPUS; i++)
+        to->icpendr0[i] = from->icpendr0[i];
+    for (i = 0; i < NR_ICPENDR; i++)
+        to->icpendr[i] = from->icpendr[i];
+
+    for (i = 0; i < NR_VCPUS; i++)
+        to->isactiver0[i] = from->isactiver0[i];
+    for (i = 0; i < NR_ISACTIVER; i++)
+        to->isactiver[i] = from->isactiver[i];
+
+    for (i = 0; i < NR_VCPUS; i++)
+        to->icactiver0[i] = from->icactiver0[i];
+    for (i = 0; i < NR_ICACTIVER; i++)
+        to->icactiver[i] = from->icactiver[i];
+
+    for (i = 0; i < NR_VCPUS; i++)
+        for (j = 0; j < NR_BANKED_IPRIORITYR; j++)
+        to->ipriorityr0[i][j] = from->ipriorityr0[i][j];
+    for (i = 0; i < NR_IPRIORITYR; i++)
+        to->ipriorityr[i] = from->ipriorityr[i];
+
+    for (i = 0; i < NR_VCPUS; i++)
+        for (j = 0; j < NR_BANKED_ITARGETSR; j++)
+        to->itargetsr0[i][j] = from->itargetsr0[i][j];
+    for (i = 0; i < NR_ITARGETSR; i++)
+        to->itargetsr[i] = from->itargetsr[i];
+
+    for (i = 0; i < NR_VCPUS; i++)
+        to->icfgr0[i] = from->icfgr0[i];
+    for (i = 0; i < NR_ICFGR; i++)
+        to->icfgr[i] = from->icfgr[i];
+
+    for (i = 0; i < NR_NSACR; i++)
+        to->nsacr[i] = from->nsacr[i];
+
+    to->sgir = from->sgir;
+
+    for (i = 0; i < NR_VCPUS; i++)
+        for (j = 0; j < NR_BANKED_CPENDSGIR; j++)
+            to->cpendsgir0[i][j] = from->cpendsgir0[i][j];
+
+    for (i = 0; i < NR_VCPUS; i++)
+        for (j = 0; j < NR_BANKED_SPENDSGIR; j++)
+            to->spendsgir0[i][j] = from->spendsgir0[i][j];
 
     return 0;
 }

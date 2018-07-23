@@ -22,7 +22,7 @@ void vcpu_setup()
     }
 }
 
-struct vcpu *vcpu_create()
+struct vcpu *vcpu_create(vcpu_type_t type)
 {
     struct vcpu *vcpu = NULL;
     int i;
@@ -35,6 +35,7 @@ struct vcpu *vcpu_create()
 
     vcpu->vcpuid = nr_vcpus++;
     vcpu->state = VCPU_DEFINED;
+    vcpu->type = type;
 
     // TODO(casionwoo) : Initialize running_time and actual_running_time after time_module created
     // TODO(casionwoo) : Initialize period and deadline after menuconfig module created
@@ -96,8 +97,7 @@ vcpu_state_t vcpu_init(struct vcpu *vcpu)
 
 vcpu_state_t vcpu_start(struct vcpu *vcpu)
 {
-    // TODO(casionwoo) : This function return only 'VCPU_ACTIVATED' but modify the return for error checking
-    if (vcpu->id == 0) {
+    if (vcpu->id == 0 && vcpu->type == VCPU_NORMAL) {
         sched_vcpu_attach(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
         printf("sched_vcpu_register, vcpuid : %d is attatched on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
         vcpu->state = VCPU_ACTIVATED;
@@ -107,10 +107,23 @@ vcpu_state_t vcpu_start(struct vcpu *vcpu)
     return VCPU_ACTIVATED;
 }
 
+vcpu_state_t vcpu_suspend(struct vcpu *vcpu, struct core_regs *regs)
+{
+    // save the vcpu context for resuming in the future
+    vcpu_save(vcpu, regs);
+
+    // detach the vcpu from run queue not to be scheduled
+    sched_vcpu_detach(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
+    printf("sched_vcpu_detach, vcpuid : %d is detatched on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
+
+    vcpu->state = VCPU_REGISTERED;
+    return vcpu->state;
+}
+
 vcpu_state_t vcpu_delete(struct vcpu *vcpu)
 {
-    // TODO(casionwoo) : Signal scheduler to stop the vcpu
-    // TODO(casionwoo) : Detach vcpu id from scheduler
+    sched_vcpu_unregister(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
+    printf("sched_vcpu_unregister, vcpuid : %d is unregister on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
 
     LIST_DEL(&vcpu->head);
 
@@ -150,6 +163,23 @@ void vcpu_restore(struct vcpu *vcpu, struct core_regs *regs)
 
     virq_hw->forward_pending_irq(vcpu->vcpuid);
     virq_hw->enable();
+}
+
+void vcpu_copy(struct vcpu *from, struct vcpu *to, struct core_regs *regs)
+{
+    int i;
+    for (i = 0; i < GICv2.num_lr; i++)
+        to->lr[i] = from->lr[i];
+
+    to->vmcr = from->vmcr;
+    to->regs.cp15.vmpidr = from->regs.cp15.vmpidr;
+    arch_regs_copy(&from->regs, &to->regs, regs);
+
+    for (i = 0; i < MAX_NR_IRQ; i++) {
+        to->map[i].enabled = from->map[i].enabled;
+        to->map[i].virq = from->map[i].virq;
+        to->map[i].pirq = from->map[i].pirq;
+    }
 }
 
 struct vcpu *vcpu_find(vcpuid_t vcpuid)

@@ -6,6 +6,7 @@
 #include <types.h>
 
 struct vmem {
+    struct memdesc_t dram;
     struct memdesc_t *mmap;
     uint32_t base;
     uint32_t vtcr;
@@ -14,6 +15,7 @@ struct vmem {
 };
 
 void vmem_setup();
+void vmem_copy(struct vmem *from, struct vmem *to);
 void vmem_create(struct vmem *vmem, vmid_t vmid);
 hvmm_status_t vmem_init(struct vmem *vmem, vmid_t vmid);
 hvmm_status_t vmem_save(void);
