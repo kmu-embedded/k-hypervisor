@@ -134,6 +134,6 @@ struct optee_shm {
     uint32_t cached;
 };
 
-int handle_optee_smc(struct core_regs *regs);
+void handle_optee_smc(struct core_regs *regs);
 
 #endif

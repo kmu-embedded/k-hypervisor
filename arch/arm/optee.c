@@ -13,17 +13,17 @@ void handle_optee_get_shm_config(struct core_regs *regs);
 int handle_optee_return_from_rpc(struct core_regs *regs);
 void handle_optee_rpc(struct core_regs *regs);
 
-int handle_optee_smc(struct core_regs *regs)
+void handle_optee_smc(struct core_regs *regs)
 {
     uint32_t function_id = regs->gpr[0];
 
     switch (function_id) {
     case OPTEE_SMC_GET_SHM_CONFIG:
         handle_optee_get_shm_config(regs);
-        return 0;
+        return;
     case OPTEE_SMC_RETURN_FROM_RPC:
         if (handle_optee_return_from_rpc(regs))
-            return 0;
+            return;
     }
 
     arm_smccc_smc(regs->gpr[0], regs->gpr[1], regs->gpr[2], regs->gpr[3],
@@ -34,7 +34,7 @@ int handle_optee_smc(struct core_regs *regs)
         handle_optee_rpc(regs);
     }
 
-    return 0;
+    return;
 }
 
 void handle_optee_get_shm_config(struct core_regs *regs)

@@ -55,8 +55,6 @@ enum smccc_service_range {
     SMCCC_SERVICE_TRUSTED_OS_END = 63
 };
 
-#define INVALID_SMCCC_FN -1
-
 struct arm_smccc_res {
     unsigned long a0;
     unsigned long a1;
