@@ -2,6 +2,7 @@
 # TODO(wonseok): Add configuration file for board.
 
 -include $(CURDIR)/.config
+-include $(CURDIR)/toolchain.mk
 
 ######################################################
 # MAKEFILE VERBOSE OPTION
