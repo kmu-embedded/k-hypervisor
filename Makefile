@@ -2,6 +2,7 @@
 # TODO(wonseok): Add configuration file for board.
 
 -include $(CURDIR)/.config
+-include $(CURDIR)/toolchain.mk
 
 ######################################################
 # MAKEFILE VERBOSE OPTION
@@ -44,7 +45,7 @@ DIRECTORIES += $(addprefix ${BUILD_PATH}/, ${SUBDIRECTORIES})
 ######################################################
 # DEFINE TOOLCHAINE VARIABLES
 ######################################################
-CROSS_COMPILE?=arm-linux-gnueabihf-
+CROSS_COMPILE?= $(AARCH32_PATH)/bin/arm-linux-gnueabihf-
 CC=${CROSS_COMPILE}gcc
 LD=${CROSS_COMPILE}ld
 NM=${CROSS_COMPILE}nm
