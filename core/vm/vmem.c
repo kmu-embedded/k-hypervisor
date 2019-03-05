@@ -6,6 +6,7 @@
 #include <vm_map.h>
 #include <vm_config.h>
 #include <stdio.h>
+#include <drivers/dma/sun4i-dma.h>
 
 extern uint32_t __VM_PGTABLE;
 
@@ -16,6 +17,7 @@ extern uint32_t __VM_PGTABLE;
 #define VTTBR_BADDR_MASK                                0x000000FFFFFFFFFFULL
 
 extern struct vm_config vm_conf[];
+extern struct Queue trans_queue;
 
 void vmem_create(struct vmem *vmem, vmid_t vmid)
 {
@@ -97,11 +99,14 @@ void vmem_copy(struct vmem *from, struct vmem *to)
     to->actlr = from->actlr;
 
     // copy all of the physical memory
-    uint32_t offset = 0;
     uint32_t from_mem = from->dram.pa;
     uint32_t to_mem = to->dram.pa;
+    InitQueue(&trans_queue);
 
-    for (offset = 0; offset < from->dram.size; offset+=4) {
-        writel(readl(from_mem + offset), (to_mem + offset));
-    }
+    chain_enqueue((uint32_t)from_mem, (uint32_t)to_mem, from->dram.size);
+    dma_wait *value = (dma_wait*) malloc (sizeof(dma_wait));
+    *value = Dequeue(&trans_queue);
+
+    dma_transfer(0, (uint32_t)value->src_addr, (uint32_t)value->dst_addr, SZ_4K);
+    printf("%s end\n", __func__);
 }
